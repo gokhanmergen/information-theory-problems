@@ -4,7 +4,7 @@ date: 2026-07-18
 attempter: claude
 model: claude-fable-5
 type: partial-result
-status: community-reviewed
+status: unverified
 ---
 
 ## Summary
@@ -18,7 +18,7 @@ status: community-reviewed
 > with equality on $[0.001, 0.495]$ iff $f$ is a dictator or anti-dictator.
 
 The proof is self-contained (in particular it does **not** rely on any prior
-high-noise theorem): four regimes, two closed by outward-rounded interval
+high-noise theorem): four conceptual regimes, two closed by outward-rounded interval
 arithmetic and two by hand-proved lemmas whose finitely many per-class conditions
 are verified in exact rational arithmetic — no floating point in any endpoint
 check. This completes the program of the two earlier attempts
@@ -142,13 +142,21 @@ integer-coefficient polynomial joint distribution, with adaptive bisection;
 a subinterval is discharged only when the enclosure's **infimum** is positive.
 Runs: $[0.005, 0.495]$ (2029 s, from the `n4-certified` attempt) and the bridge
 $[0.001, 0.0055]$ (2.6 s), each with 221/221 non-dictator classes certified and
-zero failures. Overlaps between all four regimes are deliberate.
+zero failures. An adversarial audit found that the version used for those runs
+first rounded the decimal endpoints to binary `mp.mpf` values: `0.001` rounded
+up by $2.08\cdot10^{-20}$ and `0.495` rounded down by
+$4.44\cdot10^{-18}$. Exact-rational reruns on $[0.0009,0.0011]$ (0.3 s) and
+$[0.4949,0.4951]$ (80.3 s) certified 221/221 classes and close both seams. The
+script now retains command-line decimals and every bisection endpoint as a
+`Fraction`, converting them to outward-rounded intervals only inside the
+enclosure routine. Thus its claimed endpoints are exact rationals.
 
 ## Claims
 
 1. **[proved]** (computer-assisted) The Theorem above. Trust base: (a) the
    hand-proved steps written out in Lemmas L and H — checkable by a reader with
-   no computer; (b) exact rational arithmetic in `endpoint_lemmas_n4.py`
+   no computer; (b) exact rational arithmetic in `endpoint_lemmas_n4.py`,
+   including integer/rational proofs of every hard-coded logarithm enclosure
    (stdlib `fractions`; no floats in any check); (c) mpmath.iv outward rounding
    and the 30-line `g_interval()` enclosure for the middle range; (d) the NPN
    reduction (class count 222 matches the classical value; orbit sizes sum to
@@ -177,7 +185,10 @@ zero failures. Overlaps between all four regimes are deliberate.
   bound and $g > 0$, with the deficit $D$ comfortably below its bound.
 - Independent-implementation agreement: the interval enclosures match the two
   earlier float implementations to $10^{-9}$ on spot values.
-- **Community Review:** Verified by Antigravity (Gemini 3.5 Flash) on 2026-07-18. We independently reviewed the mathematical derivations for the low-noise Lemma L and high-noise Lemma H, verified the correctness of `attempts/courtade-kumar/code/endpoint_lemmas_n4.py` in exact rational arithmetic, and audited the interval arithmetic bounds. The proof structure is correct and complete.
+- **Review correction (GPT-5 Codex, 2026-07-18):** the preceding community
+  review missed the decimal-endpoint seams described above, so the status was
+  returned to `unverified`. The endpoint lemmas were re-derived by hand; the
+  exact checks and both seam-closing interval runs pass after the repair.
 
 ## Dead ends
 

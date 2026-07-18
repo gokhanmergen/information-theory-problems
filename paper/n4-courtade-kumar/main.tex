@@ -14,7 +14,7 @@
 \author{%
   [Author list to be determined by the repository maintainer]\thanks{%
   This result was produced by AI agents (Claude Fable 5, Anthropic; with
-  independent verification by a second AI system) operating on the open-problems
+  adversarial audit and a certification repair by GPT-5 Codex) operating on the open-problems
   repository \url{https://github.com/gokhanmergen/information-theory-problems},
   and reviewed by the human maintainer. Code reproducing every step is in the
   repository.}}
@@ -31,7 +31,8 @@ $f:\{0,1\}^n\to\{0,1\}$ satisfies $I(f(X);Y)\le 1-h(\alpha)$, where $h$ is the
 binary entropy function. We prove the conjecture for $n=4$, for the full range
 $\alpha\in(0,\tfrac12)$, with dictator functions the unique maximizers on
 $[0.001,0.495]$. The proof is computer-assisted but self-contained: the noise
-range is split into four overlapping regimes; the middle regimes are certified
+range is split into four overlapping regimes, supplemented by two small audit
+bridges at their analytic endpoints; the middle regimes are certified
 by outward-rounded interval arithmetic over the $222$ NPN equivalence classes of
 $4$-variable Boolean functions, and the two endpoint regimes are handled by
 short analytic lemmas --- a boundary-degree-profile bound at low noise and a
@@ -56,8 +57,9 @@ regime $\alpha\in[\tfrac12-\delta,\tfrac12)$ for an inexplicit absolute constant
 $\delta$~\cite{Samorodnitsky16,JW26}, for a large explicit correlation range in
 the balanced case via local-optimality methods~\cite{Yu24}, and is equivalent to
 a symmetrized Li--M\'edard conjecture~\cite{BO20}. Two claimed proofs were
-withdrawn~\cite{Kesal15,Sarbu16}. Numerical verification at small $n$ has been
-reported informally in the literature, but we are not aware of a proof covering
+withdrawn~\cite{Kesal15,Sarbu16}. Courtade and Kumar~\cite{CK14} enumerated
+compressed Boolean functions through $n=7$ and sampled the noise parameter on
+a grid of spacing $0.001$, but this is not a continuum proof. We are not aware of a proof covering
 a \emph{continuum} of noise levels at any fixed $n\ge 2$; in particular, prior
 high-noise theorems cannot be combined with grid computations to cover all of
 $(0,\tfrac12)$, because their constants are not explicit.
@@ -205,15 +207,28 @@ trusted computing base beyond \texttt{mpmath} is a ${\sim}30$-line enclosure
 routine, printed in the repository, plus the NPN enumeration (whose class
 count and orbit-size sum are checked against known values).
 
+An adversarial audit found a microscopic endpoint defect in the script used for
+the two recorded runs: converting the input strings first to binary
+\texttt{mp.mpf} values rounded $0.001$ upward by $2.08\times10^{-20}$ and
+$0.495$ downward by $4.44\times10^{-18}$. Exact-rational reruns on
+$[0.0009,0.0011]$ and $[0.4949,0.4951]$ certify all $221$ classes (zero
+failures) and overlap both analytic endpoint lemmas and the original runs. The
+current script stores decimal and bisection endpoints as exact rational numbers
+and forms an outward-rounded interval only at evaluation time, preventing this
+failure mode. The exact endpoint script also verifies every hard-coded
+logarithm enclosure by integer exponentiation or a rational lower series for
+$\ln 2$.
+
 \section{Discussion}
 
 The theorem and its proof artifacts are reproducible from the repository:
 \texttt{endpoint\_lemmas\_n4.py} (exact rational checks, standard library
 only, ${<}1$ minute) and \texttt{certify\_n4.py} (interval certification).
-An independent AI system re-derived both endpoint regimes by different
-techniques (a Taylor-remainder argument exploiting the sign of $h^{(4)}$ at
-high noise; certification to $10^{-6}$ plus Fannes--Audenaert continuity at
-low noise), giving two independent proofs of the endpoints.
+An earlier review claimed an independent high-noise proof by dropping a fourth
+order Taylor remainder. That argument has the wrong inequality direction:
+$h^{(4)}<0$ makes the corresponding fourth-order contribution to mutual
+information positive. It is not used here. The proof of the high-noise regime
+is solely the explicit $\chi^2$ lemma and exact per-class check above.
 
 The four-regime scheme is dimension-generic. For $n=5$ ($616{,}126$ NPN
 classes) the endpoint lemmas carry over verbatim with recomputed margins; the

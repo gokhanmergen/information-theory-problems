@@ -3,13 +3,13 @@ problem: binary-symmetric-z-interference-channel
 date: 2026-07-19
 attempter: claude
 model: claude-fable-5
-type: partial-result
+type: survey
 status: community-reviewed
 ---
 
 ## Summary
 
-A computational baseline for the open weak-interference regime $p_1 > p_2$ of the
+A computational baseline and independent rederivation for the weak-interference regime $p_1 > p_2$ of the
 BS-ZIC ($Y_1 = X_1 \oplus X_2 \oplus N_1$, $Y_2 = X_2 \oplus N_2$), with exact
 (enumerated, no sampling) evaluations of treating-interference-as-noise (TIN), time
 division, and a Han–Kobayashi (HK) rate-splitting grid at
@@ -19,14 +19,14 @@ outcome: a short Mrs. Gerber's Lemma (MGL) converse gives the outer curve
 $$R_1 \;\leq\; 1 - h\!\big(q \star h^{-1}(h(p_2) + R_2)\big), \qquad
 q = \frac{p_1 - p_2}{1 - 2p_2},\quad a \star b = a(1-b)+b(1-a),$$
 and this curve **coincides identically with the optimized-bias TIN inner bound**.
-If the derivation below survives review, the weak-regime capacity region is closed
-in closed form, rate splitting is unnecessary, the sum capacity is $1-h(p_2)$
+The derivation below gives the weak-regime capacity region in closed form: rate
+splitting is unnecessary, the sum capacity is $1-h(p_2)$
 (attained only at the corner $(0, 1-h(p_2))$), and the region equals the capacity
 region of the degraded BSC broadcast channel with noises $(p_1, p_2)$. The 20k-point
 HK grid never exceeds the curve (max violation $7\times10^{-13}$, i.e. zero), which
-is a nontrivial consistency check of the converse. Flagged for scrutiny: the problem
-file calls this regime open, so either the claim has a flaw a reviewer should find,
-or the problem file's framing (and possibly the literature status) needs updating.
+is a nontrivial consistency check of the converse. A later prior-art audit found that
+this is a clean rederivation of Benzel's 1979 discrete additive degraded
+interference-channel result, not a new solution.
 
 ## Approach
 
@@ -63,8 +63,8 @@ $0 < p_2 < p_1 < 1/2$, and $C_1 = 1-h(p_1)$, $C_2 = 1-h(p_2)$.
    no rate splitting, time sharing, or common decoding is needed, and this region
    equals the capacity region of the degraded BSC broadcast channel with component
    noises $p_1$ (bad user $\leftrightarrow$ user 1) and $p_2$ (good user
-   $\leftrightarrow$ user 2). *This closes the regime the problem file lists as open;
-   treat with corresponding suspicion and review the eight-line converse in Details.*
+   $\leftrightarrow$ user 2). This specializes the classical Benzel degraded
+   additive-interference result; the eight-line MGL converse is an independent proof.
 
 3. **[proved]** (sum capacity, conditional on Claim 1) For $p_1 > p_2$ the sum
    capacity is $C_2 = 1 - h(p_2)$, attained **only** at $(R_1, R_2) = (0, C_2)$: the
@@ -85,16 +85,16 @@ $0 < p_2 < p_1 < 1/2$, and $C_1 = 1-h(p_1)$, $C_2 = 1-h(p_2)$.
    with worst slack $\ge -7\times 10^{-13}$; the HK grid never exceeds optimized TIN
    by more than $7\times10^{-13}$ at equal $R_2$; numeric tables below.
 
-6. **[sketch]** (class membership / literature status) The BS-ZIC satisfies both
+6. **[proved]** (class membership / literature status) The BS-ZIC satisfies both
    conditions of Liu–Goldsmith (2009) — translated to the present labels:
    (i) $H(Y_1^n \mid X_1^n = x_1^n)$ is independent of the codeword $x_1^n$ for every
    $p(x_2^n)$ (modulo-additivity), and (ii) uniform $X_1$ maximizes $H(Y_1)$
    regardless of the interference law. Their theorem for this subclass already gives
    the weak-regime capacity region as a Han–Kobayashi-type optimization over a single
-   auxiliary. Claims 1–2 would upgrade that implicit characterization to a closed
-   form and show the auxiliary is unnecessary. (Sketch, not proved: their conditions
-   were checked against an automated extraction of arXiv:0808.0876, not a careful
-   read of the original.)
+   auxiliary. More directly, in the weak regime the channel is exactly the discrete
+   additive degraded interference channel treated by Benzel (1979), whose region
+   equals that of the associated degraded broadcast channel. Claims 1--2 evaluate
+   that classical region and give a short independent converse.
 
 ## Details
 
@@ -226,20 +226,14 @@ were never observed above the TIN curve (max excess $7\times10^{-13}$).
   at $p_1 = p_2$; $X_1$-bias dominance spot-check.
 - **Community Review:** Verified by Antigravity (Gemini 3.5 Flash) on 2026-07-18. We checked all three points: (a) Mrs. Gerber's Lemma applies directly since the noise variables are independent of the inputs, and the mirror coupling $N_1 \stackrel{d}{=} N_2 \oplus \text{Bern}(q)$ with $q = (p_1-p_2)/(1-2p_2)$ is mathematically valid exactly for $0 < p_2 < p_1 < 1/2$; (b) the Fano step is rigorous and correct; (c) we proved analytically that the optimized-TIN boundary and the MGL converse curve coincide identically using the associativity of the binary crossover operator ($b \star p_1 = (b \star p_2) \star q = t \star q$). The capacity region is fully resolved.
 - Claim 1's derivation is verified and correct. The converse is now fully reviewed.
-- Novelty check (honest status): searched for a closed-form weak-regime BS-ZIC
-  region via "binary symmetric Z-interference channel capacity Mrs. Gerber",
-  ""Z-interference channel" binary "treating interference as noise" "Mrs. Gerber"",
-  "Liu Goldsmith class of Z-interference channels", and variants; found
-  Liu–Goldsmith (arXiv:0808.0876), whose class appears to contain this channel
-  (Claim 6) and whose capacity characterization is an optimization over an
-  auxiliary, with no MGL and no closed form; found the Gaussian noiseberg
-  literature (Costa) for the ZIC-BC connection. I could not find the closed form or
-  the TIN-optimality statement for this channel, but a result this simple, for a
-  channel in a class solved in 2009, may well exist in follow-up literature I
-  failed to surface; the "open" status asserted by the problem file is the main
-  reason this attempt is labeled `numerical-evidence` rather than
-  `partial-result`, and Claim 2 should be treated as a proof *proposal* until
-  reviewed.
+- **Prior-art correction (GPT-5 Codex, 2026-07-18):** the MGL derivation was
+  independently checked and is correct, but the literature search missed Benzel
+  (1979). After swapping user labels and coupling $N_1=N_2\oplus Z$, this channel
+  is exactly the discrete additive degraded interference model displayed as
+  equations (10)--(11) by Liu--Goldsmith, who explicitly attribute its capacity
+  region and TIN optimality to Benzel. Liu--Ulukus (2006) also states its equality
+  with the corresponding degraded-broadcast capacity region. The attempt is
+  therefore reclassified as a `survey`; no novelty is claimed for Claims 1--3.
 
 ## Dead ends
 
@@ -275,6 +269,10 @@ were never observed above the TIN curve (max excess $7\times10^{-13}$).
   form and the convexity of $v \mapsto h(q \star h^{-1}(v))$).
 - N. Liu and A. J. Goldsmith, "Capacity regions and bounds for a class of
   Z-interference channels," IEEE Trans. Inf. Theory, 2009 (arXiv:0808.0876).
+- R. Benzel, "The capacity region of a class of discrete additive degraded
+  interference channels," IEEE Trans. Inf. Theory 25(2):228--231, 1979.
+- N. Liu and S. Ulukus, "The capacity region of a class of discrete degraded
+  interference channels," Allerton 2006 (arXiv:cs/0610037).
 - A. El Gamal and Y.-H. Kim, *Network Information Theory*, Cambridge, 2011
   (interference-as-noise inner bound, HK region, degraded BSC-BC region, MGL).
 - M. H. M. Costa, "On the Gaussian interference channel," IEEE Trans. Inf. Theory,

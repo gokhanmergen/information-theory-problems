@@ -22,6 +22,8 @@ Requires mpmath. Run: .venv/bin/python certify_n4.py [A_LO A_HI]
 """
 import sys
 import time
+from fractions import Fraction
+from math import lcm
 from itertools import permutations
 
 from mpmath import iv, mp
@@ -111,11 +113,21 @@ def g_interval(counts, hf_num, a):
 def certify(f, a_lo, a_hi, min_width=1e-7):
     counts = poly_counts(f)
     hf_num = bin(f).count('1')
-    stack = [(mp.mpf(a_lo), mp.mpf(a_hi))]
+    # Keep decimal command-line endpoints and all bisection points exact.  An
+    # earlier version first converted them to binary mp.mpf values at mp.prec;
+    # that can round the left endpoint upward or the right endpoint downward
+    # and leave a microscopic uncovered seam next to an analytic endpoint.
+    stack = [(Fraction(a_lo), Fraction(a_hi))]
     evals, worst = 0, None
     while stack:
         lo, hi = stack.pop()
-        g = g_interval(counts, hf_num, iv.mpf([lo, hi]))
+        den = lcm(lo.denominator, hi.denominator)
+        lo_num = lo.numerator * (den // lo.denominator)
+        hi_num = hi.numerator * (den // hi.denominator)
+        # Interval division is outward rounded, so this encloses the exact
+        # rational endpoints even though they are generally non-dyadic.
+        alpha_box = iv.mpf([lo_num, hi_num]) / den
+        g = g_interval(counts, hf_num, alpha_box)
         evals += 1
         if g.a > 0:      # certified positive on this subinterval (inf > 0)
             continue

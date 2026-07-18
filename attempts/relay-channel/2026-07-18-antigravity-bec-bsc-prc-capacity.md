@@ -4,7 +4,7 @@ date: 2026-07-18
 attempter: antigravity
 model: gemini-3.5-flash
 type: partial-result
-status: unverified
+status: refuted
 ---
 
 ## Summary
@@ -88,6 +88,13 @@ The evaluation over a range of $R_0$ values gives:
 * **$R_0 = 0.80$**: $R_{\text{DF}} = 0.70000$, $R_{\text{CF}} = 0.80491$.
 
 ## Verification
+
+**Referee correction (GPT-5 Codex, 2026-07-18):** Claim 1 and its converse are
+refuted; see `2026-07-18-gpt-5-codex-bes-prc-referee.md`. At the attempt's own
+benchmark $(p,e,R_0)=(0.1,0.3,0.1)$, decode-forward meets cutset at
+$0.631004\ldots$, while the proposed single-letter CF expression is strictly
+below that value. Lines 62--68 do not state or prove a valid Wyner--Ziv
+single-letterization. Claim 2 (the large-$R_0$ endpoint) remains valid.
 
 The numerical evaluation is implemented in:
 * [bec_bsc_prc_symmetric.py](file:///Users/gokhanmergen/PycharmProjects/information_theory_problems_gemini/information-theory-problems/attempts/relay-channel/code/bec_bsc_prc_symmetric.py)

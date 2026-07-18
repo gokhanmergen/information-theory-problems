@@ -59,6 +59,22 @@ RHO0 = F(1, 100)
 GAMMA = (F(999, 1000)) ** 3
 
 
+def verify_log_bounds():
+    """Prove every hard-coded logarithm enclosure using integer arithmetic."""
+    for n in LOG2_LO:
+        lo, hi = LOG2_LO[n], LOG2_HI[n]
+        # lo <= log2(n) <= hi, after raising 2 and n to integer powers.
+        assert 2 ** lo.numerator <= n ** lo.denominator
+        assert n ** hi.denominator <= 2 ** hi.numerator
+    assert 2 ** T0_LO.numerator <= 1000 ** T0_LO.denominator
+    assert 1000 ** T0_HI.denominator <= 2 ** T0_HI.numerator
+    # ln(2) = 2 * sum_{j>=0} 1/((2j+1)3^(2j+1)).  A partial sum is a
+    # rigorous lower bound; ln(2) >= 1/LOG2E_HI proves log2(e) <= LOG2E_HI.
+    ln2_lower = sum((F(2, (2*j + 1) * 3 ** (2*j + 1))
+                     for j in range(20)), F(0))
+    assert ln2_lower >= 1 / LOG2E_HI
+
+
 def log2_bounds(n):
     """(lower, upper) rational bounds for log2(n), n = 1..16."""
     lo = hi = F(0)
@@ -147,6 +163,8 @@ def high_noise_ok(k, f):
 
 
 if __name__ == "__main__":
+    verify_log_bounds()
+    print("hard-coded logarithm bounds: ALL VERIFIED by exact integers/rationals")
     reps = npn_classes()
     print(f"NPN classes: {len(reps)}")
     fail_low, fail_high, checked = [], [], 0
