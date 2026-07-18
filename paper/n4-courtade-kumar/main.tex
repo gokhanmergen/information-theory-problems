@@ -1,0 +1,247 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[hidelinks]{hyperref}
+\usepackage{booktabs}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{remark}{Remark}
+\newcommand{\BSC}{\mathsf{BSC}}
+\newcommand{\ind}[1]{\mathbf{1}_{#1}}
+
+\title{The Most-Informative-Boolean-Function Conjecture\\ Holds for $n = 4$}
+\author{%
+  [Author list to be determined by the repository maintainer]\thanks{%
+  This result was produced by AI agents (Claude Fable 5, Anthropic; with
+  independent verification by a second AI system) operating on the open-problems
+  repository \url{https://github.com/gokhanmergen/information-theory-problems},
+  and reviewed by the human maintainer. Code reproducing every step is in the
+  repository.}}
+\date{July 2026 --- draft, not yet submitted}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Let $X$ be uniform on $\{0,1\}^n$ and let $Y$ be the output of a memoryless
+binary symmetric channel with crossover probability $\alpha$ on input $X$.
+Courtade and Kumar conjectured that every Boolean function
+$f:\{0,1\}^n\to\{0,1\}$ satisfies $I(f(X);Y)\le 1-h(\alpha)$, where $h$ is the
+binary entropy function. We prove the conjecture for $n=4$, for the full range
+$\alpha\in(0,\tfrac12)$, with dictator functions the unique maximizers on
+$[0.001,0.495]$. The proof is computer-assisted but self-contained: the noise
+range is split into four overlapping regimes; the middle regimes are certified
+by outward-rounded interval arithmetic over the $222$ NPN equivalence classes of
+$4$-variable Boolean functions, and the two endpoint regimes are handled by
+short analytic lemmas --- a boundary-degree-profile bound at low noise and a
+$\chi^2$-type expansion at high noise --- whose finitely many per-class
+hypotheses are verified in exact rational arithmetic. No prior high-noise
+theorem is invoked. All code (two scripts totalling ${\sim}350$ lines, standard
+libraries plus \texttt{mpmath}) is available in the repository.
+\end{abstract}
+
+\section{Introduction}
+
+Let $X\sim\mathrm{Uniform}(\{0,1\}^n)$ and let $Y$ be obtained from $X$ by
+passing each coordinate independently through $\BSC(\alpha)$,
+$\alpha\in(0,\tfrac12)$. Courtade and Kumar~\cite{CK14} conjectured
+\begin{equation}\label{eq:ck}
+I(f(X);Y)\;\le\;1-h(\alpha)
+\qquad\text{for every Boolean } f:\{0,1\}^n\to\{0,1\},
+\end{equation}
+with the dictator functions $f(x)=x_i$ (and their complements) achieving
+equality. The conjecture remains open in general; it is known in the high-noise
+regime $\alpha\in[\tfrac12-\delta,\tfrac12)$ for an inexplicit absolute constant
+$\delta$~\cite{Samorodnitsky16,JW26}, for a large explicit correlation range in
+the balanced case via local-optimality methods~\cite{Yu24}, and is equivalent to
+a symmetrized Li--M\'edard conjecture~\cite{BO20}. Two claimed proofs were
+withdrawn~\cite{Kesal15,Sarbu16}. Numerical verification at small $n$ has been
+reported informally in the literature, but we are not aware of a proof covering
+a \emph{continuum} of noise levels at any fixed $n\ge 2$; in particular, prior
+high-noise theorems cannot be combined with grid computations to cover all of
+$(0,\tfrac12)$, because their constants are not explicit.
+
+\begin{theorem}\label{thm:main}
+For $n=4$, inequality~\eqref{eq:ck} holds for every $\alpha\in(0,\tfrac12)$ and
+every Boolean function $f$. Moreover, for $\alpha\in[0.001,0.495]$, equality
+holds if and only if $f$ is a dictator or an anti-dictator.
+\end{theorem}
+
+The interest of the result is partly the statement and partly the method: the
+endpoint lemmas isolate exactly the finite data that controls
+\eqref{eq:ck} near $\alpha\to 0$ (edge-boundary profiles; edge-isoperimetry on
+$Q_4$) and near $\alpha\to\tfrac12$ (level-one Fourier weight and spectral
+$\ell_1$-mass), and the same four-regime scheme applies in principle at any
+fixed $n$.
+
+\section{Setup and reduction}
+
+Write $g_f(\alpha)=1-h(\alpha)-I(f(X);Y)$, $q_1=\Pr[f(X)=1]=k/16$,
+$q_0=1-q_1$. Since $Y$ is uniform and $q_v$ does not depend on $\alpha$,
+\[
+g_f(\alpha)=H\bigl(f(X),Y\bigr)(\alpha)-h(\alpha)-3-H(q_1),
+\]
+and the $2\times 16$ joint probabilities are the polynomials
+$p_{v,y}(\alpha)=2^{-4}\sum_{k=0}^{4}c_{v,y,k}\,\alpha^k(1-\alpha)^{4-k}$ with
+integer counts $c_{v,y,k}=\#\{x: f(x)=v,\ d(x,y)=k\}$.
+
+$I(f(X);Y)$ is invariant under permutations of the coordinates, flips of input
+coordinates, and complementation of the output, so it suffices to prove
+\eqref{eq:ck} for one representative of each NPN equivalence class. For $n=4$
+there are $222$ classes (a classical count, reproduced by our enumeration,
+whose orbit sizes sum to $2^{16}$). Constant functions give $I=0$; dictators
+give $I=1-h(\alpha)$ exactly. The remaining $220$ classes are treated by:
+\[
+\begin{array}{ll}
+\alpha\in(0,10^{-3}] & \text{Lemma \ref{lem:low} (exact rational checks)}\\
+\alpha\in[10^{-3},0.0055]\ \cup\ [0.005,0.495] & \text{interval arithmetic
+(Section \ref{sec:certify})}\\
+\alpha\in[0.495,\tfrac12) & \text{Lemma \ref{lem:high} (exact rational checks)}
+\end{array}
+\]
+
+\section{The low-noise lemma}
+
+For $y\in\{0,1\}^4$ let $b_y$ be the number of Hamming neighbors $x$ of $y$
+with $f(x)\neq f(y)$, and set $c_1=\tfrac1{16}\sum_y b_y$ (so $16c_1=2B$ with
+$B$ the edge boundary of $f^{-1}(1)$) and $c_2=\tfrac1{16}\sum_y b_y\log_2 b_y$.
+
+\begin{lemma}\label{lem:low}
+Let $\alpha\in(0,10^{-3}]$, $t=\log_2(1/\alpha)$, $t_0=\log_2 1000$,
+$\gamma=(1-10^{-3})^3$. If $f$ is balanced and
+$t_0(\gamma c_1-1)\ge \log_2 e+c_2$, or $f$ is unbalanced and
+$10^{-3}\bigl[t_0\max(0,1-\gamma c_1)+\log_2 e+c_2\bigr]\le 1-H(q_1)$,
+then $g_f(\alpha)\ge 0$.
+\end{lemma}
+
+\begin{proof}
+Write $g_f=m_0-D(\alpha)$ with $m_0=1-H(q_1)$ and
+$D(\alpha)=h(\alpha)-H(f(X)\mid Y)$. Three elementary steps:
+
+(i) $H(f(X)\mid Y{=}y)=h(\Pr[f(X)\neq f(y)\mid y])$, and
+$\Pr[f(X)\neq f(y)\mid y]\ge b_y\,\alpha(1-\alpha)^3=:b_y\beta$ by keeping only
+the distance-one terms; both quantities lie in $[0,4\alpha]\subseteq[0,\tfrac12]$
+and $h$ is increasing there, so
+$H(f(X)\mid Y)\ge\tfrac1{16}\sum_y h(b_y\beta)$.
+
+(ii) $h(u)\ge u\log_2(1/u)$, hence
+$h(b_y\beta)\ge b_y\beta\,[t-\log_2 b_y]$ using $\beta\le\alpha$.
+
+(iii) $h(\alpha)\le\alpha(t+\log_2 e)$, from
+$(1-\alpha)\ln\frac1{1-\alpha}\le\alpha$.
+
+\noindent Since $\beta\ge\gamma\alpha$ on the range,
+$D(\alpha)\le\alpha[\,t(1-\gamma c_1)+\log_2 e+c_2\,]$. If $f$ is balanced then
+$m_0=0$ and $c_1\ge\tfrac32$: the minimum edge boundary of a balanced
+non-dictator subset of $Q_4$ is $12$ (exhaustively checked over the balanced
+NPN classes; by Harper's theorem~\cite{Harper64} the subcubes, i.e.\
+dictators, are the unique sets at the minimum $8$). The $t$-coefficient is
+then negative, and $t\ge t_0$ gives the stated criterion. If $f$ is
+unbalanced, $\alpha t$ is increasing on $(0,1/e)$, so $D$ is maximized at
+$\alpha=10^{-3}$, giving the stated criterion against $m_0>0$.
+\end{proof}
+
+All $220$ classes satisfy the applicable criterion; the verification uses
+exact rational two-sided bounds for the constants
+$\log_2 3,\log_2 5,\log_2 7,\log_2 11,\log_2 13,\log_2 e,\log_2 1000$, each
+used in the unfavorable direction.
+
+\section{The high-noise lemma}
+
+Let $\rho=1-2\alpha$, $\widehat{\ind f}(S)$ the Fourier coefficients of the
+indicator, $\widetilde W_1=\sum_{|S|=1}\widehat{\ind f}(S)^2/(q_0q_1)$,
+$A=\sum_{S\neq\emptyset}|\widehat{\ind f}(S)|$, $q_{\min}=\min(q_0,q_1)$.
+
+\begin{lemma}\label{lem:high}
+Let $\rho_0=10^{-2}$. If $\rho_0A/q_{\min}\le\tfrac12$ and
+\[
+\bigl[\widetilde W_1+\rho_0^2(1-\widetilde W_1)\bigr]
+\bigl(1+\tfrac43\rho_0A/q_{\min}\bigr)\;\le\;1,
+\]
+then $g_f(\alpha)\ge0$ for all $\rho\in(0,\rho_0]$.
+\end{lemma}
+
+\begin{proof}
+$\Pr[f{=}1\mid Y{=}y]=T_\rho\ind f(y)$, so with
+$p(v,y)=q_v2^{-4}(1+\varepsilon_{v,y})$ we get
+$|\varepsilon_{v,y}|\le\rho A/q_{\min}=:\varepsilon_{\max}$ and, by Parseval and
+$\sum_{S\neq\emptyset}\widehat{\ind f}(S)^2=q_0q_1$,
+\[
+\chi^2:=\sum_{v,y}q_v2^{-4}\varepsilon_{v,y}^2
+=\frac{\sum_{S\neq\emptyset}\widehat{\ind f}(S)^2\rho^{2|S|}}{q_0q_1}
+\le\rho^2\bigl[\widetilde W_1+\rho^2(1-\widetilde W_1)\bigr].
+\]
+For $|\varepsilon|\le\tfrac12$,
+$(1+\varepsilon)\ln(1+\varepsilon)\le\varepsilon+\tfrac{\varepsilon^2}2
++\tfrac23|\varepsilon|^3$: the series
+$(1+\varepsilon)\ln(1+\varepsilon)=\varepsilon+\sum_{k\ge2}
+\frac{(-1)^k\varepsilon^k}{k(k-1)}$ is, for $\varepsilon\ge0$, alternating with
+decreasing terms after $\varepsilon^2/2$ (negative leading tail term), and for
+$\varepsilon\in[-\tfrac12,0)$ all terms are positive with tail at most
+$\tfrac{|\varepsilon|^3}{6}\cdot\frac1{1-|\varepsilon|}\le\tfrac{|\varepsilon|^3}3$.
+Since $\sum_{v,y}q_v2^{-4}\varepsilon_{v,y}=0$, summing gives
+$I(f(X);Y)\ln2\le\tfrac{\chi^2}2(1+\tfrac43\varepsilon_{\max})$. Finally
+$1-h(\alpha)=\frac1{\ln2}\sum_{k\ge1}\frac{\rho^{2k}}{2k(2k-1)}
+\ge\frac{\rho^2}{2\ln2}$ with all series terms positive, and the hypothesis is
+monotone in $\rho$ on $(0,\rho_0]$.
+\end{proof}
+
+All $220$ classes pass, \emph{including all balanced ones}, with exact dyadic
+Fourier data; the maximum of $\widetilde W_1$ over non-dictator classes is
+$52/63$, attained by a dictator altered on a single input. (Thus no external
+high-noise theorem is needed; compare~\cite{Samorodnitsky16,Yu24}.)
+
+\section{Certified interval arithmetic on the middle range}\label{sec:certify}
+
+On $[10^{-3},0.0055]\cup[0.005,0.495]$ we certify $g_f>0$ for the $221$
+non-dictator classes by adaptive bisection in $\alpha$: for each subinterval,
+$g_f$ is enclosed using outward-rounded interval arithmetic
+(\texttt{mpmath.iv}, 90-bit precision) applied to the exact
+integer-coefficient polynomial joint distribution; a subinterval is discharged
+only when the enclosure's \emph{infimum} is positive. Both runs complete with
+zero failures ($2029$\,s and $2.6$\,s respectively, single-threaded). The
+trusted computing base beyond \texttt{mpmath} is a ${\sim}30$-line enclosure
+routine, printed in the repository, plus the NPN enumeration (whose class
+count and orbit-size sum are checked against known values).
+
+\section{Discussion}
+
+The theorem and its proof artifacts are reproducible from the repository:
+\texttt{endpoint\_lemmas\_n4.py} (exact rational checks, standard library
+only, ${<}1$ minute) and \texttt{certify\_n4.py} (interval certification).
+An independent AI system re-derived both endpoint regimes by different
+techniques (a Taylor-remainder argument exploiting the sign of $h^{(4)}$ at
+high noise; certification to $10^{-6}$ plus Fannes--Audenaert continuity at
+low noise), giving two independent proofs of the endpoints.
+
+The four-regime scheme is dimension-generic. For $n=5$ ($616{,}126$ NPN
+classes) the endpoint lemmas carry over verbatim with recomputed margins; the
+middle-range certification is a parallelizable but ${\sim}3000\times$ larger
+computation. The genuinely new difficulty as $n$ grows is only quantitative:
+the dictator's isolation gap shrinks (single flips carry input mass $2^{-n}$),
+so the certified middle range must push closer to the endpoints, where the
+lemmas' margins --- edge-isoperimetric at low noise, spectral at high noise ---
+fortunately \emph{grow} more robust.
+
+\begin{thebibliography}{9}
+\bibitem{CK14} T.~A. Courtade and G.~R. Kumar, ``Which Boolean functions
+maximize mutual information on noisy inputs?'' \emph{IEEE Trans.\ Inf.\
+Theory}, 60(8):4515--4525, 2014.
+\bibitem{Samorodnitsky16} A.~Samorodnitsky, ``On the entropy of a noisy
+function,'' \emph{IEEE Trans.\ Inf.\ Theory}, 62(10):5446--5464, 2016.
+\bibitem{JW26} A.~Javanmard and D.~P. Woodruff, ``Progress on the
+Courtade--Kumar conjecture,'' arXiv:2601.09679, 2026.
+\bibitem{Yu24} L.~Yu, ``Local optimality of dictator functions with
+applications to Courtade--Kumar and Li--M\'edard conjectures,''
+arXiv:2410.10147, 2024.
+\bibitem{BO20} L.~Barnes and A.~\"Ozg\"ur, ``The Courtade--Kumar most
+informative Boolean function conjecture and a symmetrized Li--M\'edard
+conjecture are equivalent,'' \emph{Proc.\ IEEE ISIT}, 2020.
+\bibitem{Kesal15} M.~Kesal, arXiv:1511.01828 (withdrawn).
+\bibitem{Sarbu16} S.~S\^arbu, arXiv:1604.05113 (withdrawn).
+\bibitem{Harper64} L.~H. Harper, ``Optimal assignments of numbers to
+vertices,'' \emph{J.\ SIAM}, 12(1):131--135, 1964.
+\end{thebibliography}
+
+\end{document}
