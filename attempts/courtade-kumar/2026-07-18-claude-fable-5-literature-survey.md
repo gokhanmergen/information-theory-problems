@@ -14,8 +14,9 @@ for the two computational attempts in this directory, and updating the problem f
 "What is known" section. Headlines: the conjecture **remains open** (confirmed by
 papers through January 2026); two claimed proofs on arXiv were **withdrawn** with
 acknowledged flaws; the *local* optimality of dictators — the analytic counterpart of
-the single-flip runner-up structure found numerically in the `n4`/`n5` attempts — was
-**proven for a large noise range by Lei Yu (2024)**; and two recent frameworks
+the single-flip runner-up structure found numerically in the `n4`/`n5` attempts — is
+**a general theorem of Lei Yu (2024)**; Yu also proves the global balanced
+Courtade–Kumar conjecture for a large correlation range. Two recent frameworks
 (a differential-equation reformulation, and coordinate-wise MI bounds) mark the
 current frontier.
 
@@ -37,14 +38,15 @@ pages (withdrawal notices, version histories). Limitation stated below.
 2. **[proved]** (published result, not verified line-by-line here) Yu,
    *Local Optimality of Dictator Functions with Applications to Courtade–Kumar and
    Li–Médard Conjectures* (arXiv:2410.10147, 2024, rev. 2026), proves dictators are
-   locally optimal among balanced Boolean functions for the relevant
-   $\Phi$-stability functionals, confirming the local version of the Courtade–Kumar
-   conjecture for correlation $\rho = 1-2\alpha \in [0, 0.914]$ (partly
-   computer-assisted). **Consequence for this attempt log:** the single-flip
-   runner-up structure observed exhaustively at $n = 4, 5$ is the finite-$n$,
-   global-enumeration counterpart of a known local theorem; the *observation* is
-   qualitatively anticipated, while the exact runner-up identification and gap
-   values appear to be additional detail.
+   locally optimal among balanced Boolean functions for $\Phi$-stability. This local
+   theorem is distinct from the paper's computer-assisted global result: for
+   symmetric $q$-stability at $q=1$, dictators maximize over all balanced Boolean
+   functions when $\rho=1-2\alpha\in[0,0.914]$, confirming the balanced
+   Courtade–Kumar conjecture in that range. **Consequence for this attempt log:**
+   the single-flip runner-up structure observed exhaustively at $n = 4, 5$ is the
+   finite-$n$, global-enumeration counterpart of a known local theorem; the
+   *observation* is qualitatively anticipated, while the exact runner-up
+   identification and gap values appear to be additional detail.
 
 3. **[proved]** (published results) Current frontier, with sources:
    - Barnes–Özgür (arXiv:2004.01277, ISIT 2020): the conjecture is *equivalent* to a

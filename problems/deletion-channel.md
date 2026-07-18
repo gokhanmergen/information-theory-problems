@@ -30,15 +30,16 @@ computable one — or an exact answer at any interior $d$ would count as a solut
 
 ## What is known
 
-- $C(d) \geq (1-d)/9$ for all $d$, via a constructive random-codebook argument
-  (Drinea–Mitzenmacher 2006); in particular capacity is bounded away from zero for all
-  $d < 1$, which is already non-obvious.
+- Rubinstein–Con (2023), refining the run-length-distribution construction of
+  Mitzenmacher–Drinea and Kirsch–Drinea, proved
+  $C(d)>0.1221(1-d)$. In particular capacity is positive for every $d<1$.
 - As $d \to 0$: $C(d) = 1 + d\log d - O(d)$ with explicit expansion terms
   (Kanoria–Montanari 2013); the channel behaves like an erasure channel to first order
   but the correction terms differ.
-- As $d \to 1$: capacity is $\Theta(1-d)$, with the best constants pinned into a
-  narrow interval (Mitzenmacher–Drinea lower bound $(1-d)/9$; upper bounds via
-  Dalai and Cheraghchi improving on Fertonani–Duman).
+- As $d \to 1$: capacity is $\Theta(1-d)$. Current explicit bounds include
+  $C(d)>0.1221(1-d)$ and, for every $d\geq0.68$,
+  $C(d)<0.3745(1-d)$ (Rubinstein–Con 2023). A substantial constant-factor gap
+  remains.
 - Numerical upper bounds for intermediate $d$ via convex programming and channel
   comparison (Fertonani–Duman 2010; Cheraghchi 2019, who also gave the elegant bound
   family via "mean-limited" channels).
@@ -58,3 +59,5 @@ computable one — or an exact answer at any interior $d$ would count as a solut
 - Y. Kanoria and A. Montanari, "Optimal coding for the binary deletion channel with
   small deletion probability," IEEE Trans. Inf. Theory, 2013.
 - M. Cheraghchi, "Capacity upper bounds for deletion-type channels," J. ACM, 2019.
+- I. Rubinstein and R. Con, "Improved upper and lower bounds on the capacity of the
+  binary deletion channel," arXiv:2305.07156, 2023.

@@ -39,12 +39,14 @@ state and explore it fits on a page, and numerical exploration is genuinely usef
   (Ordentlich–Shayevitz–Weinstein 2016; Javanmard–Woodruff 2026, who also prove the
   coordinate-wise bound $\sum_i I(f(X);Y_i) \leq 1-h(\alpha)$ for *all* Boolean
   functions).
-- **Local optimality of dictators is a theorem**: Yu (2024) proved dictators locally
-  optimal among balanced functions, confirming the local version of the conjecture
-  for $\rho = 1-2\alpha \in [0, 0.914]$ (partly computer-assisted). Globally,
-  dictators are conjectured to be the unique maximizers up to symmetry; exhaustive
-  computation at $n \leq 5$ finds the runner-ups are exactly their single-input
-  perturbations (see attempt log).
+- Yu (2024, revised 2026) proved a general **local optimality theorem** for dictators
+  among balanced Boolean functions for $\Phi$-stability. Separately, by combining
+  that theorem with an earlier bound and computer-assisted estimates, Yu proved the
+  **global balanced Courtade–Kumar conjecture** for
+  $\rho=1-2\alpha\in[0,0.914]$. The original conjecture over arbitrary, possibly
+  unbalanced, Boolean functions remains open at general noise. Repository
+  computations at $n\leq5$ give numerical evidence about the single-input
+  perturbations of dictators (see attempt log).
 - The conjecture is **equivalent** to a symmetrized Li–Médard conjecture
   (Barnes–Özgür 2020). A differential-equation reformulation reduces the balanced
   case to a finite-dimensional functional inequality, established modulo four

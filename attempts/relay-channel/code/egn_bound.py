@@ -8,9 +8,10 @@ Bound: C <= max over p(x), p(v|x,z), |V| <= |X||Z|+1 = 5, of
 Compress-forward is the same expression restricted to p(v|z) — Remark 9 of the
 paper — so the search space strictly contains CF's.
 
-CAUTION: the bound is a MAX over auxiliaries, so any numerically found optimum
-is a LOWER ESTIMATE of the bound's true value. Confidence in global optimality
-comes from many random restarts (reported). Requires scipy (Nelder-Mead).
+CAUTION: the bound is a MAX over auxiliaries, so any numerically found candidate
+is a LOWER ESTIMATE of the bound's true value and is not itself a capacity upper
+bound. Random-restart concentration is reported as optimizer diagnostics, not as a
+global-optimality certificate. Requires scipy (Nelder-Mead).
 
 Usage: python3 egn_bound.py <d1> <d2> <R0> [restarts]
 """
@@ -88,6 +89,6 @@ if __name__ == "__main__":
     restarts = int(sys.argv[4]) if len(sys.argv) > 4 else 200
     val, theta, near = bound_estimate(d1, d2, r0, restarts)
     print(f"d1={d1} d2={d2} R0={r0} restarts={restarts}: "
-          f"EGN bound estimate (lower estimate of the bound) = {val:.6f}  "
+          f"EGN objective candidate (lower estimate of the bound) = {val:.6f}  "
           f"[P(X=1)={1/(1+math.exp(-theta[0])):.4f}, "
           f"{near}/{restarts} restarts within 1e-4 of best]")
