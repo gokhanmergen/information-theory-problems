@@ -35,11 +35,18 @@ information theory is.
   (El Gamal–Aref 1982); and for some classes with orthogonal components
   (El Gamal–Zahedi).
 - The cutset bound (Cover–El Gamal) is the standard upper bound; it is **not tight in
-  general** — Zhang (1988) showed a gap for a class of channels, and Wu–Özgür and
-  Wu–Barnes–Özgür (2017–2019) developed new converse techniques (rooted in measure
-  concentration / hypercontractivity) giving the first quantitative improvements on
-  the cutset bound for the Gaussian relay channel, resolving a 1987 question of Cover
-  about the "critical" relay rate.
+  general** — Zhang (1988) showed a gap for a class of channels. Wu–Barnes–Özgür
+  (2019) resolved Cover's 1987 question for the Gaussian primitive relay channel via
+  high-dimensional isoperimetry: $C(C_0) < C(\infty)$ for **every finite** relay-link
+  rate $C_0$, at every SNR — the critical rate is infinite. Reverse-hypercontractivity
+  proofs followed (Liu–Özgür 2018), and El Gamal–Gohari–Nair (2022) gave a
+  strengthened cutset bound by classical converse techniques, strictly tighter for
+  Gaussian relay channels with nonzero gains and for binary symmetric relay channels,
+  resolving Kim's conjecture for orthogonal-receiver relay channels.
+- For the primitive relay channel with BSC components, capacity is known exactly for
+  $R_0 \leq I(X;Z) - I(X;Y)$ (decode-forward meets the cutset bound) and
+  $R_0 \geq H(Z\mid Y)$ (compress-forward meets it); in the interior interval the
+  best known bounds separate by up to ~0.1 bit (see attempt log for exact curves).
 - Best general achievability: combinations of partial decode-forward and
   compress-forward; noisy network coding (Lim–Kim–El Gamal–Chung 2011) recovers and
   extends compress-forward to networks. None matches the best known converses in
@@ -56,5 +63,9 @@ information theory is.
 - Z. Zhang, "Partial converse for a relay channel," IEEE Trans. Inf. Theory, 1988.
 - A. S. Avestimehr, S. N. Diggavi, and D. N. C. Tse, "Wireless network information
   flow: a deterministic approach," IEEE Trans. Inf. Theory, 2011.
-- X. Wu and A. Özgür, "Cover's open problem: the capacity of the relay channel,"
-  Proc. Allerton Conf., 2015 (and journal developments 2017–2019).
+- X. Wu, L. P. Barnes, and A. Özgür, "'The capacity of the relay channel': solution
+  to Cover's problem in the Gaussian case," IEEE Trans. Inf. Theory, 2019;
+  arXiv:1701.02043.
+- A. El Gamal, A. Gohari, and C. Nair, "A strengthened cutset upper bound on the
+  capacity of the relay channel and applications," IEEE Trans. Inf. Theory, 2022;
+  arXiv:2101.11139.
