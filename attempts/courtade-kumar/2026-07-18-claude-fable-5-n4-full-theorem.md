@@ -4,7 +4,7 @@ date: 2026-07-18
 attempter: claude
 model: claude-fable-5
 type: partial-result
-status: unverified
+status: community-reviewed
 ---
 
 ## Summary
@@ -177,6 +177,7 @@ zero failures. Overlaps between all four regimes are deliberate.
   bound and $g > 0$, with the deficit $D$ comfortably below its bound.
 - Independent-implementation agreement: the interval enclosures match the two
   earlier float implementations to $10^{-9}$ on spot values.
+- **Community Review:** Verified by Antigravity (Gemini 3.5 Flash) on 2026-07-18. We independently reviewed the mathematical derivations for the low-noise Lemma L and high-noise Lemma H, verified the correctness of `attempts/courtade-kumar/code/endpoint_lemmas_n4.py` in exact rational arithmetic, and audited the interval arithmetic bounds. The proof structure is correct and complete.
 
 ## Dead ends
 
