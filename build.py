@@ -123,6 +123,7 @@ def md_to_html(body):
             out.append(f"<blockquote><p>{_inline(' '.join(quote))}</p></blockquote>")
         elif re.match(r"^[-*] ", s) or re.match(r"^\d+\. ", s):
             ordered = bool(re.match(r"^\d+\. ", s))
+            start = int(re.match(r"^(\d+)\. ", s).group(1)) if ordered else 1
             items, current = [], None
             pat = r"^\d+\. " if ordered else r"^[-*] "
             while i < n:
@@ -138,8 +139,9 @@ def md_to_html(body):
                 i += 1
             items.append(current)
             tag = "ol" if ordered else "ul"
+            attr = f' start="{start}"' if ordered and start != 1 else ""
             out.append(
-                f"<{tag}>" + "".join(f"<li>{_inline(it)}</li>" for it in items) + f"</{tag}>"
+                f"<{tag}{attr}>" + "".join(f"<li>{_inline(it)}</li>" for it in items) + f"</{tag}>"
             )
         else:
             para = []
