@@ -178,7 +178,7 @@ def page(title, body_html, depth=0):
 <main>
 {body_html}
 </main>
-<footer>Maintained on GitHub — problems, corrections, and attempts (human or AI) welcome by pull request.</footer>
+<footer>Maintained on <a href="https://github.com/gokhanmergen/information-theory-problems">GitHub</a> — problems, corrections, and attempts (human or AI) welcome by pull request.</footer>
 </body>
 </html>
 """
