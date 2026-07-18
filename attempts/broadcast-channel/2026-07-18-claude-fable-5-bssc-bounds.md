@@ -15,12 +15,11 @@ Marton's inner bound sum rate is reproduced to $10^{-7}$ against the exactly kno
 value $0.3616428$ bits, and the Nair–El Gamal (UV) outer bound sum rate evaluates to
 $0.3725562$ bits, stable across auxiliary cardinalities. The open question "is
 Marton's inner bound tight?" is, on this channel, a concrete $0.0109$-bit window.
-A side quantification: Marton's common auxiliary $W$ is worth exactly the difference
-between pure time division ($\log_2 5 - 2 \approx 0.3219$) and $0.3616$ — without
-$W$, the private-message expression cannot exceed the single-user Z-channel capacity
-here. The literature check also surfaced that the UV bound is **no longer the best
-known outer bound**: Gohari–Nair (2022) improved it via the auxiliary-receiver
-approach; the problem file is updated accordingly.
+A side computation found a $|W|=1$ candidate equal to the single-user Z-channel
+capacity $\log_2 5-2\approx0.3219$; global optimality of that nonconvex numerical
+search was not certified. The literature check also surfaced that the UV bound is
+**no longer the best known outer bound**: Gohari–Nair (2022) improved it via the
+auxiliary-receiver approach; the problem file is updated accordingly.
 
 ## Approach
 
@@ -48,11 +47,12 @@ numerical optima are certified lower estimates; see the per-claim labels.
    *every* binary-input broadcast channel. Our optimizer reproduces $0.3616429$ at
    $|W|=2$ and $|W|=3$. This certifies sum-capacity $\geq 0.3616428$.
 
-2. **[proved]** (by the $|W|=1$ computation) Restricted to no common auxiliary, the
-   Marton expression $I(U;Y_1)+I(V;Y_2)-I(U;V)$ maxes out at
-   $\log_2 5 - 2 = 0.3219281$ bits on the BSSC — exactly the single-user Z-channel
-   capacity. The entire $0.0397$-bit advantage of Marton's bound over naive time
-   division comes from the partially-decodable time-sharing indicator $W$.
+2. **[heuristic]** Restricted to no common auxiliary, the nonconvex $|W|=1$
+   optimization found $I(U;Y_1)+I(V;Y_2)-I(U;V)=\log_2 5-2=0.3219281$ bits, equal
+   to the single-user Z-channel capacity. This suggests that the $0.0397$-bit
+   improvement to Marton's published optimum is supplied by the
+   partially-decodable time-sharing indicator $W$, but the computation alone does
+   not prove a global upper bound on the $|W|=1$ expression.
 
 3. **[heuristic]** (global optimality of the found optimum; restart-stable at two
    cardinalities) The UV outer bound sum rate for the BSSC is $0.3725562$ bits.
@@ -80,7 +80,8 @@ at the same value), UV $|U|=|V|=2$: 13/60, $|U|=|V|=3$: 10/60.
 - Claim 1's target value is exact in the literature (0.2506717 nats = 0.3616428
   bits, e.g. Dou et al., Entropy 2024, who compute it by Blahut–Arimoto-type
   algorithms); our independent optimizer matches to $10^{-7}$.
-- Claim 2's value matches the closed form $\log_2 5 - 2$ to $10^{-7}$.
+- Claim 2's best candidate matches the closed form $\log_2 5 - 2$ to $10^{-7}$;
+  this agreement is a numerical check, not a global-optimality certificate.
 - Ordering sanity: $0.3219 < 0.3616 < 0.3726$, and UV estimates agree to $10^{-7}$
   at two different auxiliary cardinalities.
 
@@ -92,6 +93,8 @@ at the same value), UV $|U|=|V|=2$: 13/60, $|U|=|V|=3$: 10/60.
 - Nelder–Mead struggled at $|W|=2$ (1/60 concentration); an EM/Blahut–Arimoto-style
   alternating maximization (as in Dou et al.) is the right tool for firming
   Claim 3's `[heuristic]` toward `[proved]`.
+- Claim 2 likewise needs an analytic upper bound or certified global optimization
+  before its equality can be promoted from `[heuristic]` to `[proved]`.
 
 ## References
 

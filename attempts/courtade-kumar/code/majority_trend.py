@@ -36,10 +36,16 @@ def mi_symmetric(weight_set, n, a):
 
 
 if __name__ == "__main__":
+    selected = {3, 5, 9, 15, 25, 41, 61}
     for a in (0.05, 0.10, 0.20, 0.30, 0.40):
         bound = 1 - (-a * math.log2(a) - (1 - a) * math.log2(1 - a))
-        row = []
-        for n in (3, 5, 9, 15, 25, 41, 61):
-            maj = mi_symmetric(set(range(n // 2 + 1, n + 1)), n, a)
-            row.append(f"n={n}:{maj:.6f}")
-        print(f"alpha={a:.2f} bound={bound:.6f}  " + "  ".join(row))
+        values = []
+        for n in range(3, 62, 2):
+            value = mi_symmetric(set(range(n // 2 + 1, n + 1)), n, a)
+            values.append((n, value))
+        decreases = [left - right for (_, left), (_, right)
+                     in zip(values, values[1:])]
+        row = [f"n={n}:{value:.6f}" for n, value in values if n in selected]
+        print(f"alpha={a:.2f} bound={bound:.6f} "
+              f"all_adjacent_decrease={all(gap > 0 for gap in decreases)} "
+              f"min_decrease={min(decreases):.9f}  " + "  ".join(row))

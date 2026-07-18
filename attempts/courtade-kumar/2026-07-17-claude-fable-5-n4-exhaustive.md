@@ -10,7 +10,7 @@ status: unverified
 ## Summary
 
 Three results. (i) A one-line folklore lemma settling the conjecture trivially for all
-sufficiently biased functions. (ii) An **exhaustive verification at $n = 4$**: for ten
+sufficiently biased functions. (ii) An **exhaustive numerical verification at $n = 4$**: for ten
 noise levels $\alpha \in \{0.01, 0.05, 0.10, \dots, 0.45\}$, the maximum of
 $I(f(X);Y)$ over **all $2^{16} = 65{,}536$ Boolean functions** equals $1 - h(\alpha)$
 exactly, attained by *precisely* the 8 dictators and anti-dictators — and the
@@ -27,7 +27,8 @@ Brute force where brute force is honest. At $n=4$ the full function space is
 enumerable: a Gray-code sweep updates the joint law $P(f(X)=1, Y=y)$ in $O(2^n)$ per
 function (each successive function differs on one input), so all $65{,}536$ functions
 cost ~2 seconds per $\alpha$ in pure Python. For majority at large $n$, symmetry
-reduces $Y$ to its Hamming weight, giving an $O(n^3)$ exact computation.
+reduces $Y$ to its Hamming weight, giving an $O(n^3)$ deterministic floating-point
+evaluation.
 
 ## Claims
 
@@ -44,13 +45,14 @@ reduces $Y$ to its Hamming weight, giving an $O(n^3)$ exact computation.
    this proves the $n=4$ conjecture *on this grid of $\alpha$*, not for all
    $\alpha \in (0, 1/2)$ (see Claim 3).
 
-3. **[sketch]** The $n=4$ case for *all* $\alpha \in (0,1/2)$ should follow from
-   Claim 2's data: each of the finitely many functions has $I_f(\alpha)$ real-analytic
-   in $\alpha$, so $\{ \alpha : I_f(\alpha) = 1-h(\alpha) \}$ is finite for every $f$
-   not identically tied with the dictator, and the observed gaps (second-best is
-   $\geq 0.001$ below at every grid point, peaking at $0.050$ near $\alpha = 0.1$)
-   leave room for a routine interval-arithmetic/Lipschitz argument on a fine grid.
-   Not carried out here.
+3. **[heuristic]** The grid data are consistent with the $n=4$ statement for every
+   $\alpha \in (0,1/2)$, but do not prove it. Although each of the finitely many
+   functions has $I_f(\alpha)$ real-analytic on the open interval, a nonzero
+   real-analytic difference can have infinitely many zeros accumulating at an
+   endpoint. Moreover, the observed gap approaches zero as $\alpha\to1/2$.
+   Extending Claim 2 therefore requires a certified interval calculation or
+   symbolic inequalities on a compact interior interval together with explicit
+   endpoint estimates. None was carried out here.
 
 4. **[proved]** (by exhaustive computation) At $n=4$, at every grid $\alpha$, the
    second-highest MI value is attained by exactly the $8 \times 16 = 128$ functions at
@@ -63,8 +65,10 @@ reduces $Y$ to its Hamming weight, giving an $O(n^3)$ exact computation.
    Dictators are strictly isolated maxima, most strongly at moderate noise
    $\alpha \approx 0.1$ — not near either endpoint.
 
-5. **[proved]** (by exact computation, odd $n \leq 61$) $I(\mathrm{maj}_n(X);Y)$ is
-   decreasing in $n$ at every tested $\alpha$; e.g. at $\alpha = 0.1$ (bound
+5. **[heuristic]** (by deterministic floating-point evaluation, every odd
+   $3\leq n\leq61$) $I(\mathrm{maj}_n(X);Y)$ decreases with $n$ at each of the five
+   tested values $\alpha\in\{0.05,0.10,0.20,0.30,0.40\}$. For example, at
+   $\alpha = 0.1$ (bound
    $0.5310$): $n{=}3$: $0.4572$, $n{=}9$: $0.4081$, $n{=}25$: $0.3924$,
    $n{=}61$: $0.3877$.
 
@@ -86,8 +90,9 @@ Code in `attempts/courtade-kumar/code/`:
   maximizer-set check against the dictator set, runner-up value, exact runner-up
   count, and set-equality check against the single-flip class. Runtime ≈ 2 s total,
   stdlib only.
-- `majority_trend.py` — exact $I(\mathrm{maj}_n)$ via the weight-enumerator
-  reduction ($O(n^3)$), odd $n \leq 61$, five noise levels.
+- `majority_trend.py` — deterministic floating-point evaluation of
+  $I(\mathrm{maj}_n)$ via the weight-enumerator reduction ($O(n^3)$), every odd
+  $3\leq n\leq61$, at five noise levels; checks every adjacent pair.
 
 The Gaussian-limit integral in Claim 6 was evaluated by direct quadrature
 (trapezoid, $2 \times 10^5$ points on $[-10,10]$; script in the PR description's

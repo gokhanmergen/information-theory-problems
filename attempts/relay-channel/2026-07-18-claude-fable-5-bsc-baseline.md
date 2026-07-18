@@ -12,7 +12,7 @@ status: unverified
 Two contributions. (i) A literature check pinning down the exact resolution of
 Cover's 1987 question — Wu–Barnes–Özgür proved the critical relay rate is
 **infinite** in the Gaussian case — and the current best beyond-cutset converses;
-the problem file is updated accordingly in this commit. (ii) An exact computational
+the problem file is updated accordingly in this commit. (ii) A reproducible numerical
 baseline for the **primitive relay channel with BSC components**: decode-forward,
 compress-forward, and cutset curves as functions of the relay-link rate $R_0$,
 mapping precisely where capacity is known and where the open gap lives (up to
@@ -29,8 +29,9 @@ has a noiseless bit pipe of rate $R_0$ to the destination. Standard bounds
 $= \min\{I(X;Z),\, I(X;Y) + R_0\}$; compress-forward
 $= \max I(X;Y,\hat{Z})$ over test channels with $I(Z;\hat{Z}\mid Y) \leq R_0$,
 here restricted to BSC test channels $\hat{Z} = Z \oplus \mathrm{Bern}(q)$
-(a restriction — see Dead ends). All quantities by exact 16-atom enumeration;
-$q$ on a grid of 2001 points.
+(a restriction — see Dead ends). For each fixed $q$, the information quantities are
+evaluated by deterministic floating-point summation over 16 atoms; the maximization
+uses a grid of 2001 values of $q$.
 
 ## Claims
 
@@ -45,13 +46,18 @@ $q$ on a grid of 2001 points.
    Gaussian relay channels with nonzero gains and for binary symmetric relay
    channels, resolving a conjecture of Kim on orthogonal-receiver relay channels.
 
-2. **[proved]** (by exact computation, endpoints verified analytically) For
+2. **[proved]** For
    $(\delta_1, \delta_2) = (0.1, 0.2)$ (relay hears better than destination):
    capacity is **known exactly** in two regimes — $R_0 \leq I(X;Z) - I(X;Y)
    \approx 0.2529$, where decode-forward meets the cutset bound
    ($C = I(X;Y) + R_0$), and $R_0 \geq H(Z\mid Y) \approx 0.8267$, where
-   compress-forward meets it ($C = I(X;Y,Z)$). In between the bounds separate;
-   the DF/CF-vs-cutset gap reaches **0.1048 bits** at $R_0 = 0.4$:
+   compress-forward with $\hat Z=Z$ meets it ($C = I(X;Y,Z)$). These endpoint
+   statements follow analytically from the displayed DF, CF, and cutset formulas.
+
+3. **[heuristic]** For the same parameter pair, deterministic floating-point
+   evaluation over the 2001-point BSC-test-channel grid gives the following interior
+   values. Within this restricted numerical search, the DF/CF-vs-cutset gap reaches
+   **0.1048 bits** at $R_0=0.4$:
 
    | $R_0$ | 0.1 | 0.25 | 0.3 | 0.4 | 0.5 | 0.7 | 0.8267 |
    |---|---|---|---|---|---|---|---|
@@ -59,12 +65,14 @@ $q$ on a grid of 2001 points.
    | cutset | 0.3781 | 0.5281 | 0.5781 | 0.6358 | 0.6358 | 0.6358 | 0.6358 |
    | gap | 0 | 0 | 0.0471 | 0.1048 | 0.1048 | 0.0346 | ≈0 |
 
-3. **[proved]** (by exact computation) For $(\delta_1, \delta_2) = (0.25, 0.1)$
-   (relay hears worse): decode-forward is useless ($I(X;Z) < I(X;Y)$),
-   compress-forward does all the work, and the gap peaks at small relay rates
-   (0.0595 bits at $R_0 = 0.1$), again closing exactly at $R_0 = H(Z\mid Y)$.
+4. **[heuristic]** For $(\delta_1,\delta_2)=(0.25,0.1)$ (relay hears worse), the
+   2001-point restricted computation finds that decode-forward does not improve the
+   direct-transmission rate and compress-forward supplies the evaluated improvement;
+   the computed gap is 0.0595 bits at $R_0=0.1$. Analytically, choosing
+   $\hat Z=Z$ proves that compress-forward meets cutset once
+   $R_0\geq H(Z\mid Y)$.
 
-4. **[heuristic]** The two computed regimes bracket the qualitative landscape of
+5. **[heuristic]** The two computed regimes bracket the qualitative landscape of
    the open problem: the unknown region is always an interior interval of relay
    rates, and the known beyond-cutset converses (Claim 1) bite precisely there.
    Evaluating the El Gamal–Gohari–Nair strengthened bound on this exact BSC
@@ -73,8 +81,9 @@ $q$ on a grid of 2001 points.
 
 ## Details
 
-Code: `attempts/relay-channel/code/primitive_bsc.py` (stdlib only; exact 16-atom
-joint enumeration; run `python3 primitive_bsc.py <d1> <d2>`). Full tables for both
+Code: `attempts/relay-channel/code/primitive_bsc.py` (stdlib only; deterministic
+floating-point 16-atom joint enumeration; run
+`python3 primitive_bsc.py <d1> <d2>`). Full tables for both
 parameter pairs are reproduced by the two invocations in the file header.
 
 ## Verification
