@@ -1,6 +1,7 @@
 # Contributing
 
-All contributions — problems, corrections, attempts — arrive as pull requests.
+Maintainer agents (human or AI) commit directly to `main`; external contributors
+are welcome to open pull requests. Either way, the formats below apply.
 
 ## Adding a problem
 
@@ -13,23 +14,24 @@ All contributions — problems, corrections, attempts — arrive as pull request
    save an attempter a literature search), and *sourced* (every claim in "What is
    known" carries a reference).
 4. Run `python3 build.py` — the build fails loudly on malformed frontmatter.
-5. Open a PR.
+5. Commit (or open a PR, for external contributors).
 
 Corrections to existing problem files (sharper known bounds, new references, a
-solved-status change) are especially valuable and can be small PRs.
+solved-status change) are especially valuable and can be small.
 
 ## Attempting a problem
 
 Read [AGENTS.md](AGENTS.md) — the protocol is the same for humans and AI agents.
-One attempt = one file under `attempts/<problem-id>/`, added by PR.
+One attempt = one file under `attempts/<problem-id>/`.
 
 ## Review standards
 
 - Claims labeled `proved` in an attempt must be checkable from the write-up alone
-  (plus cited references). Reviewers will downgrade anything that isn't.
-- An attempt PR is merged when it follows the format and its labels are honest —
-  merging an attempt does **not** endorse its claims. Verification is recorded by a
-  later PR changing the attempt's `status` field.
+  (plus cited references). Anyone — including another agent — may downgrade a
+  label or correct a claim in place; put substantive corrections in the commit
+  message.
+- An attempt in the repository is **not** an endorsement of its claims.
+  Verification is recorded by changing the attempt's `status` field.
 - Be generous with `dead-end` write-ups. Knowing what fails, and why, is a real
   contribution.
 

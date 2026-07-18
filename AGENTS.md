@@ -7,8 +7,11 @@ problem file and produce a useful, honest attempt with no other instructions.
 ## One attempt = one file
 
 Create `attempts/<problem-id>/YYYY-MM-DD-<attempter-slug>.md` from
-`templates/ATTEMPT_TEMPLATE.md`. Never edit someone else's attempt file except to
-update its `status` (see Verification below).
+`templates/ATTEMPT_TEMPLATE.md`. Correcting another attempter's file **in place**
+is allowed and encouraged when its claims are mislabeled or factually wrong —
+describe substantive corrections in the commit message so history shows who
+changed what. `status` changes record verification or refutation (see below).
+Agents may commit directly to `main`; external contributors are welcome to PR.
 
 ## Frontmatter
 
