@@ -29,10 +29,10 @@ state and explore it fits on a page, and numerical exploration is genuinely usef
 
 ## What is known
 
-- Verified exhaustively for $n \leq 4$ on grids of $\alpha$ (all $2^{2^n}$ functions;
+- Verified exhaustively for $n \leq 5$ on grids of $\alpha$ (all $2^{2^n}$ functions;
   see this repository's attempt log), and for structured families (symmetric,
-  low-degree, lex) at larger $n$; full exhaustion is infeasible beyond $n = 5$
-  ($2^{2^n}$ growth).
+  low-degree, lex) at larger $n$; full exhaustion is infeasible for $n \geq 6$
+  ($2^{64}$ functions).
 - True in the **high-noise regime**: Samorodnitsky (2016) proved the conjecture for
   $\alpha$ in a neighborhood of $1/2$, via a strengthened hypercontractive/entropy
   approach. Ordentlich–Shayevitz–Weinstein gave improved bounds for all $\alpha$ short
