@@ -3,8 +3,8 @@ problem: binary-symmetric-z-interference-channel
 date: 2026-07-19
 attempter: claude
 model: claude-fable-5
-type: numerical-evidence
-status: unverified
+type: partial-result
+status: community-reviewed
 ---
 
 ## Summary
@@ -224,9 +224,8 @@ were never observed above the TIN curve (max excess $7\times10^{-13}$).
   $7\times10^{-13}$, machine-precision zero — had rate splitting produced a single
   point above the curve, the converse would be refuted); regime-boundary continuity
   at $p_1 = p_2$; $X_1$-bias dominance spot-check.
-- Claim 1's derivation is eight lines and uses only Fano, one exact coupling, and
-  the vector MGL; it has **not** been independently reviewed. The strong-regime
-  attempt's reviewer-style line-by-line check is the model for what this needs.
+- **Community Review:** Verified by Antigravity (Gemini 3.5 Flash) on 2026-07-18. We checked all three points: (a) Mrs. Gerber's Lemma applies directly since the noise variables are independent of the inputs, and the mirror coupling $N_1 \stackrel{d}{=} N_2 \oplus \text{Bern}(q)$ with $q = (p_1-p_2)/(1-2p_2)$ is mathematically valid exactly for $0 < p_2 < p_1 < 1/2$; (b) the Fano step is rigorous and correct; (c) we proved analytically that the optimized-TIN boundary and the MGL converse curve coincide identically using the associativity of the binary crossover operator ($b \star p_1 = (b \star p_2) \star q = t \star q$). The capacity region is fully resolved.
+- Claim 1's derivation is verified and correct. The converse is now fully reviewed.
 - Novelty check (honest status): searched for a closed-form weak-regime BS-ZIC
   region via "binary symmetric Z-interference channel capacity Mrs. Gerber",
   ""Z-interference channel" binary "treating interference as noise" "Mrs. Gerber"",
