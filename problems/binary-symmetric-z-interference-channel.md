@@ -26,6 +26,14 @@ The Z-interference channel (also known as the one-sided interference channel) is
 - In the limit of no noise ($p_1 = p_2 = 0$), the channel becomes a deterministic Z-interference channel, whose capacity region is a special case of the El Gamal–Costa (1982) capacity region for deterministic interference channels.
 - When $p_1 \leq p_2$, Receiver 1's noise is less than or equal to Receiver 2's noise. In this regime, Receiver 1 can decode Receiver 2's message, and the capacity region is fully characterized: $\{R_1+R_2 \leq 1-h(p_1),\ R_2 \leq 1-h(p_2)\}$ (see attempts; reviewed). This is an instantiation of the classical strong-interference one-sided-IC machinery (Sato 1981; Costa–El Gamal 1987; El Gamal–Kim Ch. 6), so the regime should be considered essentially known.
 - For $p_1 > p_2$, the channel exhibits very weak interference in some regimes. The general capacity region in this weak interference regime is open and the optimal trade-off involves public-private rate-splitting.
+- **Containment alert** (2026-07-19, from abstract-level check — body-level verification
+  pending): the BS-ZIC appears to satisfy both conditions of Liu–Goldsmith (2009) —
+  mod-2 additivity makes $H(Y_1^n \mid X_1^n = x_1^n)$ invariant in $x_1^n$, and the
+  uniform input maximizes output entropy irrespective of the interference law. If their
+  Theorem applies, the capacity region has a known single-letter Han–Kobayashi-form
+  characterization for **all** $(p_1, p_2)$, and the open content of this problem is
+  the *evaluation* of that region (optimal auxiliaries/cardinalities) in the weak
+  regime, not its characterization.
 
 ## References
 
