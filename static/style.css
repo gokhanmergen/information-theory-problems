@@ -1,0 +1,101 @@
+:root {
+  --bg: #faf9f6;
+  --fg: #1d1d1f;
+  --muted: #6e6e73;
+  --line: #e3e1db;
+  --card: #ffffff;
+  --accent: #7c4a03;
+  --open-bg: #fdf1dc; --open-fg: #8a5a00;
+  --partial-bg: #e3edf9; --partial-fg: #1c5b9e;
+  --solved-bg: #e2f3e6; --solved-fg: #1e7a37;
+  --tag-bg: #efede8;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #171614; --fg: #e8e6e1; --muted: #98948c; --line: #33312c;
+    --card: #201f1c; --accent: #e0a458;
+    --open-bg: #3a2c10; --open-fg: #e6b566;
+    --partial-bg: #14283d; --partial-fg: #7fb3e8;
+    --solved-bg: #12301a; --solved-fg: #7fce93;
+    --tag-bg: #2a2925;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font: 17px/1.65 Georgia, "Times New Roman", serif;
+}
+header {
+  border-bottom: 1px solid var(--line); padding: 0.8rem 1.2rem;
+  font-family: -apple-system, "Segoe UI", Helvetica, sans-serif; font-size: 0.9rem;
+}
+header a { color: var(--muted); text-decoration: none; letter-spacing: 0.02em; }
+header a:hover { color: var(--fg); }
+main { max-width: 780px; margin: 0 auto; padding: 2rem 1.2rem 4rem; }
+h1 { font-size: 1.9rem; line-height: 1.25; margin: 0 0 0.5rem; font-weight: normal; }
+h2 { font-size: 1.25rem; margin: 2rem 0 0.6rem; font-weight: normal;
+     border-bottom: 1px solid var(--line); padding-bottom: 0.25rem; }
+a { color: var(--accent); }
+p.lede { font-size: 1.05rem; color: var(--muted); margin-bottom: 2rem; }
+p.provenance { color: var(--muted); font-style: italic; margin-top: 0; }
+.muted { color: var(--muted); }
+
+.card {
+  display: block; background: var(--card); border: 1px solid var(--line);
+  border-radius: 10px; padding: 1rem 1.2rem; margin: 0.9rem 0;
+  text-decoration: none; color: inherit; transition: border-color 0.15s;
+}
+.card:hover { border-color: var(--accent); }
+.card h2 { font-size: 1.15rem; margin: 0; border: none; padding: 0; }
+.card-top { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+.card-meta {
+  color: var(--muted); font-size: 0.82rem; margin-top: 0.3rem;
+  font-family: -apple-system, "Segoe UI", Helvetica, sans-serif;
+}
+
+.badge {
+  flex-shrink: 0; font-family: -apple-system, "Segoe UI", Helvetica, sans-serif;
+  font-size: 0.72rem; padding: 0.15rem 0.55rem; border-radius: 999px;
+  white-space: nowrap; letter-spacing: 0.02em;
+}
+.badge-open { background: var(--open-bg); color: var(--open-fg); }
+.badge-partially-solved { background: var(--partial-bg); color: var(--partial-fg); }
+.badge-solved { background: var(--solved-bg); color: var(--solved-fg); }
+
+.tags { margin-top: 0.5rem; }
+.tag {
+  display: inline-block; background: var(--tag-bg); color: var(--muted);
+  font-family: -apple-system, "Segoe UI", Helvetica, sans-serif;
+  font-size: 0.72rem; padding: 0.1rem 0.5rem; border-radius: 4px; margin-right: 0.35rem;
+}
+.tag-status { border: 1px solid var(--line); background: transparent; }
+
+blockquote { border-left: 3px solid var(--line); margin: 1rem 0; padding: 0.1rem 1rem; color: var(--muted); }
+pre {
+  background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+  padding: 0.9rem 1rem; overflow-x: auto; font-size: 0.82rem; line-height: 1.5;
+}
+code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.88em; }
+p code, li code { background: var(--tag-bg); padding: 0.05em 0.3em; border-radius: 4px; }
+
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; margin: 1rem 0; font-size: 0.92rem; }
+th, td { border: 1px solid var(--line); padding: 0.35rem 0.7rem; text-align: left; }
+th { font-family: -apple-system, "Segoe UI", Helvetica, sans-serif; font-size: 0.8rem; }
+
+details.attempt {
+  background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+  margin: 0.8rem 0; padding: 0;
+}
+details.attempt summary {
+  cursor: pointer; padding: 0.7rem 1rem;
+  font-family: -apple-system, "Segoe UI", Helvetica, sans-serif; font-size: 0.85rem;
+}
+.att-who { font-weight: 600; }
+.attempt-body { padding: 0 1.2rem 0.8rem; border-top: 1px solid var(--line); }
+
+footer {
+  border-top: 1px solid var(--line); color: var(--muted); text-align: center;
+  font-family: -apple-system, "Segoe UI", Helvetica, sans-serif; font-size: 0.78rem;
+  padding: 1.2rem; margin-top: 2rem;
+}
