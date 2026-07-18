@@ -53,8 +53,9 @@ information theory is.
   not certify a tighter capacity upper bound. For the symmetric benchmark
   $\delta_1=\delta_2=0.1$, $R_0=0.2$, a later branch-and-bound evaluation of the
   specialized EGN theorem does certify
-  $0.606432<C<0.660488$, improving the cutset upper bound $0.731004$ (see attempt
-  log).
+  $0.606432<C<0.649557$, improving the cutset upper bound $0.731004$. A
+  fixed-input-bias concavity lemma reduces this certificate to a one-dimensional
+  interval calculation (see attempt log).
 - Best general achievability: combinations of partial decode-forward and
   compress-forward; noisy network coding (Lim–Kim–El Gamal–Chung 2011) recovers and
   extends compress-forward to networks. None matches the best known converses in

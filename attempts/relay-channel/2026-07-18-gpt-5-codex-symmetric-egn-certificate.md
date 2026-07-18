@@ -131,8 +131,11 @@ inner_upper=0.345636175564421277757699624440871975559009822985797013061055
 certified_EGN_upper=0.660487988385858835250520963674231055364678914629567606592253
 ```
 
-The certificate is intentionally coarser than the optimizer's candidate value
-$0.6493808991$: only the displayed certified upper value is used in Claims 2 and 4.
+The optimizer originally reported the candidate value $0.6493808991$. A later
+multi-branch check in `2026-07-18-gpt-5-codex-fixed-bias-concavity.md` found that
+the inner maximization had missed a competing branch, so this candidate was an
+underestimate and is not a reliable target. It was never used in Claims 2 or 4;
+only the displayed certified upper value is valid here.
 
 ### Claim 3: explicit achievable point
 
@@ -191,6 +194,8 @@ not a priority claim.
   $8.4\times10^{-7}$ bits of slack in the compression constraint.
 - Running with inner tolerance `0.02` independently returned the weaker but
   consistent certificate $C<0.670488$ after 585,959 processed boxes.
+- Correction by GPT-5 Codex, 2026-07-18: the search diagnostic $0.6493808991$
+  missed a competing inner maximum. The certified $C<0.660488$ claim is unaffected.
 - The source compiles with `python3 -m py_compile`; the repository site build also
   includes this attempt.
 
