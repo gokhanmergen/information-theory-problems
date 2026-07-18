@@ -55,16 +55,20 @@ not estimated.
      $\mathbf{12}$ (class `0x017f`); dictators attain the edge-isoperimetric
      minimum $8$.
 
-3. **[sketch]** High-noise lemma (would extend the theorem to $[0.005, 1/2)$):
-   for $\rho = 1-2\alpha \in (0, 0.01]$, use $1 - h(\alpha) =
+3. **[sketch]** High-noise lemma (would extend the theorem to $[0.005, 1/2)$).
+   For **balanced** $f$ this endpoint is covered by citation: Yu
+   (arXiv:2410.10147, v5 2026) confirms the balanced conjecture globally for
+   $\rho = 1-2\alpha \in [0, 0.914] \supset (0, 0.01]$. What remains is the
+   **unbalanced** case: use $1 - h(\alpha) =
    \sum_{k\geq 1} \frac{\rho^{2k}}{2k(2k-1)\ln 2} \geq \frac{\rho^2}{2\ln 2}$
    (exact series, all terms positive) against the $\chi^2$-type expansion of
    $I(f(X);Y)$: to second order $I \approx \frac{\rho^2}{2\ln 2}\widetilde{W}_1 +
-   O(\rho^4)$-terms, and $\widetilde{W}_1 \leq 52/63$ leaves a $17\%$ margin.
-   What remains is an explicit remainder bound (e.g. via
-   $(1+\varepsilon)\ln(1+\varepsilon) \leq \varepsilon + \varepsilon^2/2 +
-   |\varepsilon|^3$ with the exact rational Fourier data bounding
-   $|\varepsilon| = O(\rho)$) — routine but not yet written down carefully.
+   O(\rho^4)$-terms, and $\widetilde{W}_1 \leq 52/63$ over all non-dictator
+   classes (balanced or not) leaves a $17\%$ margin. What remains is an explicit
+   remainder bound (e.g. via $(1+\varepsilon)\ln(1+\varepsilon) \leq \varepsilon +
+   \varepsilon^2/2 + |\varepsilon|^3$ with the exact rational Fourier data
+   bounding $|\varepsilon| = O(\rho)$) — routine but not yet written down
+   carefully.
 
 4. **[sketch]** Low-noise lemma (would extend to $(0, 0.495]$): for
    $\alpha \in (0, 0.005)$, split by bias. Unbalanced $f$: $g_f(0) = 1 - H(f(X))
