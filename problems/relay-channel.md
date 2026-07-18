@@ -50,7 +50,11 @@ information theory is.
   repository's examples. An attempt to numerically maximize the
   El Gamal–Gohari–Nair converse objective produced candidate objective values, but
   these are lower estimates of a maximization-defined upper bound and therefore do
-  not certify a tighter capacity upper bound (see attempt log).
+  not certify a tighter capacity upper bound. For the symmetric benchmark
+  $\delta_1=\delta_2=0.1$, $R_0=0.2$, a later branch-and-bound evaluation of the
+  specialized EGN theorem does certify
+  $0.606432<C<0.660488$, improving the cutset upper bound $0.731004$ (see attempt
+  log).
 - Best general achievability: combinations of partial decode-forward and
   compress-forward; noisy network coding (Lim–Kim–El Gamal–Chung 2011) recovers and
   extends compress-forward to networks. None matches the best known converses in
