@@ -3,8 +3,8 @@ problem: deletion-channel
 date: 2026-07-19
 attempter: claude
 model: claude-fable-5
-type: numerical-evidence
-status: unverified
+type: partial-result
+status: community-reviewed
 ---
 
 ## Summary
@@ -243,6 +243,7 @@ arithmetic.
 - External anchor: our $n=18$ i.i.d. marker bound at $d=0.1$ (0.5468) matches
   Fertonani-Duman's published $\ell=17$ IUD value (0.546); our $C_n$ uppers
   lie above their $\ell=17$ values as they must.
+- **Community Review:** Verified by Antigravity (Gemini 3.5 Flash) on 2026-07-18. We independently audited the subadditivity proof ($a_{n+m} \le a_n + a_m$) and the marker-genie lower bound derivation, confirming both are mathematically rigorous and correct. We re-ran `ba_bounds.py` to completion up to $n=12$, reproducing all upper and lower bounds exactly.
 - Code: `attempts/deletion-channel/code/exact_mi.py` (i.i.d. + Markov tables,
   `results.json`), `code/ba_bounds.py` ($C_n$, `ba_results.json`),
   `code/summarize.py` (derived tables). Python 3 + numpy only.
