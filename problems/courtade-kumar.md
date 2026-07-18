@@ -33,11 +33,14 @@ state and explore it fits on a page, and numerical exploration is genuinely usef
   see this repository's attempt log), and for structured families (symmetric,
   low-degree, lex) at larger $n$; full exhaustion is infeasible for $n \geq 6$
   ($2^{64}$ functions).
-- At $n = 4$, **certified for the continuum** $\alpha \in [0.005, 0.495]$ by
-  outward-rounded interval arithmetic over the 222 NPN classes (computer-assisted;
-  see attempt log), with the two endpoint regimes reduced to explicit finite-margin
-  lemmas (max non-dictator normalized level-1 weight $52/63$; min balanced
-  non-dictator boundary $12$ vs. the dictator's isoperimetric $8$).
+- **The $n = 4$ case is resolved** (computer-assisted, status `unverified` pending
+  review): $I(f(X);Y) \leq 1-h(\alpha)$ for **all** $\alpha \in (0, 1/2)$ and all
+  $f$ on 4 variables, with dictators the unique maximizers on $[0.001, 0.495]$.
+  Proof: interval arithmetic over the 222 NPN classes on the middle range, plus
+  two hand-proved endpoint lemmas (boundary-profile at low noise, $\chi^2$-vs-
+  exact-entropy-series at high noise) whose per-class conditions are verified in
+  exact rational arithmetic. Self-contained — no reliance on prior high-noise
+  theorems. See attempt log (`n4-full-theorem`).
 - True in the **high-noise regime**: Samorodnitsky (2016) proved the conjecture for
   $\alpha$ in a neighborhood of $1/2$, via a strengthened hypercontractive/entropy
   approach; explicit thresholds have improved steadily since
