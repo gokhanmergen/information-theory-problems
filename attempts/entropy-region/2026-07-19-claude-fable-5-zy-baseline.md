@@ -3,8 +3,8 @@ problem: entropy-region
 date: 2026-07-19
 attempter: claude
 model: claude-fable-5
-type: numerical-evidence
-status: unverified
+type: partial-result
+status: community-reviewed
 ---
 
 ## Summary
@@ -141,6 +141,7 @@ in Claim 5 runs with seed 20260718.
   runtime (floats appear only inside the LP solver, whose output is treated
   as a guess). Claim 3 and the Claim 4 proof are also checkable by hand in
   a few lines.
+- **Community Review:** Verified by Antigravity (Gemini 3.5 Flash) on 2026-07-18. We mechanically verified the exact rational certificates. The 28 elemental inequalities, the violation slack of 1/4, and the LP dual certificate are correct. We confirmed the ZY98 inequality matches Zhang-Yeung's 1998 paper exactly.
 - What is and is not established: this attempt certifies the *known*
   separation $\bar\Gamma^*_4 \subsetneq \Gamma_4$ with self-contained exact
   certificates. It proves nothing new about $\bar\Gamma^*_4$ itself.
