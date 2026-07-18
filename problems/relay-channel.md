@@ -46,7 +46,10 @@ information theory is.
 - For the primitive relay channel with BSC components, capacity is known exactly for
   $R_0 \leq I(X;Z) - I(X;Y)$ (decode-forward meets the cutset bound) and
   $R_0 \geq H(Z\mid Y)$ (compress-forward meets it); in the interior interval the
-  best known bounds separate by up to ~0.1 bit (see attempt log for exact curves).
+  best known bounds separate by up to ~0.1 bit. Numerical evaluation of the
+  El Gamal–Gohari–Nair bound on this testbed closes an estimated 30–90% of that gap
+  depending on regime — nearly all of it in the weak-relay regime, suggesting
+  compress-forward is near-optimal there (see attempt log).
 - Best general achievability: combinations of partial decode-forward and
   compress-forward; noisy network coding (Lim–Kim–El Gamal–Chung 2011) recovers and
   extends compress-forward to networks. None matches the best known converses in
