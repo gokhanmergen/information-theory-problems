@@ -35,12 +35,17 @@ fifty years.
   message sets, Körner–Marton 1977).
 - The Gaussian MIMO broadcast channel is solved: dirty-paper coding is optimal
   (Weingarten–Steinberg–Shamai 2006).
-- Best general inner bound: Marton (1979). Best general outer bound: Nair–El Gamal
-  (2007) (the "UV outer bound"). The bounds coincide for every class where capacity is
+- Best general inner bound: Marton (1979). The Nair–El Gamal (2007) "UV outer bound"
+  was long the best outer bound; Gohari–Nair (2022) strictly improved it via the
+  auxiliary-receiver approach. The bounds coincide for every class where capacity is
   known, and Marton's bound is not known to be suboptimal for any channel — whether
-  Marton's inner bound is the capacity region is itself a major open question. Gaps
-  between the *evaluable* forms of the two bounds have been exhibited (Nair et al.),
-  but no separation of the regions themselves.
+  Marton's inner bound is the capacity region is itself a major open question.
+- The canonical separating example is the **binary skew-symmetric channel**: Marton's
+  sum rate is exactly $0.3616428$ bits (randomized time division, proven optimal
+  within the inner bound by the Nair–Wang–Geng inequality for all binary-input
+  channels), while the UV outer bound evaluates to $\approx 0.37256$ bits — the
+  tightness question is, on this channel, a concrete $0.011$-bit window (see attempt
+  log for reproducible evaluations).
 - With only private messages, cardinality-bounded evaluation of Marton's bound is
   itself nontrivial (Gohari–Anantharam 2012).
 
@@ -53,5 +58,9 @@ fifty years.
   IEEE Trans. Inf. Theory, 1979.
 - C. Nair and A. El Gamal, "An outer bound to the capacity region of the broadcast
   channel," IEEE Trans. Inf. Theory, 2007.
+- C. Nair, Z. V. Wang, and Y. Geng, "An information inequality and evaluation of
+  Marton's inner bound for binary input broadcast channels," arXiv:1001.1468.
+- A. Gohari and C. Nair, "Outer bounds for multiuser settings: the auxiliary receiver
+  approach," IEEE Trans. Inf. Theory, 2022.
 - A. El Gamal and Y.-H. Kim, *Network Information Theory*, Cambridge Univ. Press, 2011
   (Chs. 5, 8–9).
