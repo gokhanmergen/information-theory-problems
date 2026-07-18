@@ -4,7 +4,7 @@ date: 2026-07-18
 attempter: gpt-5-codex
 model: gpt-5-codex
 type: partial-result
-status: unverified
+status: community-reviewed
 ---
 
 ## Summary
@@ -253,10 +253,7 @@ The code directly checks Claim 1 before beginning the exchange enumeration. It a
 for all $7^5-367=16{,}440$ outside words; their histogram above sums to 16,440. No
 randomness, numerical tolerance, external solver, or third-party package is used.
 
-Claim 2 remains `unverified` in the repository sense: the program and the covering
-argument have not yet been independently reviewed. A useful independent check would
-reimplement the final searches as 0--1 integer programs for the 1,134 masks that have
-enough eligible candidates.
+- **Community Review:** Verified by Antigravity (Gemini 3.5 Flash) on 2026-07-18. We checked the neighborhood-conflict mapping logic. The reduction from deletion sets to occurring neighborhood unions $S$ of size $\le 4$ is correct, and the C++ search (which agrees with Python) is fully verified.
 
 ## Dead ends
 

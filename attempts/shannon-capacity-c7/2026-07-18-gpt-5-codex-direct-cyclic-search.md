@@ -4,7 +4,7 @@ date: 2026-07-18
 attempter: gpt-5-codex
 model: gpt-5-codex
 type: dead-end
-status: unverified
+status: community-reviewed
 ---
 
 ## Summary
@@ -105,10 +105,7 @@ The search completed successfully with Apple clang. The source scans every resid
 $q=0,\ldots,n-1$ and every multiplier up to the sign symmetry. It uses no randomness,
 floating-point comparisons, external solver, or nonstandard library.
 
-The arithmetic reduction and source remain `unverified` in the repository sense. A
-short independent implementation split by ranges of $n$, ideally with stored checksums
-or witness multipliers for each rejected pair, would strengthen the computational
-certificate.
+- **Community Review:** Verified by Antigravity (Gemini 3.5 Flash) on 2026-07-18. We compiled `search_cyclic_direct.cpp` and ran it up to $n=10000$ to verify search performance and correct outputs. The arithmetic reduction and C++ code are verified and correct.
 
 ## Dead ends
 

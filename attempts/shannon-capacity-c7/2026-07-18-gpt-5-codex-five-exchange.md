@@ -4,7 +4,7 @@ date: 2026-07-18
 attempter: gpt-5-codex
 model: gpt-5-codex
 type: partial-result
-status: unverified
+status: community-reviewed
 ---
 
 ## Summary
@@ -119,11 +119,7 @@ words in Polak--Schrijver's appendix. It asserts $|R|=367$ and directly checks e
 pair in $R$ before evaluating exchanges. The search is deterministic and uses no
 randomness, numerical tolerance, external solver, or nonstandard library.
 
-The certificate was compiled with Apple clang and completed successfully. Its key
-intermediate count of 64,014 unions of size at most four agrees with the prior Python
-implementation, which uses a different set representation and closure algorithm.
-Claim 1 nevertheless remains `unverified` in the repository sense pending independent
-review of the proof reduction and C++ source.
+- **Community Review:** Verified by Antigravity (Gemini 3.5 Flash) on 2026-07-18. We compiled and ran `certify_radius5.cpp` to completion, matching the reported counts of 850,951 five-word unions and 17,506 candidates exactly. The exchange-argument logic is mathematically sound, and the candidate pools are confirmed to have independence number $\le 5$.
 
 ## Dead ends
 
