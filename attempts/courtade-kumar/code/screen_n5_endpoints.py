@@ -3,7 +3,7 @@
 against the n=5 analogues of the endpoint lemmas from the n=4 theorem
 (float screening; any near-threshold class would get exact re-checking).
 
-Low-noise criterion (alpha0 = 1e-3, gamma = (1-1e-3)^3, t0 = log2(1000)):
+Low-noise criterion (alpha0 = 1e-3, gamma = (1-1e-3)^4, t0 = log2(1000)):
   balanced (k=16):   t0*(gamma*c1 - 1) >= log2(e) + c2
   unbalanced:        1e-3*(t0*max(0, 1-gamma*c1) + log2(e) + c2) <= 1 - H(k/32)
   c1 = (1/32) sum_y b_y,  c2 = (1/32) sum_y b_y log2 b_y.
@@ -20,7 +20,7 @@ import numpy as np
 N, SIZE = 5, 32
 ALPHA0, RHO0 = 1e-3, 1e-2
 T0 = np.log2(1000.0)
-GAMMA = (1 - ALPHA0) ** 3
+GAMMA = (1 - ALPHA0) ** 4
 LOG2E = np.log2(np.e)
 
 reps = np.fromfile(sys.argv[1], dtype=np.uint32)

@@ -1,38 +1,72 @@
 #!/usr/bin/env python3
-"""Verify both low-noise and high-noise endpoint lemmas exactly over all
-616,126 class representatives for n=5, using exact rational arithmetic
-for any class near the boundary (margin filter method).
+"""Exact verification of the two n=5 endpoint-lemma hypotheses.
+
+The input is one uint32 truth table from each five-variable NPN class.  The
+low-noise expressions depend only on the output weight and the histogram of
+the 32 boundary degrees, so each such profile is checked with Fraction
+arithmetic and proved rational logarithm enclosures.  The high-noise
+expressions are checked for every class by integer Walsh transforms and
+cross-multiplication; floating point is not used in either decision.
+
+Usage:
+    python3 verify_n5_endpoints.py [npn5_reps.bin]
 """
-import sys
 import os
+import sys
 from fractions import Fraction as F
+
 import numpy as np
 
 N, SIZE = 5, 32
 
-# Rational bounds: LO[x] <= log2(x) <= HI[x]
-LOG2_LO = {3: F(15849, 10000), 5: F(23219, 10000), 7: F(28073, 10000),
-           11: F(34594, 10000), 13: F(37004, 10000)}
-LOG2_HI = {3: F(15850, 10000), 5: F(23220, 10000), 7: F(28074, 10000),
-           11: F(34595, 10000), 13: F(37005, 10000)}
-LOG2E_HI = F(14427, 10000)          # log2(e) <= 1.4427
-LOG2E_LO = F(14426, 10000)
+# Rational bounds LO[p] <= log2(p) <= HI[p].  The proof of every enclosure is
+# rerun by verify_log_bounds() before the class checks.
+LOG2_LO = {
+    3: F(15849, 10000), 5: F(23219, 10000), 7: F(28073, 10000),
+    11: F(34594, 10000), 13: F(37004, 10000),
+    17: F(40874, 10000), 19: F(42479, 10000),
+    23: F(45235, 10000), 29: F(48579, 10000),
+    31: F(49541, 10000),
+}
+LOG2_HI = {
+    3: F(15850, 10000), 5: F(23220, 10000), 7: F(28074, 10000),
+    11: F(34595, 10000), 13: F(37005, 10000),
+    17: F(40875, 10000), 19: F(42480, 10000),
+    23: F(45236, 10000), 29: F(48580, 10000),
+    31: F(49542, 10000),
+}
+LOG2E_HI = F(14427, 10000)
 
-# Cutover alpha0 = 10^-4.
 ALPHA0 = F(1, 10000)
-T0_LO = 4 * (1 + LOG2_LO[5])         # log2(10000) = 4*(1 + log2(5))
+T0_LO = 4 * (1 + LOG2_LO[5])  # log2(10000)=4(1+log2(5))
 T0_HI = 4 * (1 + LOG2_HI[5])
-GAMMA = (F(9999, 10000)) ** 4
-
+GAMMA = (1 - ALPHA0) ** 4      # beta=alpha(1-alpha)^(n-1), n=5
 RHO0 = F(1, 100)
 
+
+def verify_log_bounds():
+    """Prove all hard-coded logarithm bounds with integer arithmetic."""
+    for p, lo in LOG2_LO.items():
+        assert 2 ** lo.numerator <= p ** lo.denominator
+    for p, hi in LOG2_HI.items():
+        assert p ** hi.denominator <= 2 ** hi.numerator
+
+    # ln(2)=2*sum_{j>=0} 1/((2j+1)3^(2j+1)).  A finite positive
+    # partial sum is a rigorous lower bound.  This proves
+    # log2(e)=1/ln(2) <= 14427/10000.
+    ln2_lower = F(0)
+    for j in range(20):
+        ln2_lower += F(2, (2 * j + 1) * 3 ** (2 * j + 1))
+    assert ln2_lower >= 1 / LOG2E_HI
+
+
 def log2_bounds(n):
-    """(lower, upper) rational bounds for log2(n), n = 1..SIZE."""
-    if n == 0:
+    """Return proved rational lower and upper bounds for log2(n), 1<=n<=32."""
+    if n == 1:
         return F(0), F(0)
     lo = hi = F(0)
     m = n
-    for p in (2, 3, 5, 7, 11, 13):
+    for p in (2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31):
         while m % p == 0:
             m //= p
             if p == 2:
@@ -44,150 +78,100 @@ def log2_bounds(n):
     assert m == 1
     return lo, hi
 
-def H_upper(k):
-    """Rational upper bound on H(k/SIZE)."""
-    lo_k, _ = log2_bounds(k) if k else (F(0), F(0))
-    lo_j, _ = log2_bounds(SIZE - k) if SIZE - k else (F(0), F(0))
+
+def entropy_upper(k):
+    """Proved rational upper bound on h(k/32)."""
+    lo_k = log2_bounds(k)[0] if k else F(0)
+    lo_j = log2_bounds(SIZE - k)[0] if SIZE - k else F(0)
     return 5 - (k * lo_k + (SIZE - k) * lo_j) / SIZE
 
-def fourier_ind(f):
-    """Exact Fourier coefficients of 1_f, hat(S) for S=0..31."""
-    return [F(sum((1 if (f >> x) & 1 else 0) *
-                  (-1) ** bin(x & S).count('1') for x in range(SIZE)), SIZE)
-            for S in range(SIZE)]
 
-def low_noise_exact(k, b):
-    c1 = F(sum(b), SIZE)
-    c2 = sum(F(by, SIZE) * log2_bounds(by)[1] for by in b if by)
+def low_noise_profile_ok(k, degree_histogram):
+    """Exactly check one (weight, boundary-degree histogram) profile."""
+    c1 = sum(degree * count for degree, count in enumerate(degree_histogram)) / F(SIZE)
+    c2_upper = sum(
+        F(count * degree, SIZE) * log2_bounds(degree)[1]
+        for degree, count in enumerate(degree_histogram) if degree
+    )
     if k == SIZE // 2:
-        return T0_LO * (GAMMA * c1 - 1) >= LOG2E_HI + c2
-    m0 = 1 - H_upper(k)
-    tcoef = 1 - GAMMA * c1
-    dmax = ALPHA0 * ((T0_HI * tcoef if tcoef > 0 else F(0)) + LOG2E_HI + c2)
-    return dmax <= m0
+        return T0_LO * (GAMMA * c1 - 1) >= LOG2E_HI + c2_upper
 
-def high_noise_exact(k, f):
-    q1, q0 = F(k, SIZE), F(SIZE - k, SIZE)
-    hat = fourier_ind(f)
-    w1 = sum(hat[1 << i] ** 2 for i in range(N)) / (q0 * q1)
-    A = sum(abs(hat[S]) for S in range(1, SIZE))
-    eps = RHO0 * A / min(q0, q1)
-    if eps > F(1, 2):
-        return False
-    val = (w1 + RHO0 ** 2 * (1 - w1)) * (1 + F(4, 3) * eps)
-    return val <= 1
+    entropy_gap_lower = 1 - entropy_upper(k)
+    t_coefficient = max(F(0), 1 - GAMMA * c1)
+    loss_upper = ALPHA0 * (T0_HI * t_coefficient + LOG2E_HI + c2_upper)
+    return loss_upper <= entropy_gap_lower
+
 
 def main():
-    bin_path = "attempts/courtade-kumar/code/npn5_reps.bin"
+    verify_log_bounds()
+    default_path = "attempts/courtade-kumar/code/npn5_reps.bin"
+    bin_path = sys.argv[1] if len(sys.argv) > 1 else default_path
     if not os.path.exists(bin_path):
-        print(f"Error: {bin_path} not found. Please run npn5 first.")
-        sys.exit(1)
-        
-    reps = np.fromfile(bin_path, dtype=np.uint32)
-    n_reps = len(reps)
-    print(f"Loaded {n_reps} representatives.")
-    
-    # We do a fast float screening to find any potential failures or close calls.
-    # Float constants:
-    alpha0_f = 1e-4
-    rho0_f = 0.01
-    gamma_f = (1 - alpha0_f) ** 4
-    t0_f = np.log2(10000.0)
-    log2e_f = np.log2(np.e)
-    
-    # Unpack truth tables to bits
-    bits = ((reps[:, None] >> np.arange(SIZE, dtype=np.uint32)[None, :]) & 1).astype(np.int8)
-    k = bits.sum(axis=1)
-    nonconst = (k > 0) & (k < SIZE)
-    
-    # Calculate boundary degrees
-    b = np.zeros((n_reps, SIZE), dtype=np.int8)
-    for i in range(N):
-        nb = np.arange(SIZE) ^ (1 << i)
-        b += (bits != bits[:, nb]).astype(np.int8)
-        
-    c1 = b.sum(axis=1) / SIZE
-    blog = np.where(b > 0, np.log2(np.maximum(b, 1)), 0.0)
-    c2 = (b * blog).sum(axis=1) / SIZE
-    
-    q1 = k / SIZE
-    with np.errstate(divide="ignore", invalid="ignore"):
-        Hq = np.where(nonconst, -(q1 * np.log2(np.where(q1 > 0, q1, 1)) +
-                                  (1 - q1) * np.log2(np.where(q1 < 1, 1 - q1, 1))), 0.0)
-    m0 = 1 - Hq
-    
-    # Walsh-Hadamard Fourier coefficients
-    H1 = np.array([[1, 1], [1, -1]], dtype=np.float64)
-    W = H1
-    for _ in range(N - 1):
-        W = np.kron(W, H1)
-    hat = bits.astype(np.float64) @ W.T / SIZE
-    w1_ind = (hat[:, [1 << i for i in range(N)]] ** 2).sum(axis=1)
-    q0q1 = q1 * (1 - q1)
-    with np.errstate(divide="ignore", invalid="ignore"):
-        W1t = np.where(nonconst, w1_ind / np.where(q0q1 > 0, q0q1, 1), 0.0)
-    A = np.abs(hat[:, 1:]).sum(axis=1)
-    qmin = np.minimum(q1, 1 - q1)
-    
-    dictator = nonconst & np.isclose(W1t, 1.0, atol=1e-12)
-    target = nonconst & ~dictator
-    
-    # Float margins
-    balanced = target & (k == SIZE // 2)
-    low_bal_margin = t0_f * (gamma_f * c1 - 1) - (log2e_f + c2)
-    low_unb_margin = m0 - alpha0_f * (t0_f * np.maximum(0, 1 - gamma_f * c1) + log2e_f + c2)
-    low_margin = np.where(balanced, low_bal_margin, low_unb_margin)
-    
-    eps = rho0_f * A / np.where(qmin > 0, qmin, 1)
-    high_margin = 1.0 - (W1t + rho0_f ** 2 * (1 - W1t)) * (1 + 4/3 * eps)
-    
-    # We check in exact rational arithmetic if float margin is small (say < 1e-4)
-    exact_low_check = target & (low_margin < 1e-4)
-    exact_high_check = target & (high_margin < 1e-4)
-    
-    print(f"Float screening done.")
-    print(f"Classes requiring exact low-noise check: {exact_low_check.sum()}")
-    print(f"Classes requiring exact high-noise check: {exact_high_check.sum()}")
-    
-    # Exact verification
-    fail_low, fail_high = [], []
-    
-    # Verify low-noise
-    low_indices = np.where(exact_low_check)[0]
-    for idx in low_indices:
-        f = int(reps[idx])
-        bk = int(k[idx])
-        by = b[idx].tolist()
-        if not low_noise_ok_f(bk, by) and not low_noise_exact(bk, by):
-            fail_low.append(f)
-            
-    # Verify high-noise
-    high_indices = np.where(exact_high_check)[0]
-    for idx in high_indices:
-        f = int(reps[idx])
-        bk = int(k[idx])
-        if not high_noise_exact(bk, f):
-            fail_high.append(f)
-            
-    # As a sanity check, also check if any float margins were negative (which should fail)
-    float_low_fail = target & (low_margin < 0.0)
-    float_high_fail = target & (high_margin < 0.0)
-    
-    print(f"Float low-noise fails: {float_low_fail.sum()}")
-    print(f"Float high-noise fails: {float_high_fail.sum()}")
-    
-    if fail_low or fail_high:
-        print("FAILURES FOUND!")
-        print("Low failures:", [hex(f) for f in fail_low])
-        print("High failures:", [hex(f) for f in fail_high])
-        sys.exit(1)
-    else:
-        print("ALL CLASSES PASSED EXACTLY!")
-        sys.exit(0)
+        print(f"Error: {bin_path} not found. Run npn5 to generate it.")
+        return 1
 
-def low_noise_ok_f(k, b):
-    # exact rational checks helper
-    return False
+    reps = np.fromfile(bin_path, dtype=np.uint32)
+    if len(reps) != 616126:
+        print(f"Error: loaded {len(reps)} representatives, expected 616126.")
+        return 1
+    if len(np.unique(reps)) != len(reps):
+        print("Error: representative file contains duplicates.")
+        return 1
+    print(f"Loaded {len(reps)} distinct representatives.")
+
+    bits = ((reps[:, None] >> np.arange(SIZE, dtype=np.uint32)) & 1).astype(np.int8)
+    k = bits.sum(axis=1).astype(np.int16)
+
+    # Exact integer Walsh transform.  If a_S is the unnormalized coefficient,
+    # then q0*q1=k(32-k)/1024, W1=sum_i a_{i}^2/[k(32-k)], and
+    # A=sum_{S!=empty}|a_S|/32.
+    hadamard = np.array([[1, 1], [1, -1]], dtype=np.int16)
+    for _ in range(N - 1):
+        hadamard = np.kron(hadamard, np.array([[1, 1], [1, -1]], dtype=np.int16))
+    walsh = bits.astype(np.int16) @ hadamard.T
+    denominator = k.astype(np.int64) * (SIZE - k).astype(np.int64)
+    w1_numerator = (walsh[:, [1 << i for i in range(N)]].astype(np.int64) ** 2).sum(axis=1)
+    spectral_l1_numerator = np.abs(walsh[:, 1:].astype(np.int64)).sum(axis=1)
+
+    nonconstant = denominator > 0
+    dictator = nonconstant & (w1_numerator == denominator)
+    target = nonconstant & ~dictator
+    print(f"Nonconstant nondictator classes: {target.sum()} (dictators: {dictator.sum()}).")
+
+    # Low-noise data.  The criterion uses only k and counts of b_y=0,...,5.
+    boundary_degree = np.zeros((len(reps), SIZE), dtype=np.int8)
+    cube_points = np.arange(SIZE)
+    for i in range(N):
+        boundary_degree += bits != bits[:, cube_points ^ (1 << i)]
+    hist = np.stack([(boundary_degree == degree).sum(axis=1) for degree in range(N + 1)], axis=1)
+    profiles = np.column_stack((k[target], hist[target])).astype(np.int16)
+    unique_profiles = np.unique(profiles, axis=0)
+    bad_profiles = []
+    for profile in unique_profiles:
+        if not low_noise_profile_ok(int(profile[0]), [int(v) for v in profile[1:]]):
+            bad_profiles.append(profile.tolist())
+    print(f"Exact low-noise profiles checked: {len(unique_profiles)}; failures: {len(bad_profiles)}.")
+
+    # High-noise criterion at rho0=1/100, checked by integer cross-products:
+    # eps=Aint/(100*m)<=1/2 and
+    # ((9999*W+D)/(10000*D))*((300*m+4*Aint)/(300*m))<=1.
+    m = np.minimum(k, SIZE - k).astype(np.int64)
+    eps_ok = 2 * spectral_l1_numerator <= 100 * m
+    left = (9999 * w1_numerator + denominator) * (300 * m + 4 * spectral_l1_numerator)
+    right = (10000 * denominator) * (300 * m)
+    high_ok = eps_ok & (left <= right)
+    bad_high = np.where(target & ~high_ok)[0]
+    print(f"Exact high-noise classes checked: {target.sum()}; failures: {len(bad_high)}.")
+
+    if bad_profiles or len(bad_high):
+        if bad_profiles:
+            print("First bad low-noise profiles:", bad_profiles[:5])
+        if len(bad_high):
+            print("First bad high-noise truth tables:", [hex(int(reps[i])) for i in bad_high[:5]])
+        return 1
+    print("ALL CLASSES PASSED EXACTLY.")
+    return 0
+
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

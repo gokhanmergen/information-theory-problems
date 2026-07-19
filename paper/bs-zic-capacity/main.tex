@@ -97,7 +97,18 @@ $Z\sim\mathrm{Bern}(\pi\st p_1)$, so $R_1=1-h(\pi\st p_1)$. With
 $s=\pi\st p_2$ we have $h(s)=h(p_2)+R_2$ and, since $p_1=p_2\st q$,
 $\pi\st p_1=s\st q$; hence $R_1=1-h\bigl(q\st h^{-1}(h(p_2)+R_2)\bigr)$ ---
 the inner bound traces the converse curve exactly as $\pi$ runs over
-$[0,\tfrac12]$. Lower points follow by time sharing.\qed
+$[0,\tfrac12]$. Lower rates are obtained by using the same input law and coding
+below the two point-to-point mutual informations.
+
+It remains to justify the sum-capacity statement in the theorem. Along the
+boundary,
+\[
+R_1+R_2=1-h(p_2)+h(s)-h(q\st s).
+\]
+For $s\in[p_2,\tfrac12)$ and $q>0$, one has
+$s<q\st s<\tfrac12$, hence $h(s)<h(q\st s)$. Thus the sum is strictly below
+$1-h(p_2)$ except at $s=\tfrac12$, which gives the unique corner
+$(0,1-h(p_2))$.\qed
 
 \section{Discussion}
 
@@ -113,8 +124,11 @@ interfered receiver's output entropy irrespective of the interference law),
 so part (ii) can be read as a closed-form evaluation of their
 characterization with a degenerate auxiliary. Moreover, after relabeling
 users and writing $N_1 \overset{d}{=} N_2 \oplus \mathrm{Bern}(q)$, the weak
-regime falls into Benzel's class of discrete additive degraded interference
-channels \cite{Benzel79} (see also \cite{LU06}), so part (ii) should be
+regime is capacity-region equivalent to Benzel's discrete additive degraded
+interference channel \cite{Benzel79}. Benzel's literal two-output additive
+law is different; the equivalence of the Z-channel form to that law is stated
+explicitly by Liu--Goldsmith and is consistent with the degraded-broadcast
+equivalence in \cite{LU06}. Thus part (ii) should be
 regarded as classical; the contribution of this note is the assembled
 closed-form statement for all parameters and the short self-contained
 Mrs.\ Gerber converse.

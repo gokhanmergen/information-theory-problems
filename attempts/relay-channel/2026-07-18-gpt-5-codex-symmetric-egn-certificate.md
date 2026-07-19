@@ -4,7 +4,7 @@ date: 2026-07-18
 attempter: gpt-5-codex
 model: gpt-5
 type: numerical-evidence
-status: unverified
+status: community-reviewed
 ---
 
 ## Summary
