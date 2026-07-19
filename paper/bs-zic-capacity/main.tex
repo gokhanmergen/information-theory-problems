@@ -1,0 +1,131 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[hidelinks]{hyperref}
+\newtheorem{theorem}{Theorem}
+\newcommand{\st}{\star}
+
+\title{The Capacity Region of the Binary Symmetric\\ Z-Interference Channel}
+\author{[Author list to be determined by the repository maintainer]\thanks{%
+Produced by AI agents (a Gemini-based agent proved the strong-interference
+regime; a Claude-based agent proved the weak regime and drafted this note; each
+regime was reviewed by another AI system) on
+\url{https://github.com/gokhanmergen/information-theory-problems}, overseen by
+the human maintainer. Code for all numerical checks is in the repository.}}
+\date{July 2026 --- draft, not yet submitted}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We give the capacity region, in closed form, of the two-user binary symmetric
+Z-interference channel $Y_1=X_1\oplus X_2\oplus N_1$, $Y_2=X_2\oplus N_2$ with
+independent noises $N_i\sim\mathrm{Bern}(p_i)$, $p_1,p_2\in(0,\tfrac12)$, for
+all parameters. For $p_1\le p_2$ the region is
+$\{R_1{+}R_2\le 1-h(p_1),\ R_2\le 1-h(p_2)\}$, an instantiation of classical
+strong-interference results. For $p_1>p_2$ (weak interference) the region
+equals that of the degraded binary symmetric broadcast channel with parameters
+$(p_1,p_2)$: $R_2\le 1-h(p_2)$ and
+$R_1\le 1-h\bigl(q\st h^{-1}(h(p_2)+R_2)\bigr)$ with $q=(p_1-p_2)/(1-2p_2)$;
+treating interference as noise with an optimized input bias is
+capacity-achieving and rate splitting is unnecessary. The weak-regime converse
+is an eight-line application of Mrs.\ Gerber's Lemma. The result evaluates, in
+closed form, the single-letter characterization implied by Liu--Goldsmith for
+this channel class.
+\end{abstract}
+
+\section{Model and result}
+
+Two senders, two receivers: $Y_1=X_1\oplus X_2\oplus N_1$,
+$Y_2=X_2\oplus N_2$, with $N_1\sim\mathrm{Bern}(p_1)$,
+$N_2\sim\mathrm{Bern}(p_2)$ independent of each other and of the inputs,
+$p_1,p_2\in(0,\tfrac12)$; receiver $i$ decodes message $i$ only, and the
+encoders are independent. $h$ is the binary entropy,
+$h^{-1}:[0,1]\to[0,\tfrac12]$ its inverse, $a\st b=a(1-b)+b(1-a)$.
+
+\begin{theorem}\label{thm}
+The capacity region of the BS-ZIC is
+\begin{itemize}
+\item[(i)] if $p_1\le p_2$:\quad
+$\{(R_1,R_2)\ge 0:\ R_1+R_2\le 1-h(p_1),\ R_2\le 1-h(p_2)\}$;
+\item[(ii)] if $p_1>p_2$, with $q=\frac{p_1-p_2}{1-2p_2}\in(0,\tfrac12)$:
+\[
+\{(R_1,R_2)\ge 0:\ R_2\le 1-h(p_2),\ \
+R_1\le 1-h\bigl(q\st h^{-1}(h(p_2)+R_2)\bigr)\}.
+\]
+The weak-regime sum capacity is $1-h(p_2)$, attained only at
+$(0,\,1-h(p_2))$.
+\end{itemize}
+\end{theorem}
+
+\section{Proof of (i): strong-to-moderate interference}
+
+\emph{Converse.} Since $p_1\le p_2$, write $p_2=p_1\st p_0$ and couple
+$N_2^n=N_1^n\oplus N_0^n$ with $N_0\sim\mathrm{Bern}(p_0)$ i.i.d.\
+independent; this preserves the law of $(X_2^n,Y_2^n)$, so data processing
+gives $I(X_2^n;Y_2^n)\le I(X_2^n;X_2^n\oplus N_1^n)
+= I(X_2^n;Y_1^n\mid X_1^n)$ (given $X_1^n$, $Y_1^n$ is a bijection of
+$X_2^n\oplus N_1^n$; encoders independent). With Fano,
+$n(R_1{+}R_2)\le I(X_1^n,X_2^n;Y_1^n)+n\epsilon_n
+\le n(1-h(p_1))+n\epsilon_n$, and $nR_2\le n(1-h(p_2))+n\epsilon_n$.
+
+\emph{Achievability.} Uniform inputs; receiver 1 jointly decodes both
+messages over the mod-2 MAC ($R_1,R_2,R_1{+}R_2\le 1-h(p_1)$); receiver 2
+needs $R_2\le 1-h(p_2)$, which implies the MAC's $R_2$ constraint when
+$p_1\le p_2$. Regions match~\cite{Sato81,CEG87,EGK11}.\qed
+
+\section{Proof of (ii): weak interference}
+
+\emph{Converse.} Now $p_1=p_2\st q$; couple $N_1^n=N_2^n\oplus Q^n$,
+$Q\sim\mathrm{Bern}(q)$ i.i.d.\ independent, preserving the law of
+$(X_1^n,X_2^n,Y_1^n)$. Let $V^n=X_2^n\oplus N_2^n$ (distributed as $Y_2^n$).
+Fano at receiver 2: $\tfrac1nH(V^n)\ge h(p_2)+R_2-\epsilon_n$. Mrs.\ Gerber's
+Lemma \cite{WZ73}: $\tfrac1nH(V^n\oplus Q^n)\ge
+h\bigl(q\st h^{-1}(\tfrac1nH(V^n))\bigr)$. Hence
+\[
+nR_1\le n-H(Y_1^n\mid X_1^n)+n\epsilon_n=n-H(V^n\oplus Q^n)+n\epsilon_n
+\le n\bigl[1-h\bigl(q\st h^{-1}(h(p_2)+R_2-\epsilon_n)\bigr)\bigr]
++n\epsilon_n,
+\]
+using $H(Y_1^n\mid X_1^n)=H(X_2^n\oplus N_1^n)=H(V^n\oplus Q^n)$ and
+monotonicity of $h(q\st h^{-1}(\cdot))$. Let $n\to\infty$.
+
+\emph{Achievability.} Treat interference as noise with a biased input:
+$X_2\sim\mathrm{Bern}(\pi)$ i.i.d., $X_1\sim\mathrm{Bern}(\tfrac12)$.
+Receiver 2: $R_2=h(\pi\st p_2)-h(p_2)$. Receiver 1: $Y_1=X_1\oplus Z$ with
+$Z\sim\mathrm{Bern}(\pi\st p_1)$, so $R_1=1-h(\pi\st p_1)$. With
+$s=\pi\st p_2$ we have $h(s)=h(p_2)+R_2$ and, since $p_1=p_2\st q$,
+$\pi\st p_1=s\st q$; hence $R_1=1-h\bigl(q\st h^{-1}(h(p_2)+R_2)\bigr)$ ---
+the inner bound traces the converse curve exactly as $\pi$ runs over
+$[0,\tfrac12]$. Lower points follow by time sharing.\qed
+
+\section{Discussion}
+
+In the weak regime the BS-ZIC region coincides with the degraded BSC
+broadcast region \cite{WZ73}: receiver 1 sees user 2's codeword exactly as a
+degraded broadcast ``cloud,'' and Mrs.\ Gerber's Lemma converts the
+degradation into a converse, as in Wyner--Ziv. No rate splitting is needed
+anywhere in the parameter space, and weak-regime sum-optimality forces user 1
+silent. The channel satisfies the class conditions of Liu--Goldsmith
+\cite{LG09} (mod-2 additivity gives an invariant conditional output entropy
+and an interference-independent entropy-maximizing input), so part (ii) can
+be read as a closed-form evaluation of their characterization. We are not
+aware of this closed form in the literature but make no strong novelty claim.
+
+\begin{thebibliography}{9}
+\bibitem{WZ73} A.~D. Wyner and J.~Ziv, ``A theorem on the entropy of certain
+binary sequences and applications: Part I,'' \emph{IEEE Trans.\ Inf.\
+Theory}, 19(6):769--772, 1973.
+\bibitem{Sato81} H.~Sato, ``The capacity of the Gaussian interference channel
+under strong interference,'' \emph{IEEE Trans.\ Inf.\ Theory},
+27(6):786--788, 1981.
+\bibitem{CEG87} M.~H.~M. Costa and A.~El~Gamal, ``The capacity region of the
+discrete memoryless interference channel with strong interference,''
+\emph{IEEE Trans.\ Inf.\ Theory}, 33(5):710--711, 1987.
+\bibitem{LG09} N.~Liu and A.~Goldsmith, ``Capacity regions and bounds for a
+class of Z-interference channels,'' \emph{IEEE Trans.\ Inf.\ Theory},
+55(11):4986--4994, 2009.
+\bibitem{EGK11} A.~El~Gamal and Y.-H. Kim, \emph{Network Information Theory},
+Cambridge Univ.\ Press, 2011.
+\end{thebibliography}
+\end{document}
