@@ -3,9 +3,11 @@
 \usepackage[hidelinks]{hyperref}
 \usepackage{booktabs}
 
+\theoremstyle{plain}
 \newtheorem{theorem}{Theorem}
 \newtheorem{lemma}{Lemma}
 \newtheorem{proposition}{Proposition}
+\theoremstyle{definition}   % bold head, upright roman body
 \newtheorem{remark}{Remark}
 \newcommand{\BSC}{\mathsf{BSC}}
 \newcommand{\ind}[1]{\mathbf{1}_{#1}}
@@ -13,10 +15,8 @@
 \title{The Most Informative Boolean Function Conjecture Holds for $n = 4$}
 \author{%
   [Author list TBD]\thanks{%
-  AI-assistance disclosure per IEEE policy appears in the Contribution and
-  AI-Use Statement at the end of the paper. Code reproducing every step is at
-  \url{https://github.com/gokhanmergen/information-theory-problems}. Draft of
-  July 2026; not submitted.}}
+  Code and verification artifacts:
+  \url{https://github.com/gokhanmergen/information-theory-problems}.}}
 
 \begin{document}
 \maketitle
@@ -106,14 +106,20 @@ holds if and only if $f$ is a dictator or an anti-dictator.
 The endpoint regimes are exactly where naive certification must fail: the gap
 $g_f(\alpha):=1-h(\alpha)-I(f(X);Y)$ vanishes as $\alpha\to\tfrac12$ for every
 $f$, and as $\alpha\to0$ for every balanced $f$. Our two endpoint lemmas
-isolate the finite data controlling \eqref{eq:ck} there --- edge-boundary
-profiles and hypercube edge-isoperimetry near $\alpha=0$; level-one Fourier
-weight and spectral $\ell_1$-mass near $\alpha=\tfrac12$ --- and reduce each
-endpoint to finitely many rational inequalities, verified exactly. Validated
-interval arithmetic certifies strict inequality on the compact middle range,
-and Lemma~\ref{lem:cover} assembles the regimes into a gap-free cover of
-$(0,\tfrac12)$. The scheme is dimension-generic; Section~\ref{sec:discussion}
-reports its state at $n=5$.
+isolate the finite data controlling \eqref{eq:ck} there.
+
+\textbf{Endpoint regimes.} Edge-boundary profiles and hypercube
+edge-isoperimetry control the conjecture near $\alpha=0$; level-one Fourier
+weight and spectral $\ell_1$-mass control it near $\alpha=\tfrac12$. Each
+endpoint reduces to finitely many rational inequalities, verified exactly.
+
+\textbf{Middle range.} Validated interval arithmetic certifies strict
+inequality on the compact middle range, class by class
+(Section~\ref{sec:certify}).
+
+\textbf{Complete coverage.} Lemma~\ref{lem:cover} assembles the regimes into
+a gap-free cover of $(0,\tfrac12)$. The scheme is dimension-generic;
+Section~\ref{sec:discussion} reports its state at $n=5$.
 
 \begin{remark}[Scope of the uniqueness claim]\label{rem:unique}
 The interval computation certifies \emph{strict} inequality for every
@@ -149,18 +155,21 @@ input coordinates, and complementation of the output, so it suffices to prove
 \eqref{eq:ck} for one representative of each NPN equivalence class. For
 $n=4$ there are $222$ classes~\cite{Harrison65}, a count our enumeration
 reproduces, with orbit sizes summing to $2^{16}$. The accounting used
-throughout is:
-\begin{center}
+throughout is given in Table~\ref{tab:accounting}.
+\begin{table}[t]
+\centering
+\caption{Disposition of the 222 NPN classes.}
+\label{tab:accounting}
 \begin{tabular}{lll}
 \toprule
-classes & disposition & conclusion\\
+\textbf{Classes} & \textbf{Method} & \textbf{Conclusion}\\
 \midrule
 $1$ constant & analytic: $I=0$ & $g_f=1-h(\alpha)>0$\\
 $1$ dictator & analytic: $I=1-h(\alpha)$ & $g_f\equiv0$ (equality)\\
-$220$ remaining & Lemmas~\ref{lem:low}, \ref{lem:high}; Prop.~\ref{prop:cert} & $g_f>0$ (middle), $g_f\ge0$ (endpoints)\\
+$220$ remaining & Lemmas~\ref{lem:low}, \ref{lem:high}; Proposition~\ref{prop:cert} & $g_f>0$ (middle), $g_f\ge0$ (endpoints)\\
 \bottomrule
 \end{tabular}
-\end{center}
+\end{table}
 Every computer-assisted step below covers the same $220$ classes; the
 interval certification additionally re-verifies the constant class (whose
 zero $c_{v,y,d}$ counts drop out of the entropy sum by the $0\log_20$
@@ -198,17 +207,17 @@ then $g_f(\alpha)\ge 0$.
 Write $g_f=m_0-D(\alpha)$ with $m_0=1-H(q_1)$ and
 $D(\alpha)=h(\alpha)-H(f(X)\mid Y)$. Three elementary steps:
 
-(i) $H(f(X)\mid Y{=}y)=h(\Pr[f(X)\neq f(y)\mid y])$, and
+\textbf{(i)} $H(f(X)\mid Y{=}y)=h(\Pr[f(X)\neq f(y)\mid y])$, and
 $\Pr[f(X)\neq f(y)\mid y]\ge b_y\,\alpha(1-\alpha)^3=:b_y\beta$ by keeping
 only the distance-one terms of the posterior kernel. Both quantities are at
 most $\Pr[X\ne y\mid Y{=}y]=1-(1-\alpha)^4\le4\alpha\le\tfrac12$, and $h$ is
 increasing on $[0,\tfrac12]$, so
 $H(f(X)\mid Y)\ge\tfrac1{16}\sum_y h(b_y\beta)$.
 
-(ii) $h(u)\ge u\log_2(1/u)$ for $u\in[0,1]$, hence
+\textbf{(ii)} $h(u)\ge u\log_2(1/u)$ for $u\in[0,1]$, hence
 $h(b_y\beta)\ge b_y\beta\,[t-\log_2 b_y]$ using $\beta\le\alpha$.
 
-(iii) $h(\alpha)\le\alpha(t+\log_2 e)$, from
+\textbf{(iii)} $h(\alpha)\le\alpha(t+\log_2 e)$, from
 $(1-\alpha)\ln\frac1{1-\alpha}\le\alpha$.
 
 Combining, and applying $\beta\ge\gamma\alpha$ to the aggregate
@@ -235,9 +244,11 @@ $1680/546377\approx3.1\times10^{-3}$, attained by class \texttt{0x1669}
 \section{The high-noise lemma}
 
 Fourier conventions: for $S\subseteq\{1,\dots,4\}$ let
-$\chi_S(y)=(-1)^{\sum_{i\in S}y_i}$ and
-$\widehat{\ind f}(S)=2^{-4}\sum_x\ind f(x)\chi_S(x)$, so
-$\ind f=\sum_S\widehat{\ind f}(S)\chi_S$ and the noise operator satisfies
+\[
+\chi_S(y)=(-1)^{\sum_{i\in S}y_i},\qquad
+\widehat{\ind f}(S)=2^{-4}\sum_x\ind f(x)\chi_S(x),
+\]
+so $\ind f=\sum_S\widehat{\ind f}(S)\chi_S$ and the noise operator satisfies
 $T_\rho\ind f=\sum_S\widehat{\ind f}(S)\rho^{|S|}\chi_S$ with
 $T_\rho\ind f(y)=\Pr[f(X)=1\mid Y=y]$. Parseval gives
 $\sum_S\widehat{\ind f}(S)^2=2^{-4}\sum_x\ind f(x)^2=q_1$ and hence
@@ -306,23 +317,35 @@ subintervals cover $[10^{-3},0.0055]\cup[0.005,0.495]$ together with the
 exact-rational bridges $[9/10^4,11/10^4]$ and $[4949/10^4,4951/10^4]$.
 \end{proposition}
 
-The proposition rests on: (1) correctness of the NPN reduction
-(Section~\ref{sec:setup}; class count and orbit sum checked against
-\cite{Harrison65}); (2) exactness of the integer-coefficient polynomials
-$p_{v,y}$; (3) the enclosure property of each interval operation used ---
+\paragraph{Enclosure validity} The proposition rests on five ingredients:
+\begin{itemize}
+\item \textbf{NPN reduction correctness:} Section~\ref{sec:setup}; class
+count and orbit sum checked against \cite{Harrison65}.
+\item \textbf{Polynomial exactness:} the integer-coefficient polynomials
+$p_{v,y}$ are constructed exactly.
+\item \textbf{Enclosure properties:} each interval operation used ---
 addition, multiplication, division, and logarithm in \texttt{mpmath.iv} at
-$90$-bit precision with outward rounding; only these operations are used,
+$90$-bit precision --- is outward-rounded; only these operations are used,
 and although \texttt{mpmath} labels interval support experimental, this
 elementary-operation path is deterministic and regression-tested in the
-repository; (4) adaptive bisection that discharges a subinterval only when
-the enclosure's \emph{infimum} is positive; and (5) the recorded ledgers.
-Runs: $2029$\,s and $2.6$\,s single-threaded (Python 3.14, \texttt{mpmath}
-1.3.0, macOS/arm64); the trusted computing base beyond \texttt{mpmath} is a
-${\sim}30$-line enclosure routine printed in the repository. An immutable
-archived release with a machine-readable per-subinterval certificate and an
-independent certificate checker is planned before submission. The audit
-history, including a repaired floating-point endpoint defect that motivated
-the two bridges, is in Appendix~\ref{app:audit}.
+repository.
+\item \textbf{Adaptive bisection:} a subinterval is discharged only when
+the enclosure's \emph{infimum} is positive.
+\item \textbf{Recorded ledgers} for every discharged subinterval.
+\end{itemize}
+
+\paragraph{Implementation and runtime} $2029$\,s and $2.6$\,s
+single-threaded (Python 3.14, \texttt{mpmath} 1.3.0, macOS/arm64).
+
+\paragraph{Reproducibility} The trusted computing base beyond
+\texttt{mpmath} is a ${\sim}30$-line enclosure routine printed in the
+repository.
+
+\paragraph{Archival status} An immutable archived release with a
+machine-readable per-subinterval certificate and an independent certificate
+checker is planned before submission. The audit history, including a repaired
+floating-point endpoint defect that motivated the two bridges, is in
+Appendix~\ref{app:audit}.
 
 \section{Covering the noise interval}
 
@@ -372,6 +395,29 @@ robust. Formal verification (e.g., in Lean) of the two finite endpoint
 checks is a natural hardening step: the per-class conditions are pure
 rational arithmetic over explicitly listed data.
 
+\section*{Contribution and AI-Use Statement}
+
+In accordance with IEEE policy on AI-generated content:
+
+\textbf{Initial generation.} The proof strategy, the two endpoint lemmas,
+all code, and the initial manuscript draft were produced by an AI system
+(Claude Fable 5, Anthropic) operating on a public open-problems repository.
+
+\textbf{Independent audit and repair.} A separate AI system (GPT-5 Codex,
+OpenAI) performed adversarial audits that identified the endpoint defect and
+a citation-provenance correction recorded in Appendix~\ref{app:audit}, and
+repaired the certification script.
+
+\textbf{Validation of the proofs.} The endpoint lemma conditions and the
+manuscript's mathematical claims were independently validated by Gemini 3.5
+Flash (Google) and ChatGPT 5.6 Sol (OpenAI).
+
+\textbf{Human responsibility.} The human maintainer supervised the process,
+reviewed the mathematics, and is responsible for the content. AI-generated
+material appears throughout the manuscript. AI audit does not substitute for
+independent human verification; readers are invited to check the two lemmas
+by hand (they are elementary) and to re-run the public code.
+
 \appendix
 
 \section{Audit history and validation}\label{app:audit}
@@ -393,21 +439,6 @@ rests solely on Lemma~\ref{lem:high}. The hard-coded logarithm enclosures
 used by the exact-rational checks are themselves proved by integer
 exponentiation (e.g., $2^{a}\le n^{b}$) or a truncated rational series for
 $\ln2$, in a self-test that runs before every verification.
-
-\section*{Contribution and AI-Use Statement}
-
-In accordance with IEEE policy on AI-generated content: the proof strategy,
-the two endpoint lemmas, all code, and the initial manuscript draft were
-produced by an AI system (Claude Fable 5, Anthropic) operating on a public
-open-problems repository; an independent AI system (GPT-5 Codex, OpenAI)
-performed adversarial audits that identified the endpoint defect and a
-citation-provenance correction recorded in Appendix~\ref{app:audit}, and
-repaired the certification script; a third system cross-checked the endpoint
-lemma conditions. The human maintainer supervised the process, reviewed the
-mathematics, and is responsible for the content. AI-generated material
-appears throughout the manuscript. AI audit does not substitute for
-independent human verification; readers are invited to check the two lemmas
-by hand (they are elementary) and to re-run the public code.
 
 \begin{thebibliography}{99}
 \bibitem{CK14} T.~A. Courtade and G.~R. Kumar, ``Which Boolean functions
