@@ -38,7 +38,8 @@ The Z-interference channel (also known as the one-sided interference channel) is
   Consistency: a degenerate $U$ reproduces the weak-regime TIN boundary; $U = X_2$
   reproduces the strong-regime polytope. The closed forms in this file thus evaluate
   Liu–Goldsmith's characterization, with the weak-regime closed form classical via
-  Benzel (1979).
+  the capacity-region equivalence to Benzel's (1979) channel that Liu–Goldsmith state
+  (not literal membership in Benzel's class — see the audit attempt).
 
 ## References
 
