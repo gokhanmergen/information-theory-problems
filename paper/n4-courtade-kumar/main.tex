@@ -351,11 +351,13 @@ single-threaded (Python 3.14, \texttt{mpmath} 1.3.0, macOS/arm64).
 \texttt{mpmath} is a ${\sim}30$-line enclosure routine printed in the
 repository.
 
-\paragraph{Archival status} An immutable archived release with a
-machine-readable per-subinterval certificate and an independent certificate
-checker is planned before submission. The audit history, including a repaired
-floating-point endpoint defect that motivated the two bridges, is in
-Appendix~\ref{app:audit}.
+\paragraph{Self-tests and archival status} The hard-coded logarithm
+enclosures used by the exact-rational checks are themselves proved by integer
+exponentiation (e.g., $2^{a}\le n^{b}$) or a truncated rational series for
+$\ln2$, in a self-test that runs before every verification. An immutable
+archived release with a machine-readable per-subinterval certificate and an
+independent certificate checker is planned before submission; the full audit
+history of the artifact is recorded in the repository.
 
 \section{Covering the noise interval}
 
@@ -377,9 +379,9 @@ The union contains $(0,\tfrac12)$ by inspection of the rational endpoints;
 the overlaps $(0,10^{-3}]\cap[\tfrac9{10^4},\tfrac{11}{10^4}]$,
 $[\tfrac9{10^4},\tfrac{11}{10^4}]\cap[10^{-3},0.0055]$, $[0.005,0.0055]$,
 $[0.4949,0.495]$, and $[0.495,0.4951]$ all have positive length. The bridges
-are certified with exactly represented rational endpoints, eliminating any
-dependence on the floating-point endpoint handling of the two main runs
-(Appendix~\ref{app:audit}).
+are certified with exactly represented rational endpoints, so the covering
+argument carries no dependence on the floating-point endpoint handling of
+the two main runs.
 \end{IEEEproof}
 
 Theorem~\ref{thm:main} follows: constants and dictators are analytic
@@ -414,9 +416,10 @@ all code, and the initial manuscript draft were produced by an AI system
 (Claude Fable 5, Anthropic) operating on a public open-problems repository.
 
 \paragraph{Independent audit and repair} A separate AI system (GPT-5 Codex,
-OpenAI) performed adversarial audits that identified the endpoint defect and
-a citation-provenance correction recorded in Appendix~\ref{app:audit}, and
-repaired the certification script.
+OpenAI) performed adversarial audits that identified a floating-point
+endpoint defect (motivating the two rational bridges of
+Lemma~\ref{lem:cover}) and a citation-provenance correction, both recorded
+in the repository, and repaired the certification script.
 
 \paragraph{Validation of the proofs} The endpoint lemma conditions and the
 manuscript's mathematical claims were independently validated by Gemini 3.5
@@ -427,28 +430,6 @@ reviewed the mathematics, and is responsible for the content. AI-generated
 material appears throughout the manuscript. AI audit does not substitute for
 independent human verification; readers are invited to check the two lemmas
 by hand (they are elementary) and to re-run the public code.
-
-\appendices
-
-\section{Audit History and Validation}\label{app:audit}
-
-The artifact was adversarially audited before being recorded; two findings
-are material. First, the script used for the two recorded interval runs
-converted its decimal endpoint strings to binary floating point before
-intervalization, rounding $0.001$ upward by $2.08\times10^{-20}$ and $0.495$
-downward by $4.44\times10^{-18}$; the recorded runs therefore covered two
-microscopically shortened intervals. The repaired script keeps all endpoints
-as exact rationals until evaluation, and the two rational-endpoint bridges
-of Lemma~\ref{lem:cover} independently certify neighborhoods of both seams,
-so the covering argument does not depend on the original endpoint handling.
-Second, an earlier internal review proposed an alternative high-noise proof
-by discarding a fourth-order Taylor remainder; that argument has the wrong
-inequality direction ($h^{(4)}<0$ makes the corresponding contribution to
-mutual information positive) and is not used anywhere: the high-noise regime
-rests solely on Lemma~\ref{lem:high}. The hard-coded logarithm enclosures
-used by the exact-rational checks are themselves proved by integer
-exponentiation (e.g., $2^{a}\le n^{b}$) or a truncated rational series for
-$\ln2$, in a self-test that runs before every verification.
 
 \begin{thebibliography}{99}
 \bibitem{CK14} T.~A. Courtade and G.~R. Kumar, ``Which Boolean functions
