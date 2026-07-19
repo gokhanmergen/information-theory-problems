@@ -27,6 +27,19 @@ The Z-interference channel (also known as the one-sided interference channel) is
 - When $p_1 \leq p_2$, Receiver 1's noise is less than or equal to Receiver 2's noise. In this regime, Receiver 1 can decode Receiver 2's message, and the capacity region is fully characterized: $\{R_1+R_2 \leq 1-h(p_1),\ R_2 \leq 1-h(p_2)\}$ (see attempts; reviewed). This is an instantiation of the classical strong-interference one-sided-IC machinery (Sato 1981; Costa–El Gamal 1987; El Gamal–Kim Ch. 6), so the regime should be considered essentially known.
 - For $p_1 > p_2$ (the weak interference regime), relabeling users and writing $N_1\stackrel d=N_2\oplus Z$ identifies the channel with Benzel's (1979) discrete additive degraded interference channel. Its capacity region equals the associated degraded BSC broadcast region: $R_2 \leq 1-h(p_2)$ and $R_1 \leq 1 - h(q \star h^{-1}(h(p_2) + R_2))$, where $q = (p_1-p_2)/(1-2p_2)$. Treating interference as noise with optimized input bias is optimal. The repository attempt gives a short independent MGL derivation; `2026-07-18-gpt-5-codex-prior-art-review.md` records the classical attribution.
 
+- **Liu–Goldsmith containment, verified at the theorem level** (2026-07-19): with users
+  relabeled to match their convention, the BS-ZIC satisfies both of their class
+  conditions *exactly and in $n$-letter form* — Condition 1 ($H(Y_1^n \mid X_1^n = x_1^n)$
+  independent of $x_1^n$ under any interfering input law) holds because conditioning
+  makes $Y_1^n$ a bijective shift of $X_2^n \oplus N_1^n$; Condition 2 holds with
+  $p^*(x_1) = \mathrm{Bern}(1/2)$, which makes $Y_1$ uniform ($\tau = 1$) irrespective
+  of $p(x_2)$. Their capacity theorem therefore applies for **all** $(p_1, p_2)$, giving
+  the region over $p(u)p(x_2|u)$, $X_1 \sim \mathrm{Bern}(1/2)$, $|\mathcal{U}| \leq 3$.
+  Consistency: a degenerate $U$ reproduces the weak-regime TIN boundary; $U = X_2$
+  reproduces the strong-regime polytope. The closed forms in this file thus evaluate
+  Liu–Goldsmith's characterization, with the weak-regime closed form classical via
+  Benzel (1979).
+
 ## References
 
 - A. El Gamal and M. H. M. Costa, "The capacity region of a class of deterministic interference channels," IEEE Trans. Inf. Theory, 1982.

@@ -107,10 +107,17 @@ degraded broadcast ``cloud,'' and Mrs.\ Gerber's Lemma converts the
 degradation into a converse, as in Wyner--Ziv. No rate splitting is needed
 anywhere in the parameter space, and weak-regime sum-optimality forces user 1
 silent. The channel satisfies the class conditions of Liu--Goldsmith
-\cite{LG09} (mod-2 additivity gives an invariant conditional output entropy
-and an interference-independent entropy-maximizing input), so part (ii) can
-be read as a closed-form evaluation of their characterization. We are not
-aware of this closed form in the literature but make no strong novelty claim.
+\cite{LG09} exactly and in $n$-letter form (mod-2 additivity gives an
+invariant conditional output entropy, and the uniform input maximizes the
+interfered receiver's output entropy irrespective of the interference law),
+so part (ii) can be read as a closed-form evaluation of their
+characterization with a degenerate auxiliary. Moreover, after relabeling
+users and writing $N_1 \overset{d}{=} N_2 \oplus \mathrm{Bern}(q)$, the weak
+regime falls into Benzel's class of discrete additive degraded interference
+channels \cite{Benzel79} (see also \cite{LU06}), so part (ii) should be
+regarded as classical; the contribution of this note is the assembled
+closed-form statement for all parameters and the short self-contained
+Mrs.\ Gerber converse.
 
 \begin{thebibliography}{9}
 \bibitem{WZ73} A.~D. Wyner and J.~Ziv, ``A theorem on the entropy of certain
@@ -125,6 +132,11 @@ discrete memoryless interference channel with strong interference,''
 \bibitem{LG09} N.~Liu and A.~Goldsmith, ``Capacity regions and bounds for a
 class of Z-interference channels,'' \emph{IEEE Trans.\ Inf.\ Theory},
 55(11):4986--4994, 2009.
+\bibitem{Benzel79} R.~Benzel, ``The capacity region of a class of discrete
+additive degraded interference channels,'' \emph{IEEE Trans.\ Inf.\ Theory},
+25(2):228--231, 1979.
+\bibitem{LU06} N.~Liu and S.~Ulukus, ``The capacity region of a class of
+discrete degraded interference channels,'' \emph{Proc.\ Allerton Conf.}, 2006.
 \bibitem{EGK11} A.~El~Gamal and Y.-H. Kim, \emph{Network Information Theory},
 Cambridge Univ.\ Press, 2011.
 \end{thebibliography}
