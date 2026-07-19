@@ -1,5 +1,4 @@
-\documentclass[11pt]{article}
-\usepackage[margin=1.1in]{geometry}
+\documentclass[journal,11pt]{IEEEtran}
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage[hidelinks]{hyperref}
 \usepackage{booktabs}
@@ -28,9 +27,13 @@ Let $X$ be uniform on $\{0,1\}^n$ and let $Y$ be the output of a memoryless
 binary symmetric channel with crossover probability $\alpha$ on input $X$.
 Courtade and Kumar conjectured that every Boolean function
 $f:\{0,1\}^n\to\{0,1\}$ satisfies $I(f(X);Y)\le 1-h(\alpha)$, where $h$ is the
-binary entropy function. We prove the conjecture for $n=4$, for the full range
+binary entropy function: no one-bit quantization of $X$ is more informative
+about the noisy observation than a single coordinate. We prove the conjecture
+for $n=4$, for the full range
 $\alpha\in(0,\tfrac12)$, with dictator functions the unique maximizers on
-$[0.001,0.495]$. The proof is computer-assisted but self-contained: the noise
+$[0.001,0.495]$. To our knowledge this is the first proof of the conjecture
+over a continuum of noise levels at any fixed $n\ge2$. The proof is
+computer-assisted but self-contained: the noise
 range is split into four overlapping regimes, supplemented by two small audit
 bridges at their analytic endpoints; the middle regimes are certified
 by outward-rounded interval arithmetic over the $222$ NPN equivalence classes of
@@ -44,20 +47,47 @@ libraries plus \texttt{mpmath}) is available in the repository.
 
 \section{Introduction}
 
-Let $X\sim\mathrm{Uniform}(\{0,1\}^n)$ and let $Y$ be obtained from $X$ by
+\IEEEPARstart{H}{ow} much can a single bit reveal about a noisy vector? Let
+$X\sim\mathrm{Uniform}(\{0,1\}^n)$ and let $Y$ be obtained from $X$ by
 passing each coordinate independently through $\BSC(\alpha)$,
-$\alpha\in(0,\tfrac12)$. Courtade and Kumar~\cite{CK14} conjectured
+$\alpha\in(0,\tfrac12)$. Every Boolean function $f:\{0,1\}^n\to\{0,1\}$ is a
+one-bit quantization of the clean data, and data processing alone bounds its
+relevance to the noisy observer only by
+$I(f(X);Y)\le\min\{1,\,n(1-h(\alpha))\}$. Courtade and Kumar~\cite{CK14}
+conjectured the far sharper
 \begin{equation}\label{eq:ck}
 I(f(X);Y)\;\le\;1-h(\alpha)
-\qquad\text{for every Boolean } f:\{0,1\}^n\to\{0,1\},
 \end{equation}
+for every Boolean $f:\{0,1\}^n\to\{0,1\}$,
 with the dictator functions $f(x)=x_i$ (and their complements) achieving
-equality. The conjecture remains open in general; it is known in the high-noise
+equality: the most informative one-bit summary is a single coordinate. The
+question arose from CEO-style distributed inference problems~\cite{CK14}, and
+\eqref{eq:ck} is precisely a fundamental limit on the usefulness of a hard
+decision, made from clean data, to a remote observer who sees only noise-corrupted
+data. Beyond its operational content, the conjecture has become a
+benchmark for the interaction of information theory with the analysis of
+Boolean functions: a one-line, finite-dimensional statement that has resisted
+hypercontractivity, Fourier perturbation, and isoperimetric methods for over a
+decade, generating along the way tools of independent interest.
+
+\subsection{Related work}
+
+The conjecture remains open in general. It is known in the high-noise
 regime $\alpha\in[\tfrac12-\delta,\tfrac12)$ for an inexplicit absolute constant
-$\delta$~\cite{Samorodnitsky16,JW26}, for a large explicit correlation range in
-the balanced case via local-optimality methods~\cite{Yu24}, and is equivalent to
-a symmetrized Li--M\'edard conjecture~\cite{BO20}. Two claimed proofs were
-withdrawn~\cite{Kesal15,Sarbu16}. Courtade and Kumar~\cite[Sec.~II-B]{CK14}
+$\delta$~\cite{Samorodnitsky16}; Ordentlich, Shayevitz, and Weinstein
+\cite{OSW16} gave improved global bounds short of \eqref{eq:ck}, and Javanmard
+and Woodruff~\cite{JW26} recently sharpened the high-noise entropy expansion to
+its optimal order and proved a coordinate-wise form of \eqref{eq:ck} for all
+Boolean functions --- again with inexplicit constants delimiting the proven
+range. In the balanced case, Yu~\cite{Yu24} established local optimality of
+dictators and, combining it with earlier bounds and computer-assisted
+estimates, confirmed the balanced conjecture for a large explicit correlation
+range ($\rho=1-2\alpha\in[0,0.914]$). The conjecture is equivalent to
+a symmetrized Li--M\'edard conjecture~\cite{BO20}, and a differential-equation
+reformulation reduces the balanced case to a finite-dimensional functional
+inequality~\cite{CGN25}. Two claimed proofs were
+withdrawn~\cite{Kesal15,Sarbu16} --- a caution about the conjecture's
+deceptive simplicity. Courtade and Kumar~\cite[Sec.~II-B]{CK14}
 enumerated compressed Boolean functions through $n=7$ and numerically evaluated
 their mutual information; separately, their Matlab implementation of
 Algorithm~II.1 sampled the different inequality (20) on a noise grid of spacing
@@ -65,7 +95,11 @@ $0.001$~\cite[Sec.~II-D]{CK14}. Neither computation is a continuum proof of the
 present theorem. We are not aware of a proof covering
 a \emph{continuum} of noise levels at any fixed $n\ge 2$; in particular, prior
 high-noise theorems cannot be combined with grid computations to cover all of
-$(0,\tfrac12)$, because their constants are not explicit.
+$(0,\tfrac12)$, because their constants are not explicit --- and the low-noise
+limit, where \eqref{eq:ck} degenerates to equality for every balanced $f$ at
+$\alpha=0$, has no general theorem at all.
+
+\subsection{Contribution}
 
 \begin{theorem}\label{thm:main}
 For $n=4$, inequality~\eqref{eq:ck} holds for every $\alpha\in(0,\tfrac12)$ and
@@ -73,12 +107,21 @@ every Boolean function $f$. Moreover, for $\alpha\in[0.001,0.495]$, equality
 holds if and only if $f$ is a dictator or an anti-dictator.
 \end{theorem}
 
-The interest of the result is partly the statement and partly the method: the
-endpoint lemmas isolate exactly the finite data that controls
-\eqref{eq:ck} near $\alpha\to 0$ (edge-boundary profiles; edge-isoperimetry on
-$Q_4$) and near $\alpha\to\tfrac12$ (level-one Fourier weight and spectral
-$\ell_1$-mass), and the same four-regime scheme applies in principle at any
-fixed $n$.
+The interest of the result is partly the statement and partly the method. The
+endpoint regimes are exactly where naive certification must fail --- the gap
+$1-h(\alpha)-I(f(X);Y)$ vanishes as $\alpha\to\tfrac12$ for every $f$, and as
+$\alpha\to0$ for every balanced $f$ --- and our endpoint lemmas isolate the
+finite data that controls \eqref{eq:ck} there: edge-boundary profiles and
+hypercube edge-isoperimetry near $\alpha=0$; level-one Fourier weight and
+spectral $\ell_1$-mass near $\alpha=\tfrac12$. Between the endpoints, rigorous
+interval arithmetic certifies strict inequality class by class. The scheme is
+dimension-generic (the Discussion reports its state at $n=5$). Methodologically
+the proof follows the tradition of computer-assisted combinatorics --- the
+four-color theorem~\cite{AH77}, the flyspecked Kepler conjecture~\cite{Hales17},
+the Boolean Pythagorean triples problem~\cite{HKM16} --- with the discipline
+that every floating-point step is either enclosed by outward rounding or
+eliminated in favor of exact rational arithmetic, and that the artifact was
+adversarially audited by independent systems before being recorded.
 
 \section{Setup and reduction}
 
@@ -260,6 +303,19 @@ conjecture are equivalent,'' \emph{Proc.\ IEEE ISIT}, 2020.
 \bibitem{Sarbu16} S.~S\^arbu, arXiv:1604.05113 (withdrawn).
 \bibitem{Harper64} L.~H. Harper, ``Optimal assignments of numbers to
 vertices,'' \emph{J.\ SIAM}, 12(1):131--135, 1964.
+\bibitem{OSW16} O.~Ordentlich, O.~Shayevitz, and O.~Weinstein, ``An improved
+upper bound for the most informative Boolean function conjecture,''
+\emph{Proc.\ IEEE ISIT}, 2016.
+\bibitem{CGN25} Z.~Chen, A.~Gohari, and C.~Nair, ``A differential equation
+approach to the most-informative Boolean function conjecture,''
+arXiv:2502.10019, 2025.
+\bibitem{AH77} K.~Appel and W.~Haken, ``Every planar map is four colorable,''
+\emph{Illinois J.\ Math.}, 21:429--567, 1977.
+\bibitem{Hales17} T.~Hales et al., ``A formal proof of the Kepler
+conjecture,'' \emph{Forum of Mathematics, Pi}, 5:e2, 2017.
+\bibitem{HKM16} M.~J.~H. Heule, O.~Kullmann, and V.~W. Marek, ``Solving and
+verifying the Boolean Pythagorean triples problem via cube-and-conquer,''
+\emph{Proc.\ SAT}, 2016.
 \end{thebibliography}
 
 \end{document}
