@@ -1,13 +1,12 @@
 \documentclass[12pt,draftclsnofoot,onecolumn,journal]{IEEEtran}
-\usepackage{amsmath,amssymb,amsthm}
+\usepackage{amsmath,amssymb}
 \usepackage[hidelinks]{hyperref}
 \usepackage{booktabs}
 
-\theoremstyle{plain}
+% IEEEtran's native theorem styling: italic head, colon, roman body.
 \newtheorem{theorem}{Theorem}
 \newtheorem{lemma}{Lemma}
 \newtheorem{proposition}{Proposition}
-\theoremstyle{definition}   % bold head, upright roman body
 \newtheorem{remark}{Remark}
 \newcommand{\BSC}{\mathsf{BSC}}
 \newcommand{\ind}[1]{\mathbf{1}_{#1}}
@@ -44,11 +43,6 @@ by class over the $222$ NPN equivalence classes of $4$-variable Boolean
 functions. An explicit covering lemma assembles the regimes. All computations
 are reproducible from the public repository.
 \end{abstract}
-
-\begin{IEEEkeywords}
-Boolean functions, binary symmetric channel, computer-assisted proof,
-Courtade--Kumar conjecture, interval arithmetic, mutual information.
-\end{IEEEkeywords}
 
 \IEEEpeerreviewmaketitle
 
@@ -119,16 +113,16 @@ $g_f(\alpha):=1-h(\alpha)-I(f(X);Y)$ vanishes as $\alpha\to\tfrac12$ for every
 $f$, and as $\alpha\to0$ for every balanced $f$. Our two endpoint lemmas
 isolate the finite data controlling \eqref{eq:ck} there.
 
-\textbf{Endpoint regimes.} Edge-boundary profiles and hypercube
+\paragraph{Endpoint regimes} Edge-boundary profiles and hypercube
 edge-isoperimetry control the conjecture near $\alpha=0$; level-one Fourier
 weight and spectral $\ell_1$-mass control it near $\alpha=\tfrac12$. Each
 endpoint reduces to finitely many rational inequalities, verified exactly.
 
-\textbf{Middle range.} Validated interval arithmetic certifies strict
+\paragraph{Middle range} Validated interval arithmetic certifies strict
 inequality on the compact middle range, class by class
 (Section~\ref{sec:certify}).
 
-\textbf{Complete coverage.} Lemma~\ref{lem:cover} assembles the regimes into
+\paragraph{Complete coverage} Lemma~\ref{lem:cover} assembles the regimes into
 a gap-free cover of $(0,\tfrac12)$. The scheme is dimension-generic;
 Section~\ref{sec:discussion} reports its state at $n=5$.
 
@@ -214,7 +208,7 @@ $10^{-3}\bigl[t_0\max(0,1-\gamma c_1)+\log_2 e+c_2\bigr]\le 1-H(q_1)$,
 then $g_f(\alpha)\ge 0$.
 \end{lemma}
 
-\begin{proof}
+\begin{IEEEproof}
 Write $g_f=m_0-D(\alpha)$ with $m_0=1-H(q_1)$ and
 $D(\alpha)=h(\alpha)-H(f(X)\mid Y)$. Three elementary steps:
 
@@ -242,7 +236,7 @@ Lemma~\ref{lem:boundary}; the $t$-coefficient is negative and $t\ge t_0$
 gives the stated criterion. If $f$ is unbalanced, $\alpha t$ is increasing on
 $(0,1/e)$, so $D$ is maximized at $\alpha=10^{-3}$, giving the stated
 criterion against $m_0>0$.
-\end{proof}
+\end{IEEEproof}
 
 All $220$ classes satisfy the applicable criterion, verified in exact
 rational arithmetic with two-sided rational enclosures of
@@ -278,7 +272,7 @@ Let $\rho_0=10^{-2}$. If $\rho_0A/q_{\min}\le\tfrac12$ and
 then $g_f(\alpha)\ge0$ for all $\rho\in(0,\rho_0]$.
 \end{lemma}
 
-\begin{proof}
+\begin{IEEEproof}
 Write $p(v,y)=q_v2^{-4}(1+\varepsilon_{v,y})$. Since
 $p(1,y)=2^{-4}T_\rho\ind f(y)$ and $p(0,y)=2^{-4}(1-T_\rho\ind f(y))$,
 \[
@@ -309,7 +303,7 @@ Finally $1-h(\alpha)=\frac1{\ln2}\sum_{k\ge1}\frac{\rho^{2k}}{2k(2k-1)}
 $1-\widetilde W_1\ge0$, both bracketed factors in the hypothesis are
 nondecreasing in $\rho$, so verification at $\rho_0$ suffices for all
 $\rho\in(0,\rho_0]$.
-\end{proof}
+\end{IEEEproof}
 
 All $220$ classes pass, including all balanced ones, with exact dyadic
 Fourier data; no external high-noise theorem is invoked. The maximum
@@ -373,7 +367,7 @@ consecutive regimes overlap on sets of positive measure:
 \]
 \end{lemma}
 
-\begin{proof}
+\begin{IEEEproof}
 The union contains $(0,\tfrac12)$ by inspection of the rational endpoints;
 the overlaps $(0,10^{-3}]\cap[\tfrac9{10^4},\tfrac{11}{10^4}]$,
 $[\tfrac9{10^4},\tfrac{11}{10^4}]\cap[10^{-3},0.0055]$, $[0.005,0.0055]$,
@@ -381,7 +375,7 @@ $[0.4949,0.495]$, and $[0.495,0.4951]$ all have positive length. The bridges
 are certified with exactly represented rational endpoints, eliminating any
 dependence on the floating-point endpoint handling of the two main runs
 (Appendix~\ref{app:audit}).
-\end{proof}
+\end{IEEEproof}
 
 Theorem~\ref{thm:main} follows: constants and dictators are analytic
 (Section~\ref{sec:setup}); every other class satisfies $g_f\ge0$ on the
@@ -410,20 +404,20 @@ rational arithmetic over explicitly listed data.
 
 In accordance with IEEE policy on AI-generated content:
 
-\textbf{Initial generation.} The proof strategy, the two endpoint lemmas,
+\paragraph{Initial generation} The proof strategy, the two endpoint lemmas,
 all code, and the initial manuscript draft were produced by an AI system
 (Claude Fable 5, Anthropic) operating on a public open-problems repository.
 
-\textbf{Independent audit and repair.} A separate AI system (GPT-5 Codex,
+\paragraph{Independent audit and repair} A separate AI system (GPT-5 Codex,
 OpenAI) performed adversarial audits that identified the endpoint defect and
 a citation-provenance correction recorded in Appendix~\ref{app:audit}, and
 repaired the certification script.
 
-\textbf{Validation of the proofs.} The endpoint lemma conditions and the
+\paragraph{Validation of the proofs} The endpoint lemma conditions and the
 manuscript's mathematical claims were independently validated by Gemini 3.5
 Flash (Google) and ChatGPT 5.6 Sol (OpenAI).
 
-\textbf{Human responsibility.} The human maintainer supervised the process,
+\paragraph{Human responsibility} The human maintainer supervised the process,
 reviewed the mathematics, and is responsible for the content. AI-generated
 material appears throughout the manuscript. AI audit does not substitute for
 independent human verification; readers are invited to check the two lemmas
