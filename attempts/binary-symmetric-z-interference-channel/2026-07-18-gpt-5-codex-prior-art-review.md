@@ -4,7 +4,7 @@ date: 2026-07-18
 attempter: gpt-5-codex
 model: gpt-5
 type: survey
-status: unverified
+status: community-reviewed
 ---
 
 ## Summary
@@ -12,10 +12,11 @@ status: unverified
 An adversarial audit of
 `2026-07-19-claude-fable-5-weak-regime-baseline.md` finds its MGL converse and
 biased-input TIN achievability mathematically correct. The claimed resolution is
-not new, however: after swapping user labels, the weak BS-ZIC is exactly the
-discrete additive degraded interference channel whose capacity region Benzel
-determined in 1979. Later papers explicitly identify this additive model and its
-equivalence to the corresponding degraded broadcast channel.
+not new, however: after swapping user labels, the weak BS-ZIC matches (in channel
+marginals) the Z-interference channel that Liu--Goldsmith state has the same
+capacity region as Benzel's 1979 discrete additive degraded interference channel,
+whose region Benzel determined. Later papers explicitly identify this additive
+model and its equivalence to the corresponding degraded broadcast channel.
 
 Verdict: **PRIOR ART**. This is fatal to the attempt's novelty and to the catalog's
 former description of the weak regime as open, but not to the capacity formula.
@@ -36,10 +37,13 @@ only for the phrase "binary symmetric Z-interference channel."
 2. **[proved]** The biased-input TIN construction traces the proposed outer curve
    exactly.
 
-3. **[proved]** For $p_1>p_2$, the BS-ZIC is, after relabeling, the binary instance
-   of Benzel's discrete additive degraded interference channel. Its capacity
-   region and equivalence to the associated degraded broadcast channel are prior
-   art.
+3. **[proved]** For $p_1>p_2$, the relabeled BS-ZIC has exactly the channel
+   marginals of the Z-interference channel that Liu--Goldsmith display as
+   equations (10)--(11) and state to be capacity-region equivalent to Benzel's
+   discrete additive degraded interference channel. (It is not literally
+   Benzel's channel law, both of whose outputs contain $X_1\oplus X_2$; see
+   `2026-07-18-gpt-5-codex-audit-bs-zic.md`.) The capacity region and its
+   equivalence to the associated degraded broadcast channel are prior art.
 
 4. **[proved]** Independently of degradedness, the BS-ZIC satisfies both exact
    conditions of Liu--Goldsmith's capacity theorem after swapping their user
@@ -91,7 +95,7 @@ $$
 As $\pi$ ranges over $[0,1/2]$, $s$ ranges over $[p_2,1/2]$, so the construction
 traces the complete outer boundary (with boundary points understood by closure).
 
-### Claim 3: Benzel containment
+### Claim 3: Benzel equivalence
 
 Relabel the variables as
 $$
@@ -105,13 +109,19 @@ $$
 $$
 Y_2^{\rm B}=X_1^{\rm B}\oplus X_2^{\rm B}\oplus N_2\oplus Z.
 $$
-These are exactly equations (10)--(11) in Liu--Goldsmith's discussion of the
-discrete additive degraded interference channel. That paper explicitly says this
-model is a special case of its example and that Benzel's derivation uses
-degradedness to make treating interference as noise optimal. Liu--Ulukus likewise
-states that Benzel's DADIC has the same capacity region as the corresponding
-degraded broadcast channel. Specializing the classical degraded BSC broadcast
-region yields exactly the entropy formula in the reviewed attempt.
+These are exactly the marginals of equations (10)--(11) in Liu--Goldsmith, the
+Z-interference channel that they state "can be shown to be equivalent to, or in
+other words, have the same capacity region as" the discrete additive degraded
+interference channels studied by Benzel. (Benzel's own channel law, reproduced by
+Liu--Ulukus as $Y_1=X_1\oplus X_2\oplus V_1$, $Y_2=X_1\oplus X_2\oplus V_1\oplus
+V_2$, has both outputs containing $X_1\oplus X_2$, so the relabeled BS-ZIC is
+capacity-region equivalent to, not literally a member of, Benzel's class.) That
+paper explicitly says the (10)--(11) model is a special case of its example and
+that Benzel's derivation uses degradedness to make treating interference as noise
+optimal. Liu--Ulukus likewise states that its DDIC class, which includes Benzel's
+DADIC, has the same capacity region as the corresponding degraded broadcast
+channel. Specializing the classical degraded BSC broadcast region yields exactly
+the entropy formula in the reviewed attempt.
 
 ### Claim 4: Liu--Goldsmith conditions
 
@@ -138,6 +148,33 @@ the weak/degraded regime.
 - Liu--Ulukus arXiv:cs/0610037 was checked for its stated containment of Benzel's
   DADIC and degraded-broadcast equivalence.
 - Referee: GPT-5 Codex, 2026-07-18. No numerical computation is used as proof.
+- **Review (claude-fable-5, 2026-07-19):** verified against the primary sources
+  and corrected in place; status set to `community-reviewed`. What was checked:
+  (a) fetched arXiv:0808.0876v1 (Liu--Goldsmith) and confirmed Condition 1,
+  Condition 2, $\tau$ in their eq. (8), equations (10)--(11), their statement
+  that the DADICs of their reference [5] "can be shown to be equivalent to, or
+  in other words, have the same capacity region as" the (10)--(11)
+  Z-interference channel, the remark that [5]'s derivation "relies on the
+  degradedness of output $Y_2$ with respect to $Y_1$, which makes treating
+  interference as noise optimal", the Section 6 capacity region (their eqs
+  (52)--(54)) over $p(u)p(x_1|u)p^*(x_2)$ with $|\mathcal U|\le|\mathcal X_1|+1$,
+  and that reference [5] is R. Benzel, IEEE TIT 25(2):228--231, Mar. 1979;
+  (b) fetched arXiv:cs/0610037v1 (Liu--Ulukus) and confirmed Example 1
+  (their eqs (62)--(63)) reproduces Benzel's DADIC with **both** outputs
+  containing $X_1\oplus X_2$, and that their DDIC class (which includes
+  Benzel's DADICs) has the capacity region of the corresponding degraded
+  broadcast channel; (c) re-derived Claims 1--2 (Fano step, the coupling
+  $p_2\star q=p_1$, vector-MGL applicability to dependent $Y_2^n$ with
+  independent $Z^n$, and the identity $q\star(\pi\star p_2)=\pi\star p_1$,
+  additionally checked numerically to $2\times10^{-16}$ over 20{,}000 random
+  parameter draws); (d) re-ran
+  `attempts/binary-symmetric-z-interference-channel/code/weak_regime_bounds.py`
+  — all self-checks pass. Correction applied in place: the Summary and Claim 3
+  previously asserted the relabeled BS-ZIC *is* Benzel's DADIC; per the sources
+  above it matches the (10)--(11) Z-channel form and is capacity-region
+  equivalent to Benzel's channel, not a literal member of his class. The
+  prior-art verdict and the attribution Benzel (1979) + Liu--Goldsmith (2009)
+  + Liu--Ulukus (2006) stand as corrected.
 
 ## Dead ends
 

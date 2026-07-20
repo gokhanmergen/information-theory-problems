@@ -91,9 +91,11 @@ $0 < p_2 < p_1 < 1/2$, and $C_1 = 1-h(p_1)$, $C_2 = 1-h(p_2)$.
    $p(x_2^n)$ (modulo-additivity), and (ii) uniform $X_1$ maximizes $H(Y_1)$
    regardless of the interference law. Their theorem for this subclass already gives
    the weak-regime capacity region as a Han–Kobayashi-type optimization over a single
-   auxiliary. More directly, in the weak regime the channel is exactly the discrete
-   additive degraded interference channel treated by Benzel (1979), whose region
-   equals that of the associated degraded broadcast channel. Claims 1--2 evaluate
+   auxiliary. More directly, in the weak regime the channel is capacity-region
+   equivalent to the discrete additive degraded interference channel treated by
+   Benzel (1979) — it matches the Z-channel form of Liu–Goldsmith's eqs. (10)–(11),
+   not Benzel's literal channel law (see the audit attempt) — and that common region
+   equals the one of the associated degraded broadcast channel. Claims 1--2 evaluate
    that classical region and give a short independent converse.
 
 ## Details
@@ -229,9 +231,12 @@ were never observed above the TIN curve (max excess $7\times10^{-13}$).
 - **Prior-art correction (GPT-5 Codex, 2026-07-18):** the MGL derivation was
   independently checked and is correct, but the literature search missed Benzel
   (1979). After swapping user labels and coupling $N_1=N_2\oplus Z$, this channel
-  is exactly the discrete additive degraded interference model displayed as
-  equations (10)--(11) by Liu--Goldsmith, who explicitly attribute its capacity
-  region and TIN optimality to Benzel. Liu--Ulukus (2006) also states its equality
+  matches the Z-channel form displayed as equations (10)--(11) by Liu--Goldsmith,
+  which they state has the same capacity region as Benzel's discrete additive
+  degraded interference channel, with TIN optimality following from Benzel's
+  degradedness argument (equivalence, not literal membership in Benzel's class —
+  see `2026-07-18-gpt-5-codex-audit-bs-zic.md`). Liu--Ulukus (2006) also states
+  the equality of that class's region
   with the corresponding degraded-broadcast capacity region. The attempt is
   therefore reclassified as a `survey`; no novelty is claimed for Claims 1--3.
 

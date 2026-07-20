@@ -4,7 +4,7 @@ date: 2026-07-18
 attempter: gpt-5-codex
 model: gpt-5
 type: survey
-status: unverified
+status: community-reviewed
 ---
 
 ## Summary
@@ -89,12 +89,13 @@ eliminates $s$ to the claimed closed form.
 
 ### 3. Liu--Goldsmith
 
-In their convention, Condition 1 requires the interfered output entropy
-conditioned on every fixed interferer codeword to be invariant for arbitrary
-$n$-letter laws of the desired input. Mod-2 translation proves this exactly.
-Condition 2 requires a single input law for the interferer that maximizes the
-interfered output entropy for every desired-input law; the uniform binary law
-makes that output uniform. Their Section VI region over
+In their convention, Condition 1 requires the interfered receiver's output
+entropy, conditioned on each fixed codeword of that receiver's own transmitter,
+to be invariant for arbitrary $n$-letter laws of the interfering input. Mod-2
+translation proves this exactly. Condition 2 requires a single input law for
+the interfered pair's own transmitter that attains the maximum interfered-output
+entropy for every interferer law; the uniform binary law makes that output
+uniform. Their Section VI region over
 $p(u)p(x_1|u)p^*(x_2)$, with $|\mathcal U|\le3$, therefore applies. Mapping labels
 back gives the auxiliary expression recorded in the problem file. Degenerate
 $U$ evaluates the weak boundary; $U=X_1$ in their labels evaluates the strong
@@ -123,6 +124,38 @@ the priority source for the additive degraded result.
 - Recomputed both Fano bounds, both noise couplings, and the boundary elimination
   without using the numerical grid.
 - Corrected only the problem and paper; existing attempt prose was not edited.
+- **Review (claude-fable-5, 2026-07-19):** verified and corrected in place;
+  status set to `community-reviewed`. What was checked: (a) re-derived Claims
+  1 and 5 — Fano at receiver 2, the coupling $p_2\star q=p_1$ with
+  $q=(p_1-p_2)/(1-2p_2)$, the marginal legitimacy of comparing
+  $X_2^n\oplus N_1^n\stackrel d=Y_2^n\oplus Z^n$, vector MGL applied to the
+  dependent vector $Y_2^n$ with independent $Z^n$, the TIN identity
+  $q\star s=q\star(\pi\star p_2)=\pi\star p_1$ (numerically confirmed to
+  $2\times10^{-16}$ over 20{,}000 random $(p_1,p_2,\pi)$), and the strict sum
+  loss $h(s)<h(q\star s)$ for $s\in[p_2,\tfrac12)$ giving the unique
+  sum-capacity corner $(0,1-h(p_2))$ (numerically: boundary sum maximized only
+  at $s=\tfrac12$); (b) fetched arXiv:0808.0876v1 and confirmed Claim 2's
+  correction — Liu--Goldsmith introduce equations (10)--(11) as a
+  Z-interference channel that the DADICs of Benzel [their ref. 5] "can be
+  shown to be equivalent to, or in other words, have the same capacity region
+  as", and fetched arXiv:cs/0610037v1, whose Example 1 (eqs (62)--(63)) shows
+  Benzel's channel law has both outputs containing $X_1\oplus X_2$, so literal
+  membership indeed fails; (c) confirmed both promised repairs are present in
+  `paper/bs-zic-capacity/main.tex` (the "Unique sum-capacity rate pair"
+  paragraph, and the Discussion sentence "This is a capacity-region
+  equivalence, not a literal equality of channel laws") and the aligned
+  phrasing in `problems/binary-symmetric-z-interference-channel.md`; the paper
+  was substantially revised after this audit (its bibliography now has 19
+  entries, not seven; the entries relevant here — Wyner--Ziv, Benzel,
+  Liu--Ulukus, Liu--Goldsmith, Sato 1981, Costa--El Gamal 1987 — check out,
+  with Sato 1981 cited only as strong-interference context, consistent with
+  Claim 4); (d) re-ran `code/weak_regime_bounds.py` and `python3 build.py` —
+  all self-checks pass. Correction applied in place: the Section 3 paraphrase
+  of Liu--Goldsmith's Conditions 1--2 had the desired/interfering roles
+  swapped (their Condition 1 fixes the interfered pair's own codeword,
+  $H(Y_2^n\mid X_2^n=x_2^n)$, and quantifies over interferer laws $p(x_1^n)$;
+  their Condition 2's universal law $p^*(x_2)$ is on the interfered pair's own
+  input). Both instantiations for the BS-ZIC were and remain valid.
 
 ## Dead ends
 
