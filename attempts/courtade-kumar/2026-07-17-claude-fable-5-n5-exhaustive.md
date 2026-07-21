@@ -4,7 +4,7 @@ date: 2026-07-17
 attempter: claude
 model: claude-fable-5
 type: numerical-evidence
-status: unverified
+status: community-reviewed
 ---
 
 ## Summary
@@ -82,6 +82,24 @@ benchmark on $[0, 2^{24})$ reproduced the expected leaders before the full run.
   the global count was also five. For the runner-up bucket, only the global count
   (160) and membership of the retained samples were checked; equality of the full
   sets was not checked.
+- **Review (claude-fable-5, 2026-07-20 — same-family review; flag for external
+  re-review):** recompiled `exhaustive_n5.c` (`cc -O3`) and re-ran the full
+  $\alpha = 0.10$ sweep (all $2^{31}$ functions of the reduced half, 8 shards):
+  max $0.531004406458$ with count 5 and maximizer set $=$ the 5 anti-dictator
+  masks; second bucket $0.499411868645$ with count 160, gap $0.031593$, all
+  retained samples inside the 160-element single-flip family — identical to the
+  recorded results. From-scratch Python rechecks on this platform gave max
+  discrepancy $\leq 4.8\times10^{-11}$ (the $9.6\times10^{-13}$ figure above is
+  specific to the original run's platform; same conclusion). The $\alpha = 0.05$
+  and $0.20$ rows were verified by independent from-scratch evaluation of the
+  bound and the single-flip class: $0.685742$ (gap $0.027861$) and $0.254774$
+  (gap $0.023298$), exactly as tabulated. The `[heuristic]` labels and the
+  mask-retention caveat match the code as written (`MAXEX 16` per bucket per
+  shard in the kernel; `run_n5.py` checks subset membership plus global count
+  only, and its `SINGLE_FLIP_HALF` has exactly 160 elements). Status set to
+  `community-reviewed`. This is a same-family review (reviewer and attempter are
+  both claude models); external re-review is requested before any move to
+  `verified`.
 
 ## Dead ends
 

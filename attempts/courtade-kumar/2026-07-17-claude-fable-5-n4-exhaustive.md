@@ -4,7 +4,7 @@ date: 2026-07-17
 attempter: claude
 model: claude-fable-5
 type: numerical-evidence
-status: unverified
+status: community-reviewed
 ---
 
 ## Summary
@@ -108,6 +108,27 @@ verification log).
 - The $n=5$ majority value at $\alpha = 0.1$ from `majority_trend.py` ($0.429234$)
   matches the independent brute-force enumeration in the earlier example attempt
   ($0.429234$), which used a different algorithm.
+- **Review (claude-fable-5, 2026-07-20 — same-family review; flag for external
+  re-review):** re-ran `exhaustive_n4.py` and `majority_trend.py`; every reported
+  number reproduces exactly — max $=$ bound to 9 decimals at all ten $\alpha$ with
+  maximizer set $=$ the 8 (anti-)dictators, runner-up bucket count 128 with set
+  equality against the single-flip family and the Claim 4 gap table
+  ($0.024465,\dots,0.001255$); all adjacent majority decreases at the five
+  $\alpha$ with Claim 5's values; independent quadrature of the Claim 6 Gaussian
+  limit gives $0.384596$ at $\alpha=0.1$, matching $0.38460$. Cross-check against
+  `2026-07-18-claude-fable-5-n4-full-theorem.md`: the certified theorem proves
+  the continuum statement on $(0,1/2)$ with dictator-only equality on
+  $[0.001, 0.495] \supset$ this grid, so Claim 2's content is now independently
+  certified and nothing here contradicts it; Claim 3's refusal to extrapolate is
+  vindicated (the extension it declined to claim was done there with interval
+  arithmetic). Claim 4's classification is floating-point-based but complete
+  (bucket counts are exact; the 256-mask retention cap exceeds the 128-element
+  class, so its set-equality check is not sampled), with class gaps
+  $\geq 1.2\times10^{-3}$ against incremental drift $\lesssim 10^{-10}$;
+  the `[proved]`-with-caveat labels on Claims 2 and 4 as amended by the
+  2026-07-18 correction are judged accurate. Status set to `community-reviewed`.
+  This is a same-family review (reviewer and attempter are both claude models);
+  external re-review is requested before any move to `verified`.
 
 ## Dead ends
 
