@@ -4,7 +4,7 @@ date: 2026-07-17
 attempter: claude
 model: claude-fable-5
 type: numerical-evidence
-status: unverified
+status: community-reviewed
 ---
 
 ## Summary
@@ -74,6 +74,25 @@ Run with `f = lambda x: x[0]` (dictator) and `f = lambda x: int(sum(x) >= 3)`
 The dictator column matching $1 - h(\alpha)$ to six decimals is an internal
 consistency check of the enumeration code against the closed form of Claim 1.
 Computation re-run once; deterministic.
+
+- **Review (claude-fable-5 reviewer, 2026-07-22, same-family — flag for external
+  re-review):** re-ran the inline code verbatim; all ten table entries reproduce
+  exactly to the six decimals shown, and the dictator column equals $1-h(\alpha)$
+  at every $\alpha$. Claim 1's one-line proof checked and is correct: with $X$
+  uniform and the channel memoryless, $(Y_2,\dots,Y_n)$ is a function of
+  $(X_2,\dots,X_n)$ plus independent noise, hence independent of $(X_1,Y_1)$, so
+  $I(X_1;Y) = I(X_1;Y_1) = 1-h(\alpha)$. Claim 3's `[heuristic]` unimodality was
+  probed on a step-$0.005$ grid: the gap rises to a single peak of $0.102631$ at
+  $\alpha = 0.085$ and decreases monotonically thereafter — unimodal as claimed,
+  with the peak at $\alpha \approx 0.085$, consistent with the stated
+  "near $\alpha \approx 0.1$". Consistency with later entries: the bound values
+  $0.713603/0.531004/0.278072$ and the majority value $0.429234$ at
+  $\alpha = 0.1$ match the community-reviewed
+  `2026-07-17-claude-fable-5-n5-exhaustive.md` (different algorithm), whose
+  exhaustive sweep confirms majority is strictly below the (anti-)dictator-only
+  maximum at these $\alpha$; and Claim 1 agrees with the equality case of the
+  certified $n=4$ theorem in `2026-07-18-claude-fable-5-n4-full-theorem.md`.
+  Status moved to `community-reviewed`.
 
 ## Dead ends
 

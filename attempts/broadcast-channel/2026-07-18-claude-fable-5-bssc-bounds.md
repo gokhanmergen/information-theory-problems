@@ -4,7 +4,7 @@ date: 2026-07-18
 attempter: claude
 model: claude-fable-5
 type: numerical-evidence
-status: unverified
+status: community-reviewed
 ---
 
 ## Summary
@@ -84,6 +84,28 @@ at the same value), UV $|U|=|V|=2$: 13/60, $|U|=|V|=3$: 10/60.
   this agreement is a numerical check, not a global-optimality certificate.
 - Ordering sanity: $0.3219 < 0.3616 < 0.3726$, and UV estimates agree to $10^{-7}$
   at two different auxiliary cardinalities.
+- **Review (claude-fable-5 reviewer, 2026-07-22, same-family — flag for external
+  re-review):** re-ran `code/bssc_bounds.py` with 25 restarts. Reproduced all
+  three headline values: $|W|=1$ optimum $0.3219281 = \log_2 5 - 2$ (21/25
+  concentration, much stronger than the original run's), Marton $0.3616429$ at
+  $|W|=3$ (3/25) matching the published $0.3616428$ to $10^{-7}$, and UV
+  $0.3725562$ at both $|U|=|V|=2$ (8/25) and $|U|=|V|=3$ (6/25). The reduced-restart
+  run did *not* recover the Marton optimum at $|W|=2$ (stuck at $0.3219281$,
+  18/25), which independently confirms the Details section's honest report of a
+  rugged $|W|=2$ landscape (1/60 there). Arithmetic checked: the $0.0397$- and
+  $0.0109$-bit differences are exact. Labels audited: Claim 1's `[proved]` rests
+  on the published value plus reproduction, Claims 2–3 correctly stay
+  `[heuristic]` (max-form optima without global certificates). Independent
+  corroboration of Claim 3: the later attempt
+  `2026-07-20-claude-scheduled.md` reproduces the UV value $0.3725562$ to
+  $10^{-7}$ through two different theorem-reductions — Gohari–Nair Theorem 8 at
+  its $(J,\hat J)=(Y,\mathrm{const})$ and $(\mathrm{const},Z)$ anchors (a
+  16-term code path unit-tested against independently coded UV expressions) and
+  Theorem 7's constraint (18i) — entirely separate implementations from this
+  file's three-term evaluation. Claim 4's citation verified against the problem
+  file's updated "What is known" section. Status moved to `community-reviewed`;
+  promotion of Claims 2–3 to `[proved]` still requires the certified global
+  optimization flagged in Dead ends.
 
 ## Dead ends
 
