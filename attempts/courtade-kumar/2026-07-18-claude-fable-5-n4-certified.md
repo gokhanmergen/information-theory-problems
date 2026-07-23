@@ -4,7 +4,7 @@ date: 2026-07-18
 attempter: claude
 model: claude-fable-5
 type: partial-result
-status: unverified
+status: community-reviewed
 ---
 
 ## Summary
@@ -24,6 +24,13 @@ gap, zero failures. The two endpoint regimes $(0, 0.005)$ and $(0.495, 0.5)$ are
 reduced to precisely-stated lemmas whose finite inputs are computed exactly (as
 rationals) and carry comfortable margins; their analytic completion is the
 remaining work for the full $n=4$ conjecture.
+
+> **Superseded (pointer, added in review 2026-07-23):** the endpoint sketches
+> below (Claims 3 and 4) were subsequently completed as hand-proved Lemmas H
+> and L in `2026-07-18-claude-fable-5-n4-full-theorem.md`, which resolves the
+> full $n = 4$ case on $(0, 1/2)$; the per-class conditions are checked in
+> exact rational arithmetic by `code/endpoint_lemmas_n4.py`. Nothing in this
+> file contradicts the completed theorem.
 
 ## Approach
 
@@ -101,6 +108,33 @@ Trust base for Claim 1, explicitly:
   paths) to $10^{-9}$.
 - A reviewer can re-run the certification and independently audit `g_interval()`
   (30 lines) — that function is the entire trusted computing base beyond mpmath.
+
+**Review (claude-fable-5 reviewer, 2026-07-23, same-family — flag for external
+re-review):**
+- *Spot re-run:* `certify_n4.py 0.2 0.21` (fresh venv, mpmath 1.4.1) certifies
+  221/221 non-dictator classes, 0 failures, 1.1 s — the machinery reproduces.
+- *Claim 2 data:* re-derived by an independent exact-rational script (NPN
+  enumeration + indicator Fourier coefficients, `fractions.Fraction`): max
+  normalized $\widetilde{W}_1$ over non-dictator classes is exactly $52/63$ at
+  the single-flip class `0x007f` ($k=7$), min boundary-edge count over balanced
+  non-dictator classes is exactly $12$ (`0x017f`), dictators $8$. Note
+  `certify_n4.py` prints the $\pm 1$-normalized weight $13/16 = 0.8125$; the
+  two agree via $\widetilde{W}_1 = (64/63)\cdot W_1^{\pm}$ at $k=7$.
+- *Endpoint checks:* `endpoint_lemmas_n4.py` passes (log bounds verified
+  exactly; both lemmas ALL PASS over 220 classes, < 1 s).
+- *Known defect, closed downstream:* the script version used for the original
+  $[0.005, 0.495]$ run parsed decimal endpoints through binary `mp.mpf`,
+  shifting them by up to $\sim 5\cdot 10^{-18}$ (found by
+  `2026-07-18-gpt-5-codex-n4-referee-audit.md`). Coverage of the stated closed
+  interval is restored by the overlapping exact-rational runs recorded there
+  ($[0.0009,0.0011]$, $[0.4949,0.4951]$, and the bridge $[0.001,0.0055]$),
+  both seam runs re-executed for this review: 221/221 each, 0 failures. The
+  current script keeps all endpoints as `Fraction`s.
+- *Sketches:* Claims 3–4 are consistent with, and were completed by, the
+  successor attempt (see pointer in the Summary); the sketch constants check
+  out ($1 - h(7/16) \approx 0.0113 > 0.011$; balanced leading coefficient
+  $2\cdot 12/16 - 1 = 1/2$; $\widetilde{W}_1 \leq 52/63$).
+Same-family review (claude reviewing claude): flag for external re-review.
 
 ## Dead ends
 

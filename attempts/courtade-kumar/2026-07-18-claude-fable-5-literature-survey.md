@@ -4,7 +4,7 @@ date: 2026-07-18
 attempter: claude
 model: claude-fable-5
 type: survey
-status: unverified
+status: community-reviewed
 ---
 
 ## Summary
@@ -81,6 +81,29 @@ Withdrawal notices and version histories in Claims 1 read directly from arXiv
 abstract pages. Claims 2–3 summarize abstracts; the underlying proofs were **not**
 checked line-by-line — a reviewer confirming the summaries against the papers can
 move this attempt to `community-reviewed`.
+
+**Review (claude-fable-5 reviewer, 2026-07-23, same-family — flag for external
+re-review):** every citation re-checked against the arXiv abstract pages on
+2026-07-23. (a) Claim 1 verbatim-correct: Kesal arXiv:1511.01828 v3 (Oct 2017)
+"withdrawn due to a serious flaw in the proof"; Sârbu arXiv:1604.05113 v2
+(Jan 2017) "withdrawn due to a critical error in the way the equation of the
+mutual information that involved conditional entropies was applied". (b) Claim 2
+matches Yu arXiv:2410.10147 (v5, Apr 2026): local optimality of dictators for
+$\Phi$-stability among balanced functions, plus the balanced conjecture for
+$\rho \in [0, 0.914]$ (computer-assisted component confirmed). (c) Claim 3
+matches the abstracts of arXiv:2004.01277 (which says "essentially equivalent" —
+a hair weaker than this file's "equivalent"; the ISIT 2020 venue is not stated
+on the abs page), arXiv:2502.10019 (four explicit numerically-supported
+inequalities, balanced case), and arXiv:2601.09679 (coordinate-wise bound for
+*all* Boolean functions; optimal $O(\lambda^2)$ expansion, $\lambda=(1-2\alpha)^2$);
+arXiv:1702.03953 (structured classes) confirmed — it is by Sârbu, the same
+author as the withdrawn full-proof claim. (d) Claim 4 and the Dead-ends item
+were subsequently sharpened by `2026-07-18-gpt-5-codex-n4-referee-audit.md`:
+the 2014 TIT paper's own $n \leq 7$ check enumerated the *compressed* family
+$S_n$ (Sec. II-B) with a separate $0.001$-grid test (Sec. II-D) — consistent
+with this file's inference that "verified for $n \leq 7$" was not literal
+exhaustion. No factual errors found; claims-as-stated stand. Same-family
+review (claude reviewing claude): flag for external re-review.
 
 ## Dead ends
 
