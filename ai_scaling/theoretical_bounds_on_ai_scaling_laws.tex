@@ -33,6 +33,11 @@
   left=8pt,right=8pt,top=8pt,bottom=8pt
 }
 
+% Reader-facing box styles
+\newtcolorbox{intuition}[1]{title=\textbf{#1},colback=blue!3!white,colframe=blue!40!black}
+\newtcolorbox{takeaway}[1]{title=\textbf{#1},colback=green!3!white,colframe=green!35!black}
+\newtcolorbox{caution}[1]{title=\textbf{#1},colback=red!3!white,colframe=red!45!black}
+
 \title{\textbf{\Large Theoretical Bounds and Mathematical Mechanisms for Neural Scaling Laws:\\A Cross-Disciplinary Mathematical Survey}}
 \author{\textbf{Theoretical Machine Learning \& Information Theory Synthesis}}
 \date{\today}
@@ -42,11 +47,11 @@
 \maketitle
 
 \begin{abstract}
-Empirical scaling laws in deep learning demonstrate that held-out cross-entropy loss decreases predictably as a power law of model parameters $N$, dataset tokens $D$, and compute budget $C \approx 6ND$, following the parametric form $L(N,D) = E + A N^{-\alpha_N} + B D^{-\alpha_D}$. Over the past several years, theoretical research across Information Theory, Differential Geometry, Statistical Physics, and Approximation Theory has revealed the exact mathematical mechanisms that give rise to these power laws. 
+Empirical scaling laws in deep learning report that held-out cross-entropy loss falls predictably as a power law in model parameters $N$, training tokens $D$, and compute $C \approx 6ND$, and are commonly fitted with the additive form $L(N,D) = E + A N^{-\alpha_N} + B D^{-\alpha_D}$. Over the past decade, work in information theory, statistical physics, approximation theory, and high-dimensional statistics has produced a family of candidate mathematical mechanisms for this behaviour. This monograph is a self-contained, rigorous, and deliberately accessible synthesis of that literature.
 
-This monograph provides a self-contained, rigorous, and pedagogically accessible synthesis of these theoretical foundations. We systematically review: \textbf{(i) Information Theory and Rate--Distortion Theory}, clarifying why neural scaling reflects lossy compression of infinite-dimensional heavy-tailed sources ($D(R) \sim R^{-\rho}$) rather than classical channel coding error exponents; \textbf{(ii) Language Statistics and Horizon-Limited Scaling}, examining Cagnetta et al.'s derivation of the data exponent $\alpha_D = \gamma/(2\beta)$ from token correlations and conditional entropy decay; \textbf{(iii) High-Dimensional Geometry and Approximation Bounds}, detailing Sharma--Kaplan manifold tiling ($N^{-4/d}$), Bahri et al.'s four-regime phase diagram, and DeVore--Howard--Micchelli $n$-width lower bounds; \textbf{(iv) Statistical Physics and Kernel Dynamics}, presenting exact dual scaling laws for linear models $\Theta(N^{-(b-1)} + D^{-(b-1)/a})$ and Neural Tangent Kernel spectra; and \textbf{(v) Combinatorial Quanta and Superposition}, analyzing Zipf-distributed skill quantization and interference noise scaling. 
+We review, in increasing order of specificity to deep learning: \textbf{(i) rate--distortion theory}, showing why neural scaling is a lossy-compression phenomenon governed by the distortion--rate function of a heavy-tailed source ($\mathcal{D}(R) \asymp R^{-\rho}$) rather than by a channel-coding error exponent; \textbf{(ii) minimax nonparametric statistics}, where the Yang--Barron metric-entropy balance fixes the achievable data exponent, and where the Rissanen/Clarke--Barron redundancy bound already contains a $N/D$ trade-off of Chinchilla type; \textbf{(iii) language statistics}, including Hilberg's conjecture and the Cagnetta--Ravent\'os--Ganguli--Wyart horizon-limited prediction $\alpha_D = \gamma/(2\beta)$, the first parameter-free prediction of a scaling exponent from measurable corpus statistics; \textbf{(iv) geometry and approximation theory}, covering manifold tiling ($N^{-4/d}$), the Bahri et al.\ variance/resolution phase diagram, and the impossibility results (DeVore--Howard--Micchelli widths, statistical-query and cryptographic hardness) that bound what any scaling law can achieve; \textbf{(v) solvable kernel and linear models}, where exact joint $(N,D)$ laws such as $\Theta(N^{-(b-1)} + D^{-(b-1)/a})$ can be derived and where the algorithm --- one-pass SGD versus multi-pass or ridge regression --- provably changes the data exponent; and \textbf{(vi) discrete mechanisms}: Hutter's memorizer, skill quantization, associative memories, and superposition.
 
-To bridge diverse disciplines, we provide an intuitive ``Rosetta Stone'' translation across mathematical dialects, step-by-step proofs of foundational theorems, and an explicit analysis of the ``honest gap'' between theoretical parameterizations and empirical observation.
+Three features distinguish this treatment. We supply a cross-disciplinary ``Rosetta Stone'' and a unified notation, so that the same mechanism can be recognised under five different names. We grade every claim on an explicit four-level evidence scale, separating theorems from solvable models, mechanistic proposals, and curve fits. Finally, we quantify the ``honest gap'': no theory yet derives the empirical exponents of natural language from first principles, and we show by explicit numerical substitution which theories are, and are not, mutually consistent with the published Kaplan and Chinchilla fits.
 \end{abstract}
 
 \newpage
@@ -54,27 +59,73 @@ To bridge diverse disciplines, we provide an intuitive ``Rosetta Stone'' transla
 \newpage
 
 %==============================================================================
-\section{Scope, Terminology, and Standards of Evidence}
-\label{sec:scope}
+\section{Introduction: How to Read This Monograph}
+\label{sec:intro}
 %==============================================================================
 
-\subsection{The Empirical Phenomenon and Empirical Fits}
+\subsection{The question}
 
-Let $N$ denote model capacity (typically the non-embedding parameter count), $D$ the dataset size (the number of processed training tokens), and $C \approx 6ND$ the floating-point operations (FLOPs) expended during autoregressive transformer pretraining. A ubiquitous empirical finding in deep learning is that validation loss $L(N, D)$ decays smoothly over multiple orders of magnitude according to a joint power law:
-\begin{equation}
-  L(N,D) = E + \left(\frac{N_c}{N}\right)^{\alpha_N} + \left(\frac{D_c}{D}\right)^{\alpha_D} = E + A N^{-\alpha_N} + B D^{-\alpha_D},
-  \label{eq:additive-fit}
-\end{equation}
-where $E$ represents the irreducible entropy floor (the Bayes risk of the underlying data distribution), $N_c, D_c, A, B > 0$ are fit constants, and $\alpha_N, \alpha_D > 0$ are characteristic scaling exponents.
+Train a sequence of transformers of increasing size on increasing amounts of text, plot the held-out cross-entropy loss against model size on log--log axes, and the points fall on a straight line over several orders of magnitude. That is the empirical observation. This monograph is about a single question:
 
-Equation~\eqref{eq:additive-fit} was documented across multiple modalities by Hestness et al.~\cite{hestness2017deep} and Rosenfeld et al.~\cite{rosenfeld2020constructive}, and popularized for large language models by Kaplan et al.~\cite{kaplan2020scaling} and Hoffmann et al. (Chinchilla)~\cite{hoffmann2022training}. In standard English autoregressive language modeling, typical empirical values fall in the ranges:
-\begin{equation}
-  \alpha_N \approx 0.08 \text{ to } 0.34, \quad \alpha_D \approx 0.10 \text{ to } 0.28, \quad E \approx 1.5 \text{ to } 2.1 \text{ nats/token}.
-\end{equation}
+\begin{center}
+\emph{Why a straight line, and what determines its slope?}
+\end{center}
 
-\subsection{A Cross-Disciplinary Rosetta Stone}
+The question matters practically --- the slope decides how to spend a training budget --- and theoretically, because a power law is a strong hint about the structure of the underlying data. Exponential decay would tell us the problem is effectively finite-dimensional; a power law tells us it is not.
 
-A primary challenge in studying neural scaling laws is that researchers in Information Theory, Statistical Physics, Differential Geometry, and Deep Learning use different mathematical languages to describe identical underlying phenomena. Table~\ref{tab:rosetta_stone} establishes a cross-disciplinary concordance.
+\subsection{Who this is for, and how it is organised}
+
+The relevant literature spans at least five research communities that rarely read one another. An information theorist writes $\mathcal{D}(R)$ for the same object a statistician calls a minimax risk, a physicist calls a learning curve, and an approximation theorist calls a width. We therefore assume no single reader is expert in all of them, and each technical section opens with a short primer stating only what is needed.
+
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{Section~\ref{sec:empirical_laws}} states what is actually measured, with numbers, and the practical consequences (compute-optimal allocation) and pitfalls (metric artefacts, broken laws).
+  \item \textbf{Section~\ref{sec:shannon_theory}} gives the information-theoretic foundations: the irreducible loss floor, rate--distortion scaling, minimax rates, and universal-coding redundancy.
+  \item \textbf{Section~\ref{sec:hilberg_and_cagnetta}} treats the statistics of language itself, and the one theory that currently predicts a measured exponent with no free parameters.
+  \item \textbf{Section~\ref{sec:geometry_and_approximation}} covers geometry, approximation theory, and hard impossibility results.
+  \item \textbf{Section~\ref{sec:statistical_physics}} covers exactly solvable kernel, random-feature, and linear models, where joint $(N,D)$ laws can be proved.
+  \item \textbf{Section~\ref{sec:discrete_and_quanta}} covers discrete mechanisms: memorization, skills, and superposition.
+  \item \textbf{Sections~\ref{sec:taxonomy}--\ref{sec:open_challenges}} synthesise, test the theories numerically against published fits, and state what remains open.
+  \item \textbf{Appendix~\ref{app:glossary}} is a glossary of terms used across fields, and Appendix~\ref{app:cheatsheet} is a one-page ``resolution rule'' cheat sheet.
+\end{itemize}
+
+A reader who wants the shortest path to the main idea can read Section~\ref{sec:empirical_laws}, the boxed takeaway in Section~\ref{subsec:channel_vs_rd}, Section~\ref{subsec:cagnetta_derivation}, and Section~\ref{sec:taxonomy}.
+
+\subsection{Notation}
+
+Symbols are used consistently throughout; where a source paper uses a conflicting convention we say so explicitly.
+
+\begin{table}[htbp]
+\centering
+\small
+\renewcommand{\arraystretch}{1.15}
+\begin{tabularx}{\textwidth}{>{$}l<{$} >{\raggedright\arraybackslash}X >{$}l<{$} >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Sym.} & \textbf{Meaning} & \textbf{Sym.} & \textbf{Meaning} \\
+\midrule
+N & model size (non-embedding parameters) & \lambda_k & $k$-th eigenvalue of a covariance or kernel operator \\
+D & dataset size in tokens or samples & a & spectral decay exponent, $\lambda_k \asymp k^{-a}$ \\
+C & training compute in FLOPs, $C\approx 6ND$ & c_k^2 & power of the target in eigenmode $k$ \\
+L & expected cross-entropy loss (nats/token) & b & target decay exponent, $c_k^2 \asymp k^{-b}$ \\
+E & irreducible loss floor of a fit & \kappa & effective ridge / regularization level \\
+h & entropy rate of the source process & k_* & spectral cutoff: modes below it are learned \\
+\mathcal{E} & excess (reducible) loss, $L-E$ & d & intrinsic dimension of the data manifold \\
+\alpha_N,\alpha_D & parameter and data exponents & s & smoothness (Sobolev order) of the target \\
+\alpha_C & compute exponent of the optimal frontier & \varepsilon & resolution / covering radius \\
+R & description rate in bits & n & context length in tokens (Sec.~\ref{sec:hilberg_and_cagnetta}) \\
+\mathcal{D}(R) & distortion--rate function & \gamma & conditional-entropy decay exponent \\
+\rho & source spectral tail exponent, $\lambda_k\asymp k^{-(1+\rho)}$ & \beta & token-correlation decay exponent \\
+\theta & reverse water-filling threshold & \delta & Hilberg exponent, $\gamma = 1-\delta$ \\
+\nu & crossover sharpness in joint fits & \zeta & Zipf exponent of skills or inputs \\
+M & number of represented features & d_{\mathrm{model}} & residual-stream / activation width \\
+\bottomrule
+\end{tabularx}
+\caption{Notation used throughout. We write $f\asymp g$ when $c_1 g \le f \le c_2 g$ for constants $0<c_1\le c_2$ independent of the scaling variable, and $f \sim g$ for informal proportionality.}
+\label{tab:notation}
+\end{table}
+
+\subsection{A cross-disciplinary Rosetta Stone}
+
+Table~\ref{tab:rosetta_stone} translates the same four concepts across the four dialects in which the scaling literature is written. Nearly every theory in this monograph is an instance of one pattern: \emph{rank a countable set of primitives by importance, note that the importances have a heavy tail, and determine how many of them a given resource can resolve.}
 
 \begin{table}[htbp]
 \centering
@@ -84,62 +135,109 @@ A primary challenge in studying neural scaling laws is that researchers in Infor
 \toprule
 \textbf{Concept} & \textbf{Information Theory} & \textbf{Geometry / Approximation} & \textbf{Statistical Physics / ML} \\
 \midrule
-\textbf{Data Complexity} & Covariance spectrum $\lambda_k \sim k^{-(1+\rho)}$; Metric entropy $H(\varepsilon) \sim \varepsilon^{-d/s}$ & Manifold intrinsic dimension $d$; Sobolev smoothness $s$ & Kernel / NTK spectrum $\lambda_k \sim k^{-a}$; Target power $c_k^2 \sim k^{-b}$ \\
+\textbf{Data complexity} & Covariance spectrum $\lambda_k \asymp k^{-(1+\rho)}$; metric entropy $H(\varepsilon) \asymp \varepsilon^{-d/s}$ & Manifold intrinsic dimension $d$; Sobolev smoothness $s$ & Kernel/NTK spectrum $\lambda_k \asymp k^{-a}$; target power $c_k^2 \asymp k^{-b}$ \\
 \midrule
-\textbf{Model Capacity} & Description rate $R \approx N b$ bits; Representation states & Tiling cells $K \asymp N$; Linear regions; Metric covering & Parameter count $N$; Feature width $w$; Mode cutoff $k_*$ \\
+\textbf{Model capacity} & Description rate $R$ bits ($\approx N$ times bits per parameter) & Tiling cells $K \asymp N$; linear regions; covering number & Parameter count $N$; width $w$; mode cutoff $k_*$ \\
 \midrule
-\textbf{Data Budget} & Sequence blocklength $n$; Sample count $D$ & Metric sample covering radius $\varepsilon \sim D^{-1/d}$ & Training samples / tokens $D$; Gradient update steps \\
+\textbf{Data budget} & Blocklength; sample count $D$ & Sample covering radius $\varepsilon \asymp D^{-1/d}$ & Tokens $D$; gradient steps; SGD time \\
 \midrule
-\textbf{Limiting Loss} & Distortion--rate function $D(R) \sim R^{-\rho}$; Entropy rate $h$ & Piecewise Taylor error $N^{-4/d}$; Nonparametric rate $D^{-\frac{2s}{2s+d}}$ & Asymptotic generalization error $\mathcal{E}(D) \sim D^{-\frac{a+b-1}{a}}$; Bayes risk $E$ \\
+\textbf{Limiting loss} & Distortion--rate $\mathcal{D}(R) \asymp R^{-\rho}$; entropy rate $h$ & Piecewise-Taylor error $N^{-4/d}$; minimax rate $D^{-\frac{2s}{2s+d}}$ & Generalization error $\mathcal{E}(D) \asymp D^{-(b-1)}$; Bayes risk $E$ \\
 \bottomrule
 \end{tabularx}
 \caption{Cross-disciplinary ``Rosetta Stone'' translating scaling concepts across mathematical fields.}
 \label{tab:rosetta_stone}
 \end{table}
 
-\subsection{Hierarchy of Scientific Evidence}
+\subsection{Hierarchy of scientific evidence}
+\label{subsec:evidence}
 
-Throughout this monograph, we classify theoretical statements according to four explicit levels of epistemic certainty:
+Claims in this literature differ enormously in strength, and conflating them is the main source of confusion. We label every substantive statement with one of four levels, abbreviated \textbf{[L1]}--\textbf{[L4]}:
+
 \begin{enumerate}[leftmargin=2.0em]
-  \item \textbf{Rigorous Mathematical Theorem:} A closed-form theorem with complete proof for a fully specified mathematical source, function space, loss metric, and algorithm (e.g., Gaussian rate--distortion reverse water-filling, DeVore--Howard--Micchelli $n$-width lower bounds, Yang--Barron minimax rates).
-  \item \textbf{Controlled Solvable Model:} An exact analytic or asymptotic result derived in a stylized model (e.g., random feature models, high-dimensional ridge regression, infinite-width Neural Tangent Kernel limits, associative memory networks).
-  \item \textbf{Mechanistic Proposal:} A proposed physical or geometric mechanism transferring insights from a solvable model to finite, trained neural networks, accompanied by testable, falsifiable assumptions (e.g., Voronoi manifold tiling, Zipfian quantization of skills, token-correlation horizon cutoff).
-  \item \textbf{Empirical Observation:} Parametric curves fitted to observed training runs over a finite resource window.
+  \item \textbf{[L1] Rigorous theorem.} A closed-form result with complete proof for a fully specified source, function class, loss, and algorithm. Examples: Gaussian reverse water-filling; DeVore--Howard--Micchelli $n$-widths; Yang--Barron minimax rates.
+  \item \textbf{[L2] Controlled solvable model.} An exact or asymptotic result in a stylized but well-defined model: random features, high-dimensional ridge regression, infinite-width NTK, one-pass SGD on linear regression, associative memories.
+  \item \textbf{[L3] Mechanistic proposal.} A geometric or physical mechanism transferred from a solvable model to real trained networks, with testable assumptions: manifold tiling, Zipfian skill quantization, horizon-limited context truncation.
+  \item \textbf{[L4] Empirical observation.} A parametric curve fitted to training runs over a finite resource window.
 \end{enumerate}
+
+The central honest fact of the field, developed in Section~\ref{sec:open_challenges}: every quantitative prediction of a real language-model exponent currently requires at least one \textbf{[L3]} step, and every \textbf{[L1]} statement about real data requires empirically measured inputs.
 
 %==============================================================================
 \section{What Empirical Scaling Laws Establish in Practice}
 \label{sec:empirical_laws}
 %==============================================================================
 
-\subsection{The Chinchilla Compute-Optimal Allocation Rule}
+\subsection{The measured phenomenon}
 
-Given a total training compute budget $C \approx 6ND$ FLOPs, how should compute be optimally partitioned between parameter count $N$ and token count $D$? Minimizing the empirical loss ansatz $L(N, D) = E + A N^{-\alpha_N} + B D^{-\alpha_D}$ subject to $6ND = C$ yields the Lagrange stationarity condition:
+Let $N$ denote model capacity (conventionally the non-embedding parameter count), $D$ the number of training tokens processed, and $C$ the training compute in FLOPs. A ubiquitous empirical finding \textbf{[L4]} is that validation loss decays smoothly over several orders of magnitude and is well fitted by
 \begin{equation}
-  \alpha_N A N^{-\alpha_N} = \alpha_D B D^{-\alpha_D}.
+  L(N,D) = E + \left(\frac{N_c}{N}\right)^{\alpha_N} + \left(\frac{D_c}{D}\right)^{\alpha_D} = E + A N^{-\alpha_N} + B D^{-\alpha_D},
+  \label{eq:additive-fit}
 \end{equation}
-Solving for $N_{\mathrm{opt}}$ and $D_{\mathrm{opt}}$ as functions of $C$ produces the optimal allocation frontiers:
+with $A = N_c^{\alpha_N}$, $B = D_c^{\alpha_D}$. Here $E$ is the fitted irreducible floor, interpreted as the Bayes risk of the data distribution under log loss, and $\alpha_N,\alpha_D>0$ are the scaling exponents.
+
+The compute proxy is
+\begin{equation}
+  C \approx 6ND,
+  \label{eq:compute}
+\end{equation}
+which counts roughly $2ND$ FLOPs for the forward pass and $4ND$ for the backward pass over non-embedding parameters~\cite{kaplan2020scaling}. It ignores the $O(n_{\mathrm{ctx}})$ attention term (negligible while $d_{\mathrm{model}} \gg n_{\mathrm{ctx}}/12$), and it must be modified for mixture-of-experts models, where active and total parameters differ~\cite{clark2022unified,krajewski2024moe}.
+
+Equation~\eqref{eq:additive-fit} was documented across modalities by Hestness et al.~\cite{hestness2017deep} and Rosenfeld et al.~\cite{rosenfeld2020constructive}, extended to many generative modalities by Henighan et al.~\cite{henighan2020scaling}, and made canonical for language models by Kaplan et al.~\cite{kaplan2020scaling} and Hoffmann et al.\ (Chinchilla)~\cite{hoffmann2022training}. Table~\ref{tab:empirical_exponents} collects the principal published fits.
+
+\begin{table}[htbp]
+\centering
+\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{3.1cm} >{\raggedright\arraybackslash}p{2.5cm} >{$}c<{$} >{$}c<{$} >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Study} & \textbf{Setting} & \alpha_N & \alpha_D & \textbf{Notes} \\
+\midrule
+Kaplan et al.~\cite{kaplan2020scaling} & WebText2, GPT-2 class & 0.076 & 0.095 & Joint fit uses a non-additive form and sets $E=0$; $L(C_{\min})\propto C^{-0.050}$. \\
+Hoffmann et al.~\cite{hoffmann2022training} & MassiveText, Chinchilla & 0.34 & 0.28 & Approach~3 fit: $E=1.69$, $A=406.4$, $B=410.7$ nats/token. \\
+Cagnetta et al.~\cite{cagnetta2026deriving} & TinyStories, GPT-2/LLaMA & \text{--} & \approx 0.19 & Data-limited regime; predicted from corpus statistics. \\
+Cagnetta et al.~\cite{cagnetta2026deriving} & WikiText & \text{--} & \approx 0.14 & As above. \\
+\bottomrule
+\end{tabularx}
+\caption{Representative published exponents. The Kaplan and Hoffmann exponents differ by a factor of $3$--$4$; Section~\ref{subsec:chinchilla} explains why, and Section~\ref{subsec:consistency} shows how much theoretical inference depends on which one is used.}
+\label{tab:empirical_exponents}
+\end{table}
+
+\begin{caution}{Caution: the additive fit is an ansatz, not a theorem}
+Equation~\eqref{eq:additive-fit} asserts asserts that the parameter bottleneck and the data bottleneck do not interact: the excess loss is a sum, not a joint function. No theory derives this in general, and the solvable models of Section~\ref{sec:statistical_physics} reproduce additivity only in particular regimes. Kaplan et al.\ themselves used a non-additive joint form, and smoothed variants (Section~\ref{subsec:bahri_pnas}) fit better near the crossover. Treat $\alpha_N$ and $\alpha_D$ as parameters of a specific fitted functional form over a specific measurement window, not as universal constants of nature.
+\end{caution}
+
+\subsection{The compute-optimal allocation rule}
+\label{subsec:chinchilla}
+
+Given a compute budget $C\approx 6ND$, how should it be split between $N$ and $D$? Minimize \eqref{eq:additive-fit} subject to $6ND=C$. Writing the Lagrangian $\mathcal{L} = E + AN^{-\alpha_N} + BD^{-\alpha_D} + \mu(6ND - C)$, setting $\partial_N\mathcal{L}=\partial_D\mathcal{L}=0$ and multiplying the first condition by $N$ and the second by $D$ eliminates $\mu$ and gives the stationarity condition
+\begin{equation}
+  \alpha_N A N^{-\alpha_N} = \alpha_D B D^{-\alpha_D},
+  \label{eq:stationarity}
+\end{equation}
+i.e.\ \emph{at the optimum the two loss terms are in fixed ratio}. Substituting $D = C/(6N)$ into \eqref{eq:stationarity} and solving:
 \begin{equation}
   \boxed{N_{\mathrm{opt}}(C) \propto C^{\frac{\alpha_D}{\alpha_N + \alpha_D}}, \qquad D_{\mathrm{opt}}(C) \propto C^{\frac{\alpha_N}{\alpha_N + \alpha_D}}}.
   \label{eq:chinchilla-allocation}
 \end{equation}
-
-For the empirical parameters reported by Hoffmann et al.~\cite{hoffmann2022training} ($\alpha_N = 0.34, \alpha_D = 0.28$), the optimal scaling exponents are:
+Substituting back gives the loss along the optimal frontier, a result worth isolating because it is the exponent that actually governs progress per dollar:
 \begin{equation}
-  N_{\mathrm{opt}} \propto C^{\frac{0.28}{0.34 + 0.28}} = C^{0.45}, \qquad D_{\mathrm{opt}} \propto C^{\frac{0.34}{0.34 + 0.28}} = C^{0.55}.
+  \boxed{L(C) - E \propto C^{-\alpha_C}, \qquad \alpha_C = \frac{\alpha_N\,\alpha_D}{\alpha_N + \alpha_D}}.
+  \label{eq:compute-exponent}
 \end{equation}
-This establishes the **Chinchilla Prescription**: model size and training data should scale in roughly equal proportions ($N \propto D$), in stark contrast to earlier Kaplan et al.~\cite{kaplan2020scaling} estimates that favored scaling parameters much faster than tokens ($N \propto C^{0.73}, D \propto C^{0.27}$).
+Thus $\alpha_C$ is half the harmonic mean of $\alpha_N$ and $\alpha_D$: it is dominated by whichever exponent is \emph{smaller}. Improving the larger exponent buys almost nothing.
 
-Recent replication and sensitivity studies have clarified this discrepancy. Besiroglu et al.~\cite{besiroglu2024chinchilla} demonstrated statistical sensitivity in the nonlinear regression fits. Porian et al.~\cite{porian2024resolving} showed that accounting for non-embedding parameter FLOPs, learning rate warmup schedules, and scale-dependent optimizer tuning fully reconciles the Kaplan and Chinchilla datasets.
+\paragraph{Numbers.} For the Chinchilla fit ($\alpha_N=0.34$, $\alpha_D=0.28$), \eqref{eq:chinchilla-allocation} gives $N_{\mathrm{opt}}\propto C^{0.45}$ and $D_{\mathrm{opt}}\propto C^{0.55}$ (Hoffmann et al.\ report $0.46$ and $0.54$ from their direct fit), so parameters and tokens should scale in near-equal proportion, $D/N \approx 20$ tokens per parameter at the scales they studied. The compute exponent is $\alpha_C = (0.34)(0.28)/0.62 = 0.154$: a $10\times$ increase in compute reduces the reducible loss by a factor $10^{-0.154} \approx 0.70$, i.e.\ by $30\%$. For the Kaplan fit, $\alpha_C = (0.076)(0.095)/0.171 = 0.042$, close to their directly reported $L(C_{\min}) \propto C^{-0.050}$.
 
-\subsection{Essential Distinctions: Loss vs. Capabilities and Broken Scaling}
+\paragraph{Why Kaplan and Chinchilla disagreed.} Kaplan et al.\ reported $N_{\mathrm{opt}}\propto C^{0.73}$, $D_{\mathrm{opt}}\propto C^{0.27}$ --- parameters growing far faster than data. Note that this does \emph{not} follow from their own $\alpha_N,\alpha_D$ via \eqref{eq:chinchilla-allocation}, which would give $C^{0.56}$: the discrepancy arises because they optimized a different object (loss at fixed step count with early stopping, rather than the converged additive fit). Besiroglu et al.~\cite{besiroglu2024chinchilla} re-examined the Chinchilla regression and found the reported confidence intervals implausibly tight and the third-approach fit sensitive to estimation details. Porian et al.~\cite{porian2024resolving} then isolated three concrete causes of the Kaplan--Chinchilla gap: counting embedding parameters in $N$, tuning the learning-rate schedule and warmup independently of scale, and the choice of optimizer hyperparameters. Correcting these reconciles the two datasets, and the modern consensus favours the near-linear Chinchilla relation.
 
-Two critical distinctions must be maintained when interpreting scaling laws:
+\paragraph{The optimum is not the deployment optimum.} Equation~\eqref{eq:chinchilla-allocation} minimizes loss per unit \emph{training} compute. If a model will serve many inference requests, the total-cost optimum shifts toward smaller models trained on more tokens than Chinchilla prescribes~\cite{sardana2024beyond}. Most deployed ``overtrained'' models are rational under that objective, not violations of the scaling law.
+
+\subsection{Two distinctions that prevent most misreadings}
+
 \begin{itemize}[leftmargin=1.5em]
-  \item \textbf{Continuous Cross-Entropy Loss vs. Discontinuous Capability Metrics:} 
-  While pretraining cross-entropy loss $L(N, D)$ improves smoothly as a power law, downstream accuracy on discrete tasks (e.g., arithmetic, multi-step code execution, translation benchmarks) often appears to jump discontinuously at critical thresholds. Schaeffer, Miranda, and Koyejo~\cite{schaeffer2023mirage} proved that these ``emergent abilities''~\cite{wei2022emergent} are frequently mathematical artifacts of nonlinear, thresholded metrics (such as exact-string match $0/1$ accuracy). When evaluated on smooth, continuous metrics (such as token edit distance or average log-probability), the underlying capabilities improve smoothly and predictably with scale.
-  \item \textbf{Single Power Laws vs. Broken Power Laws:}
-  Empirical scaling laws are valid over finite measurement windows. Caballero et al.~\cite{caballero2023broken} introduced broken power-law fits, formalizing how curves transition between different scaling regimes, experience plateauing due to data repetition~\cite{muennighoff2023scaling}, or saturate as they approach the irreducible entropy floor.
+  \item \textbf{Smooth loss versus discontinuous capability metrics.} Pretraining cross-entropy improves smoothly, but downstream accuracy on discrete tasks often appears to jump at a threshold --- ``emergent abilities''~\cite{wei2022emergent}. Schaeffer, Miranda, and Koyejo~\cite{schaeffer2023mirage} showed \textbf{[L4, with a clean analytical model]} that such jumps can be produced by the \emph{metric}: an exact-match or $0/1$ accuracy applies a sharp nonlinearity to a smoothly improving per-token log-probability, and the same runs scored with a continuous metric (edit distance, Brier score, average log-probability) improve smoothly. This is a demonstration that thresholded metrics are \emph{sufficient} to create apparent emergence, not a proof that no genuine phase transitions occur; solvable models do exhibit real emergence in the underlying computation~\cite{nam2024exactly,michaud2023quantization}, and higher-resolution evaluations can make some capability curves predictable in advance~\cite{hu2024predicting,arora2023theory}. The practical rule is to fit scaling laws to smooth quantities and to treat any claimed discontinuity as a claim about a metric until shown otherwise.
+  \item \textbf{Single versus broken power laws.} Fitted laws are valid over the measured window. Caballero et al.~\cite{caballero2023broken} introduced broken power laws with smooth transitions between regimes, which capture plateaus, the effects of repeated data~\cite{muennighoff2023scaling}, and saturation toward $E$. Alabdulmohsin et al.~\cite{alabdulmohsin2022revisiting} make a similar point with a functional form that interpolates between a random-guess plateau and the asymptote, and emphasize how badly exponents extrapolate when estimated from too narrow a window. Observational scaling laws fitted across many existing public models~\cite{ruan2024observational} provide a cheaper and broader alternative to training one's own ladder.
 \end{itemize}
 
 %==============================================================================
@@ -147,431 +245,600 @@ Two critical distinctions must be maintained when interpreting scaling laws:
 \label{sec:shannon_theory}
 %==============================================================================
 
-\subsection{Cross-Entropy Decomposition and the Irreducible Bayes Floor}
+\begin{intuition}{Primer: the two Shannon theories, and which one applies}
+Shannon's theory has two halves. \emph{Channel coding} asks how reliably one can transmit through noise, and its answers are exponential in blocklength. \emph{Rate--distortion} (lossy source coding) asks how well one can describe a source using $R$ bits, and its answers can be polynomial in $R$ when the source has infinitely many, slowly decaying degrees of freedom. Neural scaling is the second kind of problem: the parameters are a lossy description of the data distribution. That single observation explains why we see power laws rather than exponentials.
+\end{intuition}
 
-Let $\mathcal{X}^\mathbb{N}$ be the space of infinite token sequences drawn from an underlying stationary, ergodic ground-truth language process $P^*$. Let $Z_t = (X_1, \dots, X_t)$ denote the conditioning context up to step $t$, and $Q(X_{t+1} \mid Z_t)$ denote the model's predictive distribution. The expected cross-entropy loss decomposes exactly into:
+\subsection{Cross-entropy decomposition and the irreducible floor}
+
+Let $P^*$ be a stationary ergodic ground-truth process on token sequences, $Z_t = (X_1,\dots,X_t)$ the context, and $Q(\cdot\mid Z_t)$ the model's predictive distribution. Then \textbf{[L1]}
 \begin{equation}
-  \mathbb{E}_{P^*}[-\log Q(X_{t+1}\mid Z_t)] = H_{P^*}(X_{t+1}\mid Z_t) + \mathbb{E}_{Z_t}\left[ D_{\mathrm{KL}}\!\left(P^*(\cdot\mid Z_t)\,\|\,Q(\cdot\mid Z_t)\right) \right].
+  \mathbb{E}_{P^*}[-\log Q(X_{t+1}\mid Z_t)] = H_{P^*}(X_{t+1}\mid Z_t) + \mathbb{E}_{Z_t}\big[ D_{\mathrm{KL}}\big(P^*(\cdot\mid Z_t)\,\|\,Q(\cdot\mid Z_t)\big) \big].
   \label{eq:cross-entropy}
 \end{equation}
-Because the Kullback--Leibler divergence is non-negative and vanishes if and only if $Q \equiv P^*$, the conditional source entropy $H_{P^*}(X_{t+1}\mid Z_t)$ represents the **absolute, unbeatable Bayes risk** for log loss.
+Since the Kullback--Leibler divergence is non-negative and vanishes only when $Q\equiv P^*$, the conditional entropy is an unbeatable floor for log loss, and \emph{all} of the reducible loss is a KL divergence. This is the reason log loss is the natural object of a scaling theory: the quantity being scaled away is exactly an information divergence.
 
-For any stationary process on a finite vocabulary $\mathcal{V}$, the conditional entropy $H(X_{t+1}\mid X_1^t)$ is monotonically non-increasing in $t$ and converges to the source entropy rate~\cite{shannon1948mathematical,coverthomas2006elements}:
+For a stationary process on a finite vocabulary, $H(X_{t+1}\mid X_1^t)$ is non-increasing in $t$ and converges to the entropy rate~\cite{shannon1948mathematical,coverthomas2006elements}
 \begin{equation}
-  h = \lim_{t \to \infty} H(X_{t+1}\mid X_1^t) = \lim_{t \to \infty} \frac{1}{t} H(X_1, \dots, X_t).
+  h = \lim_{t\to\infty} H(X_{t+1}\mid X_1^t) = \lim_{t\to\infty}\tfrac{1}{t}H(X_1,\dots,X_t),
 \end{equation}
-Thus, the floor $E$ in empirical scaling laws satisfies $E \ge h$. Claude Shannon's 1951 human letter-guessing experiment~\cite{shannon1951prediction} estimated the entropy of English text to be approximately $0.6 \text{ to } 1.3 \text{ bits/character}$ ($\approx 0.4 \text{ to } 0.9 \text{ nats/char}$). Frontier autoregressive models achieve validation cross-entropy losses near $1.0\text{--}1.4\text{ nats/token}$ ($\approx 0.6\text{--}0.85\text{ bits/char}$), approaching this fundamental Shannon limit.
+so the fitted floor obeys $E \ge h$, with equality only for a model with unbounded context. Any finite-context model has a strictly larger floor --- a fact that Section~\ref{sec:hilberg_and_cagnetta} turns into a scaling law.
 
-\subsection{Why Scaling is Rate--Distortion, Not a Channel Reliability Exponent}
+\begin{intuition}{Worked conversion: is a frontier model near the Shannon limit?}
+Comparing model losses to Shannon's estimate of the entropy of English requires two conversions, both of which are frequently botched.
+\begin{enumerate}[leftmargin=1.5em,nosep]
+  \item \textbf{Nats to bits:} $1\ \text{nat} = 1/\ln 2 = 1.443$ bits.
+  \item \textbf{Tokens to characters:} modern byte-pair encoders average roughly $4$ characters per token on English prose; the exact figure is tokenizer- and corpus-dependent.
+\end{enumerate}
+The Chinchilla irreducible floor is $E = 1.69$ nats/token~\cite{hoffmann2022training}. That is $1.69\times 1.443 = 2.44$ bits/token, or $\approx 0.61$ bits/character at $4$ characters per token. Shannon's 1951 human letter-guessing experiment~\cite{shannon1951prediction} bracketed printed English at $0.6$--$1.3$ bits/character; compression-based extrapolations of large corpora put the entropy rate near $1$ bit/character~\cite{takahira2016entropy}. So the fitted floor of a frontier-scale language model sits at or just below the bottom of Shannon's band.
+
+Three caveats keep this from being a clean ``we have reached the Shannon limit'' claim. (i) $E$ is a fitted extrapolation parameter of \eqref{eq:additive-fit}, not a measured entropy, and it is strongly correlated with $A,B,\alpha_N,\alpha_D$ in the regression~\cite{besiroglu2024chinchilla}. (ii) Web-scale training corpora are not the literary English of Shannon's experiment; they contain boilerplate, code, and near-duplicates, all of which lower measured entropy per character. (iii) Shannon's estimate is itself an upper bound derived from human predictors, and there is no reason to think human next-letter prediction is optimal. The honest statement is that model and human-derived estimates of the entropy rate of English now agree to within a factor of about two.
+\end{intuition}
+
+\subsection{Why scaling is rate--distortion, not a channel reliability exponent}
 \label{subsec:channel_vs_rd}
 
-A common heuristic intuition attempts to link neural scaling to Shannon's **channel coding reliability error exponent**. We formalize why this analogy is structurally flawed and establish that the correct Shannon-theoretic framework is **Rate--Distortion Theory**.
+A recurring intuition tries to link neural scaling to Shannon's channel-coding error exponent. The analogy fails, and seeing why is instructive.
 
-\begin{tcolorbox}[title=\textbf{Conceptual Intuition: Error Exponents vs. Distortion--Rate}]
-\textbf{Channel Coding Error Exponent:} For communication over a noisy channel with blocklength $n$ at transmission rate $R < C$, the probability of decoding error decays \emph{exponentially}:
-$$P_e(n) \le e^{-n E_r(R)}.$$
-\textbf{Neural Scaling Law:} The excess test loss decays \emph{polynomially} in parameter count $N$:
-$$L(N) - E \sim N^{-\alpha_N}.$$
-Why the difference? In channel coding, independent channel noise across $n$ channel uses drives exponential concentration of typical sets. In neural scaling, parameters $N$ provide a compressed representation ($R \approx Nb$ bits) of an infinite-dimensional, continuous or combinatorial data distribution. Excess loss measures the reconstruction distortion $D(R)$, which obeys a power law whenever the source covariance spectrum has a heavy polynomial tail.
-\end{tcolorbox}
+\begin{intuition}{Error exponents versus distortion--rate}
+\textbf{Channel coding:} transmitting at rate $R < C_{\mathrm{chan}}$ over a memoryless channel with blocklength $n$, the decoding error probability decays \emph{exponentially}, $P_e(n) \le e^{-n E_r(R)}$.
 
-\begin{theorem}[Gaussian Reverse Water-Filling on Power-Law Spectra]
+\textbf{Neural scaling:} the excess loss decays \emph{polynomially}, $L(N)-E \asymp N^{-\alpha_N}$.
+
+The structural difference: in channel coding, $n$ independent uses of the same channel produce exponential concentration of measure. In neural scaling, $N$ parameters constitute a \emph{single} description of a fixed, infinite-dimensional object. Nothing is repeated, so nothing concentrates exponentially. What $N$ buys is resolution, and the return on resolution is set by how fast the source's importance spectrum decays.
+\end{intuition}
+
+\begin{theorem}[Gaussian reverse water-filling on a power-law spectrum; \textbf{L1}]
 \label{thm:rd}
-Let $X$ be a zero-mean Gaussian random element in a separable Hilbert space with covariance eigenvalues decaying as a power law:
+Let $X$ be a zero-mean Gaussian random element of a separable Hilbert space with covariance eigenvalues
 \begin{equation}
-  \lambda_k = c \cdot k^{-(1+\rho)}, \qquad c > 0, \quad \rho > 0, \quad k \in \mathbb{N}^+.
+  \lambda_k = c\,k^{-(1+\rho)}, \qquad c>0,\ \rho>0,\ k\in\mathbb{N}^+ ,
 \end{equation}
-Under mean squared error distortion $D = \mathbb{E}[\|X - \hat{X}\|^2]$, the distortion--rate function $D(R)$ in the asymptotic high-rate regime ($R \to \infty$) satisfies:
+so that $\sum_k \lambda_k < \infty$. Under squared-error distortion $\mathcal{D} = \mathbb{E}\|X-\hat X\|^2$, the distortion--rate function satisfies, as $R\to\infty$,
 \begin{equation}
-  \boxed{D(R) \asymp R^{-\rho}}.
+  \boxed{\mathcal{D}(R) \asymp R^{-\rho}}.
 \end{equation}
 \end{theorem}
 
 \begin{proof}
-Under Gaussian rate--distortion theory~\cite{berger1971rate,coverthomas2006elements}, the optimal rate $R(\theta)$ and distortion $D(\theta)$ are parameterized by the water-filling threshold $\theta > 0$:
+By reverse water-filling for parallel Gaussian sources~\cite{berger1971rate,coverthomas2006elements}, the rate--distortion curve is parameterized by a threshold $\theta>0$:
 \begin{equation}
-  D(\theta) = \sum_{k=1}^\infty \min(\theta, \lambda_k), \qquad R(\theta) = \frac{1}{2} \sum_{k=1}^\infty \log_2 \max\left(1, \frac{\lambda_k}{\theta}\right).
+  \mathcal{D}(\theta) = \sum_{k\ge 1}\min(\theta,\lambda_k), \qquad
+  R(\theta) = \frac{1}{2}\sum_{k\ge 1}\log_2\max\!\left(1,\frac{\lambda_k}{\theta}\right).
 \end{equation}
-Only modes with $\lambda_k > \theta$ are actively encoded. The number of active modes is:
+Only modes with $\lambda_k>\theta$ receive rate. Their number is
 \begin{equation}
-  K(\theta) = \max\{ k \in \mathbb{N} : c k^{-(1+\rho)} \ge \theta \} = \left\lfloor \left(\frac{c}{\theta}\right)^{\frac{1}{1+\rho}} \right\rfloor \asymp \theta^{-\frac{1}{1+\rho}}.
+  K(\theta) = \max\{k : c k^{-(1+\rho)} \ge \theta\} = \left\lfloor (c/\theta)^{\frac{1}{1+\rho}}\right\rfloor \asymp \theta^{-\frac{1}{1+\rho}} .
 \end{equation}
-For active modes $k \le K(\theta)$, we have $\frac{\lambda_k}{\theta} = \left(\frac{K}{k}\right)^{1+\rho}$. The total rate in bits is:
+For $k\le K$ we have $\lambda_k/\theta \approx (K/k)^{1+\rho}$, so
 \begin{align}
-  R(\theta) &= \frac{1+\rho}{2} \sum_{k=1}^{K(\theta)} \log_2\left(\frac{K}{k}\right) = \frac{1+\rho}{2} \log_2\left(\frac{K^K}{K!}\right) \nonumber\\
-  &= \frac{1+\rho}{2 \ln 2} \left[ K \ln K - (K \ln K - K + \mathcal{O}(\ln K)) \right] \nonumber\\
-  &= \frac{(1+\rho)\log_2 e}{2} K(\theta) + \mathcal{O}(\log K) \asymp K(\theta).
+  R(\theta) &= \frac{1+\rho}{2}\sum_{k=1}^{K}\log_2\frac{K}{k}
+             = \frac{1+\rho}{2}\log_2\frac{K^K}{K!} \nonumber\\
+            &= \frac{1+\rho}{2\ln 2}\Big[K\ln K - \big(K\ln K - K + \mathcal{O}(\ln K)\big)\Big]
+             = \frac{(1+\rho)\log_2 e}{2}\,K(\theta) + \mathcal{O}(\log K),
 \end{align}
-Thus, the description rate is directly proportional to the number of active modes: $R \asymp K \asymp \theta^{-\frac{1}{1+\rho}}$, which implies $\theta(R) \asymp R^{-(1+\rho)}$.
+using Stirling's approximation. Hence the rate is \emph{proportional to the number of active modes}: $R \asymp K \asymp \theta^{-1/(1+\rho)}$, equivalently $\theta(R) \asymp R^{-(1+\rho)}$.
 
-The total distortion $D(\theta)$ is the sum of noise injected into active modes plus the unencoded tail variance:
-\begin{align}
-  D(\theta) &= K(\theta)\theta + \sum_{k = K(\theta)+1}^\infty c k^{-(1+\rho)} \nonumber\\
-  &\approx K(\theta)\theta + \int_{K(\theta)}^\infty c x^{-(1+\rho)} dx = K(\theta)\theta + \frac{c}{\rho} K(\theta)^{-\rho}.
-\end{align}
-Substituting $K(\theta) \asymp (c/\theta)^{\frac{1}{1+\rho}}$ into $D(\theta)$:
+The distortion is the noise injected into active modes plus the discarded tail:
 \begin{equation}
-  D(\theta) \asymp \theta \left(\frac{c}{\theta}\right)^{\frac{1}{1+\rho}} + \frac{c}{\rho} \left[\left(\frac{c}{\theta}\right)^{\frac{1}{1+\rho}}\right]^{-\rho} = \left(1 + \frac{1}{\rho}\right) c^{\frac{1}{1+\rho}} \theta^{\frac{\rho}{1+\rho}}.
+  \mathcal{D}(\theta) = K(\theta)\theta + \sum_{k>K(\theta)} c k^{-(1+\rho)}
+   \approx K\theta + \int_{K}^{\infty} c x^{-(1+\rho)}\,dx = K\theta + \frac{c}{\rho}K^{-\rho} .
 \end{equation}
-Finally, substituting $\theta(R) \asymp R^{-(1+\rho)}$ gives:
+Substituting $K=(c/\theta)^{1/(1+\rho)}$, both terms have the same order:
 \begin{equation}
-  D(R) \asymp \left( R^{-(1+\rho)} \right)^{\frac{\rho}{1+\rho}} = R^{-\rho}.
+  \mathcal{D}(\theta) \asymp \left(1+\frac{1}{\rho}\right) c^{\frac{1}{1+\rho}}\,\theta^{\frac{\rho}{1+\rho}} .
 \end{equation}
+Finally $\theta(R)\asymp R^{-(1+\rho)}$ gives $\mathcal{D}(R) \asymp \big(R^{-(1+\rho)}\big)^{\rho/(1+\rho)} = R^{-\rho}$.
 \end{proof}
 
-\begin{corollary}[Finite-Dimensional vs. Heavy-Tailed Spectra]
-If the source is strictly $d$-dimensional ($\lambda_k = 0$ for $k > d$), all $d$ modes are active at high rate, yielding exponential distortion decay:
+\begin{corollary}[Finite-dimensional sources decay exponentially; \textbf{L1}]
+If $\lambda_k = \lambda$ for $k\le d$ and $\lambda_k=0$ for $k>d$, then at high rate all $d$ modes are active, $R = \tfrac{d}{2}\log_2(\lambda/\theta)$ and $\mathcal{D}=d\theta$, giving
 \begin{equation}
-  D(R) \asymp 2^{-2R/d} = \exp\left( -\frac{2 \ln 2}{d} R \right).
+  \mathcal{D}(R) = d\lambda\, 2^{-2R/d} = d\lambda \exp\!\left(-\tfrac{2\ln 2}{d}R\right).
 \end{equation}
 \end{corollary}
 
-\begin{tcolorbox}[title=\textbf{Foundational Takeaway: The Spectral Fingerprint}]
-Power-law scaling $L(N) \sim N^{-\alpha}$ is the **mathematical fingerprint of an effectively infinite-dimensional, heavy-tailed data spectrum** ($\lambda_k \sim k^{-(1+\rho)}$). If real data were finite-dimensional, optimal compression would yield exponential error decay.
-\end{tcolorbox}
+\begin{remark}[Closing the loop to $\alpha_N$]
+Theorem~\ref{thm:rd} concerns rate $R$ in bits, not parameters $N$. Two further steps \textbf{[L3]} are needed to reach $L(N)$. First, one must posit $R \asymp N$ (each parameter carries $\Theta(1)$ useful bits, up to the precision floor discussed in~\cite{kumar2024precision}). Second, one must identify excess log loss with squared distortion; this holds to leading order because KL divergence is locally quadratic in the parameter perturbation, $D_{\mathrm{KL}}(P\|P+\Delta) = \tfrac{1}{2}\Delta^\top I \Delta + O(\|\Delta\|^3)$. Granting both, $\alpha_N = \rho$: \emph{the parameter exponent equals the tail exponent of the source spectrum}. Neither step is innocuous, and both are places where a factor of $2$ can enter.
+\end{remark}
 
-\subsection{Metric Entropy and Yang--Barron Minimax Estimation}
+\begin{takeaway}{Foundational takeaway: the spectral fingerprint}
+Power-law scaling $L(N)-E \asymp N^{-\alpha}$ is the signature of an effectively infinite-dimensional, heavy-tailed source. Had natural data been genuinely finite-dimensional, optimal compression would give exponential improvement and the entire scaling-law industry would not exist. Conversely, any intervention that truncates the tail --- deduplication, pruning, curriculum --- can in principle change the functional form, not just the constants (Section~\ref{sec:open_challenges}).
+\end{takeaway}
 
-Yang and Barron (1999)~\cite{yang1999information} established the definitive information-theoretic bounds for statistical estimation by linking minimax risk to the Kolmogorov $\varepsilon$-covering entropy $H(\varepsilon; \mathcal{P}) = \log \mathcal{N}(\varepsilon, \mathcal{P}, \rho)$.
+\subsection{Metric entropy and Yang--Barron minimax rates}
 
-\begin{theorem}[Yang--Barron Minimax Balance~\cite{yang1999information,tsybakov2009introduction}]
-Let $\mathcal{P}$ be a family of probability distributions on $\mathcal{X}$. If the metric entropy under Hellinger distance satisfies $H(\varepsilon; \mathcal{P}) \asymp \varepsilon^{-r}$ for some $r > 0$, then the minimax estimation risk over $n$ i.i.d. samples satisfies:
+Rate--distortion bounds what a description can achieve; minimax theory bounds what an \emph{estimator} can achieve from $D$ samples. The two are linked by the same object: the metric entropy of the model class.
+
+\begin{definition}[Metric entropy]
+For a class $\mathcal{P}$ with metric $\mathsf{d}$, the covering number $\mathcal{N}(\varepsilon,\mathcal{P},\mathsf{d})$ is the smallest number of $\varepsilon$-balls covering $\mathcal{P}$, and the metric entropy is $H(\varepsilon;\mathcal{P}) = \log\mathcal{N}(\varepsilon,\mathcal{P},\mathsf{d})$. It is the number of bits needed to specify an element of $\mathcal{P}$ to accuracy $\varepsilon$.
+\end{definition}
+
+\begin{theorem}[Yang--Barron balance; \textbf{L1}~\cite{yang1999information,tsybakov2009introduction}]
+Let $\mathcal{P}$ be a class of densities whose Hellinger metric entropy satisfies $H(\varepsilon;\mathcal{P}) \asymp \varepsilon^{-r}$, $r>0$. Then the minimax risk over $D$ i.i.d.\ samples satisfies
 \begin{equation}
-  \inf_{\hat{p}_n} \sup_{p^* \in \mathcal{P}} \mathbb{E}_{p^*} \left[ D_{\mathrm{KL}}(p^* \| \hat{p}_n) \right] \asymp \varepsilon_n^2,
+  \inf_{\hat p}\ \sup_{p^*\in\mathcal{P}}\ \mathbb{E}_{p^*}\big[\mathsf{d}^2(p^*,\hat p)\big] \asymp \varepsilon_D^2,
 \end{equation}
-where the minimax optimal rate $\varepsilon_n$ is the unique solution to the balance equation:
+where $\varepsilon_D$ solves the balance equation
 \begin{equation}
-  \boxed{H(\varepsilon_n; \mathcal{P}) \asymp n \varepsilon_n^2}.
+  \boxed{H(\varepsilon_D;\mathcal{P}) \asymp D\,\varepsilon_D^2}.
   \label{eq:entropy-balance}
 \end{equation}
 \end{theorem}
 
-\begin{corollary}[Sobolev Nonparametric Rates]
-For target densities in a Sobolev ball $W^s(\mathbb{R}^d)$ of smoothness $s$ in $d$ dimensions, classical metric entropy gives $H(\varepsilon) \asymp \varepsilon^{-d/s}$. Solving $\varepsilon_n^{-d/s} \asymp n \varepsilon_n^2$ gives $\varepsilon_n^{2 + d/s} \asymp n^{-1}$, yielding the minimax risk rate:
+\begin{intuition}{Reading the balance equation}
+In \eqref{eq:entropy-balance}, the left side is the number of nats needed to name the truth to accuracy $\varepsilon$; the right side is the number of nats of information $D$ samples supply about a target at that accuracy. The optimal accuracy is where supply meets demand. Every classical nonparametric rate is this one equation with a different entropy.
+\end{intuition}
+
+\begin{remark}[Technical caveat]
+The upper bound in \eqref{eq:entropy-balance} uses the \emph{global} metric entropy (via a Bayes/mixture argument with a covering prior); the matching lower bound is proved by Fano's inequality applied to a \emph{local} packing, and equality of the two entropies is a regularity property of the class. For the standard smoothness classes below they coincide; for irregular classes they need not, and the balance equation can be off. The result also bounds a minimax risk over a class --- it says nothing about the rate for one particular truth, which is where the extra structure of real data enters.
+\end{remark}
+
+\begin{corollary}[Sobolev rates; \textbf{L1}]
+For densities in a Sobolev ball $W^s([0,1]^d)$, classical entropy estimates give $H(\varepsilon)\asymp \varepsilon^{-d/s}$. Solving $\varepsilon_D^{-d/s}\asymp D\varepsilon_D^2$ yields $\varepsilon_D^{2+d/s}\asymp D^{-1}$, hence
 \begin{equation}
-  \mathcal{R}_n \asymp n^{-\frac{2s}{2s+d}} \implies \alpha_D = \frac{2s}{2s+d}.
+  \mathcal{R}_D \asymp D^{-\frac{2s}{2s+d}}
+  \qquad\Longrightarrow\qquad
+  \alpha_D = \frac{2s}{2s+d}.
 \end{equation}
 \end{corollary}
 
-\subsection{Information-Theoretic Model/Data Allocation: Jeon \& Van Roy (2024)}
+This is the curse of dimensionality in its statistical form: for fixed smoothness $s$, the exponent collapses as $1/d$ for large $d$. It is also the first quantitative bridge to the geometric picture: if the data lie on a $d$-dimensional manifold rather than filling the ambient space, $d$ in this formula is the \emph{intrinsic} dimension, which is how deep networks evade the ambient curse~\cite{nakada2020adaptive,schmidt2020nonparametric}.
 
-Jeon and Van Roy~\cite{jeon2024information} formalized neural scaling through a Bayesian rate--distortion decomposition. For a dataset $\mathcal{D}_T$ of $T$ observations and a target data-generating process $F$ approximated by a compressed surrogate model $\widetilde{F}$, the expected excess log loss decomposes as:
+\subsection{Universal coding redundancy: Chinchilla's ancestor}
+\label{subsec:mdl}
+
+An older literature already contains an $N$-versus-$D$ trade-off, in exactly the form scaling laws rediscovered.
+
+\begin{theorem}[Parametric redundancy; Rissanen, Clarke--Barron; \textbf{L1}~\cite{rissanen1986stochastic,rissanen1996fisher,clarke1990information}]
+For a regular, identifiable $k$-parameter family $\{p_\vartheta:\vartheta\in\Theta\subset\mathbb{R}^k\}$ with Fisher information $I(\vartheta)$, the asymptotic minimax redundancy of universal coding over $D$ observations is
 \begin{equation}
-  \mathcal{E}_T \ \lesssim \ \underbrace{\frac{I(F;\widetilde{F})}{T}}_{\text{Estimation / Information Cost}} \ + \ \underbrace{\mathbb{E}\,D_{\mathrm{KL}}(P_F(\cdot\mid X)\,\|\,P_{\widetilde{F}}(\cdot\mid X))}_{\text{Representation Misspecification Cost}}.
+  \boxed{\inf_q \sup_{\vartheta\in\Theta} \mathbb{E}_{p_\vartheta}\!\left[\log\frac{p_\vartheta(X^D)}{q(X^D)}\right]
+  = \frac{k}{2}\log\frac{D}{2\pi e} + \log\int_\Theta \sqrt{\det I(\vartheta)}\,d\vartheta + o(1)}.
+\end{equation}
+\end{theorem}
+
+\begin{remark}[Why this looks like Chinchilla]
+Divide by $D$ to obtain excess loss \emph{per token}: a $k$-parameter model costs $\frac{k}{2D}\log D + O(1/D)$ nats/token in estimation error, on top of whatever approximation error remains. Writing $k=N$ and adding an approximation term $A N^{-\alpha_N}$ gives
+\begin{equation}
+  L(N,D) - E \ \approx\ \underbrace{A N^{-\alpha_N}}_{\text{approximation}} \ +\ \underbrace{\frac{N\log D}{2D}}_{\text{estimation}} ,
+  \label{eq:mdl-tradeoff}
+\end{equation}
+which, minimized under $ND \propto C$, again produces a near-linear optimal relation between $N$ and $D$ up to logarithmic factors. The Chinchilla prescription is thus visible in a 1986 theorem, provided one is willing to treat a transformer as a regular parametric family --- which it emphatically is not (it is unidentifiable, over-parameterized, and its Fisher information is singular). The singular-learning-theory correction replaces $k/2$ by the real log-canonical threshold, which is generally smaller.
+\end{remark}
+
+\subsection{Information-theoretic model/data allocation: Jeon and Van Roy}
+
+Jeon and Van Roy~\cite{jeon2024information} make the preceding heuristic rigorous without assuming regularity, using a Bayesian rate--distortion argument \textbf{[L1/L2]}. For a data-generating process $F$ and a compressed surrogate $\widetilde F$, the \emph{cumulative} excess log loss over the first $T$ observations obeys
+\begin{equation}
+  \frac{1}{T}\sum_{t<T}\mathcal{E}_t \ \le\ \underbrace{\frac{\mathbb{I}(F;\widetilde F)}{T}}_{\text{estimation / information cost}}
+  \ +\ \underbrace{\mathbb{E}\big[D_{\mathrm{KL}}\big(P_F(\cdot\mid X)\,\|\,P_{\widetilde F}(\cdot\mid X)\big)\big]}_{\text{misspecification cost}} .
   \label{eq:jeon}
 \end{equation}
-The first term is the statistical price of identifying $\widetilde{F}$ from $T$ tokens, which decreases as $T$ increases. The second term is the structural approximation error, which decreases as surrogate capacity $N$ increases. For an infinite-width two-layer network prior, optimizing this bound under a compute constraint $C \approx NT$ rigorously yields an optimal data-to-model allocation $N \propto T$ up to logarithmic factors, providing an information-theoretic foundation for the Chinchilla scaling rule.
+The first term is the price of identifying $\widetilde F$ from data and falls as $1/T$; the second is the structural error of the surrogate and falls as capacity grows. The bound is on the \emph{average} excess loss over the first $T$ observations (an online-to-batch statement), not on the loss of the final model --- a distinction worth keeping, since the two coincide only when the learning curve is regular.
+
+Instantiating this for data generated by an infinite-width two-layer neural network and optimizing \eqref{eq:jeon} under a compute constraint $C\propto NT$, they conclude that \emph{the optimal relation between model size and data size is linear up to logarithmic factors}, an information-theoretic derivation of the Chinchilla rule that does not depend on fitting a curve. A companion analysis treats compute-optimal scaling directly~\cite{jeon2022compute}.
 
 %==============================================================================
-\section{Statistical Physics of Language and Horizon-Limited Scaling}
+\section{Statistics of Language and Horizon-Limited Scaling}
 \label{sec:hilberg_and_cagnetta}
 %==============================================================================
 
-\subsection{Hilberg's Law and Long-Range Context Correlations}
+The theories of Section~\ref{sec:shannon_theory} say that exponents are determined by properties of the source. This section is about the one domain where those properties have been \emph{measured} and turned into a prediction.
 
-In 1990, Wolfgang Hilberg~\cite{hilberg1990der} conjectured that natural language possesses long-range power-law memory. Specifically, the block entropy of $n$ consecutive words or characters scales as:
+\subsection{Zipf, Hilberg, and long-range correlations}
+
+Three empirical regularities of natural language matter here.
+
+\paragraph{Zipf's law.} Word frequencies decay as a power law in rank, $p_k \propto k^{-\zeta}$ with $\zeta\approx 1$~\cite{zipf1949human}. This alone guarantees a heavy-tailed set of primitives to be learned, and drives the discrete models of Section~\ref{sec:discrete_and_quanta}.
+
+\paragraph{Long-range correlations.} Correlations between tokens decay as a power law in separation rather than exponentially~\cite{ebeling1994entropy,lin2017critical}; an exponentially mixing source (a finite-order Markov chain) would give exponentially small returns to context length, contradicting observation.
+
+\paragraph{Hilberg's conjecture.} In 1990 Hilberg~\cite{hilberg1990der}, reinterpreting Shannon's data, conjectured that the block entropy of natural language grows sub-linearly, $H(X_1^n)\propto n^{\delta}$ with $\delta\approx 0.5$ --- which as stated implies a \emph{zero} entropy rate. The form used today is D\k{e}bowski's \emph{relaxed} Hilberg conjecture~\cite{debowski2015relaxed,debowski2021book}, which permits a positive rate:
 \begin{equation}
-  H(X_1^n) = h n + c n^\delta + o(n^\delta), \qquad 0 < \delta < 1 \quad (\text{typically } \delta \approx 0.5).
+  H(X_1^n) = h\,n + c\,n^{\delta} + o(n^{\delta}), \qquad 0<\delta<1 .
   \label{eq:hilberg}
 \end{equation}
-Differentiating or differencing Equation~\eqref{eq:hilberg} implies that the excess conditional entropy of the $(n+1)$-th token given context length $n$ decays as a power law~\cite{debowski2015relaxed}:
+Since $H(X_{n+1}\mid X_1^n) = H(X_1^{n+1}) - H(X_1^n)$ exactly, differencing \eqref{eq:hilberg} gives (assuming the remainder differences behave, which requires a regularity assumption not implied by \eqref{eq:hilberg} alone)
 \begin{equation}
-  H(X_{n+1}\mid X_1^n) - h \asymp n^{-\gamma}, \qquad \text{where } \gamma = 1 - \delta.
+  H(X_{n+1}\mid X_1^n) - h \asymp c\,\delta\, n^{-\gamma}, \qquad \gamma = 1-\delta .
+  \label{eq:entropy-decay}
 \end{equation}
+\emph{This is the key structural fact.} A model restricted to $n$ tokens of context cannot beat $H(X_{n+1}\mid X_1^n)$, so its floor exceeds the true entropy rate by $\asymp n^{-\gamma}$. Any mechanism that limits usable context therefore generates a power law. Hilberg's $\delta\approx 0.5$ corresponds to $\gamma\approx 0.5$; the directly measured values below are $\gamma\approx 0.27$--$0.34$, i.e.\ $\delta\approx 0.66$--$0.73$, so the modern measurements are qualitatively but not quantitatively consistent with Hilberg's original figure.
 
-\subsection{Derivation of the Data Scaling Exponent: Cagnetta et al. (2024/2026)}
+\subsection{Deriving the data exponent: Cagnetta, Ravent\'os, Ganguli, and Wyart}
 \label{subsec:cagnetta_derivation}
 
-A milestone breakthrough by Cagnetta, Ravent\'os, Ganguli, and Wyart~\cite{cagnetta2026deriving} established an analytical link between measurable language statistics and the empirical data scaling exponent $\alpha_D$.
+Cagnetta, Ravent\'os, Ganguli, and Wyart~\cite{cagnetta2026deriving} connect two measurable statistics of a corpus to the data-limited scaling exponent, with no fitted parameters and no synthetic data model. This is currently the strongest quantitative link between corpus statistics and a neural scaling exponent.
 
-\begin{tcolorbox}[title=\textbf{Conceptual Intuition: Reading with Noisy Glasses}]
-Imagine learning to predict the next word in a language by reading $D$ total tokens. 
-1. Long-range grammatical and semantic correlations decay with distance as $|C(n)| \sim n^{-\beta}$.
-2. Estimating these correlations from a finite dataset of $D$ tokens is corrupted by central limit sampling noise $\sigma_{\mathrm{sample}} \sim \mathcal{O}(D^{-1/2})$.
-3. The model can only exploit correlations that rise above the noise floor: $n^{-\beta} \gtrsim D^{-1/2}$. This sets a maximum **statistically resolvable context horizon**:
-   $$n^*(D) \sim D^{\frac{1}{2\beta}}.$$
-4. If the model is expressive enough to master all patterns within this horizon, the remaining unpredicted entropy is governed by the conditional entropy gap at horizon $n^*$:
-   $$\mathcal{L}(D) - H_\infty \sim (n^*(D))^{-\gamma} = \left(D^{\frac{1}{2\beta}}\right)^{-\gamma} = D^{-\frac{\gamma}{2\beta}}.$$
-\end{tcolorbox}
-
-\begin{theorem}[Cagnetta--Ravent\'os--Ganguli--Wyart Scaling Law~\cite{cagnetta2026deriving}]
-Suppose a language corpus satisfies:
-\begin{enumerate}[leftmargin=1.5em]
-  \item \textbf{Conditional Entropy Decay:} $H_n - H_\infty \asymp n^{-\gamma}$, where $H_n = H(X_{t+1}\mid X_{t-n+1}^t)$.
-  \item \textbf{Token Covariance Decay:} $\|\mathbf{\Sigma}(n)\|_{\mathrm{op}} \asymp n^{-\beta}$, where $\mathbf{\Sigma}(n)$ is the token correlation matrix at lag $n$.
-  \item \textbf{Fast Within-Horizon Learning:} Within the resolvable horizon $n \le n^*(D)$, the model learns patterns sufficiently fast that the dominant bottleneck is context truncation at $n^*(D)$.
+\begin{intuition}{Conceptual intuition: reading through sampling noise}
+\begin{enumerate}[leftmargin=1.5em,nosep]
+  \item Correlations between tokens separated by $n$ positions decay as $\|\mathbf{C}(n)\|\asymp n^{-\beta}$.
+  \item Estimating such a correlation from $D$ tokens carries central-limit sampling noise of order $D^{-1/2}$.
+  \item A correlation is only \emph{learnable} if it exceeds the noise floor: $n^{-\beta}\gtrsim D^{-1/2}$. This defines a statistically resolvable context horizon
+  \[ n^*(D) \asymp D^{\frac{1}{2\beta}}. \]
+  \item If the model masters everything inside that horizon, its remaining excess loss is the conditional-entropy gap at context length $n^*$, which by \eqref{eq:entropy-decay} is
+  \[ \mathcal{L}(D) - H_\infty \asymp \big(n^*(D)\big)^{-\gamma} = D^{-\frac{\gamma}{2\beta}}. \]
 \end{enumerate}
-Then, when trained on a dataset of $D$ tokens in the data-limited regime, the excess cross-entropy loss obeys:
+In words: \emph{more data does not mainly make the model better at short-range prediction; it makes the model able to see further.}
+\end{intuition}
+
+\begin{theorem}[Horizon-limited data scaling; \textbf{L3}~\cite{cagnetta2026deriving}]
+Suppose a corpus satisfies:
+\begin{enumerate}[leftmargin=1.5em,nosep]
+  \item \textbf{Conditional entropy decay:} $H_n - H_\infty \asymp n^{-\gamma}$, with $H_n = H(X_{t+1}\mid X_{t-n+1}^t)$;
+  \item \textbf{Token correlation decay:} $\|\mathbf{C}(n)\|_{\mathrm{op}} \asymp n^{-\beta}$ for the token--token correlation matrix at lag $n$;
+  \item \textbf{Fast within-horizon learning:} structure at scales $n \ll n^*(D)$ is essentially acquired, so the binding constraint is the horizon itself, not within-horizon approximation.
+\end{enumerate}
+Then in the data-limited regime,
 \begin{equation}
-  \boxed{\mathcal{L}(D) - H_\infty \asymp D^{-\alpha_D}, \qquad \text{where } \alpha_D = \frac{\gamma}{2\beta}}.
+  \boxed{\mathcal{L}(D)-H_\infty \asymp D^{-\alpha_D}, \qquad \alpha_D = \frac{\gamma}{2\beta}} .
   \label{eq:cagnetta}
 \end{equation}
 \end{theorem}
 
-\paragraph{Empirical Validation without Parameter Fitting.}
-Cagnetta et al. measured $\gamma$ and $\beta$ directly on language corpora and compared the predicted $\alpha_D = \gamma/(2\beta)$ against actual training curves of GPT-2 and LLaMA transformers:
+\paragraph{Parameter-free empirical test.} The authors measure $\gamma$ and $\beta$ directly on corpora and compare $\gamma/(2\beta)$ with the exponents of training curves for GPT-2- and LLaMA-style transformers trained from scratch:
 \begin{align}
-  \text{\textbf{TinyStories:}}&\quad \gamma = 0.325 \pm 0.003, \quad \beta = 0.88 \pm 0.06 \nonumber\\
-  &\quad \implies \alpha_D^{\mathrm{pred}} = 0.185 \pm 0.013 \quad (\alpha_D^{\mathrm{emp}} \approx 0.18), \\
-  \text{\textbf{WikiText-103:}}&\quad \gamma = 0.265 \pm 0.016, \quad \beta = 0.94 \pm 0.16 \nonumber\\
-  &\quad \implies \alpha_D^{\mathrm{pred}} = 0.141 \pm 0.025 \quad (\alpha_D^{\mathrm{emp}} \approx 0.14).
+  \textbf{TinyStories:}&\quad \gamma = 0.34,\ \ \beta = 0.88 \ \Longrightarrow\ \alpha_D^{\mathrm{pred}} = 0.34/(2\times 0.88) \approx 0.19, \\
+  \textbf{WikiText:}&\quad \gamma = 0.27,\ \ \beta = 0.94 \ \Longrightarrow\ \alpha_D^{\mathrm{pred}} = 0.27/(2\times 0.94) \approx 0.14,
 \end{align}
-The empirical scaling curves collapse onto a universal curve under the theoretical rescaling $D \mapsto D / n^{2\beta}$ and $\mathcal{L}_n \mapsto n^\gamma \mathcal{L}_n$. This represents the first parameter-free, first-principles prediction of a neural scaling exponent from measurable corpus statistics.
+matching the measured data-limited exponents on the two benchmarks. The theory also predicts a data collapse: loss curves measured at different context lengths $n$ superimpose under the rescaling $D\mapsto D/n^{2\beta}$, $\mathcal{L}_n\mapsto n^{\gamma}\mathcal{L}_n$, which is a sharper test than matching a single slope.
 
-\subsection{Controlled Data Structure: Random Walk Graphs (Barkeshli et al., 2026)}
+\begin{caution}{What this does and does not settle}
+It is a genuine first: a scaling exponent predicted from measurable corpus statistics with no free parameters. But (i) it predicts $\alpha_D$ only, in the \emph{data-limited} regime, and says nothing about $\alpha_N$; (ii) assumption~3 is a strong dynamical claim about optimization, not a property of the corpus, and is the step that keeps this at evidence level \textbf{[L3]}; (iii) it explains $\alpha_D$ in terms of $\gamma$ and $\beta$, which are themselves unexplained --- the ``why'' has been moved one level down, not eliminated.
+\end{caution}
 
-Barkeshli, Alfarano, and Gromov~\cite{barkeshli2026origin} trained transformers on synthetic language generated by random walks on graphs with tunable topology. They found that even for Erd\H{o}s--R\'enyi graphs lacking heavy-tailed power-law spectra, neural networks exhibit power-law scaling over finite ranges. This demonstrates that while heavy-tailed language statistics analytically set exponents in the horizon-limited regime, neural optimization dynamics can also generate effective power-law scaling over finite windows.
+\subsection{A caution from controlled data: random-walk graphs}
+
+Barkeshli, Alfarano, and Gromov~\cite{barkeshli2026origin} trained transformers on sequences generated by random walks (bigram processes) on graphs of tunable complexity, and by progressively simplified generative language models. They find neural scaling laws \emph{even when the data have no power-law correlation structure at all}, and track how exponents evolve as the generative process is simplified from a 4-layer transformer down to a bigram model.
+
+The implication is important and cuts against a naive reading of the whole preceding section: power-law structure in the data is \emph{sufficient} but apparently not \emph{necessary} for power-law learning curves over a finite range. Optimization dynamics can manufacture effective power laws on their own. Any claim of the form ``the exponent is $X$ because the data statistic is $Y$'' therefore needs a control showing that the relationship fails when $Y$ is changed.
 
 %==============================================================================
-\section{High-Dimensional Geometry, Manifold Tiling, and Approximation Limits}
+\section{Geometry, Approximation, and Fundamental Limits}
 \label{sec:geometry_and_approximation}
 %==============================================================================
 
-\subsection{Manifold Tiling Geometry: Sharma \& Kaplan (2020)}
+\begin{intuition}{Primer: why dimension is the villain}
+To approximate a function to accuracy $\varepsilon$ on a $d$-dimensional domain, one generally needs about $\varepsilon^{-d}$ pieces of information: the number of $\varepsilon$-balls needed to cover the domain grows exponentially in $d$. Invert this and every rate in this section appears: with $N$ pieces one gets resolution $\varepsilon\asymp N^{-1/d}$, and the error is whatever the local approximation leaves over at that resolution. The whole game is (i) what $d$ really is for natural data, and (ii) what power of $\varepsilon$ the local error carries.
+\end{intuition}
+
+\subsection{Manifold tiling: Sharma and Kaplan}
 \label{subsec:sharma_kaplan}
 
-High-dimensional data in $\mathbb{R}^{D_{\mathrm{amb}}}$ typically concentrates on a lower-dimensional Riemannian submanifold $\mathcal{M}$ of intrinsic dimension $d \ll D_{\mathrm{amb}}$. Sharma and Kaplan~\cite{sharma2020neural} derived the parameter exponent $\alpha_N$ by modeling neural networks as piecewise-affine approximators on $\mathcal{M}$.
+High-dimensional data typically concentrate near a low-dimensional submanifold $\mathcal{M}$ of intrinsic dimension $d$ far below the ambient dimension~\cite{pope2021intrinsic,levina2004maximum,ansuini2019intrinsic}. Sharma and Kaplan~\cite{sharma2020neural} model a network as a piecewise-affine approximator on $\mathcal{M}$ --- reasonable for ReLU networks, whose number of linear regions grows with depth and width~\cite{montufar2014number} --- and deduce the parameter exponent.
 
-\begin{tcolorbox}[title=\textbf{Geometric Intuition: Tiling a Curved Manifold with Flat Tiles}]
-Consider approximating a curved 2D surface ($d=2$) in 3D space using $N$ flat triangular tiles:
-1. Each tile has a characteristic linear diameter $\varepsilon \asymp N^{-1/d} = N^{-1/2}$.
-2. A smooth $\mathcal{C}^2$ target function $f^*$ curves away from each flat affine tile $\hat{f}$ by its second-order Taylor remainder:
-   $$|f^*(x) - \hat{f}(x)| \le \frac{1}{2} \|x - x_0\|^2 \|\nabla^2 f^*(x_0)\| \sim \varepsilon^2 = N^{-2/d}.$$
-3. Integrating the squared error over all $N$ tiles yields the mean squared loss:
-   $$L(N) = \int_{\mathcal{M}} |f^*(x) - \hat{f}(x)|^2 d\mu(x) \asymp \varepsilon^4 = (N^{-1/d})^4 = N^{-4/d}.$$
-\end{tcolorbox}
+\begin{intuition}{Geometric intuition: flat tiles on a curved surface}
+\begin{enumerate}[leftmargin=1.5em,nosep]
+  \item $N$ parameters buy $K\asymp N$ tiles, each of linear size $\varepsilon\asymp N^{-1/d}$.
+  \item A $\mathcal{C}^2$ target curves away from a flat tile by its second-order Taylor remainder:
+  $|f^*(x)-\hat f(x)| \le \tfrac12\|x-x_0\|^2\,\|\nabla^2 f^*\| \asymp \varepsilon^2$.
+  \item Squared error integrates the square of that: $L(N)\asymp \varepsilon^4 = N^{-4/d}$.
+\end{enumerate}
+The ``$4$'' is two factors of $2$: one from second-order Taylor, one from squaring.
+\end{intuition}
 
-\begin{theorem}[Manifold Tiling Exponent~\cite{sharma2020neural}]
-Let $\mathcal{M}$ be a compact $d$-dimensional Riemannian manifold and $f^* \in \mathcal{C}^2(\mathcal{M})$. If a neural network with $N$ parameters partitions $\mathcal{M}$ into $K \asymp N$ local linear regions of size $\varepsilon \asymp N^{-1/d}$, then under squared error regression:
+\begin{theorem}[Manifold tiling exponent; \textbf{L3}~\cite{sharma2020neural}]
+Let $\mathcal{M}$ be a compact $d$-dimensional Riemannian manifold and $f^*\in\mathcal{C}^2(\mathcal{M})$. If a network with $N$ parameters induces $K\asymp N$ local linear regions of diameter $\varepsilon\asymp N^{-1/d}$, and the regions are placed so as to resolve $\mathcal{M}$ uniformly, then under squared error
 \begin{equation}
-  \boxed{L(N) - E \asymp N^{-4/d} \implies \alpha_N = \frac{4}{d}}.
+  \boxed{L(N) - E \asymp N^{-4/d} \implies \alpha_N = \frac{4}{d}} .
 \end{equation}
-If the target function is only Lipschitz continuous ($\mathcal{C}^1$), the first-order error yields $\alpha_N = 2/d$.
+If the target is merely Lipschitz, the local error is $\mathcal{O}(\varepsilon)$ rather than $\mathcal{O}(\varepsilon^2)$ and $\alpha_N = 2/d$. The same exponents apply to cross-entropy loss because KL divergence is locally quadratic in the predictive perturbation.
 \end{theorem}
 
-\paragraph{Intrinsic Dimension Measurements.}
-For GPT models where empirical parameter scaling gives $\alpha_N \approx 0.076$, the geometric formula predicts an effective intrinsic dimension $d \approx 4 / \alpha_N \approx 53$. Sharma and Kaplan measured intrinsic dimensions of transformer token activations and found $d \approx 7$ within a single contiguous 1024-token document, but $d > 90$ across heterogeneous documents, revealing a scale-dependent multi-scale manifold hierarchy.
+\paragraph{Measured intrinsic dimensions, and an honest mismatch.} Sharma and Kaplan tested $\alpha\approx 4/d$ on image classifiers, where it fares reasonably, and on GPT-type language models, where it does not. For GPT-2 small the empirical $\alpha_N\approx 0.076$ implies $4/\alpha_N\approx 53$, whereas their nearest-neighbour estimate of the intrinsic dimension of the token activations gives $d\ge 90$ across heterogeneous documents --- but only $d\approx 7$ within a single contiguous $1024$-token passage. Their own conclusion is that ``the data manifold has a scale-dependent structure, and may not be well-characterized by a single intrinsic dimension.'' We stress this because the mismatch is often omitted when the $4/d$ law is quoted. Note also that the inferred $d$ inherits all of the fragility of $\alpha_N$: using the Chinchilla exponent $\alpha_N=0.34$ instead of Kaplan's $0.076$ changes the implied dimension from $53$ to $12$ (Section~\ref{subsec:consistency}).
 
-\subsection{Resolution-Limited vs. Variance-Limited Regimes: Bahri et al. (PNAS 2024)}
+\subsection{Variance-limited versus resolution-limited scaling: Bahri et al.}
 \label{subsec:bahri_pnas}
 
-Bahri, Dyer, Kaplan, Lee, and Sharma~\cite{bahri2024explaining} established a comprehensive phase diagram distinguishing variance bottlenecks from resolution bottlenecks along both model and data axes:
+Bahri, Dyer, Kaplan, Lee, and Sharma~\cite{bahri2024explaining} organize the mechanisms into a phase diagram with four regimes \textbf{[L2/L3]}, according to whether the bottleneck is statistical fluctuation (variance-limited) or insufficient resolution of the data manifold (resolution-limited), along the data axis or the model axis.
 
 \begin{table}[htbp]
 \centering
 \small
 \renewcommand{\arraystretch}{1.3}
-\begin{tabularx}{\textwidth}{>{\bfseries\raggedright\arraybackslash}p{3.0cm} >{\raggedright\arraybackslash}p{4.2cm} >{\raggedright\arraybackslash}X}
+\begin{tabularx}{\textwidth}{>{\bfseries\raggedright\arraybackslash}p{3.0cm} >{\raggedright\arraybackslash}p{4.4cm} >{\raggedright\arraybackslash}X}
 \toprule
-\textbf{Scaling Axis} & \textbf{Limiting Mechanism} & \textbf{Asymptotic Error Scaling} \\
+\textbf{Regime} & \textbf{Limiting mechanism} & \textbf{Asymptotic excess loss} \\
 \midrule
-\textbf{Data ($D$-Variance)} & Sample variance near infinite-data limit & $\Delta L(D) \propto D^{-1}$ (Central Limit Theorem) \\
-\textbf{Width ($w$-Variance)} & Ensemble variance near infinite-width limit & $\Delta L(w) \propto w^{-1}$ (Gaussian process convergence) \\
-\textbf{Data ($D$-Resolution)} & Finite sample coverage of $d$-manifold & $\Delta L(D) \propto D^{-4/d}$ (or $D^{-2/d}$) \\
-\textbf{Model ($N$-Resolution)} & Parameter cell coverage of $d$-manifold & $\Delta L(N) \propto N^{-4/d}$ (or $N^{-2/d}$) \\
+Data, variance-limited & Sample fluctuations about the infinite-data limit & $\Delta L \propto D^{-1}$ (central limit theorem) \\
+Width, variance-limited & Fluctuations about the infinite-width (GP/NTK) limit & $\Delta L \propto w^{-1}$ \\
+Data, resolution-limited & Finite sample coverage of a $d$-manifold & $\Delta L \propto D^{-n/d}$, with $n \ge 4$ for an accurate piecewise-linear fit and a smooth loss \\
+Model, resolution-limited & Finite parameter coverage of a $d$-manifold & $\Delta L \propto N^{-n/d}$ \\
 \bottomrule
 \end{tabularx}
-\caption{The four fundamental scaling regimes of Bahri et al.~\cite{bahri2024explaining}.}
+\caption{The four scaling regimes of Bahri et al.~\cite{bahri2024explaining}. The exponent $n$ in the resolution-limited rows is the order of the leading non-vanishing term in the local error expansion: $n=1$ for a Lipschitz bound on the loss, $n=2$ for a smooth loss with a first-order fit, and $n\ge 4$ when the model is an accurate piecewise-linear approximant and the loss has a quadratic minimum.}
 \label{tab:bahri_regimes}
 \end{table}
 
-The transition between these regimes is accurately described by a smooth harmonic crossover:
-\begin{equation}
-  L(N, D) = E + \left[ \left(\frac{N_c}{N}\right)^{\frac{\alpha_N}{\kappa}} + \left(\frac{D_c}{D}\right)^{\frac{\alpha_D}{\kappa}} \right]^\kappa, \qquad \kappa > 0.
-\end{equation}
+Two conclusions of that paper deserve emphasis. First, the variance-limited exponents are \emph{universal} --- $1/D$ and $1/w$, independent of the data --- whereas the resolution-limited exponents are data-dependent; observing a non-trivial exponent is thus already evidence that one is in a resolution-limited regime. Second, in the random-feature/kernel setting with a power-law spectrum they derive a \emph{duality}: the model-resolution and data-resolution exponents coincide and equal the spectral decay exponent, $\alpha_N=\alpha_D=\alpha_K$. Empirically $\alpha_N\ne\alpha_D$ for language models, which is itself informative: it says the two axes are not being limited by the same mechanism (Section~\ref{subsec:lin_scaling} gives a mechanism where they provably differ).
 
-\subsection{Fundamental Impossibility Lower Bounds in Approximation Theory}
+Across the crossover between regimes, the additive fit \eqref{eq:additive-fit} is usually replaced by a smoothed form
+\begin{equation}
+  L(N,D) = E + \left[\left(\frac{N_c}{N}\right)^{\frac{\alpha_N}{\nu}} + \left(\frac{D_c}{D}\right)^{\frac{\alpha_D}{\nu}}\right]^{\nu}, \qquad \nu>0,
+  \label{eq:crossover}
+\end{equation}
+which recovers \eqref{eq:additive-fit} at $\nu=1$ and sharpens the transition as $\nu\to 0$.
+
+\subsection{Impossibility results: what no amount of scaling can buy}
 \label{subsec:impossibility_bounds}
 
-Theoretical scaling laws are bounded by foundational impossibility theorems in approximation theory, information theory, and computational complexity:
+Scaling laws describe what happens on natural data. It is equally important to know what is impossible in general, because those bounds tell us how much of the observed success is a property of the data rather than of the architecture.
 
-\begin{theorem}[DeVore--Howard--Micchelli Continuous Non-Linear $n$-Width Lower Bound (1989)~\cite{devore1989optimal}]
-Let $W^s_p([0, 1]^d)$ be the Sobolev ball of smoothness $s$ in $d$ dimensions. Let $\mathcal{M}_N = \{g(\theta, \cdot) : \theta \in \mathbb{R}^N\}$ be any parametric family where parameters $\theta(f)$ are selected continuously from $f$. Then the continuous non-linear $n$-width satisfies:
+\begin{theorem}[Continuous nonlinear $n$-width; DeVore--Howard--Micchelli 1989; \textbf{L1}~\cite{devore1989optimal}]
+Let $W^s_p([0,1]^d)$ be a Sobolev ball and let $\mathcal{M}_N = \{g(\vartheta,\cdot):\vartheta\in\mathbb{R}^N\}$ be any $N$-parameter family in which the parameter selection $f\mapsto \vartheta(f)$ is \emph{continuous}. Then, under standard conditions on $p,q$, the approximation error in $L_q$ obeys
 \begin{equation}
-  \boxed{d_N(W^s_p([0, 1]^d))_q \ge c \cdot N^{-s/d}}.
-\end{equation}
-\end{theorem}
-This theorem proves that **no continuous parameter optimization method** (including gradient descent on neural networks) can ever circumvent the curse of dimensionality $N^{-s/d}$ for worst-case Sobolev functions.
-
-\begin{theorem}[Rissanen MDL Parametric Redundancy Bound (1986, 1996)~\cite{rissanen1986stochastic,rissanen1996fisher}]
-For any regular, identifiable $k$-dimensional parametric family $\{p_\theta : \theta \in \Theta \subset \mathbb{R}^k\}$, universal coding incurs an unavoidable minimax parameter redundancy:
-\begin{equation}
-  \boxed{\inf_q \sup_{\theta \in \Theta} \mathbb{E}_{p_\theta} \left[ \log \frac{p_\theta(X^n)}{q(X^n)} \right] \ge \frac{k}{2} \log n + \frac{k}{2} \log\left(\frac{1}{2\pi e}\right) + \log \int_\Theta \sqrt{\det I(\theta)} \, d\theta + o(1)}.
+  \boxed{d_N\big(W^s_p([0,1]^d)\big)_q \ \ge\ c\,N^{-s/d}} .
 \end{equation}
 \end{theorem}
 
-\begin{theorem}[Statistical Query (SQ) Lower Bounds (Kearns 1998, Shamir 2020)~\cite{kearns1998efficient}]
-For parity functions on $d$ binary bits, any algorithm with Statistical Query access with tolerance $\tau \ge 2^{-d/3}$ requires at least $2^{\Omega(d)}$ queries. Furthermore, under cryptographic assumptions, there exist functions that no polynomial-size neural network can learn with loss advantage $> 2^{-\Omega(d)}$.
+\begin{remark}[Read the hypothesis carefully]
+The continuity of $f\mapsto\vartheta(f)$ is essential, not decorative. Yarotsky~\cite{yarotsky2018optimal} showed that very deep ReLU networks attain the strictly faster rate $N^{-2s/d}$ --- twice the exponent --- using a weight assignment that is necessarily \emph{discontinuous} in $f$ (bits of the target are encoded in the low-order bits of weights). So the correct statement is not ``gradient descent cannot beat $N^{-s/d}$'', but ``any method whose parameters depend continuously on the target cannot''. Whether trained networks behave like continuous or discontinuous selectors is an open empirical question. See DeVore, Hanin, and Petrova~\cite{devore2021neural} for a modern survey of the whole landscape.
+\end{remark}
+
+\begin{remark}[Escaping the curse requires structure, and there are several exits]
+The $N^{-s/d}$ barrier applies to worst-case Sobolev functions. Real targets are not worst case, and at least three exits are known: (i) \emph{Barron classes}, functions with integrable Fourier-weighted spectra, are approximated at the dimension-free rate $\mathcal{O}(N^{-1/2})$~\cite{barron1993universal,bach2017breaking}; (ii) \emph{low intrinsic dimension}, where $d$ is replaced by the manifold dimension~\cite{nakada2020adaptive}; (iii) \emph{compositional structure}, where a hierarchical target is learned hierarchically and the effective dimension is that of each local factor~\cite{schmidt2020nonparametric,cagnetta2024rhm}. All three are claims about data, and all three are consistent with the empirical fact that scaling works far better than worst-case theory allows.
+\end{remark}
+
+\begin{theorem}[Statistical-query hardness of parities; \textbf{L1}~\cite{kearns1998efficient,blum1994weakly}]
+The statistical-query dimension of the class of parity functions on $d$ bits is $2^d$. Consequently any SQ algorithm using queries of tolerance $\tau$ requires at least $\tau^2 2^d - 1$ queries; taking $\tau = 2^{-d/3}$ gives $2^{\Omega(d)}$ queries. Since minibatch gradient descent with bounded precision is (approximately) an SQ algorithm, this bounds gradient-based learning of such targets.
 \end{theorem}
 
-\begin{tcolorbox}[title=\textbf{Takeaway: Scaling Laws are Data-Contingent}]
-Neural scaling laws $L \sim N^{-\alpha}$ are **not universal mathematical laws of all conceivable functions**. They reflect the structural properties of natural multimodal data: low intrinsic manifold dimensionality, heavy-tailed spectral decay, and compositional hierarchy.
-\end{tcolorbox}
+\begin{remark}[Hardness of \emph{learning}, not of representation]
+A two-layer network represents a parity easily; what is hard is \emph{finding} it from data. Under standard cryptographic assumptions there exist function classes that no polynomial-time algorithm can learn to non-trivial advantage even though small networks represent them~\cite{daniely2021local,shalev2017failures}. This is the sharpest sense in which scaling laws are contingent: on adversarially structured data, no exponent exists at all. That we observe clean power laws on natural language is a statement about natural language.
+\end{remark}
+
+\begin{takeaway}{Takeaway: scaling laws are statements about data}
+$L\asymp N^{-\alpha}$ is not a law of neural networks. It is a joint property of (i) the low intrinsic dimension, heavy-tailed spectrum, and compositional hierarchy of natural data, and (ii) the resolution rule of the training algorithm. Change either --- adversarial data, or a different optimizer --- and the exponent changes or disappears.
+\end{takeaway}
 
 %==============================================================================
-\section{Statistical Physics, Kernel Theory, and Solvable Models}
+\section{Solvable Models: Kernels, Random Features, and Linear Regression}
 \label{sec:statistical_physics}
 %==============================================================================
 
-\subsection{Kernel Spectra and the Hard-Cutoff Heuristic}
+This section contains the strongest results in the survey: models simple enough that joint $(N,D)$ scaling laws can be \emph{proved}, yet rich enough to display the phenomenology.
+
+\begin{intuition}{Primer: spectral bias in one paragraph}
+Diagonalize the kernel: any target decomposes into eigenmodes ordered by eigenvalue $\lambda_1\ge\lambda_2\ge\cdots$, like a Fourier series ordered from low to high frequency. Gradient-based learning fits high-eigenvalue modes first --- this is \emph{spectral bias}. Every learning curve in this section then has the same two-line derivation: (1) determine the cutoff $k_*$, the number of modes the resource resolves; (2) the error is the target power left unlearned, $\sum_{k>k_*}c_k^2 \asymp k_*^{-(b-1)}$. Different resources and algorithms differ \emph{only} in step (1).
+\end{intuition}
+
+\subsection{The cutoff calculus}
 \label{subsec:kernel_spectra}
 
-In the infinite-width Neural Tangent Kernel (NTK) regime~\cite{jacot2018neural,chizat2019lazy}, neural network learning curves can be solved analytically. Let $T_K$ be the kernel integral operator with eigenvalues $\lambda_k \asymp k^{-a}$ ($a > 1$) and target function projections $c_k^2 \asymp k^{-b}$ ($b > 1$).
-
-Bordelon, Canatar, and Pehlevan~\cite{bordelon2020spectrum,canatar2021spectral} established that neural networks exhibit **spectral bias**: high-eigenvalue (low-frequency) modes are learned first. Suppose a learning algorithm resolves all modes up to an effective spectral cutoff $k_*$ and leaves higher modes unlearned. The residual error is the unlearned target power:
+In the infinite-width Neural Tangent Kernel regime~\cite{jacot2018neural,chizat2019lazy}, training is kernel regression with a fixed kernel. Let the kernel integral operator have eigenvalues $\lambda_k\asymp k^{-a}$ ($a>1$) and let the target's power in eigenmode $k$ be $c_k^2\asymp k^{-b}$ ($b>1$), so $\sum_k c_k^2<\infty$. Bordelon, Canatar, and Pehlevan~\cite{bordelon2020spectrum,canatar2021spectral} and Spigler, Geiger, and Wyart~\cite{spigler2020asymptotic} established the spectral-bias picture; the residual error above a cutoff $k_*$ is
 \begin{equation}
-  \mathcal{E} \approx \sum_{k > k_*} c_k^2 \asymp \int_{k_*}^\infty x^{-b} dx \asymp k_*^{-(b-1)}.
+  \mathcal{E} \approx \sum_{k>k_*}c_k^2 \asymp \int_{k_*}^{\infty} x^{-b}\,dx \asymp k_*^{-(b-1)} .
   \label{eq:hard-cutoff}
 \end{equation}
 
-For **ridgeless kernel regression** on $n$ samples, the effective regularization parameter $\kappa$ solves $n \asymp \sum_k \frac{\lambda_k}{\lambda_k + \kappa} \asymp \kappa^{-1/a} \implies \kappa \asymp n^{-a}$. The cutoff mode satisfies $\lambda_{k_*} \asymp \kappa \implies k_*^{-a} \asymp n^{-a} \implies k_* \asymp n$.
-Substituting $k_* \asymp n$ into Equation~\eqref{eq:hard-cutoff} gives:
+\paragraph{Cutoff 1: ridgeless kernel regression on $D$ samples.} The effective ridge $\kappa$ solves the self-consistent equation $D \asymp \sum_k \frac{\lambda_k}{\lambda_k+\kappa}$. With $\lambda_k\asymp k^{-a}$, $\sum_k (1+\kappa k^a)^{-1}\asymp \kappa^{-1/a}$, so $\kappa\asymp D^{-a}$; modes are resolved while $\lambda_k \gtrsim \kappa$, giving $k_*\asymp \kappa^{-1/a}\asymp D$. Hence, in the noiseless case,
 \begin{equation}
-  \mathcal{E}(n) \asymp n^{-(b-1)}.
+  \mathcal{E}(D)\asymp D^{-(b-1)} .
+  \label{eq:krr-noiseless}
 \end{equation}
-Under noisy labels with optimal regularization, Cui et al.~\cite{cui2021generalization} show the exponent transitions to $n^{-(b-1)/b}$.
+Intuitively, $D$ samples resolve $D$ modes --- the most favourable possible rule.
 
-\subsection{Exact Joint $(N, D)$ Scaling Laws in Linear Regression (Lin et al., NeurIPS 2024)}
+\paragraph{Cutoff 2: label noise with optimal ridge.} With label noise of variance $\sigma^2$, keeping $k_*$ modes contributes variance $\asymp\sigma^2 k_*/D$; balancing this against the bias $k_*^{-(b-1)}$ gives $k_*\asymp D^{1/b}$ and
+\begin{equation}
+  \mathcal{E}(D)\asymp D^{-\frac{b-1}{b}},
+  \label{eq:krr-noisy}
+\end{equation}
+the classical optimal rate, established in this power-law parameterization by Cui et al.~\cite{cui2021generalization} and, in the classical capacity/source notation, by Caponnetto and De Vito~\cite{caponnetto2007optimal}. Note $\frac{b-1}{b}<1$ always: noise caps the achievable data exponent below $1$ regardless of how fast the target decays.
+
+\paragraph{Cutoff 3: one-pass SGD.} One pass of SGD does not invert the covariance. Mode $k$ accumulates gradient signal at rate $\lambda_k$ per step, so after $D$ steps it is learned only if $D\lambda_k\gtrsim 1$, giving the much stingier rule $k_*\asymp D^{1/a}$ and
+\begin{equation}
+  \mathcal{E}(D)\asymp D^{-\frac{b-1}{a}} .
+  \label{eq:sgd-cutoff}
+\end{equation}
+
+\begin{caution}{Caution: saturation, and a notational trap that has caused real confusion}
+\textbf{Saturation.} Equation~\eqref{eq:krr-noiseless} holds while the target is rough enough to be the binding constraint; for very smooth targets the rate saturates and stops improving with $b$ (the classical KRR saturation effect~\cite{cui2021generalization}). Rates quoted without a validity window should be distrusted.
+
+\textbf{Convention.} Two incompatible conventions for ``target decay'' coexist in this literature. We use $c_k^2$ = power of the target in the $L^2$-orthonormal eigenmode $k$, so $\|f\|^2 = \sum_k c_k^2$. Many physics-flavoured papers instead write $f=\sum_k \vartheta_k\sqrt{\lambda_k}\phi_k$ with $\vartheta_k^2\asymp k^{-b'}$, i.e.\ they normalize inside the RKHS. The two are related by $b = a + b'$. This is exactly why the same one-pass-SGD result appears in the literature both as $D^{-(b-1)/a}$ and as $D^{-\frac{a+b'-1}{a}}$: they are the same formula in different clothes. Always check which normalization a quoted exponent assumes before comparing it to another paper's.
+\end{caution}
+
+\subsection{Exact joint $(N,D)$ laws in linear regression}
 \label{subsec:lin_scaling}
 
-Lin, Wu, Kakade, Bartlett, and Lee~\cite{lin2024scaling} (see also Lin, Dobriban, Hong~\cite{lin2024nonasymptotic}) derived exact non-asymptotic and asymptotic joint scaling laws for high-dimensional linear regression trained by one-pass SGD with a random feature sketch of size $N$ on $D$ samples.
+Lin, Wu, Kakade, Bartlett, and Lee~\cite{lin2024scaling} prove a genuine two-variable scaling law \textbf{[L2]}.
 
-\begin{theorem}[Lin et al. (NeurIPS 2024)~\cite{lin2024scaling}]
-Let covariate covariance eigenvalues decay as $\lambda_k \asymp k^{-a}$ ($a > 1$) and target coefficients decay as $c_k^2 \asymp k^{-b}$ ($1 < b < a+1$). Under one-pass SGD with feature sketch dimension $N$ and sample count $D$, the excess generalization error satisfies:
+\begin{theorem}[Lin et al., NeurIPS 2024~\cite{lin2024scaling}]
+Consider infinite-dimensional linear regression in which the model is a linear function of $N$ sketched covariates, trained by one-pass SGD on $D$ samples. Assume the covariate covariance has a power-law spectrum $\lambda_k\asymp k^{-a}$ with $a>1$, and that the optimal parameter follows a Gaussian prior (which makes the target power $c_k^2\asymp\lambda_k$, i.e.\ $b=a$). Then the reducible part of the test error is
 \begin{equation}
-  \boxed{\mathcal{E}(N, D) = \Theta\left( N^{-(b-1)} + D^{-\frac{b-1}{a}} \right)}.
+  \boxed{\mathcal{E}(N,D) = \Theta\!\left(N^{-(a-1)} + D^{-\frac{a-1}{a}}\right)} .
   \label{eq:lin}
 \end{equation}
-Under an isotropic parameter prior ($b = a$), this simplifies to $\Theta(N^{-(a-1)} + D^{-\frac{a-1}{a}})$.
+Moreover the variance term, which grows with $N$, is dominated by the other terms because of the implicit regularization of SGD --- so test error is monotonically improving in model size, as scaling laws require and as classical bias--variance reasoning would not predict.
 \end{theorem}
 
-\begin{tcolorbox}[title=\textbf{Intuition: Why Do the Model and Data Exponents Differ?}]
-Both terms in Equation~\eqref{eq:lin} originate from the cutoff formula $\mathcal{E} \asymp k_*^{-(b-1)}$:
-\begin{itemize}[leftmargin=1.5em]
-  \item **Parameter Cutoff:** Projecting into an $N$-dimensional sketch truncates modes at index $k_* = N$. The residual error is $k_*^{-(b-1)} = N^{-(b-1)}$.
-  \item **One-Pass SGD Data Cutoff:** One-pass SGD does not invert the full covariance matrix. A mode $k$ is learned only when accumulated gradient signal over $D$ steps reaches order one: $D \lambda_k \gtrsim 1 \implies D k^{-a} \gtrsim 1 \implies k_* \asymp D^{1/a}$. The residual error is $k_*^{-(b-1)} = (D^{1/a})^{-(b-1)} = D^{-\frac{b-1}{a}}$.
+Writing this in the general-$b$ notation of Section~\ref{subsec:kernel_spectra}, the two mechanisms are the two cutoff rules:
+\begin{equation}
+  \mathcal{E}(N,D)\ \asymp\ \underbrace{N^{-(b-1)}}_{\text{sketch truncates at } k_*=N} \ +\ \underbrace{D^{-\frac{b-1}{a}}}_{\text{one-pass SGD reaches } k_*=D^{1/a}} ,
+\end{equation}
+and the general-$b$ statement (together with the multi-pass extension) is established by Lin, Wu, and Bartlett~\cite{lin2025reuse}.
+
+\begin{intuition}{Why the model and data exponents differ --- and a testable prediction}
+Both terms come from the same formula $\mathcal{E}\asymp k_*^{-(b-1)}$; only the cutoff differs.
+\begin{itemize}[leftmargin=1.5em,nosep]
+  \item \textbf{Parameters:} an $N$-dimensional sketch simply discards modes beyond $k_*=N$. Exponent $b-1$.
+  \item \textbf{Data:} one pass of SGD reaches only $k_*=D^{1/a}$. Exponent $(b-1)/a$.
 \end{itemize}
-\textbf{Key Prediction:} $\alpha_N = b - 1$ and $\alpha_D = (b-1)/a \implies \alpha_N = a \cdot \alpha_D$. For Chinchilla empirical values ($\alpha_N = 0.34, \alpha_D = 0.28$), this implies $a \approx 1.21$ and $b \approx 1.34$, perfectly within the theoretical admissible window.
-\end{tcolorbox}
+Hence the model states a relation between the two empirical exponents:
+\[ \alpha_N = b-1, \qquad \alpha_D = \frac{b-1}{a} \qquad\Longrightarrow\qquad \boxed{\alpha_N = a\,\alpha_D}, \quad a>1 . \]
+Because $a>1$ is required for a summable spectrum, the model \emph{predicts} $\alpha_N > \alpha_D$. This is a falsifiable statement, and Section~\ref{subsec:consistency} checks it against both published fits --- where it passes for Chinchilla and fails for Kaplan.
+\end{intuition}
 
-\subsection{Dynamical Training Phases: Maloney et al., Bordelon et al., Paquette et al.}
+\begin{remark}[Data reuse interpolates between the two extremes]
+Multi-pass SGD with $L$ iterations over $D$ samples achieves $\Theta(N^{1-b} + L^{-(b-1)/a})$ with $L\lesssim D^{a/b}$~\cite{lin2025reuse}. At the maximum useful number of passes the data exponent becomes $D^{-\frac{b-1}{b}}$ --- exactly the optimally-regularized kernel-regression rate \eqref{eq:krr-noisy}. So the algorithm interpolates continuously between the one-pass exponent $(b-1)/a$ and the statistically optimal $(b-1)/b$. \emph{The data exponent is not a property of the data alone; it is a property of the data and the optimizer.} This is one of the cleanest theoretical results in the field and it directly explains why epoching, batch size, and learning-rate schedules move measured exponents.
+\end{remark}
 
-Maloney, Roberts, and Sully~\cite{maloney2022solvable} provided a solvable random-feature model demonstrating distinct compute-optimal phases. Bordelon, Atanasov, and Pehlevan~\cite{bordelon2024dynamical} extended this to gradient descent dynamics, explaining why learning curve exponents differ across early-time and late-time width limits. Paquette et al.~\cite{paquette2024phases} rigorously proved the existence of $4+3$ distinct compute-optimal scaling phases depending on the relative complexity of data spectrum, target smoothness, and batch size.
+\subsection{Dynamics, phases, and finite width}
+
+Maloney, Roberts, and Sully~\cite{maloney2022solvable} give a solvable random-feature model reproducing joint $(N,D)$ laws and their compute-optimal frontier, with the spectrum of the feature covariance controlling everything. Bordelon, Atanasov, and Pehlevan~\cite{bordelon2024dynamical} extend the analysis to gradient-descent \emph{dynamics}, deriving loss-versus-time curves and explaining why early-time and late-time exponents differ and how finite width enters. Paquette, Paquette, Xiao, and Pennington~\cite{paquette2024phases} map the full compute-optimal phase diagram, proving the existence of $4+3$ distinct phases depending on the relative values of the data spectrum and target decay exponents --- with different phases obeying different compute-optimal allocation rules, so that even \eqref{eq:chinchilla-allocation} is regime-dependent. Defilippis, Loureiro, and Misiakiewicz~\cite{defilippis2024dimension} give dimension-free deterministic equivalents for random-feature ridge regression, sharpening these rates and identifying the minimum number of features needed to reach the minimax rate. Earlier high-dimensional analyses of generalization dynamics by Advani, Saxe, and Sompolinsky~\cite{advani2020high} contain much of the same mathematics in the guise of double descent.
 
 %==============================================================================
-\section{Discrete Tasks, Associative Memory, and Superposition}
+\section{Discrete Mechanisms: Memorization, Skills, and Superposition}
 \label{sec:discrete_and_quanta}
 %==============================================================================
 
-\subsection{Associative Memories with Heavy-Tailed Inputs (Cabannes et al., 2024)}
+The models so far are continuous. But much of what a language model knows is discrete: facts, idioms, rare words, individual skills. Remarkably, discrete models produce the same power laws, from the same underlying cause --- a heavy-tailed ranking.
 
-Cabannes, Dohmatob, and Bietti~\cite{cabannes2024associative} analyzed high-dimensional outer-product associative memories storing discrete associations drawn from Zipf-distributed inputs. They derived exact sample and parameter scaling curves for key--value associative memories, rigorously bridging discrete memory storage with neural scaling laws.
-
-\subsection{The Quantization Model of Neural Scaling (Michaud et al., NeurIPS 2023)}
-\label{subsec:quanta}
-
-Michaud, Liu, Girit, and Tegmark~\cite{michaud2023quantization} proposed that knowledge consists of a large discrete set of independent sub-problems, facts, or skills (``quanta'') $\mathcal{Q} = \{q_1, q_2, \dots\}$.
-
-\begin{theorem}[Quantization Scaling Exponent~\cite{michaud2023quantization}]
-Let each quantum $q_i$ have utility $U_i \asymp i^{-q}$ with $q > 1$ (Zipf's law for skills). Under greedy parameter allocation, a network with $N$ parameters masters the top $K \asymp N$ most useful quanta. The residual loss from unlearned quanta is:
-\begin{equation}
-  L(N) - E = \sum_{i = N+1}^\infty U_i \approx \int_N^\infty x^{-q} dx = \frac{1}{q-1} N^{-(q-1)} \implies \boxed{\alpha_N = q - 1}.
-\end{equation}
-\end{theorem}
-
-\subsection{Hutter's Countable-Input Memorization Model (2021)}
+\subsection{Hutter's countable-input memorizer}
 \label{subsec:hutter}
 
-Marcus Hutter~\cite{hutter2021learning} analyzed an optimal memorizer on countably many discrete inputs. If input probabilities follow a power law $\theta_i \propto i^{-(1+\eta)}$ ($\eta > 0$), a training set of $n$ samples observes all inputs with frequency $\theta_i \gtrsim 1/n \implies i_* \asymp n^{\frac{1}{1+\eta}}$. The expected test error over unseen inputs scales as:
+The simplest model in the entire field \textbf{[L1]}. Hutter~\cite{hutter2021learning} considers an optimal memorizer over countably many discrete inputs with probabilities $\theta_i \propto i^{-(1+\eta)}$, $\eta>0$. After $D$ samples, an input has likely been seen if $\theta_i \gtrsim 1/D$, giving $i_*\asymp D^{1/(1+\eta)}$; everything else is unseen and contributes its probability mass:
 \begin{equation}
-  \mathbb{E}[E_n] = \sum_{i > i_*} \theta_i \asymp i_*^{-\eta} = \left( n^{\frac{1}{1+\eta}} \right)^{-\eta} = \boxed{n^{-\frac{\eta}{1+\eta}}}.
+  \mathbb{E}[\mathcal{E}_D] = \sum_{i>i_*}\theta_i \asymp i_*^{-\eta} = \boxed{D^{-\frac{\eta}{1+\eta}}} .
 \end{equation}
+No optimization, no geometry, no network: a power-law input distribution plus a coverage argument suffices. The lesson is that observing a power law is very weak evidence for any particular mechanism.
 
-\subsection{Toy Models of Superposition (Elhage et al., Anthropic 2022)}
-\label{subsec:superposition}
+\subsection{The quantization model of neural scaling}
+\label{subsec:quanta}
 
-How does a neural network with activation width $d_{\mathrm{model}}$ represent $M \gg d_{\mathrm{model}}$ semantic features? Elhage et al.~\cite{elhage2022toy} formalized **neural superposition**:
-\begin{theorem}[Johnson--Lindenstrauss Superposition and Interference Noise]
-Let $M$ sparse, independent features have active probability $p \ll 1$ and unit variance. An overcomplete dictionary $\mathbf{W} \in \mathbb{R}^{d_{\mathrm{model}} \times M}$ with unit-norm columns satisfies $|\langle w_i, w_j \rangle| \le \varepsilon$ in dimension $d_{\mathrm{model}} = \mathcal{O}\left(\frac{\log M}{\varepsilon^2}\right)$ by the Johnson--Lindenstrauss lemma~\cite{johnson1984extensions}.
+Michaud, Liu, Girit, and Tegmark~\cite{michaud2023quantization} propose \textbf{[L3]} that knowledge decomposes into a discrete set of independent ``quanta'' --- sub-problems, facts, or skills --- learned in order of decreasing use frequency.
 
-Linear reconstruction $\hat{x}_i = w_i^T (\mathbf{W} x) = x_i + \sum_{j \neq i} \langle w_i, w_j \rangle x_j$ suffers cross-talk interference variance:
+\begin{theorem}[Quantization scaling; \textbf{L3}~\cite{michaud2023quantization}]
+Let quantum $i$ have use frequency $U_i\asymp i^{-\zeta}$ with $\zeta>1$ (Zipf's law for skills), let each quantum cost $\Theta(1)$ parameters, and let quanta be acquired greedily in frequency order. A network with $N$ parameters masters the top $K\asymp N$ quanta, leaving
 \begin{equation}
-  \mathbb{E}\left[ \left(\sum_{j \neq i} \langle w_i, w_j \rangle x_j\right)^2 \right] = p(1-p) \sum_{j \neq i} |\langle w_i, w_j \rangle|^2 \approx \boxed{p(1-p) \frac{M}{d_{\mathrm{model}}}}.
+  L(N)-E = \sum_{i>N} U_i \approx \int_N^\infty x^{-\zeta}dx = \frac{N^{-(\zeta-1)}}{\zeta-1}
+  \implies \boxed{\alpha_N = \zeta-1} .
+\end{equation}
+If instead a quantum requires $\tau$ examples to be acquired, it is learned once $D\,U_i\gtrsim\tau$, so $i_*\asymp D^{1/\zeta}$ and
+\begin{equation}
+  \boxed{\alpha_D = \frac{\zeta-1}{\zeta} = \frac{\alpha_N}{\alpha_N+1}} .
 \end{equation}
 \end{theorem}
-As hidden width $d_{\mathrm{model}}$ increases, interference noise decays as $\mathcal{O}(1/d_{\mathrm{model}})$, providing a representation capacity mechanism for power-law error reduction.
+
+Two observations. First, the data exponent coincides exactly with Hutter's --- the quantization model is Hutter's memorizer with skills in place of inputs. Second, the relation $\alpha_D = \alpha_N/(\alpha_N+1)$ is a sharp, parameter-free prediction linking the two measured exponents, and it is testable: Chinchilla's $\alpha_N=0.34$ predicts $\alpha_D=0.25$ against a measured $0.28$ --- close; Kaplan's $\alpha_N=0.076$ predicts $\alpha_D=0.071$ against a measured $0.095$. The model also offers an account of emergence: individual quanta appear abruptly even though their frequency-weighted sum is smooth.
+
+Nam et al.~\cite{nam2024exactly} make this exactly solvable in the multitask sparse-parity setting, obtaining closed forms for emergence times and for scaling in time, data, model size, and compute simultaneously.
+
+\subsection{Associative memories with heavy-tailed inputs}
+
+Cabannes, Dohmatob, and Bietti~\cite{cabannes2024associative} analyze outer-product associative memories storing discrete key--value associations drawn from Zipf-distributed inputs, and derive exact sample- and parameter-scaling curves \textbf{[L2]}, including how the exponents depend on the memory scheme and the optimization algorithm. This closes part of the gap between the purely combinatorial models above and gradient-trained networks: the storage capacity of a $d$-dimensional memory is finite, and the interaction between capacity and a Zipfian demand distribution reproduces power-law loss curves from first principles.
+
+\subsection{Superposition: representing more features than dimensions}
+\label{subsec:superposition}
+
+How can a residual stream of width $d_{\mathrm{model}}$ represent $M \gg d_{\mathrm{model}}$ semantic features? Elhage et al.~\cite{elhage2022toy} showed empirically and analytically that networks use \emph{superposition}: features are assigned nearly-orthogonal directions and tolerated interference, which is viable precisely because the features are sparse.
+
+\begin{proposition}[Interference noise under superposition; \textbf{L2}]
+Let $\mathbf{W}\in\mathbb{R}^{d_{\mathrm{model}}\times M}$ have unit-norm columns. By the Johnson--Lindenstrauss lemma~\cite{johnson1984extensions}, there exist such frames with pairwise coherence $|\langle w_i,w_j\rangle|\le\varepsilon$ whenever $d_{\mathrm{model}} = \mathcal{O}(\varepsilon^{-2}\log M)$; a random frame achieves $\mathbb{E}\langle w_i,w_j\rangle^2 = 1/d_{\mathrm{model}}$. Let features $x_j$ be independent, each zero-mean with variance $s^2$ when active and active with probability $p$. Linear read-out $\hat x_i = w_i^\top(\mathbf{W}x) = x_i + \sum_{j\ne i}\langle w_i,w_j\rangle x_j$ then incurs cross-talk of variance
+\begin{equation}
+  \mathbb{E}\Big[\big(\textstyle\sum_{j\ne i}\langle w_i,w_j\rangle x_j\big)^2\Big]
+  = p\,s^2\sum_{j\ne i}\langle w_i,w_j\rangle^2
+  \ \approx\ \boxed{\,p\,s^2\,\frac{M}{d_{\mathrm{model}}}\,} .
+\end{equation}
+\end{proposition}
+
+So interference falls as $1/d_{\mathrm{model}}$ at fixed $M$: a network can afford to represent $M \asymp d_{\mathrm{model}}/p$ features before cross-talk overwhelms signal. On its own this yields a $1/d_{\mathrm{model}}$ law, not a non-trivial exponent; a genuine power law requires combining it with a heavy-tailed distribution of feature \emph{importances}, at which point the mechanism becomes a continuous analogue of the quantization model: widening the network admits more of the ranked feature list, and the loss tracks the unrepresented tail. Superposition also supplies a mechanistic reason why capability curves can look sharp: a feature is either allocated a direction or not.
 
 %==============================================================================
-\section{Comparative Synthesis and Taxonomy of Theories}
+\section{Comparative Synthesis and Consistency Checks}
 \label{sec:taxonomy}
 %==============================================================================
 
-Table~\ref{tab:master_taxonomy} provides a unified comparative synthesis of the nine major theoretical scaling frameworks.
+\subsection{Master taxonomy}
 
-\begin{table*}[htbp]
+Table~\ref{tab:master_taxonomy} summarises the frameworks. Read down the ``derived exponent'' column and one pattern is unmistakable.
+
+\begin{table}[htbp]
 \centering
 \scriptsize
 \setlength{\tabcolsep}{3pt}
 \renewcommand{\arraystretch}{1.35}
-\begin{tabularx}{\textwidth}{>{\bfseries\raggedright\arraybackslash}p{2.2cm} >{\raggedright\arraybackslash}p{2.8cm} >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}p{2.3cm} >{\raggedright\arraybackslash}p{2.5cm}}
+\begin{tabularx}{\textwidth}{>{\bfseries\raggedright\arraybackslash}p{2.4cm} >{\raggedright\arraybackslash}p{2.4cm} >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}p{2.8cm} >{\raggedright\arraybackslash}p{1.6cm} c}
 \toprule
-\textbf{Framework} & \textbf{Core Assumptions} & \textbf{Mathematical Machinery} & \textbf{Derived Exponent} & \textbf{Primary References} \\
+\textbf{Framework} & \textbf{Core assumptions} & \textbf{Machinery} & \textbf{Derived exponent} & \textbf{References} & \textbf{Lvl} \\
 \midrule
-\textbf{Rate--Distortion Theory} & Gaussian/heavy-tailed source, spectrum $\lambda_k \sim k^{-(1+\rho)}$ & Shannon Reverse Water-Filling, high-rate asymptotics & $D(R) \sim R^{-\rho}$ & Shannon (1948)~\cite{shannon1948mathematical}, Berger (1971)~\cite{berger1971rate} \\
+\textbf{Rate--distortion} & Gaussian source, spectrum $\lambda_k\asymp k^{-(1+\rho)}$ & Reverse water-filling, high-rate asymptotics & $\mathcal{D}(R)\asymp R^{-\rho}$; $\alpha_N=\rho$ if $R\asymp N$ & \cite{shannon1948mathematical,berger1971rate} & L1 \\
 \midrule
-\textbf{Metric Entropy / Minimax} & Sobolev/Besov target class $W^s(\mathbb{R}^d)$, metric entropy $H(\varepsilon) \sim \varepsilon^{-d/s}$ & Yang--Barron balance $H(\varepsilon_n) \asymp n \varepsilon_n^2$, Fano testing & $\alpha_D = \frac{2s}{2s+d}$ & Yang \& Barron (1999)~\cite{yang1999information}, Tsybakov (2009)~\cite{tsybakov2009introduction} \\
+\textbf{Metric entropy / minimax} & Sobolev class $W^s([0,1]^d)$, $H(\varepsilon)\asymp\varepsilon^{-d/s}$ & Yang--Barron balance $H(\varepsilon_D)\asymp D\varepsilon_D^2$; Fano & $\alpha_D = \frac{2s}{2s+d}$ & \cite{yang1999information,tsybakov2009introduction} & L1 \\
 \midrule
-\textbf{Language Context Horizon} & Correlation decay $|C(n)| \sim n^{-\beta}$, conditional entropy $H_n - h \sim n^{-\gamma}$ & Sample noise cutoff $n^*(D) \sim D^{1/(2\beta)}$, entropy truncation & $\alpha_D = \frac{\gamma}{2\beta}$ & Cagnetta et al. (2024)~\cite{cagnetta2026deriving}, Hilberg (1990)~\cite{hilberg1990der} \\
+\textbf{Universal coding / MDL} & Regular $k$-parameter family & Rissanen--Clarke--Barron redundancy & $\mathcal{E}\asymp \frac{N\log D}{2D}$; $N\propto D$ & \cite{rissanen1996fisher,clarke1990information,jeon2024information} & L1 \\
 \midrule
-\textbf{Manifold Tiling Geometry} & Data on $d$-dimensional Riemannian manifold $\mathcal{M}$, $\mathcal{C}^2$ target function & Voronoi partition, 2nd-order Taylor remainder on tiles & $\alpha_N = \frac{4}{d}$ & Sharma \& Kaplan (2020)~\cite{sharma2020neural} \\
+\textbf{Language horizon} & $\|C(n)\|\asymp n^{-\beta}$, $H_n - h\asymp n^{-\gamma}$ & Sampling-noise horizon $n^*\asymp D^{1/(2\beta)}$ & $\alpha_D = \frac{\gamma}{2\beta}$ & \cite{cagnetta2026deriving,hilberg1990der,debowski2015relaxed} & L3 \\
 \midrule
-\textbf{Resolution vs. Variance Phase Diagram} & Interplay of finite parameter count $N$ and dataset size $D$ & Nonparametric manifold covering + CLT variance & $\Delta L \sim N^{-4/d} + D^{-1}$ & Bahri et al. (PNAS 2024)~\cite{bahri2024explaining} \\
+\textbf{Manifold tiling} & Data on $d$-manifold, $\mathcal{C}^2$ target & Voronoi tiling, 2nd-order Taylor remainder & $\alpha_N = \frac{4}{d}$ ($\frac{2}{d}$ if Lipschitz) & \cite{sharma2020neural} & L3 \\
 \midrule
-\textbf{Kernel Spectra / NTK Physics} & Power-law kernel eigenvalues $\lambda_k \sim k^{-a}$, target projections $c_k^2 \sim k^{-b}$ & Replica method, Random Matrix Theory, spectral bias & $\mathcal{E}(D) \sim D^{-\frac{a+b-1}{a}}$ & Bordelon et al. (2020)~\cite{bordelon2020spectrum}, Cui et al. (2021)~\cite{cui2021generalization} \\
+\textbf{Variance and resolution phases} & Finite $N$, $D$, width $w$ & Manifold covering + CLT fluctuations & $D^{-1}$, $w^{-1}$, $D^{-n/d}$, $N^{-n/d}$ & \cite{bahri2024explaining} & L2/L3 \\
 \midrule
-\textbf{Linear Model Joint $(N, D)$ Laws} & Covariance $\lambda_k \sim k^{-a}$, target decay $c_k^2 \sim k^{-b}$, one-pass SGD & Sketch dimension truncation + accumulated gradient SNR & $\mathcal{E} = \Theta(N^{-(b-1)} + D^{-\frac{b-1}{a}})$ & Lin et al. (NeurIPS 2024)~\cite{lin2024scaling,lin2024nonasymptotic} \\
+\textbf{Kernel spectra} & $\lambda_k\asymp k^{-a}$, $c_k^2\asymp k^{-b}$ & Spectral bias; effective ridge $\kappa\asymp D^{-a}$ & $D^{-(b-1)}$ noiseless; $D^{-\frac{b-1}{b}}$ noisy & \cite{bordelon2020spectrum,canatar2021spectral,cui2021generalization,caponnetto2007optimal} & L1/L2 \\
 \midrule
-\textbf{Skill Quantization} & Independent skills/quanta with Zipfian utilities $U_i \sim i^{-q}$ & Greedy capacity allocation, tail integration of unlearned mass & $\alpha_N = q - 1$ & Michaud et al. (NeurIPS 2023)~\cite{michaud2023quantization} \\
+\textbf{Joint $(N,D)$ linear} & $\lambda_k\asymp k^{-a}$, Gaussian prior, one-pass SGD & Sketch truncation + accumulated gradient SNR & $\Theta(N^{-(b-1)}$\newline $\quad + D^{-\frac{b-1}{a}})$ & \cite{lin2024scaling,lin2025reuse,maloney2022solvable,paquette2024phases} & L2 \\
 \midrule
-\textbf{Feature Superposition} & $M \gg d_{\mathrm{model}}$ sparse features, almost-orthogonal frame & Johnson--Lindenstrauss lemma, cross-talk variance & Noise $\propto \frac{p M}{d_{\mathrm{model}}}$ & Elhage et al. (2022)~\cite{elhage2022toy} \\
+\textbf{Memorization} & Inputs Zipf, $\theta_i\propto i^{-(1+\eta)}$ & Coverage of unseen mass & $\alpha_D = \frac{\eta}{1+\eta}$ & \cite{hutter2021learning} & L1 \\
+\midrule
+\textbf{Skill quantization} & Skills with Zipf utilities $U_i\asymp i^{-\zeta}$ & Greedy allocation, tail integration & $\alpha_N=\zeta-1$, $\alpha_D=\frac{\zeta-1}{\zeta}$ & \cite{michaud2023quantization,nam2024exactly,cabannes2024associative} & L3 \\
+\midrule
+\textbf{Superposition} & $M\gg d_{\mathrm{model}}$ sparse features & Johnson--Lindenstrauss, cross-talk variance & Noise $\propto \frac{pM}{d_{\mathrm{model}}}$ & \cite{elhage2022toy,johnson1984extensions} & L2 \\
 \bottomrule
 \end{tabularx}
-\caption{Comprehensive master taxonomy of theoretical frameworks for neural scaling laws.}
+\caption{Master taxonomy of theoretical frameworks for neural scaling laws, with evidence level from Section~\ref{subsec:evidence}.}
 \label{tab:master_taxonomy}
-\end{table*}
+\end{table}
 
-\begin{tcolorbox}[title=\textbf{The Grand Unifying Pattern: Tail Ranking and Resolution Rules}]
-Read across the taxonomy, a single unifying mathematical structure emerges:
+\begin{takeaway}{The unifying pattern: rank, then resolve}
+Every entry has the same two-factor structure:
 \begin{center}
-\textbf{Scaling Exponent = (Tail Decay of Ranked Primitives) $\times$ (Algorithmic Resolution Rule)}
+\textbf{scaling exponent} = (\textbf{tail decay of ranked primitives}) $\times$ (\textbf{algorithmic resolution rule}).
 \end{center}
-Whether ranking covariance eigenvalues $\lambda_k \sim k^{-(1+\rho)}$, kernel modes $c_k^2 \sim k^{-b}$, manifold cells $\varepsilon \sim N^{-1/d}$, Zipfian skills $U_i \sim i^{-q}$, or token correlations $|C(n)| \sim n^{-\beta}$, neural scaling curves arise whenever an algorithm progressively resolves a heavy-tailed hierarchy of features.
-\end{tcolorbox}
+The primitives may be covariance eigenmodes, kernel modes, manifold cells, Zipfian skills, discrete inputs, or context scales; the resolution rule may be sketch truncation ($k_*=N$), sample coverage ($k_*=D$), gradient accumulation ($k_*=D^{1/a}$), noise-limited horizon ($n^*=D^{1/2\beta}$), or frequency coverage ($i_*=D^{1/\zeta}$). A power law appears whenever a heavy-tailed hierarchy is resolved progressively. This is also why the observation of a power law identifies neither the primitives nor the rule: \emph{many mechanisms produce the same phenomenology, and distinguishing them requires measuring the inputs independently} --- which is precisely what makes~\cite{cagnetta2026deriving} and~\cite{barkeshli2026origin} methodologically important.
+\end{takeaway}
+
+\subsection{Do the theories survive contact with the published numbers?}
+\label{subsec:consistency}
+
+A survey that only catalogues theories is not doing its job. Each framework maps measured exponents onto data statistics, so each can be checked for internal consistency against the two canonical fits. Table~\ref{tab:consistency} does this.
+
+\begin{table}[htbp]
+\centering
+\small
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{4.0cm} >{\raggedright\arraybackslash}p{3.6cm} >{\raggedright\arraybackslash}p{3.4cm} >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Theory and its map} & \textbf{Kaplan fit} $(0.076,0.095)$ & \textbf{Chinchilla fit} $(0.34,0.28)$ & \textbf{Verdict} \\
+\midrule
+Manifold tiling: $d = 4/\alpha_N$ & $d\approx 53$ & $d\approx 12$ & Inference about data geometry swings by $4\times$ with the fit. \\
+\midrule
+One-pass SGD: $\alpha_N = a\,\alpha_D$, needs $a>1$ & $a = 0.80$ \textbf{--- inadmissible} & $a = 1.21$, $b=1.34$; admissible ($1<b<a+1$) & The model \emph{falsifies} the Kaplan pair; consistent with Chinchilla. \\
+\midrule
+Quantization: $\alpha_D = \alpha_N/(\alpha_N+1)$ & predicts $0.071$ vs.\ $0.095$ measured & predicts $0.254$ vs.\ $0.280$ measured & Right order; both under-predict by $\sim 10$--$25\%$. \\
+\midrule
+Kernel (noisy, optimal ridge): $\alpha_D = (b-1)/b < 1$ & $b = 1.105$ & $b = 1.389$ & Always satisfiable; weak test. \\
+\midrule
+Compute frontier: $\alpha_C = \frac{\alpha_N\alpha_D}{\alpha_N+\alpha_D}$ & $0.042$ vs.\ reported $0.050$ & $0.154$ & Internally consistent in both. \\
+\bottomrule
+\end{tabularx}
+\caption{Numerical consistency of theories with the two canonical published fits. The exercise shows that some frameworks (one-pass SGD, quantization) make genuinely falsifiable predictions relating $\alpha_N$ to $\alpha_D$, while others merely absorb any measurement into a free parameter.}
+\label{tab:consistency}
+\end{table}
+
+Three lessons. (i) \emph{Theories that predict a relation between $\alpha_N$ and $\alpha_D$ are worth more than theories that predict either alone}, because they can fail. (ii) The Kaplan exponent pair is inconsistent with the one-pass-SGD model ($a<1$ would make the covariance spectrum non-summable), independent evidence that the Kaplan fit reflected under-tuned training rather than data structure --- exactly what Porian et al.~\cite{porian2024resolving} concluded from a different direction. (iii) Inferences \emph{about data} drawn from fitted exponents (``the manifold dimension of language is $53$'') are only as stable as the fit, and the fits have moved by factors of four.
 
 %==============================================================================
-\section{The ``Honest Gap'' and Open Research Frontiers}
+\section{The Honest Gap and Open Frontiers}
 \label{sec:open_challenges}
 %==============================================================================
 
-Despite major theoretical breakthroughs, a fundamental epistemic gap remains between theory and practice:
-
-\begin{tcolorbox}[title=\textbf{The Fundamental ``Honest Gap''}]
-\textbf{No existing theory derives the empirical scaling exponents ($\alpha_N \approx 0.34, \alpha_D \approx 0.28$) for real natural language purely from first physical principles.}
-Existing theories rigorously prove that scaling exponents are functions of underlying data statistics:
+\begin{caution}{The fundamental honest gap}
+\textbf{No existing theory derives the empirical scaling exponents of a real language model from first principles.} What the theories establish is a \emph{reduction}: the exponent is a function of measurable properties of the data and the algorithm,
 \begin{equation}
-  \alpha = \Phi\left( a_{\mathrm{spectral}}, \, d_{\mathrm{manifold}}, \, q_{\mathrm{Zipf}}, \, \gamma_{\mathrm{entropy}}, \, \beta_{\mathrm{correlation}} \right).
+  \alpha = \Phi\big(a_{\mathrm{spectral}},\ d_{\mathrm{manifold}},\ \zeta_{\mathrm{Zipf}},\ \gamma_{\mathrm{entropy}},\ \beta_{\mathrm{correlation}};\ \text{optimizer}\big) .
 \end{equation}
-However, these parameters ($a, d, q, \gamma, \beta$) are **empirically measured rather than derived from axioms of human cognition or linguistics**. Deriving why human language generates these specific spectral exponents represents the ultimate frontier of deep learning theory.
-\end{tcolorbox}
+Those inputs are measured, not derived. The best current result~\cite{cagnetta2026deriving} closes the loop for $\alpha_D$ in the data-limited regime by measuring $\gamma$ and $\beta$ on the actual corpus --- a real advance, and still a reduction rather than an explanation. Explaining \emph{why} human language has $\gamma\approx 0.3$ and $\beta\approx 0.9$ would require a theory of language itself, and is the field's deepest open problem.
+\end{caution}
 
-\subsection{Key Open Frontiers}
+\subsection{Open frontiers}
+
 \begin{enumerate}[leftmargin=2.0em]
-  \item \textbf{Beating Power Laws via Data Pruning:}
-  Sorscher, Geirhos, Shekhar, Ganguli, and Morcos~\cite{sorscher2022beyond} proved that optimizing data quality via metric-based pruning can break polynomial power laws, transitioning learning curves to **exponential scaling** ($\mathcal{E} \sim e^{-\alpha D}$). Developing an operational theory of ``effective data quality'' that incorporates deduplication and curriculum difficulty remains a high-priority challenge.
-  \item \textbf{Test-Time Compute and Search Scaling:}
-  Recent models (e.g., OpenAI o1/o3, Snell et al.~\cite{snell2024scaling}) demonstrate that spending compute at inference time (via tree search, chain-of-thought verification, and self-correction) yields scaling gains that can substitute for pretraining scale. A unified rate--distortion theory bridging pretraining parameter rate with test-time search budget is an active frontier.
-  \item \textbf{Feature Learning Beyond Fixed Kernels:}
-  Extending kernel and NTK scaling theories beyond the ``lazy training'' regime~\cite{chizat2019lazy} to capture representation learning, self-attention routing, and rotary positional embeddings.
+  \item \textbf{Changing the exponent by changing the data.} Sorscher et al.~\cite{sorscher2022beyond} showed within an exactly solvable student--teacher perceptron model that, \emph{given an oracle pruning metric}, error can in principle decay exponentially rather than polynomially in dataset size; empirically, on CIFAR-10, SVHN, and ImageNet, careful pruning gives better-than-power-law scaling, though not the theoretical exponential. This is the most striking demonstration that the exponent is not fixed. A predictive theory of ``effective data quality'' --- covering deduplication, difficulty curricula, and mixture weights --- remains open.
+  \item \textbf{Finite data and synthetic data.} Repeating data yields diminishing returns with a quantifiable decay~\cite{muennighoff2023scaling}, and the stock of public human text is projected to bind in the late 2020s~\cite{villalobos2024data}. Training on model-generated data changes the scaling law itself: Dohmatob et al.~\cite{dohmatob2024tale} show that synthetic data truncates the distribution's tail --- precisely the object that produces the power law --- yielding loss of scaling and finite-error plateaus, and Shumailov et al.~\cite{shumailov2024collapse} document the same collapse phenomenon empirically. Since every theory in this monograph attributes the power law to a heavy tail, tail truncation is the theoretically predicted failure mode, and it is now observed.
+  \item \textbf{Test-time compute.} Spending compute at inference --- search, sampling, verification, chain-of-thought --- trades against pretraining scale~\cite{snell2024scaling,brown2024monkeys}, and success rates under repeated sampling follow their own regular curves. A unified theory relating the rate--distortion cost of a fixed representation to the cost of search at inference does not yet exist, and would be the natural extension of Section~\ref{sec:shannon_theory}.
+  \item \textbf{Beyond fixed kernels.} All the exactly solvable models freeze the representation (lazy training~\cite{chizat2019lazy}). Real networks learn features, which changes both the spectrum and the cutoff rule; the dynamical model of~\cite{bordelon2024dynamical} and the compositional analyses of~\cite{cagnetta2024rhm} are the current frontier. A feature-learning theory would be the first to explain why $\alpha_N$ and $\alpha_D$ take the values they do rather than inheriting them from an assumed spectrum.
+  \item \textbf{Other resource axes.} Numerical precision~\cite{kumar2024precision}, sparsity and routing~\cite{clark2022unified,krajewski2024moe}, and inference-aware allocation~\cite{sardana2024beyond} each introduce their own scaling axis interacting with $N$ and $D$. The rate--distortion picture is the natural language for precision in particular: it fixes the bits-per-parameter constant that Section~\ref{sec:shannon_theory} had to assume.
+  \item \textbf{From loss to capability.} Cross-entropy is predictable; what practitioners want is downstream capability. Progress requires either metrics with enough resolution to be predictable~\cite{hu2024predicting}, theories linking skill composition to loss~\cite{arora2023theory,michaud2023quantization}, or observational laws fitted across model families~\cite{ruan2024observational}.
 \end{enumerate}
 
 %==============================================================================
@@ -579,9 +846,64 @@ However, these parameters ($a, d, q, \gamma, \beta$) are **empirically measured 
 \label{sec:conclusion}
 %==============================================================================
 
-Neural scaling laws are not empirical accidents; they are the rigorous macroscopic manifestation of scale-free mathematical structures.
+Neural scaling laws are not accidents of engineering, but neither are they laws of nature. They are the macroscopic signature of a specific mathematical situation: a learner with finite resolution progressively resolving a heavy-tailed hierarchy of structures in data.
 
-By analyzing scaling through Shannon rate--distortion theory, we establish that power laws reflect lossy compression of heavy-tailed, infinite-dimensional data spectra under reverse water-filling. Through high-dimensional geometry and statistical physics, parameter and data exponents map directly to manifold dimensionality, kernel eigenspectra, and long-range correlation decay. While fundamental lower bounds (Yang--Barron, DeVore--Howard--Micchelli, Rissanen) establish unbeatable speed limits on learning, the rich hierarchical structure of natural language permits modern deep neural networks to operate along an optimal information-theoretic frontier.
+Four things can be said with confidence. \emph{First}, the correct Shannon-theoretic frame is rate--distortion, not channel coding: power-law rather than exponential improvement is the fingerprint of an effectively infinite-dimensional source (Theorem~\ref{thm:rd}). \emph{Second}, fundamental limits are real and quantitative --- Yang--Barron metric entropy, DeVore--Howard--Micchelli widths, Rissanen redundancy, and statistical-query hardness jointly imply that the observed exponents are contingent on natural data being low-dimensional, heavy-tailed, and compositional. \emph{Third}, in solvable models the exponent is provably a joint property of data \emph{and algorithm}: one-pass SGD, multi-pass SGD, and ridge regression give three different data exponents on identical data. \emph{Fourth}, the mechanisms are not mutually exclusive; rate--distortion, manifold tiling, kernel spectra, and skill quantization are largely the same calculation in different vocabularies, which is why they so often agree.
+
+What remains open is the part that matters most. No theory yet explains why natural language has the particular statistics it has, and every prediction of a real exponent still requires those statistics as input. The most promising recent development --- predicting $\alpha_D$ from measured correlation and entropy decay with no free parameters --- makes the dependence explicit rather than removing it. Meanwhile the empirical ground is shifting under the theory: data is becoming the binding constraint, synthetic data measurably degrades the very tail the theory relies on, and compute is migrating from training to inference. A theory able to predict exponents \emph{and} to say how they change under these interventions is the natural next goal.
+
+\appendix
+
+%==============================================================================
+\section{Glossary for Cross-Disciplinary Readers}
+\label{app:glossary}
+%==============================================================================
+
+\begin{description}[leftmargin=0pt,style=nextline]
+  \item[Bayes risk / irreducible loss] The lowest achievable expected loss, attained by the true conditional distribution. For log loss it equals the conditional entropy of the source; the fitted constant $E$ in \eqref{eq:additive-fit} is an estimate of it.
+  \item[Distortion--rate function $\mathcal{D}(R)$] The least achievable expected distortion when a source is described using $R$ bits. The inverse function is the rate--distortion function $R(\mathcal{D})$.
+  \item[Reverse water-filling] The optimal allocation of bits across independent Gaussian components: components with variance below a threshold $\theta$ receive no bits and are simply discarded; the rest are quantized to distortion $\theta$.
+  \item[Metric entropy / covering number] $\log$ of the number of $\varepsilon$-balls needed to cover a function class: the bits required to specify a member to accuracy $\varepsilon$.
+  \item[Minimax rate] The best worst-case error achievable by any estimator on a class, as a function of sample size. Upper bounds come from constructing an estimator; lower bounds from information-theoretic testing arguments (Fano, Le Cam, Assouad).
+  \item[$n$-width] The best achievable worst-case approximation error over a class using an $n$-parameter family; the ``continuous nonlinear'' variant additionally requires the parameters to depend continuously on the target.
+  \item[Neural Tangent Kernel (NTK)] The kernel describing the linearization of a network about its initialization; in the infinite-width limit with standard scaling, training follows kernel regression with this fixed kernel (``lazy training'').
+  \item[Spectral bias] The empirical and theoretical tendency of gradient-based learning to fit high-eigenvalue (typically smooth, low-frequency) kernel modes before low-eigenvalue ones.
+  \item[Effective ridge $\kappa$] The self-consistent regularization level induced by having only $D$ samples; it sets which modes are resolved, via $\lambda_{k_*}\asymp\kappa$.
+  \item[Source and capacity exponents] Classical kernel-regression parameters: capacity is the eigenvalue decay rate $a$; source is the smoothness of the target relative to the RKHS. Both are encoded here by the pair $(a,b)$.
+  \item[Superposition] Representing more features than dimensions by assigning nearly-orthogonal directions and tolerating interference; viable when features are sparse.
+  \item[Quanta] Hypothesized discrete, independent units of model knowledge or skill, learned in order of use frequency.
+  \item[Statistical query (SQ) model] A learning model in which the algorithm receives noisy estimates of expectations rather than individual samples; a good abstraction of minibatch gradient descent, and the setting for strong lower bounds.
+\end{description}
+
+%==============================================================================
+\section{Cheat Sheet: Cutoffs and Exponents}
+\label{app:cheatsheet}
+%==============================================================================
+
+Every learning curve in Sections~\ref{sec:statistical_physics}--\ref{sec:discrete_and_quanta} follows from two ingredients: a ranked tail and a resolution rule. With target power $c_k^2\asymp k^{-b}$ and residual $\mathcal{E}\asymp k_*^{-(b-1)}$:
+
+\begin{table}[htbp]
+\centering
+\small
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{5.4cm} >{$}c<{$} >{$}c<{$} >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Resource and algorithm} & \textbf{cutoff } k_* & \textbf{excess loss} & \textbf{Source} \\
+\midrule
+$N$-dimensional sketch or truncation & N & N^{-(b-1)} & \S\ref{subsec:lin_scaling} \\
+Ridgeless kernel regression, $D$ samples, no noise & D & D^{-(b-1)} & \S\ref{subsec:kernel_spectra} \\
+Kernel ridge regression, noisy, optimal ridge & D^{1/b} & D^{-\frac{b-1}{b}} & \S\ref{subsec:kernel_spectra} \\
+One-pass SGD, $D$ steps, spectrum $k^{-a}$ & D^{1/a} & D^{-\frac{b-1}{a}} & \S\ref{subsec:lin_scaling} \\
+Multi-pass SGD, $L\lesssim D^{a/b}$ iterations & L^{1/a} & L^{-\frac{b-1}{a}} \to D^{-\frac{b-1}{b}} & \S\ref{subsec:lin_scaling} \\
+Manifold tiling with $N$ cells, $\mathcal{C}^2$ target & \varepsilon = N^{-1/d} & N^{-4/d} & \S\ref{subsec:sharma_kaplan} \\
+Zipf inputs/skills $\propto i^{-\zeta}$, $D$ samples & D^{1/\zeta} & D^{-\frac{\zeta-1}{\zeta}} & \S\ref{subsec:hutter},~\ref{subsec:quanta} \\
+Correlation horizon, noise floor $D^{-1/2}$ & n^* = D^{\frac{1}{2\beta}} & D^{-\frac{\gamma}{2\beta}} & \S\ref{subsec:cagnetta_derivation} \\
+Rate--distortion, $R$ bits, spectrum $k^{-(1+\rho)}$ & K \asymp R & R^{-\rho} & \S\ref{subsec:channel_vs_rd} \\
+\bottomrule
+\end{tabularx}
+\caption{The resolution rules. Note that rows 2--5 share identical data and identical targets and differ only in the algorithm, yet give four different data exponents.}
+\label{tab:cheatsheet}
+\end{table}
 
 \bibliographystyle{plain}
 \bibliography{references}
