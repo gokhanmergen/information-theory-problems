@@ -16,14 +16,14 @@ open InfoTheory
 
 /-! ## Decidability instances (for kernel `decide` on small graphs) -/
 
-instance cycleGraph_decAdj (m : ℕ) : DecidableRel (cycleGraph m).Adj := fun x y =>
+scoped instance cycleGraph_decAdj (m : ℕ) : DecidableRel (cycleGraph m).Adj := fun x y =>
   inferInstanceAs (Decidable (x ≠ y ∧ (x - y = 1 ∨ y - x = 1)))
 
-instance strongPower_decAdj {V : Type*} [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj]
+scoped instance strongPower_decAdj {V : Type*} [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj]
     (k : ℕ) : DecidableRel (strongPower G k).Adj := fun x y =>
   inferInstanceAs (Decidable (x ≠ y ∧ ∀ i : Fin k, x i = y i ∨ G.Adj (x i) (y i)))
 
-instance isIndepSet_dec {V : Type*} (G : SimpleGraph V) [DecidableRel G.Adj] (S : Finset V) :
+scoped instance isIndepSet_dec {V : Type*} (G : SimpleGraph V) [DecidableRel G.Adj] (S : Finset V) :
     Decidable (IsIndepSet G S) :=
   inferInstanceAs (Decidable (∀ u ∈ S, ∀ v ∈ S, ¬ G.Adj u v))
 
