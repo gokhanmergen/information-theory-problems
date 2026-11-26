@@ -79,8 +79,8 @@ Every cataloged problem in `problems/<id>.md` has a paired frozen Lean 4 stateme
 - **Lemma base.** Solutions may `import InfoTheory.Known` (proved textbook results about the
   Core definitions: entropy and Gibbs, Shannon inequalities and Ingleton, BSC/BEC capacity,
   Singleton/Hamming/Gilbert–Varshamov, Reed–Solomon MDS, Lovász `Θ ≤ ϑ`, `Θ(C₅) = √5`) and
-  `InfoTheory.Bridge.Mathlib` (Core ↔ Mathlib `klDiv`/`PMF`/kernels, data processing,
-  Kraft–McMillan). Shared basics (`klDivergence_nonneg`, `mutualInfo_nonneg`, Hamming lemmas, …)
+  `InfoTheory.Bridge` (Core ↔ Mathlib `klDiv`/`PMF`/kernels, data processing, chain rules,
+  Fano, AEP/typicality, Kraft–McMillan, Gaussian entropy and max-entropy). Shared basics (`klDivergence_nonneg`, `mutualInfo_nonneg`, Hamming lemmas, …)
   live in `InfoTheory.Bridge`; do not re-declare them under `InfoTheory.Known`, or files that
   open both namespaces become ambiguous.
 - **Adding known results** to `lean/InfoTheory/Known/` is welcome, and it is the best test of a

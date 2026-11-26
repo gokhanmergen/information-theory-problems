@@ -1,21 +1,21 @@
 /-
 Axiom audit for the proved-results libraries `InfoTheory.Known.*` and `InfoTheory.Bridge.*`.
 
-Usage (from `lean/`, after `lake build InfoTheory.Known InfoTheory.Bridge.Mathlib`):
+Usage (from `lean/`, after `lake build InfoTheory.Known InfoTheory.Bridge`):
   lake env lean --run ../scripts/AuditKnown.lean
 
 Loads the compiled `.olean` environment (no user syntax is elaborated, so macros defined in
 the audited files cannot influence the result). Every declaration whose module lies under one
 of the audited prefixes is checked: its transitive constant closure, including theorem bodies,
 may use only `propext`, `Classical.choice`, `Quot.sound`. New files under those prefixes are
-picked up automatically once imported by `InfoTheory.Known` / the Bridge.
+picked up automatically once imported by `InfoTheory.Known` / `InfoTheory.Bridge`.
 Kernel re-checking is done separately with `lake env leanchecker <Module>`.
 -/
 import Lean
 open Lean
 
 def allowed : List Name := [``propext, ``Classical.choice, ``Quot.sound]
-def roots : Array Name := #[`InfoTheory.Known, `InfoTheory.Bridge.Mathlib]
+def roots : Array Name := #[`InfoTheory.Known, `InfoTheory.Bridge]
 def auditedPrefixes : List Name := [`InfoTheory.Known, `InfoTheory.Bridge]
 
 partial def collect (env : Environment) (n : Name) : StateM (NameSet × Array Name) Unit := do

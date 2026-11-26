@@ -1,5 +1,5 @@
 import InfoTheory.Core
-import InfoTheory.Bridge.Mathlib
+import InfoTheory.Bridge.CoverThomas
 import Mathlib.Analysis.SpecialFunctions.BinaryEntropy
 
 /-!
@@ -12,7 +12,8 @@ open Real
 namespace InfoTheory.Known
 
 -- Canonical versions live in `InfoTheory.Bridge` (proved via Mathlib's `klDiv`/`hammingDist`).
-open InfoTheory.Bridge (pmf_le_one shannonEntropy_nonneg klDivergence_nonneg shannonEntropy_le_log2_card mutualInfo_nonneg)
+open InfoTheory.Bridge (pmf_le_one shannonEntropy_nonneg klDivergence_nonneg shannonEntropy_le_log2_card
+  mutualInfo_nonneg negPLogP_nonneg condEntropy_nonneg condMutualInfo_nonneg shannonEntropy_prod)
 
 open InfoTheory
 
@@ -27,12 +28,6 @@ theorem negPLogP_eq_negMulLog {p : ℝ} (hp : 0 ≤ p) :
   · have : p = 0 := le_antisymm h hp
     simp [this]
   · ring
-
-/-- Nonnegativity of the entropy summand: `-p log₂ p ≥ 0` for `p ∈ [0,1]`
-(Cover–Thomas Lemma 2.1.1). -/
-theorem negPLogP_nonneg {p : ℝ} (hp0 : 0 ≤ p) (hp1 : p ≤ 1) : 0 ≤ negPLogP p := by
-  rw [negPLogP_eq_negMulLog hp0]
-  exact div_nonneg (Real.negMulLog_nonneg hp0 hp1) log_two_pos'.le
 
 /-- Shannon entropy in bits is the natural-log entropy divided by `log 2`. -/
 theorem shannonEntropy_eq_sum_negMulLog {α : Type*} [Fintype α] (P : ProbDist α) :
@@ -140,12 +135,6 @@ theorem shannonEntropy_fst_le (P : ProbDist (α × β)) :
     _ = ∑ ab, Real.negMulLog (P.pmf ab) :=
         (Fintype.sum_prod_type (fun ab => Real.negMulLog (P.pmf ab))).symm
 
-/-- Nonnegativity of conditional entropy, `H(X | Y) ≥ 0` for discrete variables
-(Cover–Thomas Thm 2.2.1 / Lemma 2.1.1). -/
-theorem condEntropy_nonneg (P : ProbDist (α × β)) : 0 ≤ condEntropy P := by
-  unfold condEntropy
-  linarith [shannonEntropy_snd_le P]
-
 /-- `I(X;Y) ≤ H(X)` (Cover–Thomas Thm 2.4.1 / eq. (2.45)). -/
 theorem mutualInfo_le_entropy_fst (P : ProbDist (α × β)) :
     mutualInfo P ≤ shannonEntropy P.fst := by
@@ -226,17 +215,6 @@ theorem shannonEntropy_prod_snd (P : ProbDist α) (Q : ProbDist β) :
   unfold shannonEntropy
   simp [ProbDist.snd, ProbDist.prod, ← Finset.sum_mul, P.sum_one]
 
-/-- Additivity of entropy for independent variables: `H(X,Y) = H(X) + H(Y)` when
-`X ⊥ Y` (Cover–Thomas Thm 2.6.6, equality case). -/
-theorem shannonEntropy_prod (P : ProbDist α) (Q : ProbDist β) :
-    shannonEntropy (P.prod Q) = shannonEntropy P + shannonEntropy Q := by
-  rw [shannonEntropy_eq_sum_negMulLog, shannonEntropy_eq_sum_negMulLog,
-    shannonEntropy_eq_sum_negMulLog, ← add_div]
-  congr 1
-  rw [Fintype.sum_prod_type]
-  simp only [ProbDist.prod, Real.negMulLog_mul, Finset.sum_add_distrib, ← Finset.sum_mul,
-    ← Finset.mul_sum, Q.sum_one, P.sum_one, one_mul]
-
 /-- Independent variables have zero mutual information: `I(X;Y) = 0` for `P_X ⊗ P_Y`
 (Cover–Thomas Thm 2.6.3, equality case). -/
 theorem mutualInfo_prod (P : ProbDist α) (Q : ProbDist β) : mutualInfo (P.prod Q) = 0 := by
@@ -261,7 +239,7 @@ theorem binaryEntropy_symm (p : ℝ) : binaryEntropy p = binaryEntropy (1 - p) :
 
 /-- Nonnegativity of binary entropy on `[0,1]`. -/
 theorem binaryEntropy_nonneg {p : ℝ} (hp0 : 0 ≤ p) (hp1 : p ≤ 1) : 0 ≤ binaryEntropy p :=
-  add_nonneg (negPLogP_nonneg hp0 hp1) (negPLogP_nonneg (by linarith) (by linarith))
+  add_nonneg (negPLogP_nonneg hp1) (negPLogP_nonneg (by linarith))
 
 /-- Binary entropy is at most one bit, `h(p) ≤ 1` on `[0,1]` (Cover–Thomas Example 2.1.1). -/
 theorem binaryEntropy_le_one {p : ℝ} (hp0 : 0 ≤ p) (hp1 : p ≤ 1) : binaryEntropy p ≤ 1 := by
@@ -330,102 +308,6 @@ theorem map_z_pmf (P : ProbDist (α × β × γ)) (c : γ) :
   simp only [Fintype.sum_prod_type]
   refine Finset.sum_congr rfl (fun a _ => Finset.sum_congr rfl (fun b _ => ?_))
   exact sum_ite_single c _ _ (by simp)
-
-/-- Nonnegativity of conditional mutual information, `I(X;Y|Z) ≥ 0`
-(Cover–Thomas Cor. to Thm 2.6.3, eq. (2.92)); equivalently the submodularity
-`H(X,Z) + H(Y,Z) ≥ H(X,Y,Z) + H(Z)`, the basic Shannon inequality. -/
-theorem condMutualInfo_nonneg (P : ProbDist (α × β × γ)) : 0 ≤ condMutualInfo P := by
-  set Pxz : ProbDist (α × γ) := P.map (fun t => (t.1, t.2.2)) with hPxz
-  set Pyz : ProbDist (β × γ) := P.map (fun t => (t.2.1, t.2.2)) with hPyz
-  set Pz : ProbDist γ := P.map (fun t => t.2.2) with hPz
-  have hX : ∀ a c, Pxz.pmf (a, c) = ∑ b, P.pmf (a, b, c) := map_xz_pmf P
-  have hY : ∀ b c, Pyz.pmf (b, c) = ∑ a, P.pmf (a, b, c) := map_yz_pmf P
-  have hZ : ∀ c, Pz.pmf c = ∑ a, ∑ b, P.pmf (a, b, c) := map_z_pmf P
-  have hcmi : condMutualInfo P = shannonEntropy Pxz + shannonEntropy Pyz
-      - shannonEntropy P - shannonEntropy Pz := rfl
-  have hZX : ∀ c, ∑ a, Pxz.pmf (a, c) = Pz.pmf c := fun c => by simp only [hX, hZ]
-  have hZY : ∀ c, ∑ b, Pyz.pmf (b, c) = Pz.pmf c := fun c => by
-    simp only [hY, hZ]; exact Finset.sum_comm
-  have leX : ∀ a b c, P.pmf (a, b, c) ≤ Pxz.pmf (a, c) := fun a b c => by
-    rw [hX]
-    exact Finset.single_le_sum (f := fun b => P.pmf (a, b, c)) (fun b _ => P.nonneg _)
-      (Finset.mem_univ b)
-  have leY : ∀ a b c, P.pmf (a, b, c) ≤ Pyz.pmf (b, c) := fun a b c => by
-    rw [hY]
-    exact Finset.single_le_sum (f := fun a => P.pmf (a, b, c)) (fun a _ => P.nonneg _)
-      (Finset.mem_univ a)
-  have leZ : ∀ a b c, P.pmf (a, b, c) ≤ Pz.pmf c := fun a b c => by
-    rw [← hZX]
-    exact (leX a b c).trans (Finset.single_le_sum (f := fun a => Pxz.pmf (a, c))
-      (fun a _ => Pxz.nonneg _) (Finset.mem_univ a))
-  -- Gibbs with the reference measure `q(a,b,c) = P(a,c) P(b,c) / P(c)`.
-  have hsum : ∑ t : α × β × γ, Pxz.pmf (t.1, t.2.2) * Pyz.pmf (t.2.1, t.2.2) / Pz.pmf t.2.2
-      = 1 := by
-    rw [Fintype.sum_prod_type, Finset.sum_comm, Fintype.sum_prod_type_right, ← Pz.sum_one]
-    refine Finset.sum_congr rfl (fun c _ => ?_)
-    dsimp only
-    calc ∑ b, ∑ a, Pxz.pmf (a, c) * Pyz.pmf (b, c) / Pz.pmf c
-        = ∑ b, (∑ a, Pxz.pmf (a, c)) * Pyz.pmf (b, c) / Pz.pmf c := by
-          refine Finset.sum_congr rfl (fun b _ => ?_)
-          rw [Finset.sum_mul, Finset.sum_div]
-      _ = Pz.pmf c * Pz.pmf c / Pz.pmf c := by
-          rw [hZX, ← Finset.sum_div, ← Finset.mul_sum, hZY]
-      _ = Pz.pmf c := mul_self_div_self _
-  have key := gibbs_sum Finset.univ P.pmf
-    (fun t => Pxz.pmf (t.1, t.2.2) * Pyz.pmf (t.2.1, t.2.2) / Pz.pmf t.2.2)
-    (fun t _ => div_nonneg (mul_nonneg (Pxz.nonneg _) (Pyz.nonneg _)) (Pz.nonneg _))
-    (fun ⟨a, b, c⟩ _ hp => div_pos (mul_pos (lt_of_lt_of_le hp (leX a b c))
-      (lt_of_lt_of_le hp (leY a b c))) (lt_of_lt_of_le hp (leZ a b c)))
-    (by rw [hsum, P.sum_one])
-  have hterm : ∀ t : α × β × γ, (if P.pmf t ≤ 0 then 0 else P.pmf t *
-      Real.log (P.pmf t / (Pxz.pmf (t.1, t.2.2) * Pyz.pmf (t.2.1, t.2.2) / Pz.pmf t.2.2))) =
-      -Real.negMulLog (P.pmf t) - P.pmf t * Real.log (Pxz.pmf (t.1, t.2.2))
-        - P.pmf t * Real.log (Pyz.pmf (t.2.1, t.2.2)) + P.pmf t * Real.log (Pz.pmf t.2.2) := by
-    rintro ⟨a, b, c⟩
-    split_ifs with h
-    · have : P.pmf (a, b, c) = 0 := le_antisymm h (P.nonneg _)
-      simp [this]
-    · have hp : 0 < P.pmf (a, b, c) := lt_of_not_ge h
-      have hx : 0 < Pxz.pmf (a, c) := lt_of_lt_of_le hp (leX a b c)
-      have hy : 0 < Pyz.pmf (b, c) := lt_of_lt_of_le hp (leY a b c)
-      have hz : 0 < Pz.pmf c := lt_of_lt_of_le hp (leZ a b c)
-      dsimp only
-      rw [Real.log_div hp.ne' (div_pos (mul_pos hx hy) hz).ne',
-        Real.log_div (mul_pos hx hy).ne' hz.ne', Real.log_mul hx.ne' hy.ne', Real.negMulLog]
-      ring
-  have hA : ∑ t : α × β × γ, P.pmf t * Real.log (Pxz.pmf (t.1, t.2.2)) =
-      -∑ ac, Real.negMulLog (Pxz.pmf ac) := by
-    conv_rhs => rw [Fintype.sum_prod_type]
-    rw [Fintype.sum_prod_type, ← Finset.sum_neg_distrib]
-    refine Finset.sum_congr rfl (fun a _ => ?_)
-    rw [Fintype.sum_prod_type_right, ← Finset.sum_neg_distrib]
-    refine Finset.sum_congr rfl (fun c _ => ?_)
-    dsimp only
-    rw [← Finset.sum_mul, ← hX, Real.negMulLog]
-    ring
-  have hB : ∑ t : α × β × γ, P.pmf t * Real.log (Pyz.pmf (t.2.1, t.2.2)) =
-      -∑ bc, Real.negMulLog (Pyz.pmf bc) := by
-    rw [Fintype.sum_prod_type, Finset.sum_comm, ← Finset.sum_neg_distrib]
-    refine Finset.sum_congr rfl (fun bc _ => ?_)
-    obtain ⟨b, c⟩ := bc
-    dsimp only
-    rw [← Finset.sum_mul, ← hY, Real.negMulLog]
-    ring
-  have hC : ∑ t : α × β × γ, P.pmf t * Real.log (Pz.pmf t.2.2) =
-      -∑ c, Real.negMulLog (Pz.pmf c) := by
-    rw [Fintype.sum_prod_type, Finset.sum_comm, Fintype.sum_prod_type_right,
-      ← Finset.sum_neg_distrib]
-    refine Finset.sum_congr rfl (fun c _ => ?_)
-    dsimp only
-    simp only [← Finset.sum_mul]
-    rw [Finset.sum_comm, ← hZ, Real.negMulLog]
-    ring
-  simp only [hterm, Finset.sum_add_distrib, Finset.sum_sub_distrib, Finset.sum_neg_distrib,
-    hA, hB, hC] at key
-  rw [hcmi, shannonEntropy_eq_sum_negMulLog, shannonEntropy_eq_sum_negMulLog,
-    shannonEntropy_eq_sum_negMulLog, shannonEntropy_eq_sum_negMulLog]
-  rw [← add_div, ← sub_div, ← sub_div]
-  exact div_nonneg (by linarith) log_two_pos'.le
 
 end Triple
 

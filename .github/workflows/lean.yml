@@ -44,7 +44,7 @@ jobs:
       - name: Build, axiom-audit, and kernel-replay proved results (Known/, Bridge/)
         working-directory: lean
         run: |
-          lake build InfoTheory.Known InfoTheory.Bridge.Mathlib
+          lake build InfoTheory.Known InfoTheory.Bridge
           lake env lean --run ../scripts/AuditKnown.lean
           for f in InfoTheory/Known/*.lean InfoTheory/Bridge/*.lean; do
             m=$(echo "${f%.lean}" | tr '/' '.')
