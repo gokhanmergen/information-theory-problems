@@ -2,9 +2,12 @@
 id: entropy-region
 title: Characterize the Entropy Region for Four or More Random Variables
 status: open
+category: entropy-inequalities
 posed_by: Zhang and Yeung (explicitly); implicit in Pippenger
 posed_year: 1998
 tags: [entropy-inequalities, network-coding, foundations]
+lean_module: InfoTheory.Problems.EntropyRegion
+lean_file: lean/InfoTheory/Problems/EntropyRegion.lean
 ---
 
 ## Statement

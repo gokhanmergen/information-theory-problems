@@ -2,9 +2,12 @@
 id: shannon-capacity-c7
 title: The Shannon Capacity of the 7-Cycle
 status: open
+category: zero-error
 posed_by: Claude Shannon
 posed_year: 1956
 tags: [zero-error, combinatorics, graph-theory]
+lean_module: InfoTheory.Problems.ShannonCapacityC7
+lean_file: lean/InfoTheory/Problems/ShannonCapacityC7.lean
 ---
 
 ## Statement

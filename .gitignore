@@ -4,3 +4,6 @@ __pycache__/
 attempts/*/code/exhaustive_n5
 .venv/
 attempts/courtade-kumar/code/n5_cert/shard_3_progress.log
+lean/.lake/
+lean/lake-packages/
+

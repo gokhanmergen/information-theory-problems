@@ -2,9 +2,12 @@
 id: courtade-kumar
 title: The Courtade–Kumar Most-Informative-Boolean-Function Conjecture
 status: open
+category: entropy-inequalities
 posed_by: Courtade and Kumar
 posed_year: 2013
 tags: [entropy-inequalities, boolean-functions, discrete-fourier]
+lean_module: InfoTheory.Problems.CourtadeKumar
+lean_file: lean/InfoTheory/Problems/CourtadeKumar.lean
 ---
 
 ## Statement

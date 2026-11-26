@@ -2,9 +2,12 @@
 id: short-kebab-slug
 title: Human-Readable Problem Title
 status: open
+category: entropy-inequalities
 posed_by: Name(s), if attributable
 posed_year: 1979
 tags: [channel-capacity, example-tag]
+lean_module: InfoTheory.Problems.ShortKebabSlug
+lean_file: lean/InfoTheory/Problems/ShortKebabSlug.lean
 ---
 
 ## Statement

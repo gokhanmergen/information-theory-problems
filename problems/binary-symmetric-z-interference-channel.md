@@ -2,9 +2,12 @@
 id: binary-symmetric-z-interference-channel
 title: Capacity Region of the Binary Symmetric Z-Interference Channel
 status: solved
+category: network-info-theory
 posed_by: folklore
 posed_year: 1980
 tags: [channel-capacity, interference-channel, discrete-memoryless]
+lean_module: InfoTheory.Problems.BinarySymmetricZInterferenceChannel
+lean_file: lean/InfoTheory/Problems/BinarySymmetricZInterferenceChannel.lean
 ---
 
 ## Statement

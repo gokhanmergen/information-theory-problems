@@ -2,9 +2,12 @@
 id: relay-channel
 title: Capacity of the Relay Channel
 status: open
+category: network-info-theory
 posed_by: van der Meulen
 posed_year: 1971
 tags: [network-information-theory, relaying, cooperation]
+lean_module: InfoTheory.Problems.RelayChannel
+lean_file: lean/InfoTheory/Problems/RelayChannel.lean
 ---
 
 ## Statement

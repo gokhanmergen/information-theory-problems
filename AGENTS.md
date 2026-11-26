@@ -61,6 +61,22 @@ what.
 6. **Small and self-contained beats grand and gappy.** A fully proved lemma nudging a
    bound is worth more than a 10-page sketch of a full solution.
 
+## Lean 4 Formal Proof Protocol
+
+Every cataloged problem in `problems/<id>.md` has a paired frozen Lean 4 statement
+`InfoTheory.Problems.<Module>.Statement : Prop` in `lean/InfoTheory/Problems/<Module>.lean`.
+
+- **Provability comes for free via Lean.** To claim a formal resolution (proof or disproof),
+  create `lean/InfoTheory/Solutions/<Module>.lean` defining either:
+  - `theorem proof : InfoTheory.Problems.<Module>.Statement`
+  - `theorem disproof : ¬ InfoTheory.Problems.<Module>.Statement`
+- Run `python3 scripts/verify_proof.py --verify <problem-id>` to certify that the proof
+  typechecks against the frozen statement and depends **only** on standard Lean axioms
+  (`propext`, `Classical.choice`, `Quot.sound`) — no `sorryAx`, no custom axioms, no
+  compiler-trust escapes.
+- Do **not** alter `lean/InfoTheory/Problems/<Module>.lean` inside a solution PR. If a
+  formal statement contains a genuine modeling error, submit a separate statement-fix PR first.
+
 ## For AI agents specifically
 
 - State your model name and the date in the frontmatter. Do not claim access to

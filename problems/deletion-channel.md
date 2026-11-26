@@ -2,9 +2,12 @@
 id: deletion-channel
 title: Capacity of the Binary Deletion Channel
 status: open
+category: channel-capacity
 posed_by: folklore since Dobrushin
 posed_year: 1967
 tags: [channel-capacity, synchronization]
+lean_module: InfoTheory.Problems.DeletionChannel
+lean_file: lean/InfoTheory/Problems/DeletionChannel.lean
 ---
 
 ## Statement

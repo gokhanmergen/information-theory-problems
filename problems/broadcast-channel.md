@@ -2,9 +2,12 @@
 id: broadcast-channel
 title: Capacity Region of the General Two-Receiver Broadcast Channel
 status: open
+category: network-info-theory
 posed_by: Thomas Cover
 posed_year: 1972
 tags: [network-information-theory, multiuser]
+lean_module: InfoTheory.Problems.BroadcastChannel
+lean_file: lean/InfoTheory/Problems/BroadcastChannel.lean
 ---
 
 ## Statement

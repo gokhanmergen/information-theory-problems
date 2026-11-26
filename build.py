@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Dependency-free static site generator: problems/ + attempts/ -> site/.
+"""Dependency-free static site generator: problems/ + lean/ + attempts/ -> site/.
 
 Python 3 stdlib only. Markdown subset: #-#### headings, paragraphs, -/* and
 numbered lists, > blockquotes, ``` fenced code, | tables, **bold**, *italic*,
@@ -14,8 +14,26 @@ from pathlib import Path
 
 ROOT = Path(__file__).parent
 SITE = ROOT / "site"
+LEAN_SOLUTIONS_DIR = ROOT / "lean" / "InfoTheory" / "Solutions"
 
-STATUS_LABELS = {"open": "open", "partially-solved": "partially solved", "solved": "solved"}
+STATUS_LABELS = {
+    "open": "open",
+    "partially-solved": "partially solved",
+    "solved": "solved",
+}
+
+CATEGORY_LABELS = {
+    "entropy-inequalities": "Entropy Inequalities & Geometry",
+    "channel-capacity": "Channel Capacity & Synchronization",
+    "network-info-theory": "Network Information Theory",
+    "source-coding": "Source Coding & Compression",
+    "zero-error": "Zero-Error & Graph Capacity",
+    "coding-theory": "Coding Theory & Bounds",
+    "network-coding": "Network Coding & Storage",
+    "quantum-info": "Quantum Information Theory",
+    "security-privacy": "Security, Privacy & Secrecy",
+    "statistical-info-theory": "Statistical Info Theory & Testing",
+}
 
 
 def fail(msg):
@@ -161,8 +179,52 @@ MATHJAX = (
     '<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>'
 )
 
+FILTER_JS = """<script>
+(function(){
+  const q = document.getElementById('search');
+  const cards = Array.from(document.querySelectorAll('.card'));
+  const countEl = document.getElementById('match-count');
+  let activeCat = 'all', activeStatus = 'all';
 
-def page(title, body_html, depth=0):
+  function apply(){
+    const term = (q.value || '').trim().toLowerCase();
+    let shown = 0;
+    for (const c of cards){
+      const okCat = activeCat === 'all' || c.dataset.cat === activeCat;
+      const okSt = activeStatus === 'all' || c.dataset.status === activeStatus;
+      const okQ = !term || c.dataset.search.includes(term);
+      const show = okCat && okSt && okQ;
+      c.style.display = show ? '' : 'none';
+      if (show) shown++;
+    }
+    if (countEl) countEl.textContent = shown + ' of ' + cards.length + ' problems shown';
+  }
+
+  document.querySelectorAll('[data-filter-cat]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-filter-cat]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeCat = btn.dataset.filterCat;
+      apply();
+    });
+  });
+
+  document.querySelectorAll('[data-filter-status]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-filter-status]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeStatus = btn.dataset.filterStatus;
+      apply();
+    });
+  });
+
+  if (q) q.addEventListener('input', apply);
+  apply();
+})();
+</script>"""
+
+
+def page(title, body_html, depth=0, extra_js=""):
     rel = "../" * depth
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -174,11 +236,15 @@ def page(title, body_html, depth=0):
 {MATHJAX}
 </head>
 <body>
-<header><a href="{rel}index.html">Open Problems in Information Theory</a></header>
+<header>
+  <a href="{rel}index.html">Open Problems in Information Theory</a>
+  <span class="header-note">Lean 4 Verified Problem Platform</span>
+</header>
 <main>
 {body_html}
 </main>
-<footer>Maintained on <a href="https://github.com/gokhanmergen/information-theory-problems">GitHub</a> — problems, corrections, and attempts (human or AI) welcome by pull request.</footer>
+<footer>Maintained on <a href="https://github.com/gokhanmergen/information-theory-problems">GitHub</a> — problems, Lean 4 formalizations, corrections, and proofs (human or AI) welcome by pull request.</footer>
+{extra_js}
 </body>
 </html>
 """
@@ -202,6 +268,25 @@ def load_attempts(problem_id):
     return attempts
 
 
+def load_lean_info(meta):
+    lean_file = meta.get("lean_file", "")
+    lean_module = meta.get("lean_module", "")
+    if not lean_file:
+        return None
+    p = ROOT / lean_file
+    if not p.is_file():
+        fail(f"{meta['id']}: lean_file {lean_file!r} does not exist")
+    short_mod = lean_module.split(".")[-1] if lean_module else p.stem
+    sol_file = LEAN_SOLUTIONS_DIR / f"{short_mod}.lean"
+    return {
+        "file": lean_file,
+        "module": lean_module,
+        "code": p.read_text(encoding="utf-8").strip(),
+        "has_solution": sol_file.is_file(),
+        "solution_file": f"lean/InfoTheory/Solutions/{short_mod}.lean",
+    }
+
+
 def main():
     problems = []
     for f in sorted((ROOT / "problems").glob("*.md")):
@@ -211,52 +296,140 @@ def main():
                 fail(f"{f}: missing frontmatter key {key!r}")
         if meta["id"] != f.stem:
             fail(f"{f}: id {meta['id']!r} != filename stem")
-        problems.append((meta, body, load_attempts(meta["id"])))
+        lean_info = load_lean_info(meta)
+        problems.append((meta, body, load_attempts(meta["id"]), lean_info))
 
     if SITE.exists():
         shutil.rmtree(SITE)
     (SITE / "problems").mkdir(parents=True)
     shutil.copy(ROOT / "static" / "style.css", SITE / "style.css")
 
-    # index
+    # Stats
+    n_total = len(problems)
+    n_open = sum(1 for m, _, _, _ in problems if m["status"] in ("open", "partially-solved"))
+    n_solved = sum(1 for m, _, _, _ in problems if m["status"] == "solved")
+    n_lean = sum(1 for _, _, _, l in problems if l is not None)
+    n_lean_sol = sum(1 for _, _, _, l in problems if l is not None and l["has_solution"])
+
+    # Category counts
+    cat_counts = {}
+    for m, _, _, _ in problems:
+        c = m.get("category", "uncategorized")
+        cat_counts[c] = cat_counts.get(c, 0) + 1
+
+    # Index cards
     rows = []
-    for meta, _, attempts in problems:
+    for meta, _, attempts, lean_info in problems:
+        cat = meta.get("category", "uncategorized")
+        cat_label = CATEGORY_LABELS.get(cat, cat)
         tags = " ".join(f'<span class="tag">{html.escape(t)}</span>' for t in meta.get("tags", []))
         posed = html.escape(meta.get("posed_year", ""))
         att = f'{len(attempts)} attempt{"s" if len(attempts) != 1 else ""}' if attempts else "no attempts yet"
+        lean_badge = ""
+        if lean_info:
+            if lean_info["has_solution"]:
+                lean_badge = '<span class="badge badge-lean-verified">Lean 4 proof</span>'
+            else:
+                lean_badge = '<span class="badge badge-lean">Lean 4</span>'
+        search_blob = " ".join([
+            meta["id"], meta["title"], meta.get("posed_by", ""),
+            cat, cat_label, " ".join(meta.get("tags", []))
+        ]).lower()
         rows.append(
-            f'<a class="card" href="problems/{meta["id"]}.html">'
-            f'<div class="card-top"><h2>{html.escape(meta["title"])}</h2>{badge(meta["status"])}</div>'
-            f'<div class="card-meta">{f"posed {posed} · " if posed else ""}{att}</div>'
+            f'<a class="card" href="problems/{meta["id"]}.html" '
+            f'data-cat="{html.escape(cat)}" data-status="{html.escape(meta["status"])}" '
+            f'data-search="{html.escape(search_blob)}">'
+            f'<div class="card-top"><h2>{html.escape(meta["title"])}</h2>'
+            f'<div class="badges">{lean_badge}{badge(meta["status"])}</div></div>'
+            f'<div class="card-meta">{html.escape(cat_label)} · '
+            f'{f"posed {posed} · " if posed else ""}{att}</div>'
             f'<div class="tags">{tags}</div></a>'
         )
-    n_open = sum(1 for m, _, _ in problems if m["status"] != "solved")
+
+    cat_buttons = ['<button class="pill active" data-filter-cat="all">All (' + str(n_total) + ')</button>']
+    for cat_key, cat_label in CATEGORY_LABELS.items():
+        if cat_key in cat_counts:
+            cat_buttons.append(
+                f'<button class="pill" data-filter-cat="{html.escape(cat_key)}">'
+                f'{html.escape(cat_label)} ({cat_counts[cat_key]})</button>'
+            )
+
+    status_buttons = [
+        '<button class="pill active" data-filter-status="all">All statuses</button>',
+        '<button class="pill" data-filter-status="open">Open</button>',
+        '<button class="pill" data-filter-status="partially-solved">Partially solved</button>',
+        '<button class="pill" data-filter-status="solved">Solved</button>',
+    ]
+
     intro = (
         "<h1>Open Problems in Information Theory</h1>"
-        f"<p class='lede'>A community-curated list of {n_open} open problems, in the spirit of "
+        f"<p class='lede'>A curated, Lean 4–formalized catalog of <strong>{n_open} open problems</strong> "
+        f"({n_total} total, {n_lean} with machine-checked Lean 4 statements), in the spirit of "
         '<a href="https://www.erdosproblems.com/">erdosproblems.com</a>. '
-        "Humans and AI agents attempt problems under a common protocol; every attempt is "
-        "a reviewable, versioned record of what was tried, what was proved, and what failed. "
-        'Contribute on GitHub.</p>'
+        "Provability comes for free via Lean: submit a proof of <code>Statement</code> (or "
+        "<code>¬ Statement</code>) under <code>lean/InfoTheory/Solutions/</code> and run "
+        "<code>python3 scripts/verify_proof.py --verify &lt;id&gt;</code>.</p>"
+        '<div class="stats">'
+        f'<div class="stat"><span class="stat-num">{n_open}</span><span class="stat-lbl">Open / Partial</span></div>'
+        f'<div class="stat"><span class="stat-num">{n_lean}</span><span class="stat-lbl">Lean 4 Statements</span></div>'
+        f'<div class="stat"><span class="stat-num">{n_solved}</span><span class="stat-lbl">Solved</span></div>'
+        f'<div class="stat"><span class="stat-num">{n_lean_sol}</span><span class="stat-lbl">Lean Verified</span></div>'
+        '</div>'
+        '<div class="controls">'
+        '<input id="search" type="search" placeholder="Search problems by title, author, tag, or subfield…">'
+        f'<div class="pill-row">{"".join(status_buttons)}</div>'
+        f'<div class="pill-row">{"".join(cat_buttons)}</div>'
+        '<div id="match-count" class="match-count"></div>'
+        '</div>'
     )
-    (SITE / "index.html").write_text(page("Open Problems in Information Theory",
-                                          intro + "\n".join(rows)), encoding="utf-8")
+    (SITE / "index.html").write_text(
+        page("Open Problems in Information Theory", intro + "\n".join(rows), extra_js=FILTER_JS),
+        encoding="utf-8",
+    )
 
-    # problem pages
-    for meta, body, attempts in problems:
+    # Problem pages
+    for meta, body, attempts, lean_info in problems:
+        lean_badge = ""
+        if lean_info:
+            if lean_info["has_solution"]:
+                lean_badge = '<span class="badge badge-lean-verified">Lean 4 proof</span>'
+            else:
+                lean_badge = '<span class="badge badge-lean">Lean 4</span>'
         parts = [
-            f'<div class="card-top"><h1>{html.escape(meta["title"])}</h1>{badge(meta["status"])}</div>'
+            f'<div class="card-top"><h1>{html.escape(meta["title"])}</h1>'
+            f'<div class="badges">{lean_badge}{badge(meta["status"])}</div></div>'
         ]
         posed_by, posed_year = meta.get("posed_by", ""), meta.get("posed_year", "")
+        cat = meta.get("category", "")
+        cat_label = CATEGORY_LABELS.get(cat, cat)
+        prov_bits = []
         if posed_by or posed_year:
-            parts.append(
-                f'<p class="provenance">Posed by {html.escape(posed_by)}'
-                f'{f", {html.escape(posed_year)}" if posed_year else ""}.</p>'
-            )
+            prov_bits.append(f"Posed by {posed_by}" + (f", {posed_year}" if posed_year else ""))
+        if cat_label:
+            prov_bits.append(cat_label)
+        if prov_bits:
+            parts.append(f'<p class="provenance">{html.escape(" · ".join(prov_bits))}.</p>')
+
         parts.append(md_to_html(body))
+
+        if lean_info:
+            parts.append("<h2>Lean 4 Formalization</h2>")
+            parts.append(
+                f'<p class="muted">Module <code>{html.escape(lean_info["module"])}</code> '
+                f'(<code>{html.escape(lean_info["file"])}</code>). '
+                f'To certify a proof or disproof mechanically, add '
+                f'<code>{html.escape(lean_info["solution_file"])}</code> defining '
+                f'<code>proof : {html.escape(lean_info["module"])}.Statement</code> (or '
+                f'<code>disproof : ¬ {html.escape(lean_info["module"])}.Statement</code>) and run '
+                f'<code>python3 scripts/verify_proof.py --verify {html.escape(meta["id"])}</code>.</p>'
+            )
+            parts.append(f'<pre class="lean-code"><code>{html.escape(lean_info["code"])}</code></pre>')
+
         parts.append(f"<h2>Attempts ({len(attempts)})</h2>")
         if not attempts:
-            parts.append('<p class="muted">No attempts recorded yet. See AGENTS.md in the repository for the attempt protocol.</p>')
+            parts.append(
+                '<p class="muted">No attempts recorded yet. See AGENTS.md in the repository for the attempt protocol.</p>'
+            )
         for name, ameta, abody in attempts:
             head = (
                 f'<span class="att-who">{html.escape(ameta.get("attempter", "?"))}</span> '
@@ -275,8 +448,10 @@ def main():
             page(meta["title"], "\n".join(parts), depth=1), encoding="utf-8"
         )
 
-    print(f"built site/ — {len(problems)} problems, "
-          f"{sum(len(a) for _, _, a in problems)} attempts")
+    print(
+        f"built site/ — {n_total} problems ({n_open} open/partial, {n_lean} Lean 4 formalized), "
+        f"{sum(len(a) for _, _, a, _ in problems)} attempts"
+    )
 
 
 if __name__ == "__main__":

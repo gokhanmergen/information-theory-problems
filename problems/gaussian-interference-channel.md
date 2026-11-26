@@ -2,9 +2,12 @@
 id: gaussian-interference-channel
 title: Exact Capacity Region of the Two-User Gaussian Interference Channel
 status: partially-solved
+category: network-info-theory
 posed_by: Ahlswede; Carleial
 posed_year: 1974
 tags: [network-information-theory, interference, gaussian]
+lean_module: InfoTheory.Problems.GaussianInterferenceChannel
+lean_file: lean/InfoTheory/Problems/GaussianInterferenceChannel.lean
 ---
 
 ## Statement

@@ -1,0 +1,58 @@
+name: Verify Lean 4 Statements & Solutions
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "lean/**"
+      - "problems/**"
+      - "scripts/verify_proof.py"
+      - "scripts/CheckSolution.lean"
+      - ".github/workflows/lean.yml"
+  pull_request:
+    paths:
+      - "lean/**"
+      - "problems/**"
+      - "scripts/verify_proof.py"
+      - "scripts/CheckSolution.lean"
+      - ".github/workflows/lean.yml"
+  workflow_dispatch:
+
+jobs:
+  lean-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install elan
+        run: |
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> $GITHUB_PATH
+
+      - name: Fetch Mathlib cache
+        working-directory: lean
+        run: lake exe cache get
+
+      - name: Build all Lean 4 Core and Problem statements
+        working-directory: lean
+        run: lake build
+
+      - name: Verify lockfile integrity (frozen statements & Core)
+        run: |
+          python3 scripts/verify_proof.py --check-lock
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+            if echo "$CHANGED" | grep -q '^lean/InfoTheory/Solutions/' && \
+               echo "$CHANGED" | grep -qE '^(lean/InfoTheory/(Core|Problems)/|lean/STATEMENT_LOCK\.json|lean/lakefile\.toml|lean/lean-toolchain|scripts/CheckSolution\.lean|scripts/verify_proof\.py|\.github/workflows/lean\.yml)'; then
+              echo "ERROR: A solution PR may not modify frozen Core/Problem statements, STATEMENT_LOCK.json, verifier scripts, or CI."
+              exit 1
+            fi
+          fi
+
+      - name: Check catalog consistency, adversarial self-test, and verify all solutions
+        run: |
+          python3 scripts/verify_proof.py --check-catalog
+          python3 scripts/verify_proof.py --self-test
+          python3 scripts/verify_proof.py --verify-all
