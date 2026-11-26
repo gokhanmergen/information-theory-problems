@@ -41,6 +41,13 @@ independence axioms.
 - Matúš (2007): $\bar{\Gamma}^*_4$ is **not a polyhedron** — no finite list of linear
   inequalities characterizes it. Infinitely many independent non-Shannon inequalities
   exist (see also Dougherty–Freiling–Zeger's large computer-generated families).
+- **Semialgebraicity (the formalized question):** Mejía and Montoya (arXiv:1510.02658,
+  "The almost-entropic regions are not semialgebraic") claim $\bar{\Gamma}^*_4$ is not
+  semialgebraic. Later work treats the Gómez–Mejía–Montoya argument as a *strategy* that
+  rests on an exponential information inequality suggested by Dougherty–Freiling–Zeger's
+  computations rather than a completed proof (e.g. Gómez's 2018 thesis, "strong evidence";
+  arXiv:2502.20355; arXiv:2606.23632). We list the question as open pending a check of
+  whether that inequality has since been proved; if it has, `¬ Statement` is a known theorem.
 - $\bar{\Gamma}^*_n$ is always a closed convex cone (Yeung); entropic vectors are
   asymptotically equivalent to group-characterizable vectors (Chan–Yeung 2002).
 - Equivalence with network coding capacity regions (Yan–Yeung–Zhang implicit

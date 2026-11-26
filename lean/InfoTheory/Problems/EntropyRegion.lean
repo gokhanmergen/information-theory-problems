@@ -10,15 +10,14 @@ def satisfiesZhangYeung (h : Finset (Fin 4) → ℝ) : Prop :=
   let cI (A B C : Finset (Fin 4)) : ℝ := h (A ∪ C) + h (B ∪ C) - h (A ∪ B ∪ C) - h C
   2 * I {2} {3} ≤ I {0} {1} + I {0} ({2, 3} : Finset (Fin 4)) + 3 * cI {2} {3} {0} + cI {2} {3} {1}
 
-/-- Characterizing `cl(Γ*_4)`: whether the almost-entropic cone `cl(Γ*_4)` coincides with
-    the closure of the cone of all linearly representable (group/subspace-rank) entropy
-    vectors, or equivalently admits a complete copy-lemma / finite-group characterization.
-    Here we formalize the famous open conjecture (Chan–Yeung 2002 / Matúš 2007) asking whether
-    every vector in `cl(Γ*_4)` is a limit of linear-rank (Ingleton-obeying? No, Ingleton fails
-    for non-linear entropic vectors!) — specifically, we formalize the exact open question of
-    whether every 4-variable almost-entropic vector satisfies all finite-order copy-lemma
-    inequalities AND conversely whether the copy-lemma cone equals `cl(Γ*_4)`:
-    framed concretely as whether `cl(Γ*_4)` is a semialgebraic set in `ℝ^{15}`. -/
+/-- Characterizing `cl(Γ*_4)` (Zhang–Yeung 1998; Matúš 2007): the almost-entropic cone of four
+    random variables is strictly smaller than the Shannon (polymatroid) cone `Γ_4` (Zhang–Yeung)
+    and is not polyhedral (Matúš 2007: infinitely many independent linear information
+    inequalities). Whether it nonetheless has a finite algebraic description is open
+    (Mejía–Montoya, arXiv:1510.02658, claim it does not; the argument is regarded as resting
+    on an unproved exponential information inequality — see the catalog entry). We
+    formalize this as: is `cl(Γ*_4)` a semialgebraic set in `ℝ^{2^4}`, i.e. a finite union of
+    sets cut out by finitely many polynomial inequalities `0 ≤ P(h)`? -/
 def IsSemialgebraic4 (S : Set (Finset (Fin 4) → ℝ)) : Prop :=
   ∃ (m k : ℕ) (P : Fin m → Fin k → (Finset (Fin 4) → ℝ) → ℝ),
     (∀ i j, ∃ (d : ℕ) (coeff : (Finset (Fin 4) → Fin (d + 1)) → ℝ),
