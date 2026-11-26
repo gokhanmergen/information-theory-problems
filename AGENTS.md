@@ -76,6 +76,19 @@ Every cataloged problem in `problems/<id>.md` has a paired frozen Lean 4 stateme
   compiler-trust escapes.
 - Do **not** alter `lean/InfoTheory/Problems/<Module>.lean` inside a solution PR. If a
   formal statement contains a genuine modeling error, submit a separate statement-fix PR first.
+- **Lemma base.** Solutions may `import InfoTheory.Known` (proved textbook results about the
+  Core definitions: entropy and Gibbs, Shannon inequalities and Ingleton, BSC/BEC capacity,
+  Singleton/Hamming/Gilbert–Varshamov, Reed–Solomon MDS, Lovász `Θ ≤ ϑ`, `Θ(C₅) = √5`) and
+  `InfoTheory.Bridge.Mathlib` (Core ↔ Mathlib `klDiv`/`PMF`/kernels, data processing,
+  Kraft–McMillan). Shared basics (`klDivergence_nonneg`, `mutualInfo_nonneg`, Hamming lemmas, …)
+  live in `InfoTheory.Bridge`; do not re-declare them under `InfoTheory.Known`, or files that
+  open both namespaces become ambiguous.
+- **Adding known results** to `lean/InfoTheory/Known/` is welcome, and it is the best test of a
+  Core definition: a definition that cannot reproduce a textbook value is wrong, and so is every
+  open statement built on it. Such results must be fully proved; CI audits every declaration
+  (`scripts/AuditKnown.lean`) and kernel-replays each module with `leanchecker`. If a textbook
+  fact turns out false for a Core definition, record the counterexample under
+  `InfoTheory.Known.DefinitionBugs` and open a statement-fix issue.
 
 ## For AI agents specifically
 

@@ -1,4 +1,5 @@
 import InfoTheory.Core
+import InfoTheory.Bridge.Mathlib
 import Mathlib.InformationTheory.Hamming
 import Mathlib.RingTheory.Polynomial.Basic
 
@@ -7,30 +8,16 @@ open Finset
 
 namespace InfoTheory.Known
 
-/-- Bridge: the project's `hammingDistVec` is Mathlib's `hammingDist`. -/
-theorem hammingDistVec_eq_hammingDist {α : Type*} [DecidableEq α] {n : ℕ}
-    (x y : Fin n → α) : hammingDistVec x y = hammingDist x y := rfl
-
-/-- Hamming distance is symmetric. -/
-theorem hammingDistVec_comm {α : Type*} [DecidableEq α] {n : ℕ} (x y : Fin n → α) :
-    hammingDistVec x y = hammingDistVec y x := hammingDist_comm x y
+-- Canonical versions live in `InfoTheory.Bridge` (proved via Mathlib's `klDiv`/`hammingDist`).
+open InfoTheory.Bridge (hammingDistVec_eq_hammingDist hammingDistVec_comm hammingDistVec_eq_zero hammingDistVec_triangle)
 
 /-- `d(x, x) = 0`. -/
 @[simp] theorem hammingDistVec_self {α : Type*} [DecidableEq α] {n : ℕ} (x : Fin n → α) :
     hammingDistVec x x = 0 := hammingDist_self x
 
-/-- `d(x, y) = 0 ↔ x = y`. -/
-theorem hammingDistVec_eq_zero {α : Type*} [DecidableEq α] {n : ℕ} {x y : Fin n → α} :
-    hammingDistVec x y = 0 ↔ x = y := hammingDist_eq_zero
-
 /-- `0 < d(x, y) ↔ x ≠ y`. -/
 theorem hammingDistVec_pos {α : Type*} [DecidableEq α] {n : ℕ} {x y : Fin n → α} :
     0 < hammingDistVec x y ↔ x ≠ y := hammingDist_pos
-
-/-- Triangle inequality for the Hamming distance. -/
-theorem hammingDistVec_triangle {α : Type*} [DecidableEq α] {n : ℕ} (x y z : Fin n → α) :
-    hammingDistVec x z ≤ hammingDistVec x y + hammingDistVec y z :=
-  hammingDist_triangle x y z
 
 /-- `d(x, y) ≤ n`. -/
 theorem hammingDistVec_le_length {α : Type*} [DecidableEq α] {n : ℕ} (x y : Fin n → α) :
@@ -95,7 +82,7 @@ theorem maxCodeSize_antitone {q n d d' : ℕ} (h : d' ≤ d) :
 
 /-- The whole space is a code of minimum distance `1`. -/
 theorem isCode_univ_one (q n : ℕ) : IsCode q n 1 (Finset.univ : Finset (Fin n → Fin q)) :=
-  fun _ _ _ _ hxy => Nat.one_le_iff_ne_zero.mpr (hammingDistVec_eq_zero.not.mpr hxy)
+  fun _ _ _ _ hxy => Nat.one_le_iff_ne_zero.mpr ((hammingDistVec_eq_zero _ _).not.mpr hxy)
 
 /-- `A_q(n,d) = q^n` for `d ≤ 1` (in particular for `d = 0`). -/
 theorem maxCodeSize_of_le_one {q n d : ℕ} (hd : d ≤ 1) : maxCodeSize q n d = q ^ n := by

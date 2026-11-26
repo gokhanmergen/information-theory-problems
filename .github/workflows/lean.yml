@@ -8,6 +8,7 @@ on:
       - "problems/**"
       - "scripts/verify_proof.py"
       - "scripts/CheckSolution.lean"
+      - "scripts/AuditKnown.lean"
       - ".github/workflows/lean.yml"
   pull_request:
     paths:
@@ -15,6 +16,7 @@ on:
       - "problems/**"
       - "scripts/verify_proof.py"
       - "scripts/CheckSolution.lean"
+      - "scripts/AuditKnown.lean"
       - ".github/workflows/lean.yml"
   workflow_dispatch:
 
@@ -38,6 +40,17 @@ jobs:
       - name: Build all Lean 4 Core and Problem statements
         working-directory: lean
         run: lake build
+
+      - name: Build, axiom-audit, and kernel-replay proved results (Known/, Bridge/)
+        working-directory: lean
+        run: |
+          lake build InfoTheory.Known InfoTheory.Bridge.Mathlib
+          lake env lean --run ../scripts/AuditKnown.lean
+          for f in InfoTheory/Known/*.lean InfoTheory/Bridge/*.lean; do
+            m=$(echo "${f%.lean}" | tr '/' '.')
+            echo "leanchecker $m"
+            lake env leanchecker "$m"
+          done
 
       - name: Verify lockfile integrity (frozen statements & Core)
         run: |

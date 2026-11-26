@@ -1,4 +1,5 @@
 import InfoTheory.Core
+import InfoTheory.Bridge.Mathlib
 import Mathlib.Analysis.SpecialFunctions.BinaryEntropy
 
 /-!
@@ -9,6 +10,9 @@ open scoped BigOperators
 open Real
 
 namespace InfoTheory.Known
+
+-- Canonical versions live in `InfoTheory.Bridge` (proved via Mathlib's `klDiv`/`hammingDist`).
+open InfoTheory.Bridge (pmf_le_one shannonEntropy_nonneg klDivergence_nonneg shannonEntropy_le_log2_card mutualInfo_nonneg)
 
 open InfoTheory
 
@@ -30,23 +34,12 @@ theorem negPLogP_nonneg {p : ℝ} (hp0 : 0 ≤ p) (hp1 : p ≤ 1) : 0 ≤ negPLo
   rw [negPLogP_eq_negMulLog hp0]
   exact div_nonneg (Real.negMulLog_nonneg hp0 hp1) log_two_pos'.le
 
-/-- Probabilities are at most one. -/
-theorem pmf_le_one {α : Type*} [Fintype α] (P : ProbDist α) (a : α) :
-    P.pmf a ≤ 1 := by
-  rw [← P.sum_one]
-  exact Finset.single_le_sum (fun b _ => P.nonneg b) (Finset.mem_univ a)
-
 /-- Shannon entropy in bits is the natural-log entropy divided by `log 2`. -/
 theorem shannonEntropy_eq_sum_negMulLog {α : Type*} [Fintype α] (P : ProbDist α) :
     shannonEntropy P = (∑ a, Real.negMulLog (P.pmf a)) / Real.log 2 := by
   unfold shannonEntropy
   rw [Finset.sum_div]
   exact Finset.sum_congr rfl (fun a _ => negPLogP_eq_negMulLog (P.nonneg a))
-
-/-- Nonnegativity of Shannon entropy, `H(X) ≥ 0` (Cover–Thomas Lemma 2.1.1). -/
-theorem shannonEntropy_nonneg {α : Type*} [Fintype α] (P : ProbDist α) :
-    0 ≤ shannonEntropy P :=
-  Finset.sum_nonneg (fun a _ => negPLogP_nonneg (P.nonneg a) (pmf_le_one P a))
 
 /-- Core termwise inequality behind Gibbs: if `q ≥ 0` and (`p > 0 → q > 0`), then
 `p log (p/q) ≥ p - q` (with the convention that the term is `0` when `p ≤ 0`). -/
@@ -73,23 +66,6 @@ theorem gibbs_sum {ι : Type*} (s : Finset ι) (p q : ι → ℝ)
   rw [Finset.sum_sub_distrib] at h1
   linarith
 
-/-- Gibbs' inequality / information inequality: `D(P ‖ Q) ≥ 0` whenever `P ≪ Q`
-(Cover–Thomas Thm 2.6.3). The hypothesis is necessary for the project's junk-value
-convention; see `DefinitionBugs.klDivergence_neg_without_absCont`. -/
-theorem klDivergence_nonneg {α : Type*} [Fintype α] (P Q : ProbDist α) (h : AbsCont P Q) :
-    0 ≤ klDivergence P Q := by
-  have key := gibbs_sum Finset.univ P.pmf Q.pmf (fun a _ => Q.nonneg a)
-    (fun a _ hp => lt_of_le_of_ne (Q.nonneg a) (fun hq => (ne_of_gt hp) (h a hq.symm)))
-    (by rw [P.sum_one, Q.sum_one])
-  have : klDivergence P Q = (∑ a, (if P.pmf a ≤ 0 then 0 else
-      P.pmf a * Real.log (P.pmf a / Q.pmf a))) / Real.log 2 := by
-    unfold klDivergence log2
-    rw [Finset.sum_div]
-    refine Finset.sum_congr rfl (fun a _ => ?_)
-    split_ifs <;> ring
-  rw [this]
-  exact div_nonneg key log_two_pos'.le
-
 /-- `D(P ‖ P) = 0` (Cover–Thomas Thm 2.6.3, equality case). -/
 theorem klDivergence_self {α : Type*} [Fintype α] (P : ProbDist α) : klDivergence P P = 0 := by
   unfold klDivergence
@@ -106,28 +82,6 @@ theorem shannonEntropy_uniform {α : Type*} [Fintype α] [Nonempty α] :
   simp only [ProbDist.uniform, Finset.sum_const, Finset.card_univ, nsmul_eq_mul,
     Real.negMulLog, log2, one_div, Real.log_inv]
   field_simp
-
-/-- Maximum entropy: `H(X) ≤ log₂ |α|` (Cover–Thomas Thm 2.6.4). -/
-theorem shannonEntropy_le_log2_card {α : Type*} [Fintype α] [Nonempty α] (P : ProbDist α) :
-    shannonEntropy P ≤ log2 (Fintype.card α) := by
-  set n : ℝ := ((Fintype.card α : ℕ) : ℝ) with hn_def
-  have hn : (0 : ℝ) < n := Nat.cast_pos.mpr Fintype.card_pos
-  have key := gibbs_sum Finset.univ P.pmf (fun _ => 1 / n)
-    (fun _ _ => by positivity) (fun _ _ _ => by positivity)
-    (by simp [P.sum_one, ← hn_def, hn.ne'])
-  have hterm : ∀ a, (if P.pmf a ≤ 0 then 0 else P.pmf a * Real.log (P.pmf a / (1 / n))) =
-      -Real.negMulLog (P.pmf a) + P.pmf a * Real.log n := by
-    intro a
-    split_ifs with h
-    · have : P.pmf a = 0 := le_antisymm h (P.nonneg a)
-      simp [this]
-    · have hp : 0 < P.pmf a := lt_of_not_ge h
-      rw [div_div_eq_mul_div, div_one, Real.log_mul hp.ne' hn.ne', Real.negMulLog]
-      ring
-  simp only [hterm, Finset.sum_add_distrib, Finset.sum_neg_distrib, ← Finset.sum_mul,
-    P.sum_one, one_mul] at key
-  rw [shannonEntropy_eq_sum_negMulLog, log2]
-  exact div_le_div_of_nonneg_right (by linarith) log_two_pos'.le
 
 /-! ### Joint, conditional and mutual information -/
 
@@ -244,18 +198,6 @@ theorem mutualInfo_mul_log_two (P : ProbDist (α × β)) :
     shannonEntropy_eq_sum_negMulLog]
   field_simp
   ring
-
-/-- Nonnegativity of mutual information, `I(X;Y) ≥ 0` (Cover–Thomas Cor. to Thm 2.6.3). -/
-theorem mutualInfo_nonneg (P : ProbDist (α × β)) : 0 ≤ mutualInfo P := by
-  have key := gibbs_sum Finset.univ P.pmf (fun ab => P.fst.pmf ab.1 * P.snd.pmf ab.2)
-    (fun ab _ => mul_nonneg (P.fst.nonneg _) (P.snd.nonneg _))
-    (fun ab _ hp => mul_pos (lt_of_lt_of_le hp (pmf_le_fst P ab.1 ab.2))
-      (lt_of_lt_of_le hp (pmf_le_snd P ab.1 ab.2)))
-    (by
-      rw [Fintype.sum_prod_type, ← Finset.sum_mul_sum, P.fst.sum_one, P.snd.sum_one,
-        P.sum_one, one_mul])
-  rw [← mutualInfo_mul_log_two] at key
-  exact nonneg_of_mul_nonneg_left key log_two_pos'
 
 /-- Subadditivity of entropy: `H(X,Y) ≤ H(X) + H(Y)` (Cover–Thomas Thm 2.6.6). -/
 theorem shannonEntropy_le_add (P : ProbDist (α × β)) :

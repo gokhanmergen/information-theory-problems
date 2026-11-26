@@ -1,9 +1,12 @@
 import InfoTheory.Core
+import InfoTheory.Known.Entropy
 import Mathlib.Analysis.SpecialFunctions.BinaryEntropy
 
 open scoped BigOperators
 
 namespace InfoTheory.Known
+
+open InfoTheory.Bridge (pmf_le_one shannonEntropy_nonneg mutualInfo_nonneg)
 
 open InfoTheory
 
@@ -26,12 +29,6 @@ private lemma negPLogP_mul_log_two {p : ℝ} (hp : 0 ≤ p) :
 private lemma negPLogP_zero' : negPLogP 0 = 0 := by simp [negPLogP]
 
 private lemma negPLogP_one' : negPLogP 1 = 0 := by simp [negPLogP, log2]
-
-private lemma negPLogP_nonneg' {p : ℝ} (h0 : 0 ≤ p) (h1 : p ≤ 1) : 0 ≤ negPLogP p := by
-  have h := negPLogP_mul_log_two h0
-  have : Real.log p ≤ 0 := Real.log_nonpos h0 h1
-  have : 0 ≤ negPLogP p * Real.log 2 := by rw [h]; nlinarith
-  exact nonneg_of_mul_nonneg_left this log_two_pos'
 
 /-- `-(ab) log(ab) = a·(-b log b) + b·(-a log a)` for `a, b ≥ 0`. -/
 private lemma negPLogP_mul {a b : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) :
@@ -59,14 +56,6 @@ private lemma negPLogP_sum_le {ι : Type*} (s : Finset ι) (a : ι → ℝ) (ha 
 
 /-! ## Entropy bounds (local copies; to be deduplicated with `Known/Entropy.lean`) -/
 
-private lemma pmf_le_one {α : Type*} [Fintype α] (P : ProbDist α) (a : α) : P.pmf a ≤ 1 := by
-  rw [← P.sum_one]
-  exact Finset.single_le_sum (fun b _ => P.nonneg b) (Finset.mem_univ a)
-
-private lemma shannonEntropy_nonneg' {α : Type*} [Fintype α] (P : ProbDist α) :
-    0 ≤ shannonEntropy P :=
-  Finset.sum_nonneg (fun a _ => negPLogP_nonneg' (P.nonneg a) (pmf_le_one P a))
-
 /-- `H(X) ≤ log₂ |α|` (Cover–Thomas Thm 2.6.4), via `log x ≤ x - 1`. -/
 private lemma shannonEntropy_le_log_card' {α : Type*} [Fintype α] (P : ProbDist α) :
     shannonEntropy P ≤ log2 (Fintype.card α) := by
@@ -93,97 +82,7 @@ private lemma shannonEntropy_le_log_card' {α : Type*} [Fintype α] (P : ProbDis
         Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
       field_simp; ring
 
-/-- Entropy of the uniform distribution is `log₂ |α|`. -/
-private lemma shannonEntropy_uniform' {α : Type*} [Fintype α] [Nonempty α] :
-    shannonEntropy (ProbDist.uniform : ProbDist α) = log2 (Fintype.card α) := by
-  have hN : (0 : ℝ) < Fintype.card α := by exact_mod_cast Fintype.card_pos
-  unfold shannonEntropy
-  simp only [ProbDist.uniform]
-  rw [Finset.sum_const, Finset.card_univ, nsmul_eq_mul, negPLogP_of_nonneg (by positivity)]
-  unfold log2
-  rw [one_div, Real.log_inv]
-  field_simp
-
 /-! ## Mutual information bounds for a joint distribution -/
-
-/-- `H(X) ≤ H(X,Y)`. -/
-private lemma shannonEntropy_fst_le {α β : Type*} [Fintype α] [Fintype β] (P : ProbDist (α × β)) :
-    shannonEntropy P.fst ≤ shannonEntropy P := by
-  unfold shannonEntropy
-  rw [Fintype.sum_prod_type]
-  exact Finset.sum_le_sum (fun a _ => negPLogP_sum_le _ _ (fun b => P.nonneg (a, b)))
-
-/-- `H(Y) ≤ H(X,Y)`. -/
-private lemma shannonEntropy_snd_le {α β : Type*} [Fintype α] [Fintype β] (P : ProbDist (α × β)) :
-    shannonEntropy P.snd ≤ shannonEntropy P := by
-  unfold shannonEntropy
-  rw [Fintype.sum_prod_type, Finset.sum_comm]
-  exact Finset.sum_le_sum (fun b _ => negPLogP_sum_le _ _ (fun a => P.nonneg (a, b)))
-
-/-- `I(X;Y) ≤ H(X)`. -/
-private lemma mutualInfo_le_fst {α β : Type*} [Fintype α] [Fintype β] (P : ProbDist (α × β)) :
-    mutualInfo P ≤ shannonEntropy P.fst := by
-  unfold mutualInfo; linarith [shannonEntropy_snd_le P]
-
-/-- `I(X;Y) ≤ H(Y)`. -/
-private lemma mutualInfo_le_snd {α β : Type*} [Fintype α] [Fintype β] (P : ProbDist (α × β)) :
-    mutualInfo P ≤ shannonEntropy P.snd := by
-  unfold mutualInfo; linarith [shannonEntropy_fst_le P]
-
-/-- `I(X;Y) ≥ 0` (Cover–Thomas Thm 2.6.3, Gibbs' inequality via `log x ≤ x - 1`). -/
-private lemma mutualInfo_nonneg' {α β : Type*} [Fintype α] [Fintype β] (P : ProbDist (α × β)) :
-    0 ≤ mutualInfo P := by
-  set u : α → ℝ := fun a => ∑ b, P.pmf (a, b) with hu
-  set v : β → ℝ := fun b => ∑ a, P.pmf (a, b) with hv
-  have hu0 : ∀ a, 0 ≤ u a := fun a => Finset.sum_nonneg (fun b _ => P.nonneg (a, b))
-  have hv0 : ∀ b, 0 ≤ v b := fun b => Finset.sum_nonneg (fun a _ => P.nonneg (a, b))
-  have hqu : ∀ a b, P.pmf (a, b) ≤ u a := fun a b =>
-    Finset.single_le_sum (f := fun b => P.pmf (a, b)) (fun b _ => P.nonneg (a, b)) (Finset.mem_univ b)
-  have hqv : ∀ a b, P.pmf (a, b) ≤ v b := fun a b =>
-    Finset.single_le_sum (f := fun a => P.pmf (a, b)) (fun a _ => P.nonneg (a, b)) (Finset.mem_univ a)
-  -- express everything as a double sum (times `log 2`)
-  have hX : shannonEntropy P.fst * Real.log 2 = ∑ a, ∑ b, -P.pmf (a, b) * Real.log (u a) := by
-    unfold shannonEntropy
-    rw [Finset.sum_mul]
-    refine Finset.sum_congr rfl (fun a _ => ?_)
-    change negPLogP (u a) * Real.log 2 = _
-    rw [negPLogP_mul_log_two (hu0 a), ← Finset.sum_mul, ← Finset.sum_neg_distrib]
-  have hY : shannonEntropy P.snd * Real.log 2 = ∑ a, ∑ b, -P.pmf (a, b) * Real.log (v b) := by
-    unfold shannonEntropy
-    rw [Finset.sum_mul, Finset.sum_comm]
-    refine Finset.sum_congr rfl (fun b _ => ?_)
-    change negPLogP (v b) * Real.log 2 = _
-    rw [negPLogP_mul_log_two (hv0 b), ← Finset.sum_mul, ← Finset.sum_neg_distrib]
-  have hXY : shannonEntropy P * Real.log 2 = ∑ a, ∑ b, -P.pmf (a, b) * Real.log (P.pmf (a, b)) := by
-    unfold shannonEntropy
-    rw [Finset.sum_mul, Fintype.sum_prod_type]
-    refine Finset.sum_congr rfl (fun a _ => Finset.sum_congr rfl (fun b _ => ?_))
-    exact negPLogP_mul_log_two (P.nonneg (a, b))
-  have key : ∀ a b, P.pmf (a, b) - u a * v b ≤
-      -P.pmf (a, b) * Real.log (u a) + -P.pmf (a, b) * Real.log (v b) -
-        -P.pmf (a, b) * Real.log (P.pmf (a, b)) := by
-    intro a b
-    rcases (P.nonneg (a, b)).eq_or_lt with h | h
-    · rw [← h]; simp; exact mul_nonneg (hu0 a) (hv0 b)
-    · have hua : 0 < u a := lt_of_lt_of_le h (hqu a b)
-      have hvb : 0 < v b := lt_of_lt_of_le h (hqv a b)
-      have h1 := Real.log_le_sub_one_of_pos (show 0 < u a * v b / P.pmf (a, b) by positivity)
-      rw [Real.log_div (by positivity) h.ne', Real.log_mul hua.ne' hvb.ne'] at h1
-      have h2 : P.pmf (a, b) * (u a * v b / P.pmf (a, b)) = u a * v b := by field_simp
-      nlinarith
-  have hsum : ∑ a, ∑ b, (P.pmf (a, b) - u a * v b) = 0 := by
-    simp only [Finset.sum_sub_distrib]
-    rw [← Fintype.sum_prod_type', P.sum_one, ← Finset.sum_mul_sum]
-    have h1 : ∑ a, u a = 1 := P.fst.sum_one
-    have h2 : ∑ b, v b = 1 := P.snd.sum_one
-    rw [h1, h2]; ring
-  have : 0 ≤ mutualInfo P * Real.log 2 := by
-    unfold mutualInfo
-    rw [sub_mul, add_mul, hX, hY, hXY, ← hsum, ← Finset.sum_add_distrib, ← Finset.sum_sub_distrib]
-    refine Finset.sum_le_sum (fun a _ => ?_)
-    rw [← Finset.sum_add_distrib, ← Finset.sum_sub_distrib]
-    exact Finset.sum_le_sum (fun b _ => key a b)
-  exact nonneg_of_mul_nonneg_left this log_two_pos'
 
 /-! ## DMC: chain rule and the capacity API -/
 
@@ -228,17 +127,17 @@ theorem mutualInfo_eq_entropy_output_sub (W : DMC α β) (P : ProbDist α) :
 
 /-- `I(X;Y) ≥ 0` across any DMC (Cover–Thomas Thm 2.6.3). -/
 theorem dmc_mutualInfo_nonneg (W : DMC α β) (P : ProbDist α) : 0 ≤ W.mutualInfo P :=
-  mutualInfo_nonneg' _
+  mutualInfo_nonneg _
 
 /-- `I(X;Y) ≤ H(X) ≤ log₂ |α|` (Cover–Thomas Thm 2.6.4, §7.1). -/
 theorem dmc_mutualInfo_le_log_card_input (W : DMC α β) (P : ProbDist α) :
     W.mutualInfo P ≤ log2 (Fintype.card α) :=
-  (mutualInfo_le_fst _).trans (shannonEntropy_le_log_card' _)
+  (mutualInfo_le_entropy_fst _).trans (shannonEntropy_le_log_card' _)
 
 /-- `I(X;Y) ≤ H(Y) ≤ log₂ |β|` (Cover–Thomas Thm 2.6.4, §7.1). -/
 theorem dmc_mutualInfo_le_log_card_output (W : DMC α β) (P : ProbDist α) :
     W.mutualInfo P ≤ log2 (Fintype.card β) :=
-  (mutualInfo_le_snd _).trans (shannonEntropy_le_log_card' _)
+  (mutualInfo_le_entropy_snd _).trans (shannonEntropy_le_log_card' _)
 
 /-- The set of achievable `I(X;Y)` values defining `DMC.capacity` is nonempty for a
 nonempty input alphabet. -/
@@ -298,20 +197,6 @@ theorem binaryEntropy_eq_binEntropy_div {p : ℝ} (h0 : 0 ≤ p) (h1 : p ≤ 1) 
     Real.binEntropy_eq_negMulLog_add_negMulLog_one_sub, Real.negMulLog, Real.negMulLog]
   unfold log2; ring
 
-/-- `h(p) ≥ 0` on `[0, 1]` (Cover–Thomas §2.1). -/
-private theorem binaryEntropy_nonneg {p : ℝ} (h0 : 0 ≤ p) (h1 : p ≤ 1) : 0 ≤ binaryEntropy p :=
-  add_nonneg (negPLogP_nonneg' h0 h1) (negPLogP_nonneg' (by linarith) (by linarith))
-
-/-- `h(p) ≤ 1` on `[0, 1]` (Cover–Thomas §2.1, Fig. 2.1). -/
-private theorem binaryEntropy_le_one {p : ℝ} (h0 : 0 ≤ p) (h1 : p ≤ 1) : binaryEntropy p ≤ 1 := by
-  rw [binaryEntropy_eq_binEntropy_div h0 h1, div_le_one log_two_pos']
-  exact Real.binEntropy_le_log_two
-
-/-- `h(1/2) = 1`. -/
-private theorem binaryEntropy_half : binaryEntropy (1 / 2) = 1 := by
-  rw [binaryEntropy_eq_binEntropy_div (by norm_num) (by norm_num), one_div,
-    Real.binEntropy_two_inv, div_self log_two_pos'.ne']
-
 /-- Entropy of a distribution on `Bool` is at most one bit. -/
 private lemma shannonEntropy_bool_le_one (P : ProbDist Bool) : shannonEntropy P ≤ 1 := by
   have := shannonEntropy_le_log_card' P
@@ -319,7 +204,7 @@ private lemma shannonEntropy_bool_le_one (P : ProbDist Bool) : shannonEntropy P 
 
 private lemma shannonEntropy_uniform_bool :
     shannonEntropy (ProbDist.uniform : ProbDist Bool) = 1 := by
-  rw [shannonEntropy_uniform']; simp [log2_two]
+  rw [shannonEntropy_uniform]; simp [log2_two]
 
 /-! ## Binary erasure channel (Cover–Thomas §7.1.5) -/
 
@@ -516,7 +401,6 @@ theorem deletionChannelMI_one {d : ℝ} (h1 : d ≤ 1) (P : ProbDist (Fin 1 → 
     P.sum_one]
   unfold shannonEntropy; ring
 
-
 /-- **Single-letter deletion capacity**: `C₁(d) = max_P I(X;Y) = 1 - d`, as for the erasure
 channel (Cover–Thomas §7.1.5). Holds for `d ≤ 1`, in particular on `[0, 1]`. -/
 theorem binaryDeletionMaxMI_one {d : ℝ} (h1 : d ≤ 1) : binaryDeletionMaxMI d 1 = 1 - d := by
@@ -535,7 +419,7 @@ theorem binaryDeletionMaxMI_one {d : ℝ} (h1 : d ≤ 1) : binaryDeletionMaxMI d
       rw [hcard] at this
       nlinarith
     refine le_csSup_of_le hb ⟨ProbDist.uniform, rfl⟩ ?_
-    rw [deletionChannelMI_one h1, shannonEntropy_uniform', hcard, mul_one]
+    rw [deletionChannelMI_one h1, shannonEntropy_uniform, hcard, mul_one]
 
 /-- **Upper bound** `C(d) ≤ 1 - d` for the binary deletion channel (the erasure-channel
 bound; Dobrushin 1967, Mitzenmacher 2009 survey §2), for `d ≤ 1`. -/
@@ -543,7 +427,6 @@ theorem binaryDeletionCapacity_le_one_sub {d : ℝ} (h1 : d ≤ 1) :
     binaryDeletionCapacity d ≤ 1 - d := by
   have := binaryDeletionCapacity_le_maxMI_div d (n := 1) one_pos
   rwa [binaryDeletionMaxMI_one h1, Nat.cast_one, div_one] at this
-
 
 private lemma sum_out (n : ℕ) (f : (Σ k : Fin (n + 1), Fin k.1 → Bool) → ℝ) :
     ∑ y, f y = ∑ i : Fin n, ∑ v : Fin i → Bool, f ⟨i.castSucc, v⟩ +
@@ -571,7 +454,6 @@ theorem deletionChannelMI_zero (n : ℕ) (P : ProbDist (Fin n → Bool)) :
   simp only [List.ofFn_inj, mul_ite, mul_one, mul_zero, Finset.sum_ite_eq']
   simp [shannonEntropy]
 
-
 private lemma log2_card_fin_bool (n : ℕ) : log2 (Fintype.card (Fin n → Bool)) = n := by
   simp only [Fintype.card_fun, Fintype.card_bool, Fintype.card_fin, Nat.cast_pow, Nat.cast_ofNat]
   unfold log2
@@ -586,7 +468,7 @@ theorem binaryDeletionMaxMI_zero (n : ℕ) : binaryDeletionMaxMI 0 n = n := by
   apply le_antisymm
   · exact csSup_le ⟨_, ProbDist.uniform, rfl⟩ (fun _ ⟨P, hP⟩ => hP ▸ hle P)
   · refine le_csSup_of_le ⟨n, fun _ ⟨P, hP⟩ => hP ▸ hle P⟩ ⟨ProbDist.uniform, rfl⟩ ?_
-    rw [shannonEntropy_uniform', log2_card_fin_bool]
+    rw [shannonEntropy_uniform, log2_card_fin_bool]
 
 /-- **Noiseless deletion channel**: `C(0) = 1` bit per channel use. -/
 theorem binaryDeletionCapacity_zero : binaryDeletionCapacity 0 = 1 := by
@@ -600,7 +482,6 @@ theorem binaryDeletionCapacity_zero : binaryDeletionCapacity 0 = 1 := by
     · rintro rfl
       exact ⟨1, one_pos, by simp⟩
   rw [hset, csInf_singleton]
-
 
 /-- Crude count bound: `y` occurs at most `2^|x|` times as a subsequence of `x`. -/
 private lemma subseqCount_le_two_pow {α : Type*} [DecidableEq α] :
@@ -727,7 +608,7 @@ theorem noiselessChannel_capacity [Nonempty α] :
     (noiselessChannel α).capacity = log2 (Fintype.card α) := by
   refine capacity_eq_of_le_of_eq _ (fun P => ?_) ProbDist.uniform ?_
   · rw [noiselessChannel_mutualInfo]; exact shannonEntropy_le_log_card' P
-  · rw [noiselessChannel_mutualInfo, shannonEntropy_uniform']
+  · rw [noiselessChannel_mutualInfo, shannonEntropy_uniform]
 
 /-- `C(noiseless on Fin k) = log₂ k`. -/
 theorem noiselessChannel_fin_capacity (k : ℕ) [NeZero k] :
