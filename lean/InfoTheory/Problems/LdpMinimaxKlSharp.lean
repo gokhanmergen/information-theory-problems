@@ -16,11 +16,12 @@ def IsSubsetSelection (k m s : ℕ) (ε : ℝ) (Q : DMC (Fin k) (Fin m)) : Prop 
       Q.trans x y = if x ∈ S y then c * Real.exp ε else c)
 
 /-- Minimax KL risk of `ε`-LDP discrete distribution estimation restricted to Subset
-    Selection channels. -/
+    Selection channels (over full-support output estimators, matching `ldpMinimaxKLRisk`). -/
 noncomputable def subsetSelectionMinimaxKLRisk (k n : ℕ) (ε : ℝ) : ℝ :=
   sInf { R : ℝ | ∃ (m s : ℕ) (Q : DMC (Fin k) (Fin m))
     (est : (Fin n → Fin m) → ProbDist (Fin k)),
     IsSubsetSelection k m s ε Q ∧
+    (∀ (y : Fin n → Fin m) (a : Fin k), 0 < (est y).pmf a) ∧
     ∀ (P : ProbDist (Fin k)),
       let Py := (Q.joint P).snd
       (∑ y : Fin n → Fin m, (∏ i : Fin n, Py.pmf (y i)) * klDivergence P (est y)) ≤ R }

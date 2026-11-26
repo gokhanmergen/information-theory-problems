@@ -20,10 +20,9 @@ noncomputable def dhtOptimalExponent {X Y : Type*} [Fintype X] [Fintype Y]
             if acc (enc (fun i => (xy i).1)) (fun i => (xy i).2) = true then 1 else 0
         type1 ≤ ε ∧ type2 ≤ (2 : ℝ) ^ (-(n : ℝ) * (E - ε)) }
 
-/-- Shimokawa–Han–Amari (1994) single-letter achievable type-II error exponent `E_SHA(R, P, Q)`
-    via quantization `U - X - Y` and Wyner–Ziv binning (properly handling both `I(U; X) ≤ R`
-    where no binning error `term2` occurs and `I(U; X | Y) ≤ R < I(U; X)`). -/
-noncomputable def shaInnerBound {X Y : Type*} [Fintype X] [Fintype Y]
+/-- Single-point (without time-sharing) Shimokawa–Han–Amari (1994) achievable type-II
+    error exponent `E_SHA^0(R, P, Q)` via quantization `U - X - Y` and Wyner–Ziv binning. -/
+noncomputable def shaInnerBoundRaw {X Y : Type*} [Fintype X] [Fintype Y]
     (P Q : ProbDist (X × Y)) (R : ℝ) : ℝ :=
   sSup { r : ℝ | ∃ (kU : ℕ) (Puxy Quxy : ProbDist (Fin kU × X × Y)),
     Puxy.map (fun t => (t.2.1, t.2.2)) = P ∧
@@ -45,6 +44,15 @@ noncomputable def shaInnerBound {X Y : Type*} [Fintype X] [Fintype Y]
         condEntropy (Pt.map (fun t => (t.1, t.2.2))) ∧
       AbsCont Pt Quxy ∧ d = klDivergence Pt Quxy + R - rateUsed }
     r = if fullRate ≤ R then term1 else min term1 term2 }
+
+/-- Concavified (time-shared) Shimokawa–Han–Amari (1994) achievable type-II error exponent
+    `E_SHA(R, P, Q)`. -/
+noncomputable def shaInnerBound {X Y : Type*} [Fintype X] [Fintype Y]
+    (P Q : ProbDist (X × Y)) (R : ℝ) : ℝ :=
+  sSup { E : ℝ | ∃ (m : ℕ) (w Rs : Fin m → ℝ),
+    (∀ i, 0 ≤ w i) ∧ (∑ i : Fin m, w i = 1) ∧
+    (∀ i, 0 ≤ Rs i) ∧ (∑ i : Fin m, w i * Rs i ≤ R) ∧
+    E = ∑ i : Fin m, w i * shaInnerBoundRaw P Q (Rs i) }
 
 /-- Optimal Type-II Error Exponent for Binary Distributed Hypothesis Testing
     (Ahlswede–Csiszár 1986; Shimokawa–Han–Amari 1994; Watanabe 2022; Kochman–Wang 2023):

@@ -1,11 +1,11 @@
 ---
 id: sperner-capacity-directed-graphs
-title: Sperner Capacity of Directed Odd Cycles and Orientation Separation on C₇
+title: Sperner Capacity of Random Tournaments and Directed Graphs
 status: open
 category: zero-error
-posed_by: Luisa Gargano, János Körner, Ugo Vaccaro
-posed_year: 1992
-tags: [zero-error, sperner-capacity, directed-graphs, extremal-combinatorics]
+posed_by: Noga Alon; Luisa Gargano, János Körner, Ugo Vaccaro
+posed_year: 1998
+tags: [zero-error, sperner-capacity, directed-graphs, tournaments, extremal-combinatorics]
 lean_module: InfoTheory.Problems.SpernerCapacityDirectedGraphs
 lean_file: lean/InfoTheory/Problems/SpernerCapacityDirectedGraphs.lean
 ---
@@ -17,54 +17,49 @@ independent (Sperner) code** if for every ordered pair of distinct codewords $x,
 there exists a coordinate $i \in \{1, \dots, k\}$ such that $(x_i, y_i) \in E$. The
 **Sperner capacity** of $D$ (Gargano–Körner–Vaccaro 1992) is
 $$\Sigma(D) = \sup_{k \ge 1} \frac{1}{k} \log_2 \max \{ |C| : C \subseteq V^k \text{ is a } D\text{-Sperner code} \} .$$
-When $D$ is an orientation of an undirected graph $G$, every $D$-Sperner code in $V^k$ is an
-independent set in $\bar{G}^{\boxtimes k}$, so always
-$$\Sigma(D) \le \log_2 \Theta(\bar{G}) .$$
 
-For the cyclically oriented $m$-cycle $\vec{C}_m$ on $\mathbb{Z}/m\mathbb{Z}$ (with edges
-$x \to x + 1 \pmod m$), Alon's out-degree bound (1998) gives $\Sigma(\vec{C}_m) \le \log_2(\Delta^+(\vec{C}_m) + 1) = 1$ bit for all $m \ge 3$, with equality $\Sigma(\vec{C}_3) = 1$ (Calderbank et al. 1993; Blokhuis 1993). **Determine $\Sigma(\vec{C}_5)$** (and $\Sigma(\vec{C}_{2r+1})$ for $r \ge 2$) — and in particular, whether $\Sigma(\vec{C}_5) < 1$.
+Let $T_n$ be a uniformly random tournament on $n$ vertices (each unordered pair $\{u, v\}$ oriented
+independently with probability $1/2$). **Alon's Random Tournament Conjecture (1998):** Does there
+exist an absolute constant $c > 0$ such that
+$$\Pr\!\left[2^{\Sigma(T_n)} \le c \log_2 n\right] \longrightarrow 1 \qquad \text{as } n \to \infty ?$$
 
 ## Background
 
 Gargano, Körner, and Vaccaro (1992, 1993) introduced Sperner capacity as the directed-graph
-generalization of Shannon's zero-error capacity, motivated by extremal set theory (qualitative
-independence, Sperner families of partitions) and compound/asymmetric zero-error channels.
-They asked whether the Sperner capacity of an oriented graph genuinely depends on its
-orientation.
+generalization of Shannon's zero-error capacity, motivated by extremal set theory and compound
+zero-error channels. For any tournament $T$, the size $t(T)$ of its largest transitive
+subtournament always satisfies $t(T) \le 2^{\Sigma(T)}$.
 
-Calderbank, Frankl, Graham, Li, and Shepp (1993) and Blokhuis (1993) settled this for the
-cyclic triangle $\vec{C}_3$: whereas the undirected triangle $K_3$ has symmetric capacity
-$\log_2 \Theta(\overline{K_3}) = \log_2 3 \approx 1.5850$, the cyclic orientation $\vec{C}_3$
-has strictly smaller Sperner capacity $\Sigma(\vec{C}_3) = \log_2 2 = 1$ (and linear codes do
-not suffice to attain it). Alon (1998) proved the general out-degree upper bound
-$\Sigma(D) \le \log_2(\Delta^+(D) + 1)$, which gives $\Sigma(\vec{C}_m) \le 1$ for every
-directed cycle (and combines with Bohman–Holzman 2003, $\Theta(\overline{C_7}) > 2$, to
-immediately yield $\Sigma(\vec{C}_7) < \log_2 \Theta(\overline{C_7})$). Determining the exact
-value of $\Sigma(\vec{C}_5)$ — and whether it is strictly smaller than $1$ — remains open.
+Körner and Simonyi conjectured that $2^{\Sigma(T)} = t(T)$ for every tournament $T$. In 1998,
+Noga Alon famously disproved this conjecture by constructing tournaments on $2n$ vertices with
+$2^{\Sigma(T)} \ge n$ despite having $t(T) = O(\log n)$, and proved the general out-degree upper
+bound $2^{\Sigma(D)} \le \Delta^+(D) + 1$ (which together with Sperner's theorem immediately gives
+$\Sigma(\vec{C}_m) = 1$ for every directed cycle $\vec{C}_m$, $m \ge 2$). Alon simultaneously asked
+for the typical Sperner capacity of a uniformly random tournament $T_n$: since $t(T_n) = \Theta(\log n)$
+with high probability (Erdős–Moser 1964), does $2^{\Sigma(T_n)} = O(\log n)$ still hold for almost
+all tournaments?
 
 ## What is known
 
-- **Cyclic triangle ($\vec{C}_3$):** $\Sigma(\vec{C}_3) = \log_2 2 = 1 < \log_2 3 = \log_2 \Theta(\overline{K_3})$
-  (Calderbank–Frankl–Graham–Li–Shepp 1993; Blokhuis 1993), establishing strict orientation
-  dependence and demonstrating that nonlinear codes strictly beat linear codes.
-- **Alon's out-degree bound (1998):** For every directed graph $D$ of maximum out-degree $\Delta^+$,
-  $\Sigma(D) \le \log_2(\Delta^+ + 1)$; in particular $\Sigma(\vec{C}_m) \le 1$ for all $m \ge 3$.
-- **Separation from undirected complement on $C_7$:** Since $\Sigma(\vec{C}_7) \le 1$ (Alon 1998)
-  and $\Theta(\overline{C_7}) > 2$ (Bohman–Holzman 2003), $\Sigma(\vec{C}_7) < \log_2 \Theta(\overline{C_7})$
-  is already known.
-- **Directed odd cycles $\vec{C}_5, \vec{C}_7, \dots$:** Computing the exact value of
-  $\Sigma(\vec{C}_5)$ (and deciding whether $\Sigma(\vec{C}_5) < 1$) remains open.
+- **Cyclic triangle & directed cycles:** $\Sigma(\vec{C}_3) = 1$ (Calderbank–Frankl–Graham–Li–Shepp
+  1993; Blokhuis 1993), and more generally $\Sigma(\vec{C}_m) = 1$ for every $m \ge 2$ (upper bound
+  via Alon 1998, $\Delta^+ + 1 = 2$; lower bound via Sperner's theorem on a single edge).
+- **Small tournaments & digraphs:** Every tournament on at most $6$ vertices satisfies
+  $2^{\Sigma(T)} = t(T)$, while separation begins at $7$ vertices; Kiviluoto–Östergård–Vaskelainen
+  (2009) determined $\Sigma(D)$ for all but $8$ of the $9{,}846$ digraphs on $\le 5$ vertices.
+- **Extremal tournaments (Alon 1998):** There exist tournaments on $2n$ vertices with
+  $2^{\Sigma(T)} \ge n$ and $t(T) = O(\log n)$, showing $2^{\Sigma(T)} / t(T)$ can be as large as
+  $\Omega(n / \log n)$ (and $\Omega(\sqrt{n}/\log n)$ for Paley tournaments).
+- **Random tournaments:** For $T_n \sim \mathrm{Unif}(\text{tournaments on } [n])$,
+  $t(T_n) = (2 - o(1)) \log_2 n$ w.h.p. gives $2^{\Sigma(T_n)} = \Omega(\log n)$, while Alon's
+  out-degree bound gives $2^{\Sigma(T_n)} \le (1/2 + o(1)) n$. Whether $2^{\Sigma(T_n)} = O(\log n)$
+  w.h.p. remains open.
 
 ## References
 
-- L. Gargano, J. Körner, and U. Vaccaro, "Sperner capacities,"
-  Graphs and Combinatorics, 1993.
-- L. Gargano, J. Körner, and U. Vaccaro, "Capacities: from information theory to extremal set
-  theory," J. Combin. Theory Ser. A, 1994.
-- A. R. Calderbank, P. Frankl, R. L. Graham, W.-C. W. Li, and L. A. Shepp, "The Sperner
-  capacity of linear and nonlinear codes for the cyclic triangle,"
-  J. Algebraic Combin., 1993.
-- A. Blokhuis, "On the Sperner capacity of the cyclic triangle,"
-  J. Algebraic Combin., 1993.
-- L. Kiviluoto, P. R. J. Östergård, and V. P. Vaskelainen, "Sperner capacity of small
-  digraphs," Adv. Math. Commun., 2010.
+- N. Alon, "On the capacity of digraphs," *European Journal of Combinatorics* 19(1), 1–5, 1998.
+- L. Gargano, J. Körner, and U. Vaccaro, "Sperner capacities," *Graphs and Combinatorics*, 1993.
+- A. R. Calderbank, P. Frankl, R. L. Graham, W.-C. W. Li, and L. A. Shepp, "The Sperner capacity
+  of linear and nonlinear codes for the cyclic triangle," *J. Algebraic Combin.*, 1993.
+- L. Kiviluoto, P. R. J. Östergård, and V. P. Vaskelainen, "Sperner capacity of small digraphs,"
+  *Adv. Math. Commun.*, 2009.

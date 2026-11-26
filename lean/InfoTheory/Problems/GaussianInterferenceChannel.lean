@@ -27,11 +27,14 @@ def InGaussianHKBasic (a b P₁ P₂ R₁ R₂ : ℝ) : Prop :=
     R₁ + 2 * R₂ ≤ cap ((P₂c + P₂p + b ^ 2 * P₁c) / N₂) + cap (P₂p / N₂) +
                   cap ((P₁p + a ^ 2 * P₂c) / N₁)
 
-/-- Convex hull (time-sharing) of Gaussian Han–Kobayashi achievable rate pairs. -/
+/-- Convex hull (time-sharing with power control) of Gaussian Han–Kobayashi achievable rate pairs. -/
 def InGaussianHKRegion (a b P₁ P₂ R₁ R₂ : ℝ) : Prop :=
-  ∃ (m : ℕ) (w : Fin m → ℝ) (r₁ r₂ : Fin m → ℝ),
+  ∃ (m : ℕ) (w : Fin m → ℝ) (p₁ p₂ r₁ r₂ : Fin m → ℝ),
     (∀ i, 0 ≤ w i) ∧ (∑ i : Fin m, w i = 1) ∧
-    (∀ i, InGaussianHKBasic a b P₁ P₂ (r₁ i) (r₂ i)) ∧
+    (∀ i, 0 ≤ p₁ i ∧ 0 ≤ p₂ i) ∧
+    (∑ i : Fin m, w i * p₁ i ≤ P₁) ∧
+    (∑ i : Fin m, w i * p₂ i ≤ P₂) ∧
+    (∀ i, InGaussianHKBasic a b (p₁ i) (p₂ i) (r₁ i) (r₂ i)) ∧
     R₁ = ∑ i : Fin m, w i * r₁ i ∧
     R₂ = ∑ i : Fin m, w i * r₂ i
 

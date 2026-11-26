@@ -106,17 +106,16 @@ noncomputable def sdpiChiSq {α β : Type*} [Fintype α] [Fintype β] (W : DMC �
     (∀ a, 0 < Q.pmf a) ∧ chiSqDivergence P Q > 0 ∧
     r = chiSqDivergence (W.joint P).snd (W.joint Q).snd / chiSqDivergence P Q }
 
-/-- Hypercontractivity ribbon `R(P_XY)` of a bipartite source `(X, Y)`:
-    pairs `(p, q)` with `1 ≤ q ≤ p` such that `E[f(X)g(Y)] ≤ ‖f‖_p ‖g‖_{q'}` holds
-    (equivalently, `I(U; Y) ≤ (1/p) I(U; X)` / reverse-hypercontractivity form). -/
+/-- Hypercontractivity ribbon `R(P_XY)` of a bipartite source `(X, Y)` via Nair's (2014) exact
+    KL characterization: pairs `(p, q)` with `1 < p ≤ q` such that for every joint distribution
+    `Q ≪ P`, `(1 / p) D(Q_X ‖ P_X) + (1 - 1 / q) D(Q_Y ‖ P_Y) ≤ D(Q ‖ P)`. -/
 def inHypercontractivityRibbon {X Y : Type*} [Fintype X] [Fintype Y]
     (P : ProbDist (X × Y)) (p q : ℝ) : Prop :=
-  1 ≤ p ∧ 1 ≤ q ∧
-  ∀ (kU : ℕ) (Q : ProbDist (Fin kU × X × Y)),
-    Q.map (fun t => (t.2.1, t.2.2)) = P →
-    condMutualInfo (Q.map (fun t => (t.1, t.2.2, t.2.1))) = 0 →
-    (1 / q) * mutualInfo (Q.map (fun t => (t.1, t.2.2))) ≤
-      (1 / p) * mutualInfo (Q.map (fun t => (t.1, t.2.1)))
+  1 < p ∧ p ≤ q ∧
+  ∀ (Q : ProbDist (X × Y)),
+    AbsCont Q P →
+    (1 / p) * klDivergence Q.fst P.fst + (1 - 1 / q) * klDivergence Q.snd P.snd ≤
+      klDivergence Q P
 
 /-- A monotone secret sharing access structure on `n` participants. -/
 structure AccessStructure (n : ℕ) where

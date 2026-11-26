@@ -144,13 +144,14 @@ noncomputable def linearIndexCodingRate {n : ℕ} (inst : IndexCodingInstance n)
       r = (m : ℝ) / (t : ℝ) }
 
 /-- An undirected multiple-unicast network instance: undirected graph `G` with integer edge
-    capacities and `k` source-sink pairs `(s_i, t_i)`. -/
+    capacities and `k` distinct source-sink pairs `(s_i, t_i)` with `s_i ≠ t_i`. -/
 structure UndirectedMultipleUnicast (V : Type*) [Fintype V] where
   cap : V → V → ℕ
   symm : ∀ u v, cap u v = cap v u
   numPairs : ℕ
   src : Fin numPairs → V
   dst : Fin numPairs → V
+  src_ne_dst : ∀ i, src i ≠ dst i
 
 /-- Multicommodity fractional routing throughput (sum of simultaneously routable unit flows
     with demand `λ` for each `(s_i, t_i)` pair) in an undirected network. -/

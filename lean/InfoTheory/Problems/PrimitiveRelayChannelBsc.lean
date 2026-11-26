@@ -74,18 +74,24 @@ noncomputable def primitiveBscCFRate (p₁ p₂ : ℝ) (h10 : 0 ≤ p₁) (h11 :
               condMutualInfo (J.map (fun t => (t.2.2, t.2.1.2, (t.1, t.2.1.1))))
     r = min b1 b2 }
 
-/-- Capacity of the Primitive Relay Channel with BSC Components (Cover 1987; Kim 2007):
-    Is the capacity of every primitive BSC relay channel `(p₁, p₂, R₀)` achieved by the
-    maximum of partial decode-and-forward and compress-and-forward? -/
+/-- Concavified (time-shared) compress-and-forward achievable rate over relay link rate `R₀`. -/
+noncomputable def primitiveBscCFRateConcave (p₁ p₂ : ℝ) (h10 : 0 ≤ p₁) (h11 : p₁ ≤ 1)
+    (h20 : 0 ≤ p₂) (h21 : p₂ ≤ 1) (R₀ : ℝ) : ℝ :=
+  sSup { r : ℝ | ∃ (m : ℕ) (w Rs : Fin m → ℝ),
+    (∀ i, 0 ≤ w i) ∧ (∑ i : Fin m, w i = 1) ∧
+    (∀ i, 0 ≤ Rs i) ∧ (∑ i : Fin m, w i * Rs i ≤ R₀) ∧
+    r = ∑ i : Fin m, w i * primitiveBscCFRate p₁ p₂ h10 h11 h20 h21 (Rs i) }
+
+/-- Capacity of the Symmetric Primitive Relay Channel with BSC Components (Cover 1987; Kim 2007;
+    Wu–Barnes–Özgür 2019):
+    For the symmetric primitive BSC relay channel (`p₁ = p₂ = p ∈ (0, 1/2)` and noiseless relay
+    bit-pipe rate `R₀ ≥ 0`), does time-shared compress-and-forward achieve the exact capacity? -/
 def Statement : Prop :=
-  ∀ (p₁ p₂ R₀ : ℝ) (h10 : 0 < p₁) (h11 : p₁ < 1 / 2)
-    (h20 : 0 < p₂) (h21 : p₂ < 1 / 2), 0 ≤ R₀ →
-    primitiveBscRelayCapacity p₁ p₂ (le_of_lt h10) (by linarith)
-      (le_of_lt h20) (by linarith) R₀ =
-    max (primitiveBscPDFRate p₁ p₂ (le_of_lt h10) (by linarith)
-          (le_of_lt h20) (by linarith) R₀)
-        (primitiveBscCFRate p₁ p₂ (le_of_lt h10) (by linarith)
-          (le_of_lt h20) (by linarith) R₀)
+  ∀ (p R₀ : ℝ) (h0 : 0 < p) (h1 : p < 1 / 2), 0 ≤ R₀ →
+    primitiveBscRelayCapacity p p (le_of_lt h0) (by linarith)
+      (le_of_lt h0) (by linarith) R₀ =
+    primitiveBscCFRateConcave p p (le_of_lt h0) (by linarith)
+      (le_of_lt h0) (by linarith) R₀
 
 def problem : OpenProblem where
   id := "primitive-relay-channel-bsc"

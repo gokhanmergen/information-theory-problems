@@ -83,10 +83,12 @@ def encodeQuery {V K : ℕ} (net : MultiSourceDAG V K) (p q prec : ℕ) : List B
 
 /-- Open problem: Is the asymptotic multi-source network coding capacity `C_asymp(N)`
     algorithmically computable (approximable to within arbitrary rational tolerance `1 / prec`
-    by a halting Turing machine)? -/
+    by a halting Turing machine) over all finite-capacity multi-source DAG networks (having
+    at least one non-local sink demand `net.dem v i = true ∧ net.src i ≠ v`)? -/
 def Statement : Prop :=
   ∃ M : TuringMachine,
     ∀ (V K : ℕ) (net : MultiSourceDAG V K) (p q prec : ℕ),
+      (∃ (v : Fin V) (i : Fin K), net.dem v i = true ∧ net.src i ≠ v) →
       0 < q → 0 < prec →
       let inp := encodeQuery net p q prec
       (∃ b : Bool, tmOutputs M inp b) ∧

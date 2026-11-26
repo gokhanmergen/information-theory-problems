@@ -63,6 +63,7 @@ def rtdInnerBound {X₁ X₂ Y₁ Y₂ : Type*}
         ((z.2.1.2.2.2.2.1, z.2.1.2.1), z.2.1.2.2.1, (z.2.1.1, z.1))))
       rp₂c ≥ bin2c ∧
       rp₂p ≥ bin2p ∧
+      rp₁p + rp₂c ≥ pen1 ∧
       rp₁p + rp₂p ≥ bin2p + bin12p ∧
       rp₁p + rp₂c + rp₂p ≥ bin2cp + bin12cp ∧
       r₁p + rp₁p ≤ condMutualInfo (J.map (fun z =>

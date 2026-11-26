@@ -18,10 +18,13 @@ structure ServiceDensity where
   mean_pos : 0 < mean
   mean_eq : ∫ x : ℝ, x * pdf x = mean
 
-/-- Predicate stating that `S` is exponentially distributed (a.e.) with rate `μ = 1 / S.mean`. -/
-def IsExponential (S : ServiceDensity) : Prop :=
-  let μ : ℝ := 1 / S.mean
-  ∀ᵐ x : ℝ ∂volume, 0 < x → S.pdf x = μ * Real.exp (-μ * x)
+/-- Predicate stating that `S` is a (possibly shifted) exponential distribution `c + Exp(μ)`
+    with `c ≥ 0`, `μ > 0` (the exact class where departure feedback yields zero capacity gain
+    because constant delay `c` cancels in FIFO Lindley recursions). -/
+def IsShiftedExponential (S : ServiceDensity) : Prop :=
+  ∃ (c μ : ℝ), 0 ≤ c ∧ 0 < μ ∧
+    (∀ᵐ x : ℝ ∂volume, x < c → S.pdf x = 0) ∧
+    (∀ᵐ x : ℝ ∂volume, c < x → S.pdf x = μ * Real.exp (-μ * (x - c)))
 
 /-- Lindley recursion computing the `n` FIFO departure times `D_1, ..., D_n` from arrival
     epochs `a : Fin n → ℝ` and service times `s : Fin n → ℝ`. -/
@@ -65,7 +68,7 @@ noncomputable def queueFeedbackCapacity (S : ServiceDensity) (lam : ℝ) : ℝ :
     timing-channel capacity. (Proved for bounded-support service times by Sahasranand–Tchamkerten
     2024; open for general unbounded-support non-exponential service times.) -/
 def Statement : Prop :=
-  ∀ (S : ServiceDensity), ¬ IsExponential S →
+  ∀ (S : ServiceDensity), ¬ IsShiftedExponential S →
     ∀ (lam : ℝ), 0 < lam → lam < 1 / S.mean →
       queueNoFeedbackCapacity S lam < queueFeedbackCapacity S lam
 

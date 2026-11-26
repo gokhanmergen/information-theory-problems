@@ -34,17 +34,15 @@ noncomputable def minimaxLossyRedundancy (m : ℕ) (d : Distortion (Fin m) (Fin 
 
 /-- Minimax Redundancy Benchmark for Universal `d`-Semifaithful Lossy Source Coding
     (Yu–Speed 1993; Zhang–Yang–Wei 1997; Yang–Zhang 1999):
-    for lossless universal coding on an `m`-ary i.i.d. source, the exact minimax redundancy
-    coefficient is `(m - 1) / 2 · (log₂ n / n)` (Shtarkov/Rissanen). For `d`-semifaithful
-    lossy coding under Hamming distortion `0 < D < 1 - 1/m`, Yu–Speed (1993) and
-    Zhang–Yang–Wei (1997) proved `R_n^{univ} = Θ((log₂ n) / n)` while the exact optimal
-    coefficient remains open. Does the lossless Shtarkov–Rissanen coefficient `(m - 1) / 2`
-    suffice asymptotically? -/
+    for `d`-semifaithful lossy coding on an `m`-ary i.i.d. source under Hamming distortion
+    `0 < D < 1 - 1/m`, the conjectured optimal minimax redundancy coefficient is `m / 2`
+    (combining the `(m - 1) / 2` universal estimation penalty with the `1 / 2` known-source
+    `d`-semifaithful covering penalty). Does `m / 2 · (log₂ n / n)` suffice asymptotically? -/
 def Statement : Prop :=
   ∀ (m : ℕ), 2 ≤ m → ∀ (D : ℝ), 0 < D → D < 1 - 1 / (m : ℝ) →
     ∀ (ε : ℝ), 0 < ε → ∃ N : ℕ, 2 ≤ N ∧ ∀ n : ℕ, N ≤ n →
       ((n : ℝ) / log2 (n : ℝ)) * minimaxLossyRedundancy m (hammingDist m) D n ≤
-        ((m : ℝ) - 1) / 2 + ε
+        (m : ℝ) / 2 + ε
 
 def problem : OpenProblem where
   id := "universal-lossy-redundancy"

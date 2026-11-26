@@ -50,18 +50,19 @@ def IsInteriorDistortion {X Y Xhat : Type*} [Fintype X] [Fintype Y] [Fintype Xha
     condMutualInfo (Q.map (fun t => (t.2.2, t.2.1, t.1))) = 0 ∧
     (∑ t : X × Y × Fin kU, Q.pmf t * d.dist t.1 (g (t.2.2, t.2.1))) < D
 
-/-- Single-Dispersion Conjecture for Wyner–Ziv Lossy Source Coding
+/-- Second-Order Dispersion Conjecture for Wyner–Ziv Lossy Source Coding
     (Kostina–Verdú 2012; Watanabe–Kuzuoka–Tan 2015):
-    for every finite-alphabet source `(P, d)` and interior distortion level `D`, does
-    there exist a single dispersion constant `V ≥ 0` such that for every excess-distortion
+    for every finite-alphabet source `(P, d)` and interior distortion level `D`, do there
+    exist dispersion constants `0 ≤ V_min ≤ V_max` such that for every excess-distortion
     probability `ε ∈ (0, 1)`,
-    `√n · (R_WZ(n, D, ε) - R_WZ(D)) → √V · Φ⁻¹(1 - ε)`? -/
+    `√n · (R_WZ(n, D, ε) - R_WZ(D)) → √(V_min if ε < 1/2 else V_max) · Φ⁻¹(1 - ε)`? -/
 def Statement : Prop :=
   ∀ (kX kY kXh : ℕ), 0 < kX → 0 < kY → 0 < kXh →
     ∀ (P : ProbDist (Fin kX × Fin kY)) (d : Distortion (Fin kX) (Fin kXh)) (D : ℝ),
       IsInteriorDistortion P d D →
-      ∃ (V : ℝ), 0 ≤ V ∧
+      ∃ (Vmin Vmax : ℝ), 0 ≤ Vmin ∧ Vmin ≤ Vmax ∧
         ∀ (ε : ℝ), 0 < ε → ε < 1 →
+          let V : ℝ := if ε < (1 : ℝ) / 2 then Vmin else Vmax
           let target : ℝ := Real.sqrt V * stdNormalQuantile (1 - ε)
           ∀ (δ : ℝ), 0 < δ → ∃ N : ℕ, 0 < N ∧ ∀ n : ℕ, N ≤ n →
             |Real.sqrt (n : ℝ) * (wynerZivFiniteRate P d n D ε - wynerZivRate P d D) -

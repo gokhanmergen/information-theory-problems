@@ -4,39 +4,41 @@ open scoped BigOperators
 
 namespace InfoTheory.Problems.ExplicitListDecodableBinary
 
-/-- A uniform deterministic single-tape Turing machine over `{false, true}` with halt state `0`. -/
+/-- A uniform deterministic single-tape Turing machine over `{blank, false, true}`
+    (`Option Bool`, where `none` is the blank delimiter) with halt state `0`. -/
 structure UniformTM where
   numStates : ℕ
   hpos : 1 < numStates
-  trans : Fin numStates → Bool → Fin numStates × Bool × Bool
+  trans : Fin numStates → Option Bool → Fin numStates × Option Bool × Bool
 
 /-- Execution configuration `(state, head, tape)` of a Turing machine. -/
 structure TMState (M : UniformTM) where
   state : Fin M.numStates
   head : ℤ
-  tape : ℤ → Bool
+  tape : ℤ → Option Bool
 
 /-- Single transition step of `M` (fixed point at halt state `0`). -/
 def tmStep (M : UniformTM) (cfg : TMState M) : TMState M :=
   if cfg.state.1 = 0 then cfg
   else
     let res := M.trans cfg.state (cfg.tape cfg.head)
-    let newTape : ℤ → Bool := fun p => if p = cfg.head then res.2.1 else cfg.tape p
+    let newTape : ℤ → Option Bool := fun p => if p = cfg.head then res.2.1 else cfg.tape p
     let newHead : ℤ := if res.2.2 then cfg.head + 1 else cfg.head - 1
     ⟨res.1, newHead, newTape⟩
 
-/-- Run `M` for `T` steps from an initial binary input tape `inp : Fin inLen → Bool`. -/
+/-- Run `M` for `T` steps from an initial binary input tape `inp : Fin inLen → Bool`
+    delimited by blank symbols (`none`) outside `[0, inLen)`. -/
 def tmRunOnBits (M : UniformTM) {inLen : ℕ} (inp : Fin inLen → Bool) (T : ℕ) : TMState M :=
   let init : TMState M :=
     ⟨⟨1, M.hpos⟩, 0, fun p =>
-      if h0 : 0 ≤ p then
-        if hlt : p.toNat < inLen then inp ⟨p.toNat, hlt⟩ else false
-      else false⟩
+      if _h0 : 0 ≤ p then
+        if hlt : p.toNat < inLen then some (inp ⟨p.toNat, hlt⟩) else none
+      else none⟩
   Nat.rec init (fun _ c => tmStep M c) T
 
-/-- Read `outLen` bits from tape positions `0 .. outLen - 1`. -/
+/-- Read `outLen` bits from tape positions `0 .. outLen - 1` (treating blank as `false`). -/
 def readTapeBits (M : UniformTM) (cfg : TMState M) (outLen : ℕ) : Fin outLen → Bool :=
-  fun i => cfg.tape (i.1 : ℤ)
+  fun i => (cfg.tape (i.1 : ℤ)).getD false
 
 /-- Extract the `ℓ`-th candidate `k`-bit message from a flattened `L * k`-bit output. -/
 def extractListItem {L k : ℕ} (out : Fin (L * k) → Bool) (ℓ : Fin L) : Fin k → Bool :=
