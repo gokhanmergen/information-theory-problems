@@ -1,3 +1,10 @@
+import InfoTheory.Known.Certificates.ListDecodingZeroErrorCapacity
+import InfoTheory.Known.Certificates.ShannonCapacityC7
+import InfoTheory.Known.Certificates.ShannonCapacityComplementProduct
+import InfoTheory.Known.Certificates.ShannonCapacityUnionProduct
+import InfoTheory.Known.Certificates.SpernerCapacityDirectedGraphs
+import InfoTheory.Known.Certificates.ZeroErrorMacAdder
+
 /-!
 # Problem-statement certificates
 
