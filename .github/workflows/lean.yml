@@ -41,12 +41,12 @@ jobs:
         working-directory: lean
         run: lake build
 
-      - name: Build, axiom-audit, and kernel-replay proved results (Known/, Bridge/)
+      - name: Build, audit (axioms, name collisions, certificate coverage), and kernel-replay Known/ & Bridge/
         working-directory: lean
         run: |
-          lake build InfoTheory.Known InfoTheory.Bridge
+          lake build InfoTheory.Known InfoTheory.Known.Certificates InfoTheory.Bridge
           lake env lean --run ../scripts/AuditKnown.lean
-          for f in InfoTheory/Known/*.lean InfoTheory/Bridge/*.lean; do
+          for f in $(find InfoTheory/Known InfoTheory/Bridge -name '*.lean' | sort); do
             m=$(echo "${f%.lean}" | tr '/' '.')
             echo "leanchecker $m"
             lake env leanchecker "$m"

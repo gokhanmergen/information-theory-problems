@@ -89,6 +89,25 @@ Every cataloged problem in `problems/<id>.md` has a paired frozen Lean 4 stateme
   (`scripts/AuditKnown.lean`) and kernel-replays each module with `leanchecker`. If a textbook
   fact turns out false for a Core definition, record the counterexample under
   `InfoTheory.Known.DefinitionBugs` and open a statement-fix issue.
+- **Certificates** (`lean/InfoTheory/Known/Certificates/<Module>.lean`, namespace
+  `InfoTheory.Known.Certificates.<Module>`) prove the known facts claimed in the docstring of
+  `Problems/<Module>.lean` ("it is known that A ≤ X ≤ B") about the *exact* objects in its
+  `Statement`. They are the machine-checked evidence that a statement is non-vacuous; the
+  audit reports coverage (`certificate coverage: k/109`). A certificate must not prove or
+  disprove the open problem — unless a known fact shows the statement is trivially settled,
+  which is a catalog error: prove it there (`statement_false` / `statement_true`) and open a
+  statement-fix PR. Add the module to `lean/InfoTheory/Known/Certificates.lean`.
+
+### Working alongside other agents
+
+Several agents may work on this repository at once. To avoid collisions:
+- Work on a branch or `git worktree`, never in another agent's checkout; merge through CI.
+- One owner per area at a time. Current split: `Bridge/` — Mathlib interop and the Cover &
+  Thomas toolkit (Ch. 2–3, 5, 7–8, 11: chain rules, Fano, AEP, typicality, Pinsker, source and
+  channel coding); `Known/` — zero-error/graph capacity, coding bounds, entropy region, channel
+  sanity, and `Known/Certificates/`. Coordinate before editing an area you don't own.
+- Before adding a lemma, grep `Known/` and `Bridge/` for it; CI fails on a `Known`/`Bridge`
+  name collision.
 
 ## For AI agents specifically
 
