@@ -53,7 +53,10 @@ independent MAC coding must fail. CES gave a single-letter *sufficient* conditio
 common part $K$ of $(U,V)$ and auxiliaries $p(s)\,p(x_1 \mid u, s)\,p(x_2 \mid v, s)$:
 $$H(U\mid V) < I(X_1;Y \mid X_2,V,S),\quad H(V\mid U) < I(X_2;Y\mid X_1,U,S),$$
 $$H(U,V\mid K) < I(X_1,X_2;Y\mid K,S),\quad H(U,V) < I(X_1,X_2;Y).$$
-CES also gave a necessary condition, but only in $n$-letter form. Dueck (1981) built an example
+CES (§IV, Theorems 2 and 4) also gave an exact but uncomputable $n$-letter characterization,
+with both achievability and converse: $(U,V)$ is transmissible iff its entropy triple lies in
+$\bigcup_k C_k$ for increasing $k$-letter regions $C_k$. Their Remark 2 notes that these inner
+approximations converge but that no outer approximations are known. Dueck (1981) built an example
 that is transmissible yet violates the CES condition, so the CES condition is not
 necessary. A single-letter characterization has been open since then.
 
@@ -63,7 +66,8 @@ necessary. A single-letter characterization has been open since then.
   Ramchandran (2007) gave a graph-based framework that improves on CES for some sources.
   Heidari and Pradhan (arXiv:1905.04760) use structured (algebraic) mappings and "conferencing
   common information" to improve on CES-type schemes.
-- **Necessary conditions.** The CES converse is $n$-letter and not computable. Kang and
+- **Necessary conditions.** CES's exact $n$-letter characterization (§IV) is approximated only
+  from inside, so it yields no computable necessary condition. Kang and
   Ulukus (2011) used a new data-processing inequality to give a single-letter upper bound on
   the sum rate, i.e. a single-letter necessary condition. It does not close the gap to the CES
   region.
