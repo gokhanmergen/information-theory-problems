@@ -86,15 +86,21 @@ open.
   analogue, where the critical rate is infinite, is Wu–Barnes–Özgür (2019).
 - For $p_2 < p_1$, capacity strictly exceeds $\max(R_{\mathrm{PDF}}, R_{\mathrm{CF}})$
   for $R_0$ slightly above $h(p_1) - h(p_2)$. It also exceeds each scheme's own
-  time-shared version, because time-sharing *across* schemes is needed. See the
-  Statement section and the 2026-11-26 attempt; numerically, for $(0.2, 0.1)$ the gap
+  time-shared version, because time-sharing *across* schemes is needed. The
+  time-shared rate (the chord from the decode-and-forward corner to a compress-and-forward
+  point) is exactly the "chaining" rate of Mondelli–Hassani–Urbanke (2019,
+  arXiv:1801.03153, Theorem 1), shown there to beat both schemes for erasure components.
+  See the Statement section and the 2026-11-26 attempt, which certifies the strict gain
+  for BSC components; numerically, for $(0.2, 0.1)$ the gap
   reaches about 0.045 bits near $R_0 = 0.5$.
 - **First order at $R_0 = 0$ (symmetric case).** $C(R_0)$ is concave, so
   $C'(0^+)$ exists. Compress-and-forward with uniform input has slope exactly
   $s_p = (1-2p)^2/(1+(1-2p)^2)$, so $s_p \le C'(0^+) \le 1$ (at $p = 0.1$: $[0.390, 1]$).
   The El Gamal–Gohari–Nair Theorem 6 bound has slope 1 at $R_0 = 0$, i.e. it improves
-  on cutset only at second order (proved in the 2026-11-26 attempt; a sketch there
-  gives the same for the Liu–Özgür bound). No converse checked so far narrows this
+  on cutset only by $o(R_0)$ (numerically $\Theta(R_0^2)$; slope 1 is proved in the
+  2026-11-26 attempt). The same holds for the Liu–Özgür bound
+  $C \le \max_{p(x)} I(X;Y) + R_0 - c_\alpha^{-1}(R_0)$ (their Corollary 9, in nats), since
+  $c_\alpha^{-1}(R_0) = O(R_0^2)$. No converse checked so far narrows this
   first-order gap.
 - El Gamal, Gohari, and Nair (2022) proved a strengthened single-letter converse that
   strictly improves the cutset bound for the primitive BSC relay channel (for example, at
