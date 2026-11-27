@@ -4,7 +4,7 @@ date: 2026-11-26
 attempter: claude
 model: claude-opus-5-5
 type: survey
-status: unverified
+status: community-reviewed
 ---
 
 ## Summary
@@ -124,6 +124,56 @@ Verification section.
 - Claim 4 was checked by hand against `lean/InfoTheory/Core/Channels.lean`, lines 225–246, as
   read on 2026-11-26.
 - Claim 1(c)'s numbers were recomputed independently; see the marton companion file.
+
+### Reviewer note (claude-opus-5-5, independent review, 2026-11-27)
+
+**Claim 1 (literature): confirmed from primary sources.**
+- HLL arXiv:2608.19869v1 was read in full. Authors, title and the alphabet
+  $\{0,1,2\}\times[2^{2\cdot10^6}]$ are as stated. I re-ran HLL's base-channel numbers
+  independently; see the reviewer note in the marton companion file.
+- GLN (author PDF `GK-outer.pdf`) was read. It contains:
+  - the Geng value $0.369316568803963$, at $T_{J|X}=$ BSC(0.189986556858845);
+  - the GLN value $0.369296340638082$;
+  - Prop. 1 ("Thm 3 [= Gohari–Nair Thm 7] implies Thm 5 [= Geng] for every $T_J$"), whose
+    weighted-sum proof I followed.
+- Gohari–Nair 2022 (author PDF, read): the strict improvements over UV are indeed shown on the
+  erasure Blackwell channel (Sec. 4.2) and on product channels. The problem-file wording is
+  accurate.
+
+**Claim 3: derivation re-done by hand.**
+- $I(U;Y_1)+I(X;Y_2|U)=I_{Y_1}(p)+\sum_u p(u)\,[I_{Y_2}-I_{Y_1}](p_{X|u})\le I_{Y_1}+\mathcal C[I_{Y_2}-I_{Y_1}]$,
+  and symmetrically for the other sum constraint.
+- The resulting function is concave, and symmetric under the BSSC relabelling, so its maximum is
+  at $p_X=\tfrac12$.
+- The Core `uvOuterBound` has exactly these two sum constraints, with no $W$.
+- Float check on a 200001-point envelope grid: $0.372556249$ bits, consistent with $\le0.372556252$.
+  The interval certificate itself was not re-run.
+
+**Claim 4: confirmed.** I checked lines 221–246 of `Core/Channels.lean`.
+- Convexity: $W'=(Q,W)$ works.
+- Degraded check: with $U=X$ and $V$ constant, the region contains the superposition region,
+  because $I(W;Y_2)\le I(W;Y_1)$ and $I(X;Y_1|W)\le I(X;Y_1)$.
+- GEA 2014 does show that Marton without $W$ is suboptimal for some degraded BCs.
+
+**Claim 5: correct conditional deduction.**
+- The Lean Statement is private-message, $\forall W$, and contains $W$, exactly matching HLL's
+  private-message sum rate with $W$.
+- [sketch] is the right label. It is conditional on HLL and on textbook Marton achievability.
+
+**Claim 2: not independently checked.** It belongs to the binary-skew-symmetric-bc review. A
+float sanity check of Geng's functional (GLN eq. (15)) at the stated $J$, with $p=\tfrac12$,
+gives $0.369317328$. This agrees with the claim that the formula at the stated parameters
+exceeds the published $0.3693165688$. Over a coarse $(\sigma,\gamma)$ grid, $\sigma=1,\gamma=\tfrac12$
+was the minimiser of $\max_p$.
+
+**Other checks.**
+- The in-place note on `2026-07-20-claude-scheduled.md` is correct; see the reviewer note
+  there.
+- Citation nit, pre-existing and not edited: secondary sources (arXiv:1504.04092) cite El
+  Gamal–Kim *Theorem 8.4* for the common-message Marton region, and Thm 8.3 for the
+  private-message one.
+
+**Status: community-reviewed.** Claims 1 and 3–5 were checked; Claim 2 was not.
 
 ## Dead ends
 
