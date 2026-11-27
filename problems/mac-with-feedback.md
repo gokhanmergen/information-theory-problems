@@ -31,7 +31,12 @@ R_1 + R_2 &\le \frac{1}{k} I(S_1, S_2; Y^k).
 $$
 For $k = 1$, $\mathcal{R}_{\mathrm{CL}}^{(1)}(W)$ is precisely the Cover–Leung region, and
 $\overline{\bigcup_{k=1}^\infty \mathcal{R}_{\mathrm{CL}}^{(k)}(W)} = \mathcal{C}_{\mathrm{MAC-FB}}(W)$
-(Kramer 1998).
+(Kramer 1998; the inclusion "$\supseteq$" also follows directly from Fano's inequality with
+$U$ constant). $\mathcal{R}_{\mathrm{CL}}^{(k)}$ is Kramer's *generalized Cover–Leung region*
+with $M = k$ (Kramer 1998, §§5.3–5.4, written there with directed information; see
+Venkataramanan–Pradhan 2011, §IV-B). The regions are nested along divisibility,
+$\mathcal{R}_{\mathrm{CL}}^{(k)} \subseteq \mathcal{R}_{\mathrm{CL}}^{(mk)}$, so the
+non-monotonicity in $k$ is harmless for the question below.
 
 **Does every finite-alphabet two-user DM-MAC $W$ achieve its exact feedback capacity region
 $\mathcal{C}_{\mathrm{MAC-FB}}(W)$ at some finite strategy horizon $k \ge 1$?**
@@ -59,12 +64,35 @@ open after half a century.
 - **Gaussian MAC with feedback**: Ozarow (1984) determined the exact capacity region using
   a two-user extension of the Schalkwijk–Kailath linear feedback scheme, showing that
   Cover–Leung is strictly suboptimal in the Gaussian setting.
-- **Suboptimality of Cover–Leung for general DM-MACs**: Bross and Lapidoth (2005)
-  constructed an explicit discrete memoryless MAC where a refined inner bound strictly
-  exceeds Cover–Leung; Venkataramanan and Pradhan (2011) further enlarged the best known
-  single-letter achievable region.
-- **Multi-letter characterization**: Kramer (1998) proved that the exact feedback capacity
-  region is the multi-letter limit of normalized directed information regions; dependence-balance
+- **Suboptimality of Cover–Leung for general DM-MACs**: Bross and Lapidoth (2005) gave a
+  region containing Cover–Leung (two-way exchange phase appended to each block) and evaluated
+  it on the Poisson MAC via a binary DM-MAC ($P(Y{=}1|00)=0$, $P(Y{=}1|01)=P(Y{=}1|10)=q$,
+  $P(Y{=}1|11)=2q$). Venkataramanan and Pradhan (2011) gave a single-letter region strictly
+  containing Cover–Leung. Their numerical comparisons are on the AWGN MAC and on the same
+  binary MAC as $q \to 0$ ($0.4994q$ vs $0.5132q$ nats symmetric sum-rate), and they report a
+  likely calculation error in Bross–Lapidoth's number for that example (VP §IV-C).
+- **Finite-$k$ hierarchy**: Kramer's thesis evaluated the generalized CL region for $M = 2$ on
+  a few examples. For the AWGN MAC at SNR 10 the equal-rate point is $1.2566$ (vs CL
+  $1.2470$, VP $1.2709$, Ozarow capacity $1.2847$, as reported in VP §IV). That channel is not
+  finite-alphabet. We know of no published result settling whether
+  $\mathcal{R}_{\mathrm{CL}}^{(k)}$ stabilises for every finite-alphabet DM-MAC. A
+  computer-assisted strict inclusion $\mathcal{R}_{\mathrm{CL}}^{(1)} \subsetneq
+  \mathcal{R}_{\mathrm{CL}}^{(2)}$ for the binary MAC above at $q = 1/2$ (i.e. $Y = X_J$,
+  $J \sim \mathrm{Unif}\{1,2\}$) is in `attempts/mac-with-feedback/`. The max sum-rate is
+  $\le 0.57895$ at $k = 1$ (duality certificate) and $\ge 0.58432$ at $k = 2$ (explicit
+  strategies). So the hierarchy does not stop at $k = 1$ on finite alphabets, and Cover–Leung is
+  strictly suboptimal there.
+- **Consistency of the frozen statement**: it holds with $k = 1$ for Willems' class, for
+  channels where feedback does not enlarge the region, and in degenerate cases (silent user,
+  empty alphabets). These are consistent with the catalog; no catalog error was found (see the
+  2026-11-26 audit attempt).
+- **Multi-letter characterization**: Kramer (1998, 2003) proved that the exact feedback
+  capacity region is the multi-letter limit of normalized directed information regions (extended
+  to finite-state MACs by Permuter–Weissman–Chen 2009). Anastasopoulos–Pradhan (2020) recast
+  the multi-letter expression as a decentralized sequential active hypothesis testing /
+  stochastic-control problem with time-invariant state space, and Vasal (arXiv:2202.02320)
+  proposes a dynamic program for it. These are reformulations, not finite-letter
+  characterizations. Dependence-balance
   outer bounds (Hekstra–Willems 1989; Tandon–Ulukus 2009) give the sharpest known
   single-letter converses, yet do not match achievability in general.
 
@@ -86,4 +114,15 @@ open after half a century.
   vol. 51, no. 3, pp. 811–833, 2005.
 - R. Venkataramanan and S. S. Pradhan, "A new achievable rate region for the
   multiple-access channel with noiseless feedback," *IEEE Trans. Inf. Theory*, vol. 57,
-  no. 12, pp. 7796–7808, 2011.
+  no. 12, pp. 8038–8054, 2011 (arXiv:0901.1892).
+- G. Kramer, "Capacity results for the discrete memoryless network," *IEEE Trans. Inf.
+  Theory*, vol. 49, no. 1, pp. 4–21, 2003.
+- A. P. Hekstra and F. M. J. Willems, "Dependence balance bounds for single-output two-way
+  channels," *IEEE Trans. Inf. Theory*, vol. 35, no. 1, pp. 44–53, 1989.
+- R. Tandon and S. Ulukus, "Outer bounds for multiple-access channels with feedback using
+  dependence balance," *IEEE Trans. Inf. Theory*, vol. 55, no. 10, pp. 4494–4507, 2009.
+- H. H. Permuter, T. Weissman, and J. Chen, "Capacity region of the finite-state
+  multiple-access channel with and without feedback," *IEEE Trans. Inf. Theory*, vol. 55,
+  no. 6, pp. 2455–2477, 2009.
+- A. Anastasopoulos and S. S. Pradhan, "Decentralized sequential active hypothesis testing
+  and the MAC feedback capacity," *Proc. IEEE ISIT*, pp. 2085–2090, 2020 (arXiv:2001.03807).

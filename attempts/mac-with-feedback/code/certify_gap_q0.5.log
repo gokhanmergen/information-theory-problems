@@ -1,0 +1,14 @@
+q=0.5: k=2 point: A1/2=0.292180722684, A2/2=0.292140853262, B/2=0.584335271754
+   => sum-rate of R_CL^(2) >= 0.58432157594618  (40-digit arithmetic)
+   LP (grid) bound for k=1: 0.57652908 at alpha=0.6050, r=[0.49999896 0.50000104], L=[0.30004611 0.95294063 0.95294063 0.30005002]  [12s]
+   certificate parameters (exact decimal strings used below):
+     alpha = 0.605
+     L[x1,x2] = ['0.30004610530312337', '0.9529406263243592', '0.9529406263243592', '0.3000500233786525'] (order 00,01,10,11)
+     r = ['0.4999989600880894', '0.5000010399119106']
+      verify_majorization: 20000 boxes processed, 13 pending
+      verify_majorization: 40000 boxes processed, 7 pending
+      verify_majorization: 60000 boxes processed, 9 pending
+      verify_majorization: 80000 boxes processed, 9 pending
+   CERTIFIED k=1 sum-rate <= [0.57894907892746983815631869012349251, 0.57894907892746983815631869012349251]   (psi <= L + 0.004 verified on [0,1]^2, 93967 boxes)  [239s]
+   numerical k=1 optimum found: 0.5765051813
+RESULT: certified gap  0.584321575946 - [0.57894907892746983815631869012349251, 0.57894907892746983815631869012349251] = 0.0053725  (STRICT INCLUSION R_CL^(1) < R_CL^(2) CERTIFIED)
