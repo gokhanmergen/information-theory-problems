@@ -64,12 +64,30 @@ capacity remains one of the flagship open problems in wireless information theor
 - Constant-gap capacity: compress-and-forward (and noisy network coding) achieves capacity
   to within $1/2$ bit per channel use for all channel gains and powers
   (Avestimehr–Diggavi–Tse 2011; Lim–Kim–El Gamal–Chung 2011).
-- El Gamal, Mohseni, and Zahedi (2006) showed that multi-letter amplify-and-forward with
-  colored Gaussian inputs can outperform both pure decode-and-forward and pure
-  independent-input compress-and-forward in certain intermediate SNR regimes.
-- Capacity is known exactly in the physically degraded limit ($g_{13} = 0$ or
-  $g_{12} \to \infty$) and when the relay is very close to the source so that
-  decode-and-forward meets the cutset bound.
+- El Gamal, Mohseni, and Zahedi (2006) observed that the Gaussian compress-and-forward
+  (side-information) rate is not concave in the power and improved it by bursty
+  time-sharing (their eq. (8): transmit at powers $(P_1/\lambda, P_2/\lambda)$ a fraction
+  $\lambda$ of the time). They also showed that a block-length-2 linear relaying scheme
+  (their Example 1: the source repeats a scaled symbol, and the relay forwards a scaled copy
+  of its previous received symbol) can beat both the generalized block-Markov
+  (decode-and-forward) rate and the Gaussian compress-and-forward rate, notably at low SNR
+  (their Fig. 3).
+- Capacity is known exactly when $g_{13} = 0$: the channel is then physically degraded and
+  decode-and-forward meets the cutset bound, giving
+  $C = \min(C(g_{12}^2 P_1), C(g_{23}^2 P_2))$. As $g_{12} \to \infty$, decode-and-forward
+  approaches the cutset bound. For this model (independent noises, all gains nonzero),
+  however, the generalized block-Markov lower bound never meets the cutset bound
+  (El Gamal–Mohseni–Zahedi 2006, Sec. 2), consistent with the strict gap of El Gamal–Gohari–Nair.
+- **Catalog note (2026-11-26).** The hybrid rate $R_{\mathrm{hyb}}$ in the Statement contains
+  no time-sharing. When $g_{12}^2 \le g_{13}^2$ it equals the closed-form Gaussian
+  compress-and-forward rate exactly. Bursty compress-and-forward (EMZ eq. (8)) therefore
+  exceeds it: e.g. at $g = (1,1,1)$, $P_1 = 10^{-3}$, $P_2 = 10^{-1}$ the gain is a factor
+  1.59. The block-length-2 linear relaying of EMZ also exceeds it: $0.0883 > 0.0738$ at unit
+  gains and $P_1 = P_2 = 1/10$. So the question as posed has a negative answer that follows
+  from known results, and the frozen Lean `Statement` is false. Even the upper concave
+  envelope of $R_{\mathrm{hyb}}$ over power allocations is beaten. Certificates and a proposed
+  re-posing are in
+  `attempts/gaussian-relay-channel-capacity/2026-11-26-claude-opus-5-5-time-sharing-catalog-error.md`.
 
 ## References
 
