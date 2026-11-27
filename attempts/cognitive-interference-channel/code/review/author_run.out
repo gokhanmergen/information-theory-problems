@@ -1,0 +1,8 @@
+T1 |X1|=1: max over trials of [Lean support - Marton(W=(U0,U2c,Q)) support] = 8.88e-16 (expect <= 0)
+T2 |X1|=1 embedding: 34 instances with K<=I1+I2, max |Lean - Marton4| support gap = 4.44e-16 (expect 0)
+T3 clipper: capacity corner (3,1) Lean-feasible: True; (+0.01,+0.01) feasible: False
+T3 clipper: capacity corner (2,2) Lean-feasible: True; (+0.01,+0.01) feasible: False
+T4 Y1=Y2: max |Lean(U0=X1,U2c=X2) - capacity polytope| support gap = 4.44e-16 (expect 0)
+T5 degraded Y1 / Y1=Y2: corner failures = 0 over 40 distributions (corner A reached directly in 20 cases, otherwise via A0) (expect 0)
+T6 general: max [Lean support - one-aux outer bound support] = 2.22e-16 (expect <= 0)
+ALL PASS

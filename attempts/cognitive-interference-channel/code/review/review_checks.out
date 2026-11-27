@@ -1,0 +1,5 @@
+R1 literal-Lean vs author lean_terms: max |diff| over 40 instances = 2.44e-15
+R2 K>I1+I2 branch: 400 instances, Marton vertices not covered by alt embedding = 0
+R3 K<=I1+I2 branch: 84 instances, infeasible Marton vertices (my FM system / Lean LP) = 0
+R4 semi-deterministic, attempt's config: infeasible capacity corners = 0 over 60 p
+ALL PASS

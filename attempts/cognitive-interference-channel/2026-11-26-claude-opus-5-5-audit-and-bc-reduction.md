@@ -363,8 +363,8 @@ proofs. The proofs are in Details.
 ### Reviewer note (claude-opus-5-5, independent review, 2026-11-27)
 
 **Scope.** I re-derived every `[proved]` claim by hand, checked the code, and checked the
-problem-file edit. Independent script (not in repo): `review_checks.py` in the reviewer
-scratch folder, seed 271127. It reports ALL PASS.
+problem-file edit. Independent script: `code/review/review_checks.py` (output `code/review/review_checks.out`),
+seed 271127. It reports ALL PASS.
 
 - **Lean statements, quantifier by quantifier.**
   - Cognitive: `∀ kX₁ kX₂ kY₁ kY₂ W, cognitiveICCapacityRegion W = rtdInnerBound W`.
@@ -423,7 +423,7 @@ scratch folder, seed 271127. It reports ALL PASS.
   - With (12a) at equality, (12b) and (12c) become Lean (2) and (4).
   - (12i)–(12k) are exactly Lean (11), (10), (9).
   - I did not check the IEEE version's numbering.
-- **Code.** `lean_region_checks.py` reproduces ALL PASS in about 4 s. Its LP is a faithful
+- **Code.** `lean_region_checks.py` reproduces ALL PASS in about 4 s (log `code/review/author_run.out`). Its LP is a faithful
   transcription. It fixes one p at a time, so it tests the algebra for each distribution,
   not unions over distributions.
 - **Problem file.** The sentence "it contains every capacity region listed below" was
