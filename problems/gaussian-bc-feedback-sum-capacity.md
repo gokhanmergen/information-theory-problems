@@ -57,8 +57,10 @@ region, using a Schalkwijk–Kailath-type linear scheme. Since then:
 Yet no converse beyond the cut-set / full-cooperation bound is known to be tight, even for two
 users in the symmetric scalar case. Belhadj Amor–Steinberg–Wigger state that the capacity
 region of the Gaussian BC with perfect feedback "is unknown even in the scalar case". Among the
-open questions they list is "whether the control-theoretic schemes achieve the sum-capacity
-with perfect feedback for symmetric BCs". This entry formalizes that question.
+open questions they state: "It is unknown whether the schemes in [3], [4], and [5] achieve the
+sum-capacity with perfect feedback for symmetric BCs" ([3]–[5] are the control-theoretic /
+linear-feedback schemes of Ozarow–Leung, Elia and Ardestanizadeh–Minero–Franceschetti). This
+entry formalizes that question.
 
 ## What is known
 

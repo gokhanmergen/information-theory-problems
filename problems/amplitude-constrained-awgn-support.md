@@ -23,7 +23,7 @@ many mass points**. Let $K(A)$ denote the number of mass points of $P_X^\star$ w
 scaling, the optimal input for general $N$ has $K(A/\sqrt{N})$ points.
 
 **Conjecture (Sharma–Shamai 2010).** $K(A)$ is nondecreasing in $A$. Sharma and Shamai
-conjectured more: at each transition the support grows by exactly one point, and the new point
+conjectured more: at each transition the support grows by at most one point, and the new point
 appears at the origin.
 
 **Formal version.** The Lean statement asks the monotonicity part. Operationally, let $C_k(A, N)$

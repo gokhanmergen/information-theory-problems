@@ -24,10 +24,17 @@ three-receiver Marton inner bound `marton3InnerBound W`.
   So both sides of the statement are nonempty bounded sets.
 
 ## Not certified
-* Achievability of `marton3InnerBound` (needs multivariate covering and superposition coding,
-  not in the library), and any converse beyond the box (e.g. Nair–El Gamal's counterexample
+* Achievability of `marton3InnerBound` (needs multivariate covering; two-receiver
+  superposition coding is now in `Bridge.superpositionInnerBound_subset_bcCapacityRegion`), and any converse beyond the box (e.g. Nair–El Gamal's counterexample
   showing that the natural extension of the Körner–Marton region is not tight).
-* No statement-level conclusion: the problem is open.
+* **Frozen `Statement` is false (on paper; catalog error, statement-fix pending).** Adding a
+  constant third output to the Gohari–El Gamal–Anantharam degraded channel (arXiv:1006.5166,
+  Claim 1) collapses `marton3InnerBound` to Marton's region without a superposition variable,
+  which is certifiably below capacity (`sup(R₁ + 2.35 R₂) ≤ 0.12131588 < 0.12131597`); see
+  `problems/broadcast-channel-three-receivers.md` and
+  `attempts/broadcast-channel-three-receivers/2026-11-26-claude-opus-5-5-useless-receiver-catalog-error.md`.
+  A Lean `statement_false` is very high effort (an upper bound on `marton3InnerBound` over
+  auxiliaries of unbounded cardinality). The mathematical problem remains open.
 
 Sources: Nair–El Gamal, IEEE Trans. IT 2009; El Gamal–Kim, *Network Information Theory*,
 §5.1, §8.6.

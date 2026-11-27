@@ -52,9 +52,9 @@ For $K \ge 3$ the capacity region is open. Kramer (2002) generalized Ozarow's sc
 equal powers above an SNR threshold that depends on $K$, where it meets the cut-set bound.
 Kramer and Gastpar (2006) extended the dependence-balance bounds of Hekstra–Willems (1989) to
 the Gaussian MAC with feedback. Sula–Gastpar–Kramer (2020) later showed that Fourier-MEC is
-sum-rate optimal at *all* SNRs. AWKJ (2012, Cor. 1) note that at low SNR almost no cooperation is possible with linear
-feedback. Our reading, which the expert should check, is that the cut-set bound is therefore
-not tight for $K\ge3$ at low SNR.
+sum-rate optimal at *all* SNRs, and state that "cut-set bounds are loose for $J > 2$" (their
+Fig. 2: $P = 0.3$, $J = 3$). The cut-set bound is tight for the symmetric sum rate only above
+the SNR threshold $P/N \ge 2^{K+1}/K^2$ (Kramer).
 
 Ardestanizadeh–Wigger–Kim–Javidi (2012) characterized the **linear-feedback** sum-capacity for
 equal powers, showed that Kramer's code achieves it, and recalled the common belief that linear

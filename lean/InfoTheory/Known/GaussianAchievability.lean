@@ -14,6 +14,9 @@ achievability bound, hence Shannon's AWGN capacity theorem in operational form
 * `isAwgnAchievable_of_lt_capacity` : every `0 ≤ R < ½ log₂(1 + P/N)` is achievable
   (codes with measurable decoders, per-codeword power `∑ᵢ xᵢ² ≤ nP`, vanishing average error).
 
+Core uses *average* error probability; Cover–Thomas 9.1.1 uses maximal error. The capacity is
+the same (expurgation), so this is a convention difference, not a change of theorem.
+
 ## Route (El Gamal–Kim §3.4 "discretization procedure")
 
 1. **Cost-constrained DMC coding** (`InfoTheory.Known.CostConstrainedCoding`): random coding +

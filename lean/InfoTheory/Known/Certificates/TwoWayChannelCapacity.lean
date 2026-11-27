@@ -28,7 +28,8 @@ inner bound `G_k`).
 * Shannon's inner bound `G_k(W) ⊆ C_TWC(W)` (random coding with adaptive strategies) and the
   limit statement `cl ⋃_k G_k = C_TWC` (Shannon 1961, Thm. 1 / Kramer's directed information).
 * Shannon's outer bound (`R₁ ≤ I(X₁; Y₂ | X₂)` for some joint `p(x₁, x₂)`): it needs a
-  feedback-type converse not in the library.
+  feedback-type converse; `Bridge.dmcFeedback_mutualInfo_le_mul_capacity` (db659ea) is the
+  one-way analogue, not yet adapted to two-way codes.
 * No statement-level conclusion: the problem is open.
 
 Sources: Shannon, "Two-way communication channels", 1961; El Gamal–Kim §17.5.

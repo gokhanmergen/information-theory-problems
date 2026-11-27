@@ -91,3 +91,25 @@ Proposed handling:
 - 3-receiver broadcast: optional one-line note.
 
 Alternative: a new `claimed-resolved` status with its own site badge.
+
+---
+
+## Independent agent review (2026-11-27)
+
+The reviewer was an independent agent working read-only, with web literature checks:
+- **#1 amplitude-constrained-awgn-support: APPROVE.** arXiv:2609.10039 says "global
+  monotonicity of K(A) remains open". The operational encoding is sound: the converse holds
+  uniformly over k-point constellations, the k-point maximum is attained by compactness, and
+  Smith's uniqueness gives C_k < C when K > k. Nit applied: Sharma–Shamai conjecture "at most
+  one point per transition".
+- **#2 gaussian-bc-feedback-sum-capacity: APPROVE.** The formula matches ASW eqs. (26)–(28),
+  (42)–(43) and Cor. 3 (46). Expected power matches ASW eq. (8). Edit applied: verbatim quote of
+  the open question.
+- **#3 gaussian-mac-feedback-linear-optimality: APPROVE after edit.** The cut-set claim is
+  correct, but the attribution was wrong. Edit applied: it now cites Sula–Gastpar–Kramer 2020
+  ("cut-set bounds are loose for J > 2") and Kramer's SNR threshold 2^{K+1}/K², replacing the
+  AWKJ Cor. 1 "reading".
+- **Marton:** keep `open` with a "claimed resolved (negative), unverified" note.
+  arXiv:2608.19869 is still v1, with no rebuttal or confirmation as of Nov 2026.
+
+**Still needed:** the user's expert sign-off, which flips `review: pending-expert`.

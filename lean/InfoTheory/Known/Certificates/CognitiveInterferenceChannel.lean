@@ -34,7 +34,9 @@ equals the Rini–Tuninetti–Devroye inner bound `rtdInnerBound W`.
   Csiszár-sum-identity arguments.
 * The sharper box `R₁ ≤ C(X₁X₂ → Y₁)` *on the RTD side* (the bound proved there is via
   `log₂ |Y₁|`, which needs only the Shannon inequalities).
-* No statement-level conclusion: the problem is open.
+* No statement-level conclusion: the problem is open. The statement reduces to the broadcast
+  channel at `|X₁| = 1`, so if the Huang–Liu–Liu claim (arXiv:2608.19869, unverified) that
+  Marton's bound is suboptimal holds, the frozen `Statement` is false.
 
 Sources: Devroye–Mitran–Tarokh, IEEE Trans. IT 2006; Rini–Tuninetti–Devroye, IEEE Trans. IT
 2011/2012; El Gamal–Kim, *Network Information Theory*, §6.

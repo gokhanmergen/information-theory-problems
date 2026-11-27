@@ -33,15 +33,20 @@ So both sides of the equation are finite reals in `[0, log₂ |Y|]`, and the ope
 `≥` every fixed-relay direct-link capacity. Neither side is a junk value.
 
 ## Not certified
-* The cutset converse `relayCapacity W ≤ relayCutsetBound W` (Cover–El Gamal 1979, Thm. 4).
-  Both cuts need a multi-letter Fano argument in which the relay inputs depend causally on
-  past relay outputs (the MAC cut `I(X, X_r; Y)` is a feedback-type converse). The library's
-  Fano converse (`Bridge.dmcAvgError_rate_converse`) covers only fixed-encoder DMC codes, and
-  the feedback converse (Cover–Thomas Thm. 7.12.1) is not in the library.
+* (Now in `Bridge`, db659ea: the cutset converse `relayCapacity W ≤ relayCutsetBound W`,
+  `Bridge.relayCapacity_le_cutsetBound`. It does not bear on the statement below, since on
+  the catalog-error channel the cutset bound equals the Lean functional `log₂ 3`.)
 * Achievability of `coverElGamalTheorem7Rate` (decode-and-forward / compress-and-forward):
   this needs block-Markov coding, which is not in the library.
-* No statement-level conclusion: the problem is open (Zhang 1988 and El Gamal–Gohari–Nair 2022
-  show that the *cutset bound* is loose; neither settles whether Theorem 7 is tight).
+* **Frozen `Statement` is false (on paper; catalog error, statement-fix pending).**
+  `coverElGamalTheorem7Rate` keeps two of Theorem 7's three constraints and allows an
+  arbitrary joint law `P(u, x, x_r)`; on a 4×2→6×2 channel capacity is exactly `3/2` while the
+  Lean functional equals `log₂ 3` (`problems/relay-channel.md`, formalization note;
+  `attempts/relay-channel/2026-11-26-claude-opus-5-5-thm7-transcription-catalog-error.md`).
+  Proving it here as `statement_false` is medium effort (explicit entropies plus a
+  multi-letter converse adapting `Bridge.relay_mac_cut_le_sum`). The mathematical problem
+  (is the faithful Theorem 7 rate the capacity?) remains open; Zhang 1988 and
+  El Gamal–Gohari–Nair 2022 show only that the *cutset bound* is loose.
 
 Sources: Cover–El Gamal, "Capacity theorems for the relay channel", IEEE Trans. IT 1979;
 El Gamal–Kim, *Network Information Theory*, Ch. 16.

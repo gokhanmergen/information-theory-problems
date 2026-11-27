@@ -25,6 +25,12 @@ asymptotic exact common information at a finite blocklength:
 * `C_W(X; Y) ≤ G(X; Y)` for the asymptotic `G` (needs tensorization
   `C_W(Xⁿ; Yⁿ) = n C_W(X; Y)`); the strict separations of Yu–Tan (2020) and
   Kumar–Li–El Gamal (2014, SBES): require explicit optimizations over auxiliaries.
+
+## Status
+`Solutions/CommonInformationExactVsWyner.lean` proves `¬ Statement` (verified, standard
+axioms): on `SBES(3/4)`, `G₁(Xⁿ; Yⁿ)/n > h(3/4) ≥ G(X; Y)` for every `n`, so the infimum is
+not attained at any finite `n`. This settles the formal sub-question; the headline question
+(a computable single-letter formula for `G`) remains open.
 -/
 
 open scoped BigOperators

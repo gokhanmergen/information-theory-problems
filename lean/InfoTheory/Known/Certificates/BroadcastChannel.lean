@@ -26,11 +26,12 @@ operational capacity region `bcCapacityRegion W` equals Marton's inner bound
 
 ## Not certified
 * Achievability of Marton's region (`martonInnerBound W ⊆ bcCapacityRegion W`): Marton coding
-  needs the mutual covering lemma, which is not in the library.
+  needs the mutual covering lemma, which is not in the library (superposition coding is:
+  `Bridge.superpositionInnerBound_subset_bcCapacityRegion`, db659ea).
 * Any outer bound tighter than the box (UV outer bound, degraded / less noisy converses):
   these need Csiszár-sum-identity converses for broadcast codes.
-* No statement-level conclusion: the problem is open (Marton's bound is not known to be
-  suboptimal for any channel; El Gamal–Kim Ch. 8).
+* No statement-level conclusion: the problem is open. Huang–Liu–Liu (arXiv:2608.19869, Aug. 2026, not peer reviewed) *claim* a channel on which Marton's bound (with `W`) is strictly suboptimal; unverified — see `problems/marton-inner-bound-tightness.md`. If that claim is correct the
+  frozen `Statement` is false.
 
 Sources: Marton, IEEE Trans. IT 1979; El Gamal–Kim, *Network Information Theory*, §5.1, §8.4.
 -/

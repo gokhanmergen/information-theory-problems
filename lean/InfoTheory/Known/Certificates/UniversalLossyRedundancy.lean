@@ -25,7 +25,9 @@ The frozen statement asks whether the minimax redundancy of universal
   statement and showing a statement-fix PR is required.
 
 ## Not certified
-* The `Θ(log n / n)` order of `R_n` (Yu–Speed 1993; Zhang–Yang–Wei 1997; Yang–Zhang 1999):
+* The `Θ(log n / n)` order of the redundancy **on compact subsets of the interior of the
+  simplex** (Yu–Speed 1993; Zhang–Yang–Wei 1997; Yang–Zhang 1999); over the full simplex it
+  fails, by `statement_false` above:
   needs type-covering lemmas and the `½ log n / n` known-source lower bound, which are not in
   `Bridge`.
 -/

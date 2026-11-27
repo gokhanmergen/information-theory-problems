@@ -25,10 +25,10 @@ five-inequality inner bound `martonCommonInnerBound W`.
 
 ## Not certified
 * Achievability of Marton's region with a common message (Marton 1979; Liang–Kramer 2007;
-  needs superposition coding and mutual covering, not in the library).
+  needs mutual covering, not in the library; superposition coding is in `Bridge`, db659ea).
 * The individual axes (e.g. `(R₀, 0, 0)` achievable iff `R₀ ≤ max_{p(x)} min(I(X;Y₁), I(X;Y₂))`
   needs compound-channel coding).
-* No statement-level conclusion: the problem is open.
+* No statement-level conclusion: the problem is open. Huang–Liu–Liu (arXiv:2608.19869, Aug. 2026, not peer reviewed) *claim* a channel on which Marton's bound (with `W`) is strictly suboptimal; unverified — see `problems/marton-inner-bound-tightness.md`.
 
 Sources: Marton, IEEE Trans. IT 1979; Liang–Kramer, IEEE Trans. IT 2007;
 El Gamal–Kim, *Network Information Theory*, Thm. 8.3.

@@ -22,7 +22,8 @@ three-node cascade with side information `Y` at the intermediate node.
 ## Not certified
 * That `cascadeOuterBound` is an outer bound (its converse needs the auxiliary
   `Uᵢ = (M₁, Y^{i-1}, Y_{i+1}^n)` with Csiszár-sum bookkeeping) and any achievability result
-  (Yamamoto 1981, Cuff–Su–El Gamal 2009): need Wyner–Ziv coding, not in `Bridge`.
+  (Yamamoto 1981, Cuff–Su–El Gamal 2009): need cascaded Wyner–Ziv coding (single-hop Wyner–Ziv is now `Bridge.wynerZiv_achievability`,
+  db659ea).
 * The bound `R₁ ≥ R_{X|Y}(D)` (conditional rate–distortion is not defined in `Core`).
 -/
 

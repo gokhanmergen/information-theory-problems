@@ -27,8 +27,9 @@ feedback, some `k ≥ 1` satisfies `macFeedbackCapacityRegion W = coverLeungKLet
   `err_ge_one_sub_card`, `rate_le_log2_of_counting`.
 
 ## Not certified
-* The sharper outer bound `R₁ + R₂ ≤ C(W) = max I(X₁, X₂; Y)` (the Cover–Thomas feedback
-  converse, Thm. 7.12.1 style, not in the library), the dependence-balance bound, and the
+* The sharper outer bound `R₁ + R₂ ≤ C(W) = max I(X₁, X₂; Y)` (now within reach: view the MAC
+  feedback code as a DMC feedback code on `X₁ × X₂` and apply
+  `Bridge.dmcFeedback_mutualInfo_le_mul_capacity`, db659ea), the dependence-balance bound, and the
   achievability of Cover–Leung (block-Markov superposition coding).
 * No statement-level conclusion: the problem is open (Kramer 1998 gives a multi-letter
   directed-information characterisation; Bross–Lapidoth 2005 improved on Cover–Leung).

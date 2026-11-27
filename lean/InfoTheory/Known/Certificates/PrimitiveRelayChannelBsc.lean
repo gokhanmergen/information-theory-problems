@@ -39,7 +39,8 @@ The frozen statement asks whether, for the symmetric primitive BSC relay channel
   for a decoder that also sees the relay index (`I(M; Yⁿ, J) ≤ I(Xⁿ; Yⁿ) + log |J|`); the
   library's Fano converse covers only point-to-point codes.
 * Achievability of `primitiveBscCFRate` (Wyner–Ziv compress-and-forward) and the
-  decode-and-forward regime: these need Wyner–Ziv / superposition coding, not in the library.
+  decode-and-forward regime: Wyner–Ziv source coding (`Bridge.wynerZiv_achievability`) and
+  superposition coding are now in `Bridge` (db659ea), but not yet combined into relay codes.
 * The exact `R₀ ≥ h(p₁ ⋆ p₂)` threshold (needs Slepian–Wolf binning with side information).
 * No statement-level conclusion: the problem is open (El Gamal–Gohari–Nair 2022 and
   Wu–Barnes–Özgür 2019 only show that the cutset bound is loose).

@@ -25,7 +25,8 @@ binary skew-symmetric broadcast channel (BSSC) equals the maximal Marton sum rat
 
 ## Not certified
 * The value `≈ 0.3616428` of Marton's sum rate (Nair–Wang–Geng 2010; it needs their
-  information inequality and a numerical optimisation), and the UV upper bound `≈ 0.37256`.
+  information inequality and a numerical optimisation), the UV upper bound `≈ 0.37256`, and the best certified upper bound
+  `0.369297201` (window `[0.361642884, 0.369297201]`, `problems/binary-skew-symmetric-bc.md`).
 * That time sharing between the two corners is achievable (would give `≥ log₂(5/4)` only;
   no improvement on the lower bound proved here).
 * No statement-level conclusion: the problem is open.

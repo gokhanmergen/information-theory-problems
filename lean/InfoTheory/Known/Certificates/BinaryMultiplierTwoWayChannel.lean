@@ -8,7 +8,16 @@ import InfoTheory.Known.Certificates.TwoWayChannelCapacity
 
 The frozen statement asks whether the symmetric capacity `bmcSymmetricCapacity` of Blackwell's
 binary multiplying channel `Y₁ = Y₂ = X₁ · X₂` equals the Hekstra–Willems dependence-balance
-bound `bmcDependenceBalanceBound` (`≈ 0.64628`).
+bound `bmcDependenceBalanceBound`.
+
+**Frozen `Statement` is false (on paper; catalog error, statement-fix pending).** For a
+deterministic channel the *plain* dependence-balance constraint is vacuous, so
+`bmcDependenceBalanceBound = log₂ φ ≈ 0.69424` (Shannon's outer bound), while
+Zhang–Berger–Schalkwijk give `C_sym ≤ 0.64891`. The value `≈ 0.64628` belongs to the
+Hekstra–Willems bound *with an adaptive parallel channel*. See
+`problems/binary-multiplier-two-way-channel.md` and
+`attempts/binary-multiplier-two-way-channel/2026-11-26-claude-opus-5-5-db-catalog-error-survey.md`.
+The facts below remain true.
 
 ## Certified (about exactly these objects)
 * `isTWCAchievable_timeDivision`, `half_le_bmcSymmetricCapacity` — **time division**: for every
@@ -27,9 +36,12 @@ bound `bmcDependenceBalanceBound` (`≈ 0.64628`).
 * Shannon's inner bound `≥ 0.6160` and Schalkwijk's `0.6191` (adaptive coding strategies; no
   two-way-channel achievability in the library).
 * That the dependence-balance bound is a valid upper bound on the symmetric capacity
-  (Hekstra–Willems 1989 converse) and its value `≈ 0.64628`; also the lower bound `≥ 1/2` for
-  it (it needs explicit entropy evaluations).
-* No statement-level conclusion: the problem is open.
+  (Hekstra–Willems 1989 converse) and its value `log₂ φ ≈ 0.69424`; also the lower bound `≥ 1/2`
+  for it (it needs explicit entropy evaluations). A cheap step toward `statement_false`:
+  certify `bmcDependenceBalanceBound > 0.649` with an explicit input law (the ZBS upper
+  bound `0.64891` on the left-hand side is research-level and not in the library).
+* No *Lean* statement-level conclusion; the frozen statement is false on paper (above), and
+  the intended mathematical question (tightness of the adaptive Hekstra–Willems bound) is open.
 
 Sources: Shannon 1961; Schalkwijk, IEEE Trans. IT 1982/1983; Hekstra–Willems, IEEE Trans. IT
 1989.

@@ -25,7 +25,7 @@ time-sharing closure of the single-letter Heegard–Berger / Gray–Wyner inner 
 ## Not certified
 * The exact Gray–Wyner region (`R₀ ≥ I(X;U₀)`, `Rᵢ ≥ R_{Xᵢ|U₀}(Dᵢ)`) and the lossless
   Gray–Wyner region: conditional rate–distortion is not defined in `Core`, and achievability
-  needs superposition covering not in `Bridge`.
+  needs superposition covering (lossy), not in `Bridge`.
 * Anything with genuinely non-trivial side information (Heegard–Berger, Watanabe 2013):
   needs Wyner–Ziv coding.
 -/
