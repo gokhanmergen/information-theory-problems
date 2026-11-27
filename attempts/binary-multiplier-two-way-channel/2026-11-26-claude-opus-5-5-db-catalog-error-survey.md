@@ -4,7 +4,7 @@ date: 2026-11-26
 attempter: claude
 model: claude-opus-5-5
 type: survey
-status: unverified
+status: verified
 ---
 
 ## Summary
@@ -162,7 +162,7 @@ grid resolution. Hekstra–Willems' published value is 0.64628.
 | Shannon inner (independent inputs) | 0.61695 (P(X=1) = 0.70351) | Shannon 1961 |
 | Hagelbarger strategy | 4/7 = 0.5714 (uniform); 0.59305 optimised | Shannon 1961; Bloemen 1996 §1 |
 | Schalkwijk 1982 | 0.61914 | IEEE TIT 28(1) |
-| Schalkwijk 1983 (bootstrapping / Slepian–Wolf) | 0.63056 (0.6305552557) | IEEE TIT 29(3); rigorous proof Tolhuizen 1985 |
+| Schalkwijk 1983 (bootstrapping / Slepian–Wolf) | 0.63056 (0.6305552557) | IEEE TIT 29(3); achievability proof van Overveld, IEEE TIT 34(2) 1988, extending Tolhuizen's 1985 construction (corrected by reviewer: Bloemen 1996 §5.6.2 credits the bootstrapping proof to van Overveld, not Tolhuizen) |
 | Schalkwijk 1990, 1991 | 0.6305552986, 0.6305552995 | BeNeLux Symp. 1990; ISIT 1991 (via Bloemen 1996, eq. 6.1) |
 | Schalkwijk–Meeuwissen–Bloemen | **0.63072** | Tijdschr. NERG 60(3) 1995; ISIT 1995 Whistler; Bloemen 1996 eq. (6.42) |
 | Ardestanizadeh, directed-information inner bound | 0.6191 | UCSD PhD thesis (as reported by Kim 2012) |
@@ -234,6 +234,60 @@ rigorous.
   2012 Banff slides and Tandon's 2010 thesis were read in full text; Willems' July 2026 CUHK
   slides were read in full text. I could **not** access HW 1989, ZBS 1986, SMB 1995 or
   Ardestanizadeh's thesis directly; their numbers are quoted as reported by the sources above.
+
+### Reviewer note (claude-opus-5-5, independent review, 2026-11-27)
+
+**Verdict: the frozen `Statement` is false, conditional only on the published ZBS 1986 / HW 1989
+converses.** Status set to `verified`: I checked every `[proved]` claim (1–4) independently.
+Claim 3 is explicitly conditional on ZBS, and I read that value only in secondary sources (below).
+- *Lean text (read verbatim).* `bmcDependenceBalanceBound` = sSup over `kZ : ℕ`, `P : ProbDist
+  (Fin kZ × Bool × Bool)` with `J = (z,x₁,x₂,x₁&&x₂)`, constraint `I(X₁;X₂|Z) ≤ I(X₁;X₂|Y,Z)`,
+  value `min(I(X₁;Y|X₂,Z), I(X₂;Y|X₁,Z))`. The tuple projections match these CMIs, `condMutualInfo`
+  = H(A,C)+H(B,C)−H(A,B,C)−H(C) is correct, and the logs are base 2. This is exactly Bloemen's
+  (6.54), the plain DB bound with no parallel channel. `Statement : bmcSymmetricCapacity =
+  bmcDependenceBalanceBound`.
+- *Claims 1–2 (re-derived by hand).* Chain rule: I(X₁;X₂|Z)−I(X₁;X₂|YZ) = I(X₁;Y|Z)−I(X₁;Y|X₂Z),
+  which equals H(Y|Z)−H(Y|X₁Z)−H(Y|X₂Z) for a deterministic Y. The lower bound uses kZ=1 and
+  Shannon's optimiser. The upper bound uses perspective concavity, monotonicity
+  (∂Φ/∂a = −log₂(1−c/a) ≥ 0), p₀₀ ≥ 0 ⇒ a+b ≤ 1+c, and the tangent of h at 1/φ, giving
+  h(t) ≤ log₂φ·(2−t). Every step checks. Both sets are nonempty and bounded, so sSup is
+  well-behaved. Own script (`check.py`, not in repo): Shannon point gives (0.1562477, 0.5527864,
+  0.6942419, 0.6942419). On 60 000 random laws with kZ ≤ 4, the Claim-1 identity holds to
+  9e-16 and no value exceeds log₂φ. Penalised Nelder–Mead (kZ=2) gives 0.694204.
+- *Claim 3.* The `IsTWCAchievable` codes are deterministic, adaptive on the terminal's own
+  outputs, with average error ≤ ε for all n ≥ N and M = max 1 ⌊2^{nR}⌋. Nothing lets
+  information bypass the channel, so every Lean-achievable pair is achievable in the standard
+  sense, and the closed ZBS region contains the closure. (R,R)=(0,0) is achievable (M=1).
+  Hence C_sym ≤ 0.64891 < 0.69424. **Primary-source status:** ZBS 1986 and HW 1989 were not
+  accessible (IEEE paywall). Their IEEE abstracts (ISC index pages) contain no numbers.
+  0.64891 (ZBS, Thm 6.2) and 0.64628 (HW, Thm 6.3) were read in Bloemen 1996 §6.4.1–6.4.3 and
+  Table 6.3 (TU/e PDF, full text) and in the Tandon–Ulukus 2007 abstract (Arizona portal). Bloemen
+  §6.4.2 states verbatim that the plain DB constraint "does not sharpen the Shannon outer bound
+  … in case of a BMC". So Claims 1–2 are not new, as the attempt says.
+- *Claim 4.* A brute-force joint law p(u,x₁,x₂)p(y|x)p_B(b|x,y) (Table 6.2) on 3000 random
+  instances matches the closed form to 2e-15. I(X₁;X₂|Y,B,U)=0 to 2e-15 also for *dependent*
+  p(x₁,x₂|u) and arbitrary p. The leak is convex in p (MI is convex in the channel), and its
+  stationary point is the attempt's p = α(1−β)/D. Caveat: under Table 6.2's labels, Bloemen's
+  *printed* (6.58) is 1−p, and his printed (6.57) matches Table 6.2 under neither labelling. Used
+  literally, (6.58) gives ≥ 0.6607 (worse than ZBS), so the attempt's convention is the one that
+  reproduces HW. The proposed Lean fix must keep `hwCrossover` exactly as written.
+- *Claim 5.* Polishing the printed |U|=3 point with Nelder–Mead gives 0.6462831535, and the
+  rounded printed point gives 0.6462829. Blind DE and Nelder–Mead multistarts from random points
+  reach only 0.64625 and 0.64601, so they never exceed 0.6462832. The dual logic is right: 1-homogeneous
+  tangent planes c₁ = −log₂(1−t₀), c₂ = log₂((1−t₀)/t₀). Evaluated at the printed rounded
+  (λ,t₀) = (0.2906, 0.6635), with continuous refinement of the inner max, it gives 0.6462875. The
+  grid error is negligible there. Still not interval-rigorous, as stated.
+- *Corrections made.* Problem file and §6 table: the attempt credited the rigorous proof of the
+  1983 rate to Tolhuizen 1985. Bloemen §5.6.2 credits van Overveld (IEEE TIT 34(2), 1988),
+  extending Tolhuizen's construction. Both places now say this, and a reference was added.
+  Cosmetic, not edited: the `db_vacuous.py` docstring says "I(X1;X2|Z) = 0.1564…", but it
+  prints 0.156247….
+- *Not checked.* ZBS/HW primary texts. SMB 1995 and Ardestanizadeh/Kim 2012 (0.6191).
+  Willems' 2026 CUHK slides: my search did not find them. The Sabag–Permuter numbers: the abstract
+  only says the region beats Shannon's inner bound. Whether the proposed Lean text typechecks:
+  no build in this worktree. Exhaustiveness of "no improvement since 1995/1989": my searches found
+  none. Claim 4's novelty: Tandon–Ulukus 2007 likely contains equivalent expressions, but I
+  could not read the full text.
 
 ## Dead ends
 
