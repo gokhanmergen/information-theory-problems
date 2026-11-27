@@ -58,8 +58,13 @@ rate triples for which nonnegative $K_j, K_{ij}, L_{ij}, S_{ij}, T_j, S_j$ satis
 constraints exist (Padakandla–Pradhan, arXiv:1207.3146v6, §II-D, eqs. (1)–(11), without
 cost). The source uses strict inequalities and $S_i > 0$; taken literally these make the
 region empty whenever one output is independent of the input, so the formal statement uses
-non-strict inequalities. Padakandla–Pradhan prove $\alpha_U(W) \subseteq \mathcal{C}_3(W)$
-(their Theorem 2).
+non-strict inequalities. Padakandla–Pradhan prove achievability of the strict-inequality
+region (their Theorem 2). The non-strict region is still achievable (sketch, 2026-11-27 review):
+if every receiver has positive capacity, mixing in a strictly feasible test channel ($V_i = X$
+with small bin rates) through $Q$ with weight $\varepsilon$ makes every non-strict point a limit
+of strict ones; if receiver $k$ has zero capacity, its constraints force $R_k = 0$ and the other
+two rates lie in Marton's region by the projection argument in the caveat below. So
+$\alpha_U(W) \subseteq \mathcal{C}_3(W)$.
 
 **Does the UM region equal the exact capacity region $\mathcal{C}_3(W)$ for every
 finite-alphabet three-receiver discrete memoryless broadcast channel $W$?**
@@ -73,7 +78,8 @@ indexed by `i : Fin 3`, with `U 0, U 1, U 2 = U₁₂, U₂₃, U₃₁`; the ra
 > into the binned auxiliaries) equals capacity. That was false: with a constant third output it
 > collapses to Marton's region *without* a superposition variable for receivers 1 and 2, which
 > is certifiably below capacity for the degraded Gohari–El Gamal–Anantharam channel
-> (`sup (R₁ + 2.35 R₂) ≤ 0.12131588 < 0.12131597`); see
+> (`sup (R₁ + 2.35 R₂) ≤ 0.12131588 < 0.12131597`; an independent review certified the
+> stronger bound `≤ 0.1201`); see
 > `attempts/broadcast-channel-three-receivers/2026-11-26-claude-opus-5-5-useless-receiver-catalog-error.md`.
 > The UM region passes this test: for every 3-DMBC, taking $Q, W$ constant, $U_{12}$ as
 > Marton's common auxiliary and $U_{23}, U_{31}, V_3$ constant reduces its constraints to the
@@ -90,13 +96,14 @@ $M_1$ — Nair and El Gamal (2009) proved that the natural generalization of Kö
 superposition coding is strictly suboptimal, and that **indirect decoding** (where a
 receiver decodes a satellite codeword without being required to output its message) strictly
 enlarges the achievable region. For three private messages, pairwise clouds
-$(W_{12}, W_{13}, W_{23})$, indirect decoding, and structured coding may all interact,
+$(U_{12}, U_{23}, U_{31})$, indirect decoding, and structured coding may all interact,
 making the three-receiver broadcast channel substantially harder than the two-receiver case.
 
 ## What is known
 
 - The capacity region is known for three-receiver *degraded* broadcast channels
-  (Bergmans 1973; Gallager 1974) and *Gaussian MIMO* broadcast channels
+  (Bergmans 1973; Gallager 1974), *less noisy* three-receiver broadcast channels, where
+  superposition coding is optimal (Nair–Wang 2011), and *Gaussian MIMO* broadcast channels
   (Weingarten–Steinberg–Shamai 2006).
 - For three-receiver broadcast channels with degraded message sets $(M_0, M_1)$, Körner–Marton
   superposition is strictly suboptimal (Nair–El Gamal 2009); Nair and El Gamal established
@@ -110,8 +117,8 @@ making the three-receiver broadcast channel substantially harder than the two-re
   three-receiver Marton-type inner bounds; the UM region above, with public, semi-private and
   private layers, is the largest known one built from unstructured codes
   (Padakandla–Pradhan).
-  Extensions with indirect decoding have been studied by Nair–Wang (2011) and Gohari–Nair
-  (2022); no matching converse is known. The UM region contains the capacity region of
+  Indirect decoding (Nair–El Gamal 2009) and auxiliary-receiver outer bounds (Gohari–Nair
+  2022) have been studied; no matching converse is known. The UM region contains the capacity region of
   degraded 3-DMBCs ($W$, $U_{12}$, $V_1$ carry $M_3$, $M_2$, $M_1$).
 - **The UM region is not always optimal with costs.** Padakandla–Pradhan (arXiv:1207.3146)
   give 3-DMBCs *with input cost constraints* on which coset (linear) codes strictly beat the
@@ -119,9 +126,13 @@ making the three-receiver broadcast channel substantially harder than the two-re
 - **Caveat via two receivers.** With a useless third receiver the question above contains the
   two-receiver question "Marton's region = capacity" (`broadcast-channel`). Huang, Liu and Liu
   (arXiv:2608.19869, 2026; not yet peer reviewed) claim a two-receiver DMBC on which
-  multi-letter Marton coding beats the single-letter Marton region. If that claim holds, and
-  the UM region with a useless receiver does not exceed Marton's region, the answer here is
-  "no" as well. A reviewer (2026-11-27) judged the UM-based statement probably false even
+  multi-letter Marton coding beats the single-letter Marton region. Conversely, for every
+  3-DMBC the $(R_1, R_2)$ projection of the UM region lies inside Marton's region for
+  $(Y_1, Y_2)$ (sketch, 2026-11-27 review: set $\bar W = (Q, W, U_{12})$,
+  $\bar U = (U_{31}, V_1)$, $\bar V = (U_{23}, V_2)$ and combine receiver 1's constraint (11),
+  receiver 2's (8) and (11), and covering constraint (5); an LP check on 3000 random instances
+  found no violation). So the statement here implies the two-receiver statement, and if the
+  Huang–Liu–Liu claim holds the answer here is "no" as well. A reviewer (2026-11-27) judged the UM-based statement probably false even
   without costs. It is kept because it is the sharpest unstructured-code question the
   literature poses, and a disproof would be a genuine result.
 ## References
