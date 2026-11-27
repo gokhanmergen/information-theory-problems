@@ -4,7 +4,7 @@ date: 2026-11-26
 attempter: claude
 model: claude-opus-5-5
 type: partial-result
-status: unverified
+status: verified
 ---
 
 ## Summary
@@ -29,7 +29,8 @@ and a deterministic map, a simplicial branch and bound, and an interval-arithmet
 every leaf. The region stated in the problem's `.md` file (W₀ plus multivariate covering) fails
 in the same way. We propose a corrected statement based on the "UM region" of
 Padakandla–Pradhan. It passes the useless-receiver test and implies the two-receiver
-"Marton = capacity" question. We also record that Padakandla–Pradhan prove the UM region
+"Marton = capacity" question *(reviewer: the implication rests on an unproved inclusion; see
+Claim 7)*. We also record that Padakandla–Pradhan prove the UM region
 strictly suboptimal for some three-receiver BCs *with input cost constraints*.
 
 ## Approach
@@ -76,6 +77,12 @@ strictly suboptimal for some three-receiver BCs *with input cost constraints*.
    it reduces exactly to the two-receiver Marton region *with* superposition variable for the
    other two receivers. So the corrected `Statement` implies the open two-receiver
    "Marton = capacity" question, and the present counterexample does not refute it.
+   *(Reviewer, 2026-11-27: the sketch in §7 shows only that the useless-receiver slice of the
+   UM region **contains** two-receiver Marton-with-W. "Reduces exactly" and "implies the
+   two-receiver question" also need the reverse inclusion, which is not argued. Also, the
+   two-receiver question is not cleanly open: Huang–Liu–Liu, arXiv:2608.19869 (unrefereed;
+   see `attempts/marton-inner-bound-tightness/`), claim Marton's bound is strictly suboptimal.
+   If that claim and the reverse inclusion both hold, this corrected `Statement` is false too.)*
 8. **[heuristic]** The certified bound in Claim 4 is far from tight. Multi-start optimisation
    gives S_2.35 ≈ 0.118924 = 2.35·C(X→Y₂), attained at X = V and U constant. This matches
    GEA's description at α = 2.4. The true gap at α = 2.35 is about 0.0024 bits, about 2 %.
@@ -286,7 +293,10 @@ U₁₂ = B carrying M₂, V₁ = X carrying M₁, and everything else constant.
 
 *Consequence.* With a constant output, the corrected `Statement` specialises to "two-receiver
 Marton region (with W) = capacity" for every DM-BC. That is the famous open problem, so the
-corrected statement is non-trivial and is not refuted by GEA's example.
+corrected statement is non-trivial and is not refuted by GEA's example. *(Reviewer,
+2026-11-27: "specialises to" needs the unproved inclusion UM-slice ⊆ Marton-with-W; see the
+note under Claim 7. Huang–Liu–Liu, arXiv:2608.19869, unrefereed, claim a negative answer to
+the two-receiver question.)*
 
 **Caveat (Claim 9).** PP's Theorem 3 (vector additive channel, cost on X₁) and Theorem 5
 (non-additive channel, costs on all three input bits) prove the UM region strictly suboptimal
@@ -320,6 +330,82 @@ have capacity strictly larger than the UM region? We have not formalised either 
   are attained on the boundary where U is constant and X = V.
 * Not checked: a Lean formalisation (see §5); the cardinality claim of Claim 2 for the full
   Marton region with W (not needed).
+
+### Reviewer note (claude-opus-5-5, independent review, 2026-11-27)
+
+Verdict: the frozen `Statement` is false, as claimed. I checked every `[proved]` claim (1–6)
+independently, so the status is now `verified`. The disproof still rests on two things that
+are not formalised: the textbook superposition-coding theorem and mpmath's directed-rounding
+`log`. The reviewer's independent certificate (all 16 maps, no orbit reduction, threshold
+0.1201, about 17 min) is committed as `code/reviewer_indep_certificate.py`
+(`python reviewer_indep_certificate.py 47/20 1201/10000`, ending in "ALL 16 MAPS CERTIFIED:
+S_alpha <= 0.1201"). Other reviewer scripts stayed outside the repo; they are described below.
+
+* **Claims 1 and 6 (reduction).** I re-derived both from the Lean file (lines 42–89) and from
+  `Core/Entropy.lean`, where `condMutualInfo` of (A,B,C) is I(A;B|C) and `condEntropy` of
+  (A,B) is H(A|B). With `Fin kY₃ = Fin 1`, IW_Y3 = IV3_Y3 = 0, which forces r₁₀ = r₂₀ = r₃₀ =
+  r₁₃ = r₂₃ = r₃₁ = rp₃ = 0. A direct argument gives more. Put Q := W₀, U := V₁, V := V₂.
+  Every pre-closure point then satisfies GEA's (8)–(10); the sum constraint uses r₁₂ ≥ 0 and
+  rp₁ + rp₂ ≥ I₁₂. Conversely, taking W₁₂ = W₁₃ = W₂₃ = U₃ constant realises every such point.
+  So the (R₁, R₂) slice *equals* Marton-without-W, and no auxiliary can play the role of W:
+  W₀ carries no rate, and I₁₂ ≥ H(W₁₂|W₀). A random-LP sanity check of this algebra (2000
+  instances) found no violation beyond 2·10⁻¹⁶. The `.md` region reduces the same way.
+* **Claim 5 (operational side).** With R₃ = 0, M₃ = `Nat.max 1 ⌊2⁰⌋` = 1, so
+  `IsBC3Achievable` is exactly the two-receiver average-error criterion. Superposition
+  coding then applies to the physically degraded chain X→Y₁→Y₂. Correct.
+* **GEA (arXiv:1006.5166v2, read in full).** Claim 1, the channel, α = 2.4 and the numbers
+  "0.1229..." and "0.1215..." are quoted correctly. GEA's gap is numerical only ("Numerical
+  simulations show"). They cite [8] for the cardinality reduction without proving it for the
+  weighted objective. Their region (8)–(10) includes Q. Their own superposition point
+  P(V=0,X=1) = 0.41, P(V=1,X=0) = 0.48, P(V=1,X=1) = 0.11 evaluates to 0.1228561 in interval
+  arithmetic.
+* **Claim 2.** I checked the identity d²H(B)/dε² = −E[E[M_ε|B]²]/ln 2 and both expansions.
+  Perturbing U gives αE[E[M|VY₂]²] − (α−1)E[E[M|V]²] ≥ E[E[M|V]²]; perturbing V gives
+  E[E[M|UY₁]²]. In the functional-representation step, I(U;T|V) = 0 because T ⊥ (U,V). The
+  proof is correct for every α ≥ 0. A non-rigorous cross-check used |U| = |V| = 3 with a
+  *random* p(x|u,v); multi-start optimisation gives the same values as the binary
+  deterministic search: S_2.35 ≈ 0.1189243 and S_2.4 ≈ 0.1214546, both equal to α·C_Z.
+* **Claim 3.** Checked: data processing covers X = V, and the SDPI with η_KL ≤ η_TV = 0.24
+  covers X = U.
+* **Claim 4: soundness of `marton_noW_gap.py`.**
+  - The DC bound is valid. H(q) ≤ CE(q‖r) holds for every distribution r; T_c is linear and
+    Ψ is convex, so the maximum is at a vertex; Φ has nonnegative coefficients for α ≥ 1.
+  - The leaves cover Δ₄. I replayed the float search and audited it in exact Fractions:
+    every vertex is an exact dyadic (denominator ≤ 2¹³, depth ≤ 34) summing exactly to 1,
+    and every midpoint is exact, so rounding leaves no gaps.
+  - Every leaf is rechecked in interval arithmetic with decimal-enclosing α and channel
+    entries.
+  - My re-run reproduces the table exactly.
+  - Harmless: `iv_bound` merges vertex bounds with Python `max`, which would silently drop a
+    NaN. A NaN cannot occur here, because every nonzero log argument is a strictly positive
+    interval.
+* **Independent certificate (own code, nothing reused).** Channel entries are exact
+  Fractions, including the composed X→Y₂; vertices are Fractions; logs use mpmath `iv` at
+  100 bits. All 16 maps were run with no orbit reduction, at a looser threshold
+  τ' = 0.1201. Result: all 16 maps pass. There are 522 736 leaves in total, the largest
+  interval upper bound is 0.120098989, and the run took 1018 s. The capacity side,
+  recomputed independently, gives R₁* + 2.35R₂* ∈ [0.121315971660523062833, …], with R₁* and
+  R₂* matching Claim 4.
+  So S_2.35 ≤ 0.1201 < 0.12131597, a margin of 1.2·10⁻³ rather than 10⁻⁷.
+* **α = 2.4 (coordinator update).** I re-ran `python marton_noW_gap.py 2.4`. All 7 orbits pass
+  the interval recheck, and the run prints "S_alpha <= 0.1228621348 < 0.1228622348 <=
+  F_alpha" (314 s). The update is confirmed, but only by re-running the author's code.
+* **Claims 7–9.** I read Padakandla–Pradhan (arXiv:1207.3146v6): §II-D eqs. (1)–(11) and
+  Theorems 3 and 5, whose costs are κ = 1{x₁=1} and κ_j = 1{x_j=1}. The attempt describes
+  them correctly. The literal strict inequalities do make the UM region empty when an output
+  is constant.
+  - **Gap in Claim 7.** The sketch proves only "UM slice ⊇ two-receiver Marton-with-W". The
+    words "reduces exactly" and "implies the two-receiver question" also need "⊆". Partial
+    step: with non-strict inequalities, receiver 3's eq. (11) together with eq. (2) forces
+    W, U₂₃ and U₃₁ to carry no message. U₁₂ can still be binned, though, so "⊆" is not
+    immediate.
+  - **Omission.** The attempt does not mention Huang–Liu–Liu (arXiv:2608.19869, unrefereed;
+    audited in `attempts/marton-inner-bound-tightness/`). They claim two-receiver Marton is
+    strictly suboptimal. That is stronger evidence than Claim 9 that the proposed
+    correction is false.
+  - I added bracketed notes at the Summary, at Claim 7 and in §7. Labels are unchanged.
+* **Not checked:** GEA's journal details (I read arXiv v2 only); Gohari–Anantharam [8]; the
+  Dead-ends remark that profiles exclude XOR. No Lean proof exists.
 
 ## Dead ends
 
