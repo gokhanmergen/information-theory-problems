@@ -339,7 +339,8 @@ are not formalised: the textbook superposition-coding theorem and mpmath's direc
 `log`. The reviewer's independent certificate (all 16 maps, no orbit reduction, threshold
 0.1201, about 17 min) is committed as `code/reviewer_indep_certificate.py`
 (`python reviewer_indep_certificate.py 47/20 1201/10000`, ending in "ALL 16 MAPS CERTIFIED:
-S_alpha <= 0.1201"). Other reviewer scripts stayed outside the repo; they are described below.
+S_alpha <= 0.1201"). Other reviewer scripts and run logs are in `code/review/` (except the random-LP check and the
+GEA-point evaluation, which were not kept); they are described below.
 
 * **Claims 1 and 6 (reduction).** I re-derived both from the Lean file (lines 42–89) and from
   `Core/Entropy.lean`, where `condMutualInfo` of (A,B,C) is I(A;B|C) and `condEntropy` of
@@ -363,19 +364,20 @@ S_alpha <= 0.1201"). Other reviewer scripts stayed outside the repo; they are de
   Perturbing U gives αE[E[M|VY₂]²] − (α−1)E[E[M|V]²] ≥ E[E[M|V]²]; perturbing V gives
   E[E[M|UY₁]²]. In the functional-representation step, I(U;T|V) = 0 because T ⊥ (U,V). The
   proof is correct for every α ≥ 0. A non-rigorous cross-check used |U| = |V| = 3 with a
-  *random* p(x|u,v); multi-start optimisation gives the same values as the binary
+  *random* p(x|u,v) (`code/review/numerics_check.py`, log `numerics.txt`); multi-start optimisation gives the same values as the binary
   deterministic search: S_2.35 ≈ 0.1189243 and S_2.4 ≈ 0.1214546, both equal to α·C_Z.
 * **Claim 3.** Checked: data processing covers X = V, and the SDPI with η_KL ≤ η_TV = 0.24
   covers X = U.
 * **Claim 4: soundness of `marton_noW_gap.py`.**
   - The DC bound is valid. H(q) ≤ CE(q‖r) holds for every distribution r; T_c is linear and
     Ψ is convex, so the maximum is at a vertex; Φ has nonnegative coefficients for α ≥ 1.
-  - The leaves cover Δ₄. I replayed the float search and audited it in exact Fractions:
+  - The leaves cover Δ₄. I replayed the float search and audited it in exact Fractions
+    (`code/review/exactness_check.py`, log `exactness.txt`):
     every vertex is an exact dyadic (denominator ≤ 2¹³, depth ≤ 34) summing exactly to 1,
     and every midpoint is exact, so rounding leaves no gaps.
   - Every leaf is rechecked in interval arithmetic with decimal-enclosing α and channel
     entries.
-  - My re-run reproduces the table exactly.
+  - My re-run reproduces the table exactly (log `code/review/author_run_235.txt`).
   - Harmless: `iv_bound` merges vertex bounds with Python `max`, which would silently drop a
     NaN. A NaN cannot occur here, because every nonzero log argument is a strictly positive
     interval.
@@ -383,13 +385,13 @@ S_alpha <= 0.1201"). Other reviewer scripts stayed outside the repo; they are de
   Fractions, including the composed X→Y₂; vertices are Fractions; logs use mpmath `iv` at
   100 bits. All 16 maps were run with no orbit reduction, at a looser threshold
   τ' = 0.1201. Result: all 16 maps pass. There are 522 736 leaves in total, the largest
-  interval upper bound is 0.120098989, and the run took 1018 s. The capacity side,
+  interval upper bound is 0.120098989, and the run took 1018 s (log `code/review/indep_235.txt`). The capacity side,
   recomputed independently, gives R₁* + 2.35R₂* ∈ [0.121315971660523062833, …], with R₁* and
   R₂* matching Claim 4.
   So S_2.35 ≤ 0.1201 < 0.12131597, a margin of 1.2·10⁻³ rather than 10⁻⁷.
 * **α = 2.4 (coordinator update).** I re-ran `python marton_noW_gap.py 2.4`. All 7 orbits pass
   the interval recheck, and the run prints "S_alpha <= 0.1228621348 < 0.1228622348 <=
-  F_alpha" (314 s). The update is confirmed, but only by re-running the author's code.
+  F_alpha" (314 s; log `code/review/author_run_24.txt`). The update is confirmed, but only by re-running the author's code.
 * **Claims 7–9.** I read Padakandla–Pradhan (arXiv:1207.3146v6): §II-D eqs. (1)–(11) and
   Theorems 3 and 5, whose costs are κ = 1{x₁=1} and κ_j = 1{x_j=1}. The attempt describes
   them correctly. The literal strict inequalities do make the UM region empty when an output

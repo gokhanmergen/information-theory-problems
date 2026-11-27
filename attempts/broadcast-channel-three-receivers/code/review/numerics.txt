@@ -1,0 +1,10 @@
+2.35 (2, 2) 0.1189243
+2.35 (3, 3) 0.1189243
+numerics_check.py:24: RuntimeWarning: overflow encountered in exp
+  obj = lambda z: -G((np.exp(z) / np.exp(z).sum()).reshape(nu, nv, 2), alpha)
+numerics_check.py:24: RuntimeWarning: invalid value encountered in divide
+  obj = lambda z: -G((np.exp(z) / np.exp(z).sum()).reshape(nu, nv, 2), alpha)
+<site-packages>/numpy/_core/_methods.py:49: RuntimeWarning: overflow encountered in reduce
+  return umr_sum(a, axis, dtype, out, keepdims, initial, where)
+2.4 (2, 2) 0.1214546
+2.4 (3, 3) 0.1214546

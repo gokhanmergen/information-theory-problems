@@ -1,0 +1,19 @@
+alpha = 47/20 = 2.35, tau = 1201/10000 = 0.1201
+WY2 = {(0, 0): '21/50', (0, 1): '29/50', (1, 0): '9/50', (1, 1): '41/50'}
+  f=(0, 0, 0, 0): 2263 leaves, 4525 visited, max interval UB 0.119993602 <= tau  [5s]
+  f=(0, 0, 0, 1): 26628 leaves, 53255 visited, max interval UB 0.120098937 <= tau  [61s]
+  f=(0, 0, 1, 0): 23858 leaves, 47715 visited, max interval UB 0.120098702 <= tau  [107s]
+  f=(0, 0, 1, 1): 71717 leaves, 143433 visited, max interval UB 0.120098978 <= tau  [241s]
+  f=(0, 1, 0, 0): 25733 leaves, 51465 visited, max interval UB 0.120098941 <= tau  [317s]
+  f=(0, 1, 0, 1): 50607 leaves, 101213 visited, max interval UB 0.120098933 <= tau  [456s]
+  f=(0, 1, 1, 0): 32928 leaves, 65855 visited, max interval UB 0.120098989 <= tau  [556s]
+  f=(0, 1, 1, 1): 25366 leaves, 50731 visited, max interval UB 0.120098956 <= tau  [598s]
+  f=(1, 0, 0, 0): 23210 leaves, 46419 visited, max interval UB 0.120098675 <= tau  [645s]
+  f=(1, 0, 0, 1): 33022 leaves, 66043 visited, max interval UB 0.120098975 <= tau  [699s]
+  f=(1, 0, 1, 0): 51477 leaves, 102953 visited, max interval UB 0.120098973 <= tau  [785s]
+  f=(1, 0, 1, 1): 27838 leaves, 55675 visited, max interval UB 0.120098927 <= tau  [827s]
+  f=(1, 1, 0, 0): 71787 leaves, 143573 visited, max interval UB 0.120098980 <= tau  [934s]
+  f=(1, 1, 0, 1): 25537 leaves, 51073 visited, max interval UB 0.120098846 <= tau  [972s]
+  f=(1, 1, 1, 0): 28502 leaves, 57003 visited, max interval UB 0.120098938 <= tau  [1015s]
+  f=(1, 1, 1, 1): 2263 leaves, 4525 visited, max interval UB 0.119993602 <= tau  [1018s]
+ALL 16 MAPS CERTIFIED: S_alpha <= 0.1201

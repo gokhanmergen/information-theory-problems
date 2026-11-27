@@ -1,0 +1,16 @@
+alpha = 2.4;  W_Z = [[0.42, 0.58], [0.18, 0.82]]
+C_Y = 0.1187091008, C_Z ~= 0.0506060997 at P(X=1)=0.52013, alpha*C_Z ~= 0.1214546392
+F_alpha (float search) = 0.1228622349
+rational superposition point: P(V=1)=0.4115, P(X=1|V=0)=0.1794, P(X=1|V=1)=1.0
+  R1 = I(X;Y|V)       in [0.04162047882656644466014551519, 0.04162047882656644466016784906]
+  R2 = I(V;Z)         in [0.0338507316669117695527080158, 0.03385073166691176955273531276]
+  R1 + alpha*R2       in [0.122862234827154691586644629, 0.1228622348271546915867327238]
+certifying G <= tau = 0.1228621348 on the 3-simplex for maps ['const0', 'const1', 'X=U', 'X=V', 'XOR', 'AND', 'OR']
+  const0 f=(0, 0, 0, 0) (orbit size 1): 2240 leaf simplices (4479 visited); max float bound 0.122698609; max interval bound 0.122698609  [3s]
+  const1 f=(1, 1, 1, 1) (orbit size 1): 2240 leaf simplices (4479 visited); max float bound 0.122698609; max interval bound 0.122698609  [3s]
+  X=U    f=(0, 0, 1, 1) (orbit size 2): 33788 leaf simplices (67575 visited); max float bound 0.122861750; max interval bound 0.122861750  [53s]
+  X=V    f=(0, 1, 0, 1) (orbit size 2): 44917 leaf simplices (89833 visited); max float bound 0.122862050; max interval bound 0.122862050  [112s]
+  XOR    f=(0, 1, 1, 0) (orbit size 2): 21749 leaf simplices (43497 visited); max float bound 0.122862108; max interval bound 0.122862108  [46s]
+  AND    f=(0, 0, 0, 1) (orbit size 4): 17952 leaf simplices (35903 visited); max float bound 0.122861918; max interval bound 0.122861918  [40s]
+  OR     f=(0, 1, 1, 1) (orbit size 4): 17452 leaf simplices (34903 visited); max float bound 0.122862075; max interval bound 0.122862075  [55s]
+DONE: on the maps above, S_alpha <= 0.1228621348 < 0.1228622348 <= F_alpha (314s)

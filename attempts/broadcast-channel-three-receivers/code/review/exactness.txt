@@ -1,0 +1,7 @@
+const0: leaves 2243, max depth 18, max denominator 2^8, inexact events 0
+const1: leaves 2243, max depth 18, max denominator 2^8, inexact events 0
+X=U: leaves 46320, max depth 34, max denominator 2^13, inexact events 0
+X=V: leaves 31517, max depth 30, max denominator 2^12, inexact events 0
+XOR: leaves 23562, max depth 34, max denominator 2^13, inexact events 0
+AND: leaves 19212, max depth 34, max denominator 2^13, inexact events 0
+OR: leaves 18374, max depth 34, max denominator 2^13, inexact events 0
