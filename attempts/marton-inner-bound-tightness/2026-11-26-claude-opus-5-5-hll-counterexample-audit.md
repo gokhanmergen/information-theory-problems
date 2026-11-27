@@ -234,8 +234,8 @@ Output of `python hll_check.py 40` (2026-11-26):
   $\tilde T^{\otimes2}$ (textbook), a routine odd-$n$ padding step, and HLL. [sketch] is the
   right label.
 
-**Numbers (independent code, not hll_check.py).** The scripts are `indep_check.py` and
-`search_FT.py` in the reviewer scratch folder. The Appendix-A table was parsed from
+**Numbers (independent code, not hll_check.py).** The scripts are `code/review/indep_check.py` and
+`code/review/search_FT.py` (outputs `indep_check.out`, `search_FT_120.out`). The Appendix-A table was parsed from
 `pdftotext` of the arXiv PDF.
 - The table is identical to `TABLE` (51 rows).
 - New check: both components have X1 and X2 marginals *exactly* $p^*\cdot10^{12}$, i.e. HLL (26).

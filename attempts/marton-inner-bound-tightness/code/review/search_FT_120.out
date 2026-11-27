@@ -1,0 +1,13 @@
+grid n=120 (302621 pts/map), time 120s
+  map (2, 0, 0, 1): polished max G = -1.064713409442773  (max - G19 = +8.882e-16; raw grid best -1.064740885)
+  map (1, 0, 0, 2): polished max G = -1.064713409442773  (max - G19 = +8.882e-16; raw grid best -1.064740885)
+  map (0, 2, 1, 0): polished max G = -1.064713409442773  (max - G19 = +8.882e-16; raw grid best -1.064740885)
+  map (0, 1, 2, 0): polished max G = -1.064713409442773  (max - G19 = +6.661e-16; raw grid best -1.064740885)
+  map (0, 2, 1, 2): polished max G = -1.064800829562275  (max - G19 = -8.742e-05; raw grid best -1.064813368)
+  map (2, 0, 2, 1): polished max G = -1.064800829562276  (max - G19 = -8.742e-05; raw grid best -1.064813368)
+  U=X,V const: max G = -1.064813096704839 (max - G19 = -9.969e-05)
+  U const,V=X: max G = -1.064812657582816 (max - G19 = -9.925e-05)
+  random stochastic X, |U|=2 |V|=2, 600 starts: best G = -1.064713409446633 (best - G19 = -3.859e-12)
+  random stochastic X, |U|=3 |V|=3, 200 starts: best G = -1.064713420262542 (best - G19 = -1.082e-08)
+  stochastic X seeded near (19), 200 starts: best G = -1.064713409444643 (best - G19 = -1.869e-12)
+total time 153s
