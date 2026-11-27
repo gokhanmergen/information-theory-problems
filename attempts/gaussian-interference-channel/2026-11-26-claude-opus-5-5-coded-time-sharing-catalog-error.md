@@ -4,7 +4,7 @@ date: 2026-11-26
 attempter: claude
 model: claude-opus-5-5
 type: partial-result
-status: unverified
+status: verified
 ---
 
 ## Summary
@@ -109,7 +109,8 @@ There is also a survey update for 2015–2026. Highlights:
    stay at $0.076/0.076/0.472/0.241$ bits.
 8. **[proved]** *(On Motahari–Khandani 2009, Thm 7.)* Their region $\mathcal G$ puts
    $\psi_3=\min\{\psi_{31},\psi_{32},\psi_{33}\}$ inside the time-sharing average (their
-   eqs. (8), (14)). For that $\mathcal G$, $\mathcal G=\mathcal G_2$ follows from their
+   eqs. (8), (14)) (reviewer correction: these are eqs. (7) and (13) in arXiv:0801.1306v1,
+   and eqs. (11) and (13) in tech report UW-ECE 2007-26; the content is as stated). For that $\mathcal G$, $\mathcal G=\mathcal G_2$ follows from their
    Theorem 1. The HK region with a time-sharing variable instead imposes
    $R_1+R_2\le\mathbb E_Q\psi_{3j}$ for each $j$. For it, "time-sharing = convexification"
    is false: Claim 4 is a witness, with $a=b=1/4$ in their power-gain convention.
@@ -256,7 +257,13 @@ Coded swap at full power versus the Lean envelope (`--scan`):
 The optimal swaps always make one user all-common in each phase. Mehanna–Marcos–Jindal
 (Allerton 2010, arXiv:1010.2437) already observed that asymmetric splits help the
 symmetric sum rate without time-sharing. The swap turns that asymmetry into a symmetric
-gain.
+gain. (Reviewer: the coded swap itself is not new. Sason, IEEE TIT 50(6), 2004, Table 1 and
+eq. (32), time-shares swapped splits $(\alpha,\beta)/(\beta,\alpha)$ with $Q$ inside the HK
+mutual informations; $\delta=1/2$ there is exactly this two-phase full-power scheme, and his
+Fig. 2 shows it beating TDM/FDM at moderate interference and $P\gtrsim17$ dB. The
+certified separation from the convex hull with power control, i.e. from the Lean region and
+from Motahari–Khandani's $\mathcal G_2$, is not in any source the reviewer read. Costa–Nair,
+ITA 2012, was not accessible.)
 
 ### 5. Proposed corrected statement (do not merge without a statement-fix PR)
 
@@ -373,6 +380,105 @@ corrected.
 - Not verified: the ETW outer-bound formula inherited from the earlier attempt (still
   flagged there). It is used only for context in Claim 7.
 
+### Reviewer note (claude-opus-5-5, independent review, 2026-11-27)
+
+**Verdict.** The headline claim holds: the frozen `Statement` is false. I checked every
+`[proved]` claim (1–5 and 8) myself and re-certified the separation with independent,
+outward-rounded code, so the status is now `verified`. The rigorous upper-bound certificate
+is committed as `code/reviewer_bnb_rigorous.py` (run `python reviewer_bnb_rigorous.py 0.003`:
+88,659,404 boxes, about 17 s, prints "Lean-region sum rate <= C(200) + DELTA <= 3.82852584559").
+The coordinator re-ran it and re-read its soundness argument (weak-duality forms, disjoint
+numerator/denominator coordinates, `nextafter` rounding, the e^t lower bound by squarings, and
+the tail s ≥ SMAX ≥ 401, where L − 2C(s/2) is nondecreasing). My other scripts stayed outside
+the repo (scratch); the method is described below so it can be redone.
+
+- **Lean reading (Claim 3).**
+  - `Statement`: for all a, b and all P₁, P₂ > 0, the closure of `InGaussianICAchievable`
+    equals the closure of `InGaussianHKRegion`. The achievability definition uses a
+    per-codeword power constraint Σx² ≤ nP.
+  - `InGaussianHKRegion`: finite convex combinations of `InGaussianHKBasic` points. Phase
+    powers are free except for Σwᵢpⱼᵢ ≤ Pⱼ, and there is no Q inside the bounds.
+  - A Basic split with P₁c+P₁p < p₁ is a phase with less power, so the set equals
+    Motahari–Khandani's G₂.
+  - Core: `log2 = log/log 2`, and `gaussianPdf1D 1` is the N(0,1) density.
+- **Claim 1.** I re-derived all 7 right-hand sides from conditional variances; they match
+  El Gamal–Kim Thm 6.4 term by term. The argument for the two dropped inequalities is
+  sound: d₂ = I(U₂;Y₂)+c₂ since U₂–(X₂,U₁)–Y₂, and both cannot fail at once since S₃ = c₁+c₂.
+- **Claim 4(i).** My own mpmath code computed the MIs from variance ratios.
+  - Averaged (A₁,A₂,S₁,S₂,S₃,D₁,D₂) = (2.798911, 2.798911, 3.922881, 3.922881, 3.926221,
+    5.885992, 5.885992).
+  - Exact vertex enumeration gives max R₁+R₂ = 3.92288136.
+  - The split (R₁c,R₁p) = (0.984718, 0.976723) per user meets all 8 averaged
+    simultaneous-decoding constraints, with min slack 0.
+  - Both users use power 100 in both phases, so there is no power control; the
+    per-codeword constraint holds after the usual ε back-off.
+  - Gaussian HK-with-Q achievability (El Gamal–Kim Thm 6.4 plus discretization) is cited,
+    not re-proved. A finer split (0, 14.13) gives 3.9234.
+- **Claim 4(ii), the key step.** This bound is neither a grid search nor a Lipschitz bound.
+  It is a Lagrangian bound:
+  - R₁+R₂ ≤ Σwᵢg(xᵢ) ≤ ΣwᵢL(xᵢ) ≤ L(P,P), with L affine and increasing. This holds for any
+    number of phases and any power control.
+  - Note: with power control, the hull's sum rate is a concave envelope over phase powers,
+    not the best single fixed-power region. TDM's C(200) = 3.8255 beats every single split
+    (best 3.8106).
+  - g = min of the 7 weak-duality forms; D₁ ≥ S₁ and D₂ ≥ S₂, so the list is complete.
+  - The box bounds are exact, because numerators and denominators use disjoint coordinates.
+  - The tail argument is analytic.
+
+  My branch-and-bound tests the product form Π(1+rⱼ) ≤ E(s_lo)^m, where
+  E(s) = 2^{2L} = 201·e^{(s−200)/201}·4^δ.
+  - Every IEEE operation is pushed outward with `nextafter`.
+  - e^t is bounded below by (1+t/2²⁴)^{2²⁴}, computed with 24 downward-rounded squarings.
+  - The constants and the tail come from `mpmath.iv`. No libm call enters a box test.
+
+  Results:
+
+  | δ | outcome | boxes |
+  |---|---|---|
+  | 0.09 | certified | 4.92M |
+  | 0.05 | certified | 11.3M |
+  | 0.01 | certified | 54.5M (author: 54.5M) |
+  | 0.003 | certified | 88.7M |
+  | 0 | fails, as it must (TDM phase: g = L−δ) | — |
+  | −0.005 | fails, as it must | — |
+
+  Rigorously, then, the Lean sum rate is ≤ C(200)+0.003 = 3.828526 < 3.922881. 3000
+  Nelder–Mead starts give sup(g−L|δ=0) = 0 at the single-user point, so the Lean sum rate
+  is very likely exactly C(200) (heuristic).
+- **Claim 5.** Checked analytically:
+  - strong (S₃ ≥ S₁ when b² ≥ 1), very strong, TIN, and both Z corners;
+  - mixed, MK Thm 10: the split "user 1 all-common, user 2 all-private" gives exactly
+    C(P₂)+min{C(P₁/(1+a²P₂)), C(b²P₁/(1+P₂))}.
+- **Claim 8.** I read arXiv:0801.1306v1 §II-C/D and tech report 2007-26.
+  - Ψ contains ψ₃ = min, and G averages Ψ.
+  - Thm 7 follows from Thm 1 plus the unique-minimizer property. I checked
+    σ_{G₀}(1,1) = ψ₃ for weak interference (A₁+A₂ ≥ S₃ and A₁+D₂ ≥ S₂+S₃).
+  - Equation numbers are corrected in place.
+- **Claim 6 (heuristic).** My own 801² coded-swap grid gives:
+  - P=1000, a=0.5: 5.6379, against TDM 5.4833 (+0.155);
+  - P=1000, a=0.4: 5.7286, against the best single split 5.6253 (+0.103).
+
+  These are consistent with the table. The "excess" column still rests on a grid estimate,
+  so the `[heuristic]` label is right.
+- **Novelty.** The coded swap is Sason 2004 (Table 1, δ=1/2); credit is added in §4.
+  - Costa–Gohari–Nair–Ng (noiseberg paper, Introduction) confirm that time-sharing between
+    Gaussian HK schemes strictly helps (their refs: Costa ITA 2011, Costa–Nair ITA 2012).
+  - Costa–Nair–Ng (ITA 2017, Remark 1) credit Costa 1985 for using Q for power control.
+  - No source I read states the separation from G₂.
+  - Missing from the survey: Huleihel–Merhav, arXiv:1508.05726 (codewords with memory),
+    which Costa–Nair–Ng's Remark 1 disputes.
+- **Survey spot checks.**
+  - arXiv:1404.6690 v5 (2018) is a *withdrawal*; its comment cites the I-MMSE limit error.
+  - arXiv:1509.02953 v2 is withdrawn, as stated.
+  - Khandani arXiv:2501.14941 is now at v14 (2026-11-02). Its claim that the envelope is
+    reached with at most 2 phases, one of them single-user, was not checked against this
+    witness.
+- **Corrected statement (§5).** It matches Costa–Gohari–Nair–Ng Def. 2 (Q inside every
+  mutual information, E X² ≤ P) extended to two-sided interference. Its 7 averaged
+  right-hand sides match Basic. Not typechecked: there is no Lean build in this worktree.
+- **Not checked:** Claims 7 and 9 in detail; the ETW formula; Nam; Liu's theorem numbers;
+  Nair–Ng; Costa–Nair ITA 2012 (inaccessible).
+
 ## Dead ends
 
 - **Non-Gaussian TIN probes at the open grid points.** Uniform $M$-PAM ($M\le16$) and
@@ -387,7 +493,8 @@ corrected.
   it with the structured swap family and the exact LP dual-form evaluation.
 - **Motahari–Khandani Thm 7 initially suggested** that coded time-sharing equals
   convexification for weak GICs, which would have made the Lean region correct. Reading
-  their definitions (eq. (8): $\psi_3=\min$, then eq. (14)) shows their $\mathcal G$ is not
+  their definitions (eq. (8): $\psi_3=\min$, then eq. (14); reviewer: eqs. (7), (13) in
+arXiv:0801.1306v1) shows their $\mathcal G$ is not
   the HK region with $Q$.
 - **Not tried:** HK with *randomized* power control, where $Q$ carries information
   (Hajek–Pursley style; EGN used it for the Gaussian primitive relay). It is non-Gaussian
