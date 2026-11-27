@@ -11,7 +11,7 @@ status: community-reviewed
 
 This attempt completes the first **complete mathematical certification** of the Courtade–Kumar conjecture for $n = 4$ over the entire noise range $\alpha \in (0, 0.5)$. 
 
-The prior computer-assisted attempt ([2026-07-18-claude-fable-5-n4-certified.md](file:///Users/gokhanmergen/PycharmProjects/information_theory_problems_gemini/information-theory-problems/attempts/courtade-kumar/2026-07-18-claude-fable-5-n4-certified.md)) certified the positive gap $g_f(\alpha) > 0$ for all 221 non-dictator classes on the interval $[0.005, 0.495]$ via interval arithmetic, leaving the endpoint regimes $(0, 0.005)$ and $(0.495, 0.5)$ as open lemmas. 
+The prior computer-assisted attempt ([`2026-07-18-claude-fable-5-n4-certified.md`](https://github.com/gokhanmergen/information-theory-problems/blob/main/attempts/courtade-kumar/2026-07-18-claude-fable-5-n4-certified.md)) certified the positive gap $g_f(\alpha) > 0$ for all 221 non-dictator classes on the interval $[0.005, 0.495]$ via interval arithmetic, leaving the endpoint regimes $(0, 0.005)$ and $(0.495, 0.5)$ as open lemmas. 
 
 We close these endpoint regimes analytically and computationally:
 1. **High-noise endpoint $[0.495, 0.5]$**: Covered by a uniform Taylor-remainder bound showing $g_f(\alpha) \geq 0.0922 \rho^2 > 0$ for all non-dictator functions, where $\rho = 1-2\alpha \leq 0.01$.

@@ -14,6 +14,10 @@ built directly on top of `InfoTheory.Bridge.ChannelAchievability` and `InfoTheor
      `β_n ≤ 2^(-n (D(P ‖ Q) - δ))`)
    - `chernoff_stein_converse` and `chernoff_stein_converse_rate`
      (`(1 - ε) (-log₂ β_n) ≤ n D(P ‖ Q) + 1`, via Data Processing Inequality for KL divergence)
+   - `chernoff_stein_strong_converse` (for `P ≪ Q`, `ε < 1`, `δ > 0`, eventually every test with
+     `α_n ≤ ε` satisfies `β_n ≥ 2^(-n (D(P ‖ Q) + δ))`)
+   - `chernoffSteinOptTypeII` and `chernoff_stein_theorem`
+     (`lim_{n → ∞} -(1/n) log₂ β_n^ε = D(P ‖ Q)` for every fixed `ε ∈ (0, 1)`)
 
 2. **Gallager's (1965) Random-Coding Error Exponent (Gallager 1965, Thm. 1; Cover & Thomas Ch. 7)**:
    - `gallagerE0` (`E_0(ρ, P, W) = -log₂ ∑_y (∑_x P(x) W(y | x)^{1/(1+ρ)})^{1+ρ}`)
@@ -127,6 +131,184 @@ noncomputable def relEntTypicalSet (P Q : ProbDist α) (n : ℕ) (δ : ℝ) : Fi
     (iidDist P n).pmf x * (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q + δ))) ≤ (iidDist Q n).pmf x ∧
     (iidDist Q n).pmf x ≤ (iidDist P n).pmf x * (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q - δ)))
 
+/-- Chebyshev tail bound for the relative-entropy typical set: for any `P ≪ Q`, `η > 0`,
+    and `δ > 0`, eventually `P^n((A_δ^(n)(P ‖ Q))ᶜ) ≤ η`. -/
+private lemma relEntTypicalSet_type1_le (P Q : ProbDist α) (hac : AbsCont P Q)
+    {η δ : ℝ} (hη : 0 < η) (hδ : 0 < δ) :
+    ∃ N : ℕ, ∀ n ≥ N, htType1Error P n (relEntTypicalSet P Q n δ) ≤ η := by
+  classical
+  let Z : α → ℝ := fun a => llrBit P Q a - klDivergence P Q
+  let V : ℝ := ∑ a : α, P.pmf a * (Z a) ^ 2
+  have hEZ : ∑ a : α, P.pmf a * Z a = 0 := by
+    simp_rw [Z, mul_sub, Finset.sum_sub_distrib, expected_llrBit, ← Finset.sum_mul, P.sum_one,
+      one_mul, sub_self]
+  obtain ⟨N₀, hN₀⟩ := exists_nat_gt (V / (η * δ ^ 2))
+  refine ⟨max N₀ 1, fun n hn => ?_⟩
+  have hn_pos : 0 < n := lt_of_lt_of_le Nat.zero_lt_one (le_trans (le_max_right N₀ 1) hn)
+  have hn_r : (0 : ℝ) < (n : ℝ) := Nat.cast_pos.mpr hn_pos
+  have hcomp_eq : htType1Error P n (relEntTypicalSet P Q n δ) =
+      ∑ x ∈ (relEntTypicalSet P Q n δ)ᶜ, (iidDist P n).pmf x := by
+    unfold htType1Error
+    have h := Finset.sum_add_sum_compl (relEntTypicalSet P Q n δ) (iidDist P n).pmf
+    rw [(iidDist P n).sum_one] at h
+    linarith
+  rw [hcomp_eq]
+  have hVar : ∑ x : Fin n → α, (iidDist P n).pmf x * (∑ i : Fin n, Z (x i)) ^ 2 =
+      (n : ℝ) * V := by
+    have hsq : ∀ x : Fin n → α,
+        (iidDist P n).pmf x * (∑ i : Fin n, Z (x i)) ^ 2 =
+          ∑ i : Fin n, ∑ j : Fin n, (iidDist P n).pmf x * (Z (x i) * Z (x j)) := by
+      intro x
+      rw [sq, Finset.sum_mul_sum, Finset.mul_sum]
+      refine Finset.sum_congr rfl fun i _ => ?_
+      rw [Finset.mul_sum]
+    simp_rw [hsq]
+    rw [Finset.sum_comm]
+    trans (∑ i : Fin n, ∑ j : Fin n,
+        ∑ x : Fin n → α, (iidDist P n).pmf x * (Z (x i) * Z (x j)))
+    · refine Finset.sum_congr rfl fun i _ => Finset.sum_comm
+    · trans (∑ _i : Fin n, V)
+      · refine Finset.sum_congr rfl fun i _ => ?_
+        rw [Finset.sum_eq_single i]
+        · have h := iidDist_sum_coord P (fun a => Z a * Z a) i
+          simpa [← sq, V] using h
+        · intro j _ hji
+          rw [iidDist_sum_two_coords P Z Z hji.symm, hEZ, mul_zero]
+        · intro h; exact absurd (Finset.mem_univ _) h
+      · simp
+  have hbad : ∀ x ∈ (relEntTypicalSet P Q n δ)ᶜ,
+      ((n : ℝ) * δ) ^ 2 * (iidDist P n).pmf x ≤
+        (iidDist P n).pmf x * (∑ i : Fin n, Z (x i)) ^ 2 := by
+    intro x hx
+    by_cases hpx : (iidDist P n).pmf x ≤ 0
+    · have h0 : (iidDist P n).pmf x = 0 := le_antisymm hpx ((iidDist P n).nonneg x)
+      simp [h0]
+    · have hpos : 0 < (iidDist P n).pmf x := lt_of_not_ge hpx
+      have hcoord_P : ∀ i : Fin n, 0 < P.pmf (x i) := fun i => by
+        by_contra hle
+        have h0 : P.pmf (x i) = 0 := le_antisymm (not_lt.mp hle) (P.nonneg _)
+        have hprod0 : (iidDist P n).pmf x = 0 :=
+          Finset.prod_eq_zero (Finset.mem_univ i) h0
+        linarith
+      have hcoord_Q : ∀ i : Fin n, 0 < Q.pmf (x i) := fun i =>
+        lt_of_le_of_ne (Q.nonneg (x i)) fun h => by
+          have := hac (x i) h.symm
+          linarith [hcoord_P i]
+      have hQpos : 0 < (iidDist Q n).pmf x := by
+        unfold iidDist; dsimp only
+        exact Finset.prod_pos fun i _ => hcoord_Q i
+      have hsum_Z : ∑ i : Fin n, Z (x i) =
+          log2 ((iidDist P n).pmf x / (iidDist Q n).pmf x) - (n : ℝ) * klDivergence P Q := by
+        simp_rw [Z, Finset.sum_sub_distrib, Finset.sum_const, Finset.card_univ,
+          Fintype.card_fin, nsmul_eq_mul]
+        congr 1
+        have hdiv : (iidDist P n).pmf x / (iidDist Q n).pmf x =
+            ∏ i : Fin n, (P.pmf (x i) / Q.pmf (x i)) := by
+          unfold iidDist; dsimp only; rw [Finset.prod_div_distrib]
+        rw [hdiv]
+        unfold log2
+        rw [Real.log_prod fun i _ => ne_of_gt (div_pos (hcoord_P i) (hcoord_Q i)), Finset.sum_div]
+        refine Finset.sum_congr rfl fun i _ => ?_
+        have hni : ¬ (P.pmf (x i) ≤ 0) := not_le.mpr (hcoord_P i)
+        simp [llrBit, log2, hni]
+      have hnot : ¬ (0 < (iidDist P n).pmf x ∧
+          (iidDist P n).pmf x * (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q + δ))) ≤
+            (iidDist Q n).pmf x ∧
+          (iidDist Q n).pmf x ≤
+            (iidDist P n).pmf x * (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q - δ)))) := by
+        simp only [Finset.mem_compl, relEntTypicalSet, Finset.mem_filter, Finset.mem_univ,
+          true_and] at hx
+        exact hx
+      have h2eq : ∀ t : ℝ, (2 : ℝ) ^ t = Real.exp (t * Real.log 2) := fun t => by
+        rw [Real.rpow_def_of_pos (by norm_num : (0 : ℝ) < 2), mul_comm]
+      have hlog2pos : 0 < Real.log 2 := Real.log_pos (by norm_num)
+      have habs : (n : ℝ) * δ < |∑ i : Fin n, Z (x i)| := by
+        by_contra hle
+        push Not at hle
+        rw [hsum_Z, abs_le] at hle
+        apply hnot
+        refine ⟨hpos, ?_, ?_⟩
+        · -- `P^n(x) * 2^(-n(D+δ)) ≤ Q^n(x)` from `log₂(P^n/Q^n) ≤ n(D+δ)`
+          have h1 : Real.log ((iidDist P n).pmf x / (iidDist Q n).pmf x) / Real.log 2 ≤
+              (n : ℝ) * (klDivergence P Q + δ) := by
+            unfold log2 at hle; linarith [hle.2]
+          have h2 : Real.log ((iidDist P n).pmf x / (iidDist Q n).pmf x) ≤
+              (n : ℝ) * (klDivergence P Q + δ) * Real.log 2 :=
+            (div_le_iff₀ hlog2pos).mp h1
+          have hexp : (iidDist P n).pmf x / (iidDist Q n).pmf x ≤
+              (2 : ℝ) ^ ((n : ℝ) * (klDivergence P Q + δ)) := by
+            rw [h2eq, ← Real.exp_log (div_pos hpos hQpos)]
+            exact Real.exp_le_exp.mpr h2
+          have hinv : (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q + δ))) *
+              (2 : ℝ) ^ ((n : ℝ) * (klDivergence P Q + δ)) = 1 := by
+            rw [← Real.rpow_add (by norm_num : (0 : ℝ) < 2), neg_add_cancel, Real.rpow_zero]
+          have hmul1 : (iidDist P n).pmf x ≤
+              (iidDist Q n).pmf x * (2 : ℝ) ^ ((n : ℝ) * (klDivergence P Q + δ)) := by
+            have := (div_le_iff₀ hQpos).mp hexp
+            linarith
+          have hmul2 := mul_le_mul_of_nonneg_right hmul1
+            (le_of_lt (Real.rpow_pos_of_pos (by norm_num : (0 : ℝ) < 2)
+              (-((n : ℝ) * (klDivergence P Q + δ)))))
+          have hrhs : (iidDist Q n).pmf x * (2 : ℝ) ^ ((n : ℝ) * (klDivergence P Q + δ)) *
+              (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q + δ))) = (iidDist Q n).pmf x := by
+            rw [mul_assoc, mul_comm ((2 : ℝ) ^ ((n : ℝ) * (klDivergence P Q + δ))), hinv, mul_one]
+          linarith
+        · -- `Q^n(x) ≤ P^n(x) * 2^(-n(D-δ))` from `n(D-δ) ≤ log₂(P^n/Q^n)`
+          have h1 : (n : ℝ) * (klDivergence P Q - δ) ≤
+              Real.log ((iidDist P n).pmf x / (iidDist Q n).pmf x) / Real.log 2 := by
+            unfold log2 at hle; linarith [hle.1]
+          have h2 : (n : ℝ) * (klDivergence P Q - δ) * Real.log 2 ≤
+              Real.log ((iidDist P n).pmf x / (iidDist Q n).pmf x) :=
+            (le_div_iff₀ hlog2pos).mp h1
+          have hexp : (2 : ℝ) ^ ((n : ℝ) * (klDivergence P Q - δ)) ≤
+              (iidDist P n).pmf x / (iidDist Q n).pmf x := by
+            rw [h2eq, ← Real.exp_log (div_pos hpos hQpos)]
+            exact Real.exp_le_exp.mpr h2
+          have hinv : (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q - δ))) *
+              (2 : ℝ) ^ ((n : ℝ) * (klDivergence P Q - δ)) = 1 := by
+            rw [← Real.rpow_add (by norm_num : (0 : ℝ) < 2), neg_add_cancel, Real.rpow_zero]
+          have hmul1 : (iidDist Q n).pmf x * (2 : ℝ) ^ ((n : ℝ) * (klDivergence P Q - δ)) ≤
+              (iidDist P n).pmf x := by
+            have := (le_div_iff₀ hQpos).mp hexp
+            linarith
+          have hmul2 := mul_le_mul_of_nonneg_right hmul1
+            (le_of_lt (Real.rpow_pos_of_pos (by norm_num : (0 : ℝ) < 2)
+              (-((n : ℝ) * (klDivergence P Q - δ)))))
+          have hlhs : (iidDist Q n).pmf x * (2 : ℝ) ^ ((n : ℝ) * (klDivergence P Q - δ)) *
+              (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q - δ))) = (iidDist Q n).pmf x := by
+            rw [mul_assoc, mul_comm ((2 : ℝ) ^ ((n : ℝ) * (klDivergence P Q - δ))), hinv, mul_one]
+          linarith
+      have hsq_le : ((n : ℝ) * δ) ^ 2 ≤ (∑ i : Fin n, Z (x i)) ^ 2 := by
+        rw [← sq_abs (∑ i : Fin n, Z (x i))]
+        have hne0 : 0 ≤ (n : ℝ) * δ := by positivity
+        nlinarith
+      nlinarith
+  have hsum_bad : ((n : ℝ) * δ) ^ 2 *
+      ∑ x ∈ (relEntTypicalSet P Q n δ)ᶜ, (iidDist P n).pmf x ≤ (n : ℝ) * V := by
+    rw [Finset.mul_sum]
+    calc ∑ x ∈ (relEntTypicalSet P Q n δ)ᶜ, ((n : ℝ) * δ) ^ 2 * (iidDist P n).pmf x
+      _ ≤ ∑ x ∈ (relEntTypicalSet P Q n δ)ᶜ,
+            (iidDist P n).pmf x * (∑ i : Fin n, Z (x i)) ^ 2 :=
+          Finset.sum_le_sum hbad
+      _ ≤ ∑ x : Fin n → α, (iidDist P n).pmf x * (∑ i : Fin n, Z (x i)) ^ 2 :=
+          Finset.sum_le_univ_sum_of_nonneg fun x =>
+            mul_nonneg ((iidDist P n).nonneg x) (sq_nonneg _)
+      _ = (n : ℝ) * V := hVar
+  have hden_pos : (0 : ℝ) < (n : ℝ) * δ ^ 2 := by positivity
+  have htail : ∑ x ∈ (relEntTypicalSet P Q n δ)ᶜ, (iidDist P n).pmf x ≤
+      V / ((n : ℝ) * δ ^ 2) := by
+    rw [le_div_iff₀ hden_pos]
+    have hrew : ((n : ℝ) * δ) ^ 2 = (n : ℝ) * ((n : ℝ) * δ ^ 2) := by ring
+    rw [hrew, mul_assoc, mul_comm ((n : ℝ) * δ ^ 2)] at hsum_bad
+    exact le_of_mul_le_mul_left hsum_bad hn_r
+  have hn_gt : V / (η * δ ^ 2) < (n : ℝ) :=
+    lt_of_lt_of_le hN₀ (by exact_mod_cast le_trans (le_max_left N₀ 1) hn)
+  have hV_le : V / ((n : ℝ) * δ ^ 2) ≤ η := by
+    rw [div_le_iff₀ hden_pos]
+    have h1 := (div_lt_iff₀ (by positivity : 0 < η * δ ^ 2)).mp hn_gt
+    linarith
+  exact le_trans htail hV_le
+
 /-- **Chernoff–Stein Lemma — Achievability** (Cover & Thomas, Theorem 11.8.3):
     for any `P ≪ Q`, any `ε ∈ (0, 1)`, and any `δ > 0`, for all sufficiently large `n` there
     exists an acceptance region `A ⊆ α^n` with Type-I error `α_n ≤ ε` and Type-II error
@@ -137,198 +319,28 @@ theorem chernoff_stein_achievability (P Q : ProbDist α) (hac : AbsCont P Q)
       htType1Error P n A ≤ ε ∧
       htType2Error Q n A ≤ (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q - δ))) := by
   classical
-  let Z : α → ℝ := fun a => llrBit P Q a - klDivergence P Q
-  let V : ℝ := ∑ a : α, P.pmf a * (Z a) ^ 2
-  have hEZ : ∑ a : α, P.pmf a * Z a = 0 := by
-    simp_rw [Z, mul_sub, Finset.sum_sub_distrib, expected_llrBit, ← Finset.sum_mul, P.sum_one,
-      one_mul, sub_self]
-  obtain ⟨N₀, hN₀⟩ := exists_nat_gt (V / (ε * δ ^ 2))
-  refine ⟨max N₀ 1, fun n hn => ⟨relEntTypicalSet P Q n δ, ?_, ?_⟩⟩
-  · -- Type-I error bound via Chebyshev's inequality on `∑ Z(x_i)`
-    have hn_pos : 0 < n := lt_of_lt_of_le Nat.zero_lt_one (le_trans (le_max_right N₀ 1) hn)
-    have hn_r : (0 : ℝ) < (n : ℝ) := Nat.cast_pos.mpr hn_pos
-    have hcomp_eq : htType1Error P n (relEntTypicalSet P Q n δ) =
-        ∑ x ∈ (relEntTypicalSet P Q n δ)ᶜ, (iidDist P n).pmf x := by
-      unfold htType1Error
-      have h := Finset.sum_add_sum_compl (relEntTypicalSet P Q n δ) (iidDist P n).pmf
-      rw [(iidDist P n).sum_one] at h
-      linarith
-    rw [hcomp_eq]
-    have hVar : ∑ x : Fin n → α, (iidDist P n).pmf x * (∑ i : Fin n, Z (x i)) ^ 2 =
-        (n : ℝ) * V := by
-      have hsq : ∀ x : Fin n → α,
-          (iidDist P n).pmf x * (∑ i : Fin n, Z (x i)) ^ 2 =
-            ∑ i : Fin n, ∑ j : Fin n, (iidDist P n).pmf x * (Z (x i) * Z (x j)) := by
-        intro x
-        rw [sq, Finset.sum_mul_sum, Finset.mul_sum]
-        refine Finset.sum_congr rfl fun i _ => ?_
-        rw [Finset.mul_sum]
-      simp_rw [hsq]
-      rw [Finset.sum_comm]
-      trans (∑ i : Fin n, ∑ j : Fin n,
-          ∑ x : Fin n → α, (iidDist P n).pmf x * (Z (x i) * Z (x j)))
-      · refine Finset.sum_congr rfl fun i _ => Finset.sum_comm
-      · trans (∑ _i : Fin n, V)
-        · refine Finset.sum_congr rfl fun i _ => ?_
-          rw [Finset.sum_eq_single i]
-          · have h := iidDist_sum_coord P (fun a => Z a * Z a) i
-            simpa [← sq, V] using h
-          · intro j _ hji
-            rw [iidDist_sum_two_coords P Z Z hji.symm, hEZ, mul_zero]
-          · intro h; exact absurd (Finset.mem_univ _) h
-        · simp
-    have hbad : ∀ x ∈ (relEntTypicalSet P Q n δ)ᶜ,
-        ((n : ℝ) * δ) ^ 2 * (iidDist P n).pmf x ≤
-          (iidDist P n).pmf x * (∑ i : Fin n, Z (x i)) ^ 2 := by
-      intro x hx
-      by_cases hpx : (iidDist P n).pmf x ≤ 0
-      · have h0 : (iidDist P n).pmf x = 0 := le_antisymm hpx ((iidDist P n).nonneg x)
-        simp [h0]
-      · have hpos : 0 < (iidDist P n).pmf x := lt_of_not_ge hpx
-        have hcoord_P : ∀ i : Fin n, 0 < P.pmf (x i) := fun i => by
-          by_contra hle
-          have h0 : P.pmf (x i) = 0 := le_antisymm (not_lt.mp hle) (P.nonneg _)
-          have hprod0 : (iidDist P n).pmf x = 0 :=
-            Finset.prod_eq_zero (Finset.mem_univ i) h0
-          linarith
-        have hcoord_Q : ∀ i : Fin n, 0 < Q.pmf (x i) := fun i =>
-          lt_of_le_of_ne (Q.nonneg (x i)) fun h => by
-            have := hac (x i) h.symm
-            linarith [hcoord_P i]
-        have hQpos : 0 < (iidDist Q n).pmf x := by
-          unfold iidDist; dsimp only
-          exact Finset.prod_pos fun i _ => hcoord_Q i
-        have hsum_Z : ∑ i : Fin n, Z (x i) =
-            log2 ((iidDist P n).pmf x / (iidDist Q n).pmf x) - (n : ℝ) * klDivergence P Q := by
-          simp_rw [Z, Finset.sum_sub_distrib, Finset.sum_const, Finset.card_univ,
-            Fintype.card_fin, nsmul_eq_mul]
-          congr 1
-          have hdiv : (iidDist P n).pmf x / (iidDist Q n).pmf x =
-              ∏ i : Fin n, (P.pmf (x i) / Q.pmf (x i)) := by
-            unfold iidDist; dsimp only; rw [Finset.prod_div_distrib]
-          rw [hdiv]
-          unfold log2
-          rw [Real.log_prod fun i _ => ne_of_gt (div_pos (hcoord_P i) (hcoord_Q i)), Finset.sum_div]
-          refine Finset.sum_congr rfl fun i _ => ?_
-          have hni : ¬ (P.pmf (x i) ≤ 0) := not_le.mpr (hcoord_P i)
-          simp [llrBit, log2, hni]
-        have hnot : ¬ (0 < (iidDist P n).pmf x ∧
-            (iidDist P n).pmf x * (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q + δ))) ≤
-              (iidDist Q n).pmf x ∧
-            (iidDist Q n).pmf x ≤
-              (iidDist P n).pmf x * (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q - δ)))) := by
-          simp only [Finset.mem_compl, relEntTypicalSet, Finset.mem_filter, Finset.mem_univ,
-            true_and] at hx
-          exact hx
-        have h2eq : ∀ t : ℝ, (2 : ℝ) ^ t = Real.exp (t * Real.log 2) := fun t => by
-          rw [Real.rpow_def_of_pos (by norm_num : (0 : ℝ) < 2), mul_comm]
-        have hlog2pos : 0 < Real.log 2 := Real.log_pos (by norm_num)
-        have habs : (n : ℝ) * δ < |∑ i : Fin n, Z (x i)| := by
-          by_contra hle
-          push Not at hle
-          rw [hsum_Z, abs_le] at hle
-          apply hnot
-          refine ⟨hpos, ?_, ?_⟩
-          · -- `P^n(x) * 2^(-n(D+δ)) ≤ Q^n(x)` from `log₂(P^n/Q^n) ≤ n(D+δ)`
-            have h1 : Real.log ((iidDist P n).pmf x / (iidDist Q n).pmf x) / Real.log 2 ≤
-                (n : ℝ) * (klDivergence P Q + δ) := by
-              unfold log2 at hle; linarith [hle.2]
-            have h2 : Real.log ((iidDist P n).pmf x / (iidDist Q n).pmf x) ≤
-                (n : ℝ) * (klDivergence P Q + δ) * Real.log 2 :=
-              (div_le_iff₀ hlog2pos).mp h1
-            have hexp : (iidDist P n).pmf x / (iidDist Q n).pmf x ≤
-                (2 : ℝ) ^ ((n : ℝ) * (klDivergence P Q + δ)) := by
-              rw [h2eq, ← Real.exp_log (div_pos hpos hQpos)]
-              exact Real.exp_le_exp.mpr h2
-            have hinv : (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q + δ))) *
-                (2 : ℝ) ^ ((n : ℝ) * (klDivergence P Q + δ)) = 1 := by
-              rw [← Real.rpow_add (by norm_num : (0 : ℝ) < 2), neg_add_cancel, Real.rpow_zero]
-            have hmul1 : (iidDist P n).pmf x ≤
-                (iidDist Q n).pmf x * (2 : ℝ) ^ ((n : ℝ) * (klDivergence P Q + δ)) := by
-              have := (div_le_iff₀ hQpos).mp hexp
-              linarith
-            have hmul2 := mul_le_mul_of_nonneg_right hmul1
-              (le_of_lt (Real.rpow_pos_of_pos (by norm_num : (0 : ℝ) < 2)
-                (-((n : ℝ) * (klDivergence P Q + δ)))))
-            have hrhs : (iidDist Q n).pmf x * (2 : ℝ) ^ ((n : ℝ) * (klDivergence P Q + δ)) *
-                (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q + δ))) = (iidDist Q n).pmf x := by
-              rw [mul_assoc, mul_comm ((2 : ℝ) ^ ((n : ℝ) * (klDivergence P Q + δ))), hinv, mul_one]
-            linarith
-          · -- `Q^n(x) ≤ P^n(x) * 2^(-n(D-δ))` from `n(D-δ) ≤ log₂(P^n/Q^n)`
-            have h1 : (n : ℝ) * (klDivergence P Q - δ) ≤
-                Real.log ((iidDist P n).pmf x / (iidDist Q n).pmf x) / Real.log 2 := by
-              unfold log2 at hle; linarith [hle.1]
-            have h2 : (n : ℝ) * (klDivergence P Q - δ) * Real.log 2 ≤
-                Real.log ((iidDist P n).pmf x / (iidDist Q n).pmf x) :=
-              (le_div_iff₀ hlog2pos).mp h1
-            have hexp : (2 : ℝ) ^ ((n : ℝ) * (klDivergence P Q - δ)) ≤
-                (iidDist P n).pmf x / (iidDist Q n).pmf x := by
-              rw [h2eq, ← Real.exp_log (div_pos hpos hQpos)]
-              exact Real.exp_le_exp.mpr h2
-            have hinv : (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q - δ))) *
-                (2 : ℝ) ^ ((n : ℝ) * (klDivergence P Q - δ)) = 1 := by
-              rw [← Real.rpow_add (by norm_num : (0 : ℝ) < 2), neg_add_cancel, Real.rpow_zero]
-            have hmul1 : (iidDist Q n).pmf x * (2 : ℝ) ^ ((n : ℝ) * (klDivergence P Q - δ)) ≤
-                (iidDist P n).pmf x := by
-              have := (le_div_iff₀ hQpos).mp hexp
-              linarith
-            have hmul2 := mul_le_mul_of_nonneg_right hmul1
-              (le_of_lt (Real.rpow_pos_of_pos (by norm_num : (0 : ℝ) < 2)
-                (-((n : ℝ) * (klDivergence P Q - δ)))))
-            have hlhs : (iidDist Q n).pmf x * (2 : ℝ) ^ ((n : ℝ) * (klDivergence P Q - δ)) *
-                (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q - δ))) = (iidDist Q n).pmf x := by
-              rw [mul_assoc, mul_comm ((2 : ℝ) ^ ((n : ℝ) * (klDivergence P Q - δ))), hinv, mul_one]
-            linarith
-        have hsq_le : ((n : ℝ) * δ) ^ 2 ≤ (∑ i : Fin n, Z (x i)) ^ 2 := by
-          rw [← sq_abs (∑ i : Fin n, Z (x i))]
-          have hne0 : 0 ≤ (n : ℝ) * δ := by positivity
-          nlinarith
-        nlinarith
-    have hsum_bad : ((n : ℝ) * δ) ^ 2 *
-        ∑ x ∈ (relEntTypicalSet P Q n δ)ᶜ, (iidDist P n).pmf x ≤ (n : ℝ) * V := by
-      rw [Finset.mul_sum]
-      calc ∑ x ∈ (relEntTypicalSet P Q n δ)ᶜ, ((n : ℝ) * δ) ^ 2 * (iidDist P n).pmf x
-        _ ≤ ∑ x ∈ (relEntTypicalSet P Q n δ)ᶜ,
-              (iidDist P n).pmf x * (∑ i : Fin n, Z (x i)) ^ 2 :=
-            Finset.sum_le_sum hbad
-        _ ≤ ∑ x : Fin n → α, (iidDist P n).pmf x * (∑ i : Fin n, Z (x i)) ^ 2 :=
-            Finset.sum_le_univ_sum_of_nonneg fun x =>
-              mul_nonneg ((iidDist P n).nonneg x) (sq_nonneg _)
-        _ = (n : ℝ) * V := hVar
-    have hden_pos : (0 : ℝ) < (n : ℝ) * δ ^ 2 := by positivity
-    have htail : ∑ x ∈ (relEntTypicalSet P Q n δ)ᶜ, (iidDist P n).pmf x ≤
-        V / ((n : ℝ) * δ ^ 2) := by
-      rw [le_div_iff₀ hden_pos]
-      have hrew : ((n : ℝ) * δ) ^ 2 = (n : ℝ) * ((n : ℝ) * δ ^ 2) := by ring
-      rw [hrew, mul_assoc, mul_comm ((n : ℝ) * δ ^ 2)] at hsum_bad
-      exact le_of_mul_le_mul_left hsum_bad hn_r
-    have hn_gt : V / (ε * δ ^ 2) < (n : ℝ) :=
-      lt_of_lt_of_le hN₀ (by exact_mod_cast le_trans (le_max_left N₀ 1) hn)
-    have hV_le : V / ((n : ℝ) * δ ^ 2) ≤ ε := by
-      rw [div_le_iff₀ hden_pos]
-      have h1 := (div_lt_iff₀ (by positivity : 0 < ε * δ ^ 2)).mp hn_gt
-      linarith
-    exact le_trans htail hV_le
-  · -- Type-II error bound: `Q^n(A) ≤ 2^(-n(D-δ)) * P^n(A) ≤ 2^(-n(D-δ))`
-    unfold htType2Error
-    have hpow_nonneg : (0 : ℝ) ≤ (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q - δ))) :=
-      le_of_lt (Real.rpow_pos_of_pos (by norm_num) _)
-    have hP_le1 : ∑ x ∈ relEntTypicalSet P Q n δ, (iidDist P n).pmf x ≤ 1 := by
-      calc ∑ x ∈ relEntTypicalSet P Q n δ, (iidDist P n).pmf x
-        _ ≤ ∑ x : Fin n → α, (iidDist P n).pmf x :=
-            Finset.sum_le_univ_sum_of_nonneg fun x => (iidDist P n).nonneg x
-        _ = 1 := (iidDist P n).sum_one
-    calc ∑ x ∈ relEntTypicalSet P Q n δ, (iidDist Q n).pmf x
-      _ ≤ ∑ x ∈ relEntTypicalSet P Q n δ,
-            (iidDist P n).pmf x * (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q - δ))) :=
-          Finset.sum_le_sum fun x hx => by
-            simp only [relEntTypicalSet, Finset.mem_filter, Finset.mem_univ, true_and] at hx
-            exact hx.2.2
-      _ = (∑ x ∈ relEntTypicalSet P Q n δ, (iidDist P n).pmf x) *
-            (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q - δ))) := (Finset.sum_mul _ _ _).symm
-      _ ≤ 1 * (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q - δ))) :=
-          mul_le_mul_of_nonneg_right hP_le1 hpow_nonneg
-      _ = (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q - δ))) := one_mul _
+  obtain ⟨N, hN⟩ := relEntTypicalSet_type1_le P Q hac hε0 hδ
+  refine ⟨N, fun n hn => ⟨relEntTypicalSet P Q n δ, hN n hn, ?_⟩⟩
+  -- Type-II error bound: `Q^n(A) ≤ 2^(-n(D-δ)) * P^n(A) ≤ 2^(-n(D-δ))`
+  unfold htType2Error
+  have hpow_nonneg : (0 : ℝ) ≤ (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q - δ))) :=
+    le_of_lt (Real.rpow_pos_of_pos (by norm_num) _)
+  have hP_le1 : ∑ x ∈ relEntTypicalSet P Q n δ, (iidDist P n).pmf x ≤ 1 := by
+    calc ∑ x ∈ relEntTypicalSet P Q n δ, (iidDist P n).pmf x
+      _ ≤ ∑ x : Fin n → α, (iidDist P n).pmf x :=
+          Finset.sum_le_univ_sum_of_nonneg fun x => (iidDist P n).nonneg x
+      _ = 1 := (iidDist P n).sum_one
+  calc ∑ x ∈ relEntTypicalSet P Q n δ, (iidDist Q n).pmf x
+    _ ≤ ∑ x ∈ relEntTypicalSet P Q n δ,
+          (iidDist P n).pmf x * (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q - δ))) :=
+        Finset.sum_le_sum fun x hx => by
+          simp only [relEntTypicalSet, Finset.mem_filter, Finset.mem_univ, true_and] at hx
+          exact hx.2.2
+    _ = (∑ x ∈ relEntTypicalSet P Q n δ, (iidDist P n).pmf x) *
+          (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q - δ))) := (Finset.sum_mul _ _ _).symm
+    _ ≤ 1 * (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q - δ))) :=
+        mul_le_mul_of_nonneg_right hP_le1 hpow_nonneg
+    _ = (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q - δ))) := one_mul _
 
 /-- **Chernoff–Stein Lemma — Converse** (Cover & Thomas, Theorem 11.8.3):
     for any `P ≪ Q`, any `n : ℕ`, and any acceptance region `A ⊆ α^n` with Type-I error
@@ -455,6 +467,159 @@ theorem chernoff_stein_converse_rate (P Q : ProbDist α) (hac : AbsCont P Q)
     _ ≤ ((n : ℝ) * klDivergence P Q + 1) / (n : ℝ) := hdiv
     _ = klDivergence P Q + 1 / (n : ℝ) := by
         rw [add_div, mul_div_cancel_left₀ _ (ne_of_gt hn_pos)]
+
+/-- **Chernoff–Stein Lemma — Strong Converse** (Cover & Thomas, Theorem 11.8.3):
+    for any `P ≪ Q`, any `ε < 1`, and any `δ > 0`, for all sufficiently large `n` and
+    every acceptance region `A ⊆ α^n` with Type-I error `α_n ≤ ε`, the Type-II error
+    satisfies `β_n ≥ 2^(-n (D(P ‖ Q) + δ))`. -/
+theorem chernoff_stein_strong_converse (P Q : ProbDist α) (hac : AbsCont P Q)
+    {ε δ : ℝ} (hε1 : ε < 1) (hδ : 0 < δ) :
+    ∃ N : ℕ, ∀ n ≥ N, ∀ A : Finset (Fin n → α),
+      htType1Error P n A ≤ ε →
+      (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q + δ))) ≤ htType2Error Q n A := by
+  classical
+  have h1mε : 0 < 1 - ε := sub_pos.mpr hε1
+  have hη : 0 < (1 - ε) / 2 := half_pos h1mε
+  have hδ2 : 0 < δ / 2 := half_pos hδ
+  obtain ⟨N₁, hN₁⟩ := relEntTypicalSet_type1_le P Q hac hη hδ2
+  obtain ⟨N₂, hN₂⟩ := exists_nat_gt (log2 (2 / (1 - ε)) / (δ / 2))
+  refine ⟨max (max N₁ N₂) 1, fun n hn A hA => ?_⟩
+  have hn1 : N₁ ≤ n := le_trans (le_trans (le_max_left N₁ N₂) (le_max_left _ 1)) hn
+  have hn2 : N₂ ≤ n := le_trans (le_trans (le_max_right N₁ N₂) (le_max_left _ 1)) hn
+  set B := relEntTypicalSet P Q n (δ / 2)
+  have hPA : 1 - ε ≤ ∑ x ∈ A, (iidDist P n).pmf x := by
+    unfold htType1Error at hA
+    linarith
+  have hPB : 1 - (1 - ε) / 2 ≤ ∑ x ∈ B, (iidDist P n).pmf x := by
+    have hB := hN₁ n hn1
+    unfold htType1Error at hB
+    linarith
+  have hPunion : ∑ x ∈ A ∪ B, (iidDist P n).pmf x ≤ 1 := by
+    calc ∑ x ∈ A ∪ B, (iidDist P n).pmf x
+      _ ≤ ∑ x : Fin n → α, (iidDist P n).pmf x :=
+          Finset.sum_le_univ_sum_of_nonneg fun x => (iidDist P n).nonneg x
+      _ = 1 := (iidDist P n).sum_one
+  have hPinter : (1 - ε) / 2 ≤ ∑ x ∈ A ∩ B, (iidDist P n).pmf x := by
+    have hui := Finset.sum_union_inter (s₁ := A) (s₂ := B) (f := (iidDist P n).pmf)
+    linarith
+  have hpow_le_η : (2 : ℝ) ^ (-((n : ℝ) * (δ / 2))) ≤ (1 - ε) / 2 := by
+    have hlog2_pos : 0 < Real.log 2 := Real.log_pos (by norm_num)
+    have hn_gt : log2 (2 / (1 - ε)) / (δ / 2) < (n : ℝ) :=
+      lt_of_lt_of_le hN₂ (by exact_mod_cast hn2)
+    have hlog_lt : Real.log (2 / (1 - ε)) < (n : ℝ) * (δ / 2) * Real.log 2 := by
+      have h1 : log2 (2 / (1 - ε)) < (n : ℝ) * (δ / 2) := (div_lt_iff₀ hδ2).mp hn_gt
+      unfold log2 at h1
+      exact (div_lt_iff₀ hlog2_pos).mp h1
+    have hexp : 2 / (1 - ε) ≤ (2 : ℝ) ^ ((n : ℝ) * (δ / 2)) := by
+      rw [Real.rpow_def_of_pos (by norm_num : (0 : ℝ) < 2),
+        mul_comm (Real.log 2), ← Real.exp_log (div_pos (by norm_num : (0 : ℝ) < 2) h1mε)]
+      exact Real.exp_le_exp.mpr (le_of_lt hlog_lt)
+    have hpos_pow : 0 < (2 : ℝ) ^ (-((n : ℝ) * (δ / 2))) :=
+      Real.rpow_pos_of_pos (by norm_num) _
+    have hmul := mul_le_mul_of_nonneg_left
+      (mul_le_mul_of_nonneg_right hexp (le_of_lt hpos_pow)) (le_of_lt hη)
+    have hlhs : (1 - ε) / 2 * (2 / (1 - ε) * (2 : ℝ) ^ (-((n : ℝ) * (δ / 2)))) =
+        (2 : ℝ) ^ (-((n : ℝ) * (δ / 2))) := by
+      have hne : 1 - ε ≠ 0 := ne_of_gt h1mε
+      field_simp [hne]
+    have hrhs : (1 - ε) / 2 * ((2 : ℝ) ^ ((n : ℝ) * (δ / 2)) *
+        (2 : ℝ) ^ (-((n : ℝ) * (δ / 2)))) = (1 - ε) / 2 := by
+      rw [← Real.rpow_add (by norm_num : (0 : ℝ) < 2), add_neg_cancel, Real.rpow_zero, mul_one]
+    linarith
+  have hpow_pos : (0 : ℝ) ≤ (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q + δ / 2))) :=
+    le_of_lt (Real.rpow_pos_of_pos (by norm_num) _)
+  unfold htType2Error
+  calc (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q + δ)))
+    _ = (2 : ℝ) ^ (-((n : ℝ) * (δ / 2))) *
+          (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q + δ / 2))) := by
+        rw [← Real.rpow_add (by norm_num : (0 : ℝ) < 2)]
+        congr 1; ring
+    _ ≤ ((1 - ε) / 2) * (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q + δ / 2))) :=
+        mul_le_mul_of_nonneg_right hpow_le_η hpow_pos
+    _ ≤ (∑ x ∈ A ∩ B, (iidDist P n).pmf x) *
+          (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q + δ / 2))) :=
+        mul_le_mul_of_nonneg_right hPinter hpow_pos
+    _ = ∑ x ∈ A ∩ B, (iidDist P n).pmf x *
+          (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q + δ / 2))) := Finset.sum_mul _ _ _
+    _ ≤ ∑ x ∈ A ∩ B, (iidDist Q n).pmf x := by
+        refine Finset.sum_le_sum fun x hx => ?_
+        have hxB : x ∈ B := (Finset.mem_inter.mp hx).2
+        simp only [B, relEntTypicalSet, Finset.mem_filter, Finset.mem_univ, true_and] at hxB
+        exact hxB.2.1
+    _ ≤ ∑ x ∈ A, (iidDist Q n).pmf x :=
+        Finset.sum_le_sum_of_subset_of_nonneg Finset.inter_subset_left fun x _ _ =>
+          (iidDist Q n).nonneg x
+
+/-- Optimal Type-II error probability `β_n^ε = inf { Q^n(A) : P^n(Aᶜ) ≤ ε }`
+    for binary hypothesis testing of `H₀ : P` vs `H₁ : Q` at level `ε`
+    (Cover & Thomas, Eq. (11.186)). -/
+noncomputable def chernoffSteinOptTypeII (P Q : ProbDist α) (n : ℕ) (ε : ℝ) : ℝ :=
+  sInf { β : ℝ | ∃ A : Finset (Fin n → α), htType1Error P n A ≤ ε ∧ β = htType2Error Q n A }
+
+/-- **Chernoff–Stein Lemma — Exact Asymptotic Limit** (Cover & Thomas, Theorem 11.8.3):
+    for any `P ≪ Q` and every fixed `ε ∈ (0, 1)`,
+    `lim_{n → ∞} (-(1 / n) · log₂ β_n^ε) = D(P ‖ Q)`. -/
+theorem chernoff_stein_theorem (P Q : ProbDist α) (hac : AbsCont P Q)
+    {ε : ℝ} (hε0 : 0 < ε) (hε1 : ε < 1) :
+    Filter.Tendsto
+      (fun n : ℕ => -log2 (chernoffSteinOptTypeII P Q n ε) / (n : ℝ))
+      Filter.atTop
+      (nhds (klDivergence P Q)) := by
+  rw [Metric.tendsto_atTop]
+  intro δ hδ
+  have hδ2 : 0 < δ / 2 := half_pos hδ
+  obtain ⟨N₁, hN₁⟩ := chernoff_stein_achievability P Q hac hε0 hε1 hδ2
+  obtain ⟨N₂, hN₂⟩ := chernoff_stein_strong_converse P Q hac hε1 hδ2
+  refine ⟨max (max N₁ N₂) 1, fun n hn => ?_⟩
+  have hn1 : N₁ ≤ n := le_trans (le_trans (le_max_left N₁ N₂) (le_max_left _ 1)) hn
+  have hn2 : N₂ ≤ n := le_trans (le_trans (le_max_right N₁ N₂) (le_max_left _ 1)) hn
+  have hn_pos : (0 : ℝ) < (n : ℝ) :=
+    Nat.cast_pos.mpr (lt_of_lt_of_le Nat.zero_lt_one (le_trans (le_max_right _ 1) hn))
+  set S : Set ℝ :=
+    { β : ℝ | ∃ A : Finset (Fin n → α), htType1Error P n A ≤ ε ∧ β = htType2Error Q n A }
+  have hS_ne : S.Nonempty := by
+    refine ⟨htType2Error Q n Finset.univ, Finset.univ, ?_, rfl⟩
+    unfold htType1Error
+    rw [(iidDist P n).sum_one, sub_self]
+    exact le_of_lt hε0
+  have hS_bdd : BddBelow S :=
+    ⟨0, fun β ⟨A, _, hβ⟩ => hβ ▸ Finset.sum_nonneg fun x _ => (iidDist Q n).nonneg x⟩
+  have hβ_le : chernoffSteinOptTypeII P Q n ε ≤
+      (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q - δ / 2))) := by
+    obtain ⟨A, hA1, hA2⟩ := hN₁ n hn1
+    exact le_trans (csInf_le hS_bdd ⟨A, hA1, rfl⟩) hA2
+  have hβ_ge : (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q + δ / 2))) ≤
+      chernoffSteinOptTypeII P Q n ε :=
+    le_csInf hS_ne fun β ⟨A, hA1, hβ⟩ => hβ ▸ hN₂ n hn2 A hA1
+  have hβ_pos : 0 < chernoffSteinOptTypeII P Q n ε :=
+    lt_of_lt_of_le (Real.rpow_pos_of_pos (by norm_num) _) hβ_ge
+  have hlog2_pos : 0 < Real.log 2 := Real.log_pos (by norm_num)
+  have hlog2_rpow : ∀ t : ℝ, log2 ((2 : ℝ) ^ t) = t := fun t => by
+    unfold log2
+    rw [Real.log_rpow (by norm_num : (0 : ℝ) < 2),
+      mul_div_cancel_right₀ t (ne_of_gt hlog2_pos)]
+  have hlog_ge : -((n : ℝ) * (klDivergence P Q + δ / 2)) ≤
+      log2 (chernoffSteinOptTypeII P Q n ε) := by
+    rw [← hlog2_rpow (-((n : ℝ) * (klDivergence P Q + δ / 2)))]
+    unfold log2
+    exact div_le_div_of_nonneg_right
+      (Real.log_le_log (Real.rpow_pos_of_pos (by norm_num) _) hβ_ge) (le_of_lt hlog2_pos)
+  have hlog_le : log2 (chernoffSteinOptTypeII P Q n ε) ≤
+      -((n : ℝ) * (klDivergence P Q - δ / 2)) := by
+    rw [← hlog2_rpow (-((n : ℝ) * (klDivergence P Q - δ / 2)))]
+    unfold log2
+    exact div_le_div_of_nonneg_right
+      (Real.log_le_log hβ_pos hβ_le) (le_of_lt hlog2_pos)
+  have hrate_le : -log2 (chernoffSteinOptTypeII P Q n ε) / (n : ℝ) ≤
+      klDivergence P Q + δ / 2 := by
+    rw [div_le_iff₀ hn_pos]
+    linarith
+  have hrate_ge : klDivergence P Q - δ / 2 ≤
+      -log2 (chernoffSteinOptTypeII P Q n ε) / (n : ℝ) := by
+    rw [le_div_iff₀ hn_pos]
+    linarith
+  rw [Real.dist_eq, abs_lt]
+  constructor <;> linarith
 
 end ChernoffStein
 

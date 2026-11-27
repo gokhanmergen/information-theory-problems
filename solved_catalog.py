@@ -94,7 +94,6 @@ SOLVED_THEOREMS = [
             "courtade-kumar-qary",
             "deletion-channel",
             "intrinsic-vs-secret-key-gap",
-            "quantum-squashed-entanglement-faithfulness",
         ],
     },
     {
@@ -165,11 +164,6 @@ SOLVED_THEOREMS = [
             "linear-rank-entropy-region-n6",
             "secret-sharing-optimal-info-ratio",
             "graph-entropy-subadditivity",
-            "coded-caching-exact-tradeoff",
-            "pir-coded-collusion-capacity",
-            "regenerating-codes-exact-repair",
-            "npt-bound-entanglement",
-            "quantum-squashed-entanglement-faithfulness",
         ],
     },
     {
@@ -183,7 +177,7 @@ SOLVED_THEOREMS = [
         "statement": (
             "For nonnegative numbers $a_i, b_i \\ge 0$ with $b_i = 0 \\implies a_i = 0$,\n"
             "$$\\left(\\sum_i a_i\\right) \\log_2 \\frac{\\sum_i a_i}{\\sum_i b_i} \\le \\sum_i a_i \\log_2 \\frac{a_i}{b_i}.$$\n"
-            "Consequently, $D(P \\| Q)$ is jointly convex in $(P, Q)$ and $H(P)$ is concave in $P$."
+            "Consequently, $D(P \\| Q)$ is jointly convex in $(P, Q)$ (on $P \\ll Q$) and $H(P)$ is concave in $P$."
         ),
         "proof_notes": (
             "Derived from the non-negativity of Mathlib's `InformationTheory.klFun` and applied "
@@ -471,15 +465,9 @@ SOLVED_THEOREMS = [
             "reed-muller-capacity-general-dmc",
             "polar-code-scaling-exponent",
             "dna-storage-unordered-channel",
-            "timing-channel-general-queue",
-            "zero-error-feedback-variable-length",
+        ],
+        "analogous_open": [
             "classical-capacity-additivity-threshold",
-            "quantum-capacity-single-letter",
-            "quantum-capacity-depolarizing",
-            "quantum-capacity-two-pauli",
-            "private-vs-quantum-capacity-gap",
-            "superactivation-qubit-channels",
-            "quantum-reverse-shannon-non-catalytic",
         ],
     },
     {
@@ -617,8 +605,10 @@ SOLVED_THEOREMS = [
             "discrete-entropy-power-inequality",
             "gaussian-optimality-mutual-information",
             "mmse-dimension-single-crossing",
-            "quantum-entropy-power-sharp",
             "timing-channel-general-queue",
+        ],
+        "analogous_open": [
+            "quantum-entropy-power-sharp",
         ],
     },
     {
@@ -654,7 +644,6 @@ SOLVED_THEOREMS = [
             "gaussian-relay-channel-capacity",
             "gaussian-multiple-descriptions-3",
             "awgn-feedback-error-exponent",
-            "poisson-channel-discrete-capacity",
         ],
     },
 
@@ -669,26 +658,30 @@ SOLVED_THEOREMS = [
         "tags": ["rate-distortion", "covering-lemma", "lossy-coding", "ch10"],
         "statement": (
             "For a finite i.i.d. source $P$ and bounded single-letter distortion $d : \\mathcal{X} \\times \\hat{\\mathcal{X}} \\to \\mathbb{R}_{\\ge 0}$:\n"
-            "- $R(D)$ is nonnegative, nonincreasing, and convex in $D$.\n"
+            "- For all feasible distortions $D \\ge D_{\\min}$, $R(D)$ is nonnegative, nonincreasing, convex, and right-continuous in $D$.\n"
             "- **Converse:** Every $(n, M)$ block code with expected per-symbol distortion $\\le D$ obeys "
             "$\\frac{1}{n}\\log_2 M \\ge R(D)$.\n"
             "- **Covering Lemma:** $M$ i.i.d. codewords $\\sim P_{\\hat X}^n$ cover $X^n \\sim P_X^n$ in "
             "$A_\\varepsilon^{(n)}$ with probability $\\to 1$ whenever $R > I(X; \\hat X) + 3\\varepsilon$.\n"
-            "- **Achievability:** For every $R > R(D)$ and $\\delta > 0$, eventually there exist "
-            "$(n, \\lfloor 2^{nR} \\rfloor)$ codes with expected distortion $\\le D + \\delta$."
+            "- **Operational Equality:** For every feasible $D \\ge D_{\\min}$, the operational rate–distortion "
+            "function equals the single-letter information rate–distortion function: $R_{\\mathrm{op}}(D) = R(D)$."
         ),
         "proof_notes": (
             "Proves convexity of $I(X; \\hat X)$ in the test channel calculus-free via strong subadditivity, "
-            "derives the converse via time-sharing mixtures, proves Cover & Thomas Lemma 10.5.3 "
-            "$(1 - xy)^M \\le 1 - x + e^{-My}$ for the Covering Lemma, and adds Chebyshev distortion "
-            "typicality to establish full achievability against `InfoTheory.Core.SourceCoding.rateDistortion`."
+            "establishes right-continuity of $R(D)$ at every feasible $D$ (including $D = D_{\\min}$) via "
+            "compactness of the feasible joint-distribution simplex, derives the converse via time-sharing mixtures, "
+            "proves Cover & Thomas Lemma 10.5.3 $(1 - xy)^M \\le 1 - x + e^{-My}$ for the Covering Lemma, and "
+            "combines both halves into the full operational equality `shannon_rate_distortion_theorem` against "
+            "`InfoTheory.Core.SourceCoding.rateDistortion`."
         ),
         "lean_decls": [
             ("lean/InfoTheory/Bridge/RateDistortion.lean", "rateDistortion_convex"),
+            ("lean/InfoTheory/Bridge/RateDistortion.lean", "rateDistortion_rightContinuous"),
             ("lean/InfoTheory/Bridge/RateDistortion.lean", "rateDistortion_converse"),
             ("lean/InfoTheory/Bridge/RateDistortion.lean", "covering_lemma"),
             ("lean/InfoTheory/Bridge/RateDistortion.lean", "covering_lemma_tendsto_zero"),
             ("lean/InfoTheory/Bridge/RateDistortion.lean", "rateDistortion_achievability"),
+            ("lean/InfoTheory/Bridge/RateDistortion.lean", "shannon_rate_distortion_theorem"),
         ],
         "related_open": [
             "multiterminal-source-coding",
@@ -744,15 +737,20 @@ SOLVED_THEOREMS = [
         "statement": (
             "For sequences of length $n \\ge 1$ over a finite alphabet $\\mathcal{X}$:\n"
             "1. The number of empirical types satisfies $|\\mathcal{P}_n(\\mathcal{X})| \\le (n + 1)^{|\\mathcal{X}|}$.\n"
-            "2. Every $x^n$ of type $P$ has exact probability $Q^n(x^n) = 2^{-n(H(P) + D(P \\| Q))}$.\n"
-            "3. Each type class $T(P)$ satisfies $(n+1)^{-|\\mathcal{X}|} 2^{n H(P)} \\le |T(P)| \\le 2^{n H(P)}$ "
-            "and $(n+1)^{-|\\mathcal{X}|} 2^{-n D(P \\| Q)} \\le Q^n(T(P)) \\le 2^{-n D(P \\| Q)}$.\n"
-            "4. **Sanov's Theorem:** For any set $E$ of distributions with $\\inf_{P \\in E} D(P \\| Q) \\ge d$, "
-            "$Q^n(\\{x^n : \\hat P_{x^n} \\in E\\}) \\le (n+1)^{|\\mathcal{X}|} 2^{-n d}$."
+            "2. Every $x^n$ of type $P$ with $P \\ll Q$ has exact probability $Q^n(x^n) = 2^{-n(H(P) + D(P \\| Q))}$.\n"
+            "3. Each type class $T(P)$ satisfies $(n+1)^{-|\\mathcal{X}|} 2^{n H(P)} \\le |T(P)| \\le 2^{n H(P)}$, "
+            "and whenever $P \\ll Q$, $(n+1)^{-|\\mathcal{X}|} 2^{-n D(P \\| Q)} \\le Q^n(T(P)) \\le 2^{-n D(P \\| Q)}$.\n"
+            "4. **Sanov's Theorem (Upper, Lower, and Asymptotic Limit):** For any set $E$ of distributions with "
+            "$P \\ll Q$ and $D(P \\| Q) \\ge d$ on $E$, $Q^n(\\{x^n : \\hat P_{x^n} \\in E\\}) \\le (n+1)^{|\\mathcal{X}|} 2^{-n d}$; "
+            "for any $\\ell_\\infty$-interior point $P \\in E$ with $P \\ll Q$, eventually "
+            "$Q^n(\\{x^n : \\hat P_{x^n} \\in E\\}) \\ge 2^{-n(D(P \\| Q) + \\delta)}$; and when $d$ is approached "
+            "from the interior of $E$, $-\\frac{1}{n}\\log_2 Q^n(\\{x^n : \\hat P_{x^n} \\in E\\}) \\to d$."
         ),
         "proof_notes": (
             "The lower bound on $|T(P)|$ uses exact multinomial counting $|T(P)| \\prod_a N(a|x)! = n!$ "
-            "to show $P^n(T(P)) = \\max_{P'} P^n(T(P')) \\ge (n+1)^{-|\\mathcal{X}|}$."
+            "to show $P^n(T(P)) = \\max_{P'} P^n(T(P')) \\ge (n+1)^{-|\\mathcal{X}|}$. Sanov's lower bound "
+            "and limit constructively approximate any interior $P \\in E$ by empirical types $P_n \\ll P$ "
+            "(`exists_empiricalType_approx`) and combine `typeClass_prob_ge` with continuity of $D(\\cdot \\| Q)$."
         ),
         "lean_decls": [
             ("lean/InfoTheory/Bridge/MethodOfTypes.lean", "card_typesSet_le"),
@@ -762,6 +760,8 @@ SOLVED_THEOREMS = [
             ("lean/InfoTheory/Bridge/MethodOfTypes.lean", "typeClass_prob_le"),
             ("lean/InfoTheory/Bridge/MethodOfTypes.lean", "typeClass_prob_ge"),
             ("lean/InfoTheory/Bridge/MethodOfTypes.lean", "sanov_upper_bound"),
+            ("lean/InfoTheory/Bridge/MethodOfTypes.lean", "sanov_lower_bound_interior"),
+            ("lean/InfoTheory/Bridge/MethodOfTypes.lean", "sanov_theorem_tendsto"),
         ],
         "related_open": [
             "distributed-hypothesis-testing-exponent",
@@ -779,23 +779,27 @@ SOLVED_THEOREMS = [
         "reference": "Cover & Thomas, Theorem 11.8.3",
         "tags": ["chernoff-stein", "hypothesis-testing", "error-exponent", "ch11"],
         "statement": (
-            "When testing $H_0 : P^n$ against $H_1 : Q^n$ ($P \\ll Q$) with Type-I error probability "
-            "$\\alpha_n \\le \\varepsilon \\in (0, 1)$, the optimal Type-II error exponent is $D(P \\| Q)$:\n"
+            "When testing $H_0 : P^n$ against $H_1 : Q^n$ ($P \\ll Q$) at any fixed Type-I error threshold "
+            "$\\varepsilon \\in (0, 1)$, the optimal Type-II error probability $\\beta_n^*(\\varepsilon)$ satisfies\n"
+            "$$\\lim_{n \\to \\infty} -\\frac{1}{n}\\log_2 \\beta_n^*(\\varepsilon) = D(P \\| Q):$$\n"
             "- **Achievability:** For every $\\delta > 0$, eventually there exist acceptance sets $A_n$ with "
             "$\\alpha_n \\le \\varepsilon$ and $\\beta_n \\le 2^{-n(D(P \\| Q) - \\delta)}$.\n"
-            "- **Converse:** Every test with $\\alpha_n \\le \\varepsilon < 1$ satisfies "
-            "$(1 - \\varepsilon)\\left(-\\frac{1}{n}\\log_2 \\beta_n\\right) \\le D(P \\| Q) + \\frac{1}{n}$."
+            "- **Strong Converse:** For every $\\delta > 0$, eventually every test with $\\alpha_n \\le \\varepsilon$ "
+            "satisfies $\\beta_n \\ge 2^{-n(D(P \\| Q) + \\delta)}$ (plus the finite-$n$ DPI weak converse "
+            "$(1 - \\varepsilon)(-\\frac{1}{n}\\log_2 \\beta_n) \\le D(P \\| Q) + \\frac{1}{n}$)."
         ),
         "proof_notes": (
             "Achievability uses the relative-entropy typical set `relEntTypicalSet` with a finite-sum "
-            "Chebyshev bound; the converse applies deterministic-map DPI (`klDivergence_map_le`) to the "
-            "binary test indicator together with tensorization $D(P^n \\| Q^n) = n D(P \\| Q)$."
+            "Chebyshev bound; the strong converse intersects any acceptance set $A_n$ with `relEntTypicalSet` "
+            "so $P^n(A_n \\cap B_n) \\ge (1 - \\varepsilon)/2$ and transfers mass to $Q^n$ via the pointwise "
+            "likelihood ratio bound; the finite-$n$ weak converse uses deterministic-map DPI (`klDivergence_map_le`)."
         ),
         "lean_decls": [
             ("lean/InfoTheory/Bridge/ErrorExponents.lean", "klDivergence_iidDist"),
             ("lean/InfoTheory/Bridge/ErrorExponents.lean", "chernoff_stein_achievability"),
-            ("lean/InfoTheory/Bridge/ErrorExponents.lean", "chernoff_stein_converse"),
             ("lean/InfoTheory/Bridge/ErrorExponents.lean", "chernoff_stein_converse_rate"),
+            ("lean/InfoTheory/Bridge/ErrorExponents.lean", "chernoff_stein_strong_converse"),
+            ("lean/InfoTheory/Bridge/ErrorExponents.lean", "chernoff_stein_theorem"),
         ],
         "related_open": [
             "distributed-hypothesis-testing-exponent",
@@ -838,6 +842,7 @@ SOLVED_THEOREMS = [
             "zero-error-source-coding-side-info",
             "common-information-exact-vs-wyner",
             "gray-wyner-lossy",
+            "correlated-sources-over-mac",
         ],
     },
     {
@@ -855,10 +860,11 @@ SOLVED_THEOREMS = [
             "$$R_1 \\le I(X_1; Y \\mid X_2), \\qquad R_2 \\le I(X_2; Y \\mid X_1), \\qquad R_1 + R_2 \\le I(X_1, X_2; Y).$$"
         ),
         "proof_notes": (
-            "Proved directly against `InfoTheory.Core.Channels.MACChannel`: random coding with 3-way "
-            "joint typicality achieves every pentagon (`mac_achievability_pentagon`), block concatenation "
-            "yields convexity of the operational region, and Fano's inequality + multi-letter tensorization "
-            "establishes the converse (`mac_converse`)."
+            "Proved against `InfoTheory.Core.Channels.MACChannel` (using newly defined non-feedback "
+            "operational achievability, since `Core` defines only the feedback MAC): random coding with "
+            "3-way joint typicality achieves every pentagon (`mac_achievability_pentagon`), block "
+            "concatenation yields convexity of the operational region, and Fano's inequality + "
+            "multi-letter tensorization establishes the converse (`mac_converse`)."
         ),
         "lean_decls": [
             ("lean/InfoTheory/Bridge/NetworkIT.lean", "mac_random_coding_bound"),
@@ -869,6 +875,7 @@ SOLVED_THEOREMS = [
         "related_open": [
             "mac-with-feedback",
             "zero-error-mac-adder",
+            "correlated-sources-over-mac",
             "dm-interference-channel-capacity",
             "two-way-channel-capacity",
             "binary-multiplier-two-way-channel",
@@ -894,7 +901,9 @@ SOLVED_THEOREMS = [
             "Proves strict monotonicity and differentiability of $h^{-1}$ on $[0, 1]$, establishes "
             "`convexOn_mglFun` via elementary derivative monotonicity of $(1 - w^2) \\operatorname{artanh}(w) / w$, "
             "deduces scalar MGL via Jensen, proves the $n$-letter vector form by induction, and derives "
-            "both the Bergmans outer bound and exact achievability."
+            "both the single-letter Bergmans outer bound and single-letter achievability (evaluating the "
+            "mutual informations at the symmetric input distribution; an operational BC coding theorem is "
+            "not yet included)."
         ),
         "lean_decls": [
             ("lean/InfoTheory/Bridge/MrsGerber.lean", "binaryEntropy_invBinaryEntropy"),
@@ -909,12 +918,12 @@ SOLVED_THEOREMS = [
             "mrs-gerber-general",
             "broadcast-channel",
             "broadcast-channel-three-receivers",
+            "degraded-message-sets-bc-three-receivers",
             "binary-skew-symmetric-bc",
             "binary-symmetric-z-interference-channel",
             "courtade-kumar",
             "primitive-relay-channel-bsc",
             "marton-inner-bound-tightness",
-            "quantum-broadcast-capacity",
         ],
     },
 
@@ -1028,7 +1037,6 @@ SOLVED_THEOREMS = [
             "shannon-capacity-computability",
             "zero-error-broadcast-channel",
             "zero-error-feedback-variable-length",
-            "sic-povm-zauner",
         ],
     },
     {
@@ -1096,11 +1104,12 @@ SOLVED_THEOREMS = [
             "list-decoding-capacity-binary-linear",
             "explicit-list-decodable-binary",
             "edit-distance-code-capacity",
-            "kissing-number-high-dim",
-            "quantum-ldpc-rate-distance",
             "batch-codes-optimal-redundancy",
             "locally-decodable-codes-3-query",
             "locally-correctable-codes-constant-rate",
+        ],
+        "analogous_open": [
+            "kissing-number-high-dim",
         ],
     },
 ]

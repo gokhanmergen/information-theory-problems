@@ -34,6 +34,13 @@ built on top of `InfoTheory.Core.SourceCoding` (`Distortion`, `rateDistortion`) 
    - `rateDistortion_achievability_of_dist` (single test-channel achievability via random coding)
    - `rateDistortion_achievability` (full Shannon Rate–Distortion Theorem achievability)
 
+5. **Operational Rate–Distortion Theorem (Cover & Thomas Theorem 10.2.1)**:
+   - `IsRateDistortionAchievable`, `operationalRateDistortion`
+   - `rateDistortion_rightContinuous` (right-continuity of `D ↦ R(D)` at every feasible `D` via
+     compactness of the feasible joint-distribution simplex)
+   - `rateDistortion_operational_converse` and `rateDistortion_operational_achievability`
+   - `shannon_rate_distortion_theorem` (`operationalRateDistortion P d D = rateDistortion P d D`)
+
 All theorems leave `Core/`, `Problems/`, `Known/`, `STATEMENT_LOCK.json`, and existing
 `Bridge/` modules untouched.
 -/
@@ -1402,5 +1409,319 @@ theorem rateDistortion_achievability (P : ProbDist α) (d : Distortion α β) {D
   exact ⟨enc, dec, le_trans hcode (by linarith)⟩
 
 end RateDistortionAchievability
+
+/-! ### 5. Operational Rate–Distortion Theorem (Cover & Thomas, Theorem 10.2.1) -/
+
+section OperationalRateDistortion
+
+variable {α β : Type*} [Fintype α] [Fintype β]
+
+/-- Operational achievability of rate `R` at distortion level `D` for an i.i.d. source `P`
+    and distortion measure `d`: `R ≥ 0` and for every `δ > 0`, for all sufficiently large
+    blocklengths `n ≥ N` (`N > 0`), there exists a block code of size
+    `M = max 1 ⌊2^(n R)⌋` with expected per-symbol distortion at most `D + δ`. -/
+def IsRateDistortionAchievable (P : ProbDist α) (d : Distortion α β) (D R : ℝ) : Prop :=
+  0 ≤ R ∧ ∀ δ > 0, ∃ N : ℕ, 0 < N ∧ ∀ n ≥ N,
+    let M := Nat.max 1 (Nat.floor ((2 : ℝ) ^ ((n : ℝ) * R)))
+    ∃ (enc : (Fin n → α) → Fin M) (dec : Fin M → (Fin n → β)),
+      ∑ x : Fin n → α, (iidDist P n).pmf x * blockDist d x (dec (enc x)) ≤ D + δ
+
+/-- Operational rate–distortion function: infimum of all operationally achievable rates
+    at distortion level `D`. -/
+noncomputable def operationalRateDistortion (P : ProbDist α) (d : Distortion α β) (D : ℝ) : ℝ :=
+  sInf { R : ℝ | IsRateDistortionAchievable P d D R }
+
+/-- The simplex of joint pmfs on `α × β` with first marginal `P`. -/
+private def rdSimplex (P : ProbDist α) (β : Type*) [Fintype β] : Set (α × β → ℝ) :=
+  { f | (∀ z, 0 ≤ f z) ∧ (∑ z : α × β, f z = 1) ∧ (∀ a : α, ∑ b : β, f (a, b) = P.pmf a) }
+
+private lemma continuous_sum_finset {ι X : Type*} [TopologicalSpace X]
+    (s : Finset ι) (f : ι → X → ℝ) (hf : ∀ i ∈ s, Continuous (f i)) :
+    Continuous (fun x => ∑ i ∈ s, f i x) := by
+  classical
+  induction s using Finset.induction_on with
+  | empty => simpa using continuous_const
+  | insert a s ha ih =>
+    simp_rw [Finset.sum_insert ha]
+    exact (hf a (Finset.mem_insert_self a s)).add (ih fun i hi => hf i (Finset.mem_insert_of_mem hi))
+
+private lemma isCompact_rdSimplex (P : ProbDist α) : IsCompact (rdSimplex P β) := by
+  have h1 : IsClosed { f : α × β → ℝ | ∀ z, 0 ≤ f z } := by
+    have heq : { f : α × β → ℝ | ∀ z, 0 ≤ f z } = ⋂ z : α × β, { f : α × β → ℝ | 0 ≤ f z } := by
+      ext f; simp
+    rw [heq]
+    exact isClosed_iInter fun z => isClosed_le continuous_const (continuous_apply z)
+  have h2 : IsClosed { f : α × β → ℝ | ∑ z : α × β, f z = 1 } :=
+    isClosed_eq (continuous_sum_finset Finset.univ _ fun z _ => continuous_apply z) continuous_const
+  have h3 : IsClosed { f : α × β → ℝ | ∀ a : α, ∑ b : β, f (a, b) = P.pmf a } := by
+    have heq : { f : α × β → ℝ | ∀ a : α, ∑ b : β, f (a, b) = P.pmf a } =
+        ⋂ a : α, { f : α × β → ℝ | ∑ b : β, f (a, b) = P.pmf a } := by
+      ext f; simp
+    rw [heq]
+    exact isClosed_iInter fun a =>
+      isClosed_eq (continuous_sum_finset Finset.univ _ fun b _ => continuous_apply (a, b))
+        continuous_const
+  have hclosed : IsClosed (rdSimplex P β) := h1.inter (h2.inter h3)
+  have hsub : rdSimplex P β ⊆ Set.pi Set.univ (fun _ : α × β => Set.Icc (0 : ℝ) 1) := by
+    intro f ⟨h0, hsum, _⟩ z _
+    refine ⟨h0 z, ?_⟩
+    calc f z ≤ ∑ w : α × β, f w :=
+          Finset.single_le_sum (fun w _ => h0 w) (Finset.mem_univ z)
+      _ = 1 := hsum
+  exact (isCompact_univ_pi fun _ => isCompact_Icc).of_isClosed_subset hclosed hsub
+
+private def rdDistFn (d : Distortion α β) (f : α × β → ℝ) : ℝ :=
+  ∑ z : α × β, f z * d.dist z.1 z.2
+
+private lemma continuous_rdDistFn (d : Distortion α β) : Continuous (rdDistFn d) :=
+  continuous_sum_finset Finset.univ _ fun z _ => (continuous_apply z).mul continuous_const
+
+private noncomputable def rdMiFn (P : ProbDist α) (f : α × β → ℝ) : ℝ :=
+  shannonEntropy P +
+    (∑ b : β, Real.negMulLog (∑ a : α, f (a, b))) / Real.log 2 -
+    (∑ z : α × β, Real.negMulLog (f z)) / Real.log 2
+
+private lemma continuous_rdMiFn (P : ProbDist α) : Continuous (rdMiFn P (β := β)) := by
+  have h1 : Continuous (fun f : α × β → ℝ =>
+      (∑ b : β, Real.negMulLog (∑ a : α, f (a, b))) / Real.log 2) :=
+    (continuous_sum_finset Finset.univ _ fun b _ =>
+      Real.continuous_negMulLog.comp
+        (continuous_sum_finset Finset.univ _ fun a _ => continuous_apply (a, b))).div_const _
+  have h2 : Continuous (fun f : α × β → ℝ =>
+      (∑ z : α × β, Real.negMulLog (f z)) / Real.log 2) :=
+    (continuous_sum_finset Finset.univ _ fun z _ =>
+      Real.continuous_negMulLog.comp (continuous_apply z)).div_const _
+  exact (continuous_const.add h1).sub h2
+
+private lemma rdMiFn_eq_mutualInfo {P : ProbDist α} {Q : ProbDist (α × β)} (hfst : Q.fst = P) :
+    rdMiFn P Q.pmf = mutualInfo Q := by
+  unfold rdMiFn mutualInfo
+  rw [hfst, InfoTheory.Known.shannonEntropy_eq_sum_negMulLog Q.snd,
+    InfoTheory.Known.shannonEntropy_eq_sum_negMulLog Q]
+  rfl
+
+private lemma pmf_mem_rdSimplex {P : ProbDist α} {Q : ProbDist (α × β)} (hfst : Q.fst = P) :
+    Q.pmf ∈ rdSimplex P β :=
+  ⟨Q.nonneg, Q.sum_one, fun a => by
+    change Q.fst.pmf a = P.pmf a
+    rw [hfst]⟩
+
+private def probDistOfRdSimplex {P : ProbDist α} {f : α × β → ℝ} (hf : f ∈ rdSimplex P β) :
+    ProbDist (α × β) where
+  pmf := f
+  nonneg := hf.1
+  sum_one := hf.2.1
+
+private lemma probDistOfRdSimplex_fst {P : ProbDist α} {f : α × β → ℝ} (hf : f ∈ rdSimplex P β) :
+    (probDistOfRdSimplex hf).fst = P := by
+  unfold ProbDist.fst probDistOfRdSimplex
+  congr
+  funext a
+  exact hf.2.2 a
+
+/-- **Right-Continuity of the Rate–Distortion Function** (Cover & Thomas, §10.2):
+    at any feasible distortion `D` (including the boundary `D = D_min`),
+    for every `ε > 0` there exists `δ > 0` with `R(D) - ε ≤ R(D + δ)`. -/
+theorem rateDistortion_rightContinuous (P : ProbDist α) (d : Distortion α β) {D : ℝ}
+    (hfeas : ∃ Q : ProbDist (α × β), Q.fst = P ∧ expectedDist Q d ≤ D) :
+    ∀ ε > 0, ∃ δ > 0, rateDistortion P d D - ε ≤ rateDistortion P d (D + δ) := by
+  intro ε hε
+  by_contra h
+  push Not at h
+  have hbdd : ∀ D' : ℝ, BddBelow { r : ℝ | ∃ Q : ProbDist (α × β),
+      Q.fst = P ∧ expectedDist Q d ≤ D' ∧ r = mutualInfo Q } := fun _ =>
+    ⟨0, by rintro r ⟨Q, _, _, rfl⟩; exact mutualInfo_nonneg Q⟩
+  have hstep : ∀ k : ℕ, ∃ Q : ProbDist (α × β),
+      Q.fst = P ∧ expectedDist Q d ≤ D + 1 / ((k : ℝ) + 1) ∧
+        mutualInfo Q < rateDistortion P d D - ε := by
+    intro k
+    have hδ : (0 : ℝ) < 1 / ((k : ℝ) + 1) := by positivity
+    have hlt := h (1 / ((k : ℝ) + 1)) hδ
+    have hne : { r : ℝ | ∃ Q : ProbDist (α × β),
+        Q.fst = P ∧ expectedDist Q d ≤ D + 1 / ((k : ℝ) + 1) ∧ r = mutualInfo Q }.Nonempty := by
+      rcases hfeas with ⟨Q₀, hfst₀, hdist₀⟩
+      exact ⟨mutualInfo Q₀, Q₀, hfst₀, by linarith, rfl⟩
+    obtain ⟨r, ⟨Q, hQ_fst, hQ_dist, rfl⟩, hQ_mi⟩ := (csInf_lt_iff (hbdd _) hne).mp hlt
+    exact ⟨Q, hQ_fst, hQ_dist, hQ_mi⟩
+  choose Q hQ_fst hQ_dist hQ_mi using hstep
+  let seq : ℕ → (α × β → ℝ) := fun k => (Q k).pmf
+  have hmem : ∀ k : ℕ, seq k ∈ rdSimplex P β := fun k => pmf_mem_rdSimplex (hQ_fst k)
+  obtain ⟨fstar, hfstar, φ, hφ, htend⟩ := (isCompact_rdSimplex P).tendsto_subseq hmem
+  let Qstar : ProbDist (α × β) := probDistOfRdSimplex hfstar
+  have hQstar_fst : Qstar.fst = P := probDistOfRdSimplex_fst hfstar
+  have hdist_tend : Filter.Tendsto (fun k => rdDistFn d (seq (φ k))) Filter.atTop
+      (nhds (rdDistFn d fstar)) :=
+    (continuous_rdDistFn d).continuousAt.tendsto.comp htend
+  have hrhs_tend : Filter.Tendsto (fun k => D + 1 / ((φ k : ℝ) + 1)) Filter.atTop
+      (nhds (D + 0)) :=
+    tendsto_const_nhds.add (tendsto_one_div_add_atTop_nhds_zero_nat.comp hφ.tendsto_atTop)
+  have hQstar_dist : expectedDist Qstar d ≤ D := by
+    have hle : rdDistFn d fstar ≤ D + 0 :=
+      le_of_tendsto_of_tendsto hdist_tend hrhs_tend (Filter.Eventually.of_forall fun k => hQ_dist (φ k))
+    simpa [Qstar, probDistOfRdSimplex, rdDistFn, expectedDist] using hle
+  have hmi_tend : Filter.Tendsto (fun k => rdMiFn P (seq (φ k))) Filter.atTop
+      (nhds (rdMiFn P fstar)) :=
+    (continuous_rdMiFn P).continuousAt.tendsto.comp htend
+  have hQstar_mi : mutualInfo Qstar ≤ rateDistortion P d D - ε := by
+    have hle : rdMiFn P fstar ≤ rateDistortion P d D - ε :=
+      le_of_tendsto hmi_tend (Filter.Eventually.of_forall fun k => by
+        dsimp only [seq]
+        rw [rdMiFn_eq_mutualInfo (hQ_fst (φ k))]
+        exact le_of_lt (hQ_mi (φ k)))
+    have hpmf : Qstar.pmf = fstar := rfl
+    have heq : rdMiFn P fstar = mutualInfo Qstar := by
+      rw [← hpmf]
+      exact rdMiFn_eq_mutualInfo hQstar_fst
+    linarith
+  have hR_le : rateDistortion P d D ≤ mutualInfo Qstar :=
+    rateDistortion_le_mutualInfo hQstar_fst hQstar_dist
+  linarith
+
+/-- Time-sharing single-letter feasibility witness extracted from a block code. -/
+private lemma exists_feasible_of_code (P : ProbDist α) (d : Distortion α β) {n M : ℕ}
+    (hn : 0 < n) (enc : (Fin n → α) → Fin M) (dec : Fin M → (Fin n → β)) {D' : ℝ}
+    (hdist : ∑ x : Fin n → α, (iidDist P n).pmf x * blockDist d x (dec (enc x)) ≤ D') :
+    ∃ Q : ProbDist (α × β), Q.fst = P ∧ expectedDist Q d ≤ D' := by
+  have : Nonempty (Fin n) := ⟨⟨0, hn⟩⟩
+  let f : (Fin n → α) → (Fin n → β) := fun x => dec (enc x)
+  let Qi : Fin n → ProbDist (α × β) := fun i => (iidDist P n).map (fun x => (x i, f x i))
+  have hQi_fst : ∀ i : Fin n, (Qi i).fst = P := by
+    intro i
+    have h1 : (Qi i).fst = (iidDist P n).map (fun x => x i) := by
+      classical
+      unfold Qi ProbDist.fst ProbDist.map
+      congr; funext a; dsimp only
+      rw [Finset.sum_comm]
+      refine Finset.sum_congr rfl fun x _ => ?_
+      by_cases hxi : x i = a
+      · simp only [hxi, ↓reduceIte]
+        rw [Finset.sum_eq_single (f x i)]
+        · simp
+        · intro b _ hne; simp [hne.symm]
+        · intro h; exact absurd (Finset.mem_univ _) h
+      · simp only [hxi, ↓reduceIte]
+        exact Finset.sum_eq_zero fun b _ => by simp [hxi]
+    rw [h1, iidDist_map_coord]
+  let Qmix : ProbDist (α × β) := mixtureDist (ProbDist.uniform (α := Fin n)) Qi
+  have hmix_fst : Qmix.fst = P := mixtureDist_fst ProbDist.uniform Qi P hQi_fst
+  have hQi_dist : ∀ i : Fin n, expectedDist (Qi i) d =
+      ∑ x : Fin n → α, (iidDist P n).pmf x * d.dist (x i) (f x i) := fun i =>
+    (sum_pmf_mul_comp (iidDist P n) (fun x => (x i, f x i)) (fun ab => d.dist ab.1 ab.2)).symm
+  have hmix_dist : expectedDist Qmix d ≤ D' := by
+    rw [expectedDist_mixtureDist]
+    simp_rw [hQi_dist, ProbDist.uniform, Fintype.card_fin]
+    have hrew : (∑ i : Fin n, (1 / (n : ℝ)) *
+        ∑ x : Fin n → α, (iidDist P n).pmf x * d.dist (x i) (f x i)) =
+        ∑ x : Fin n → α, (iidDist P n).pmf x * blockDist d x (f x) := by
+      simp_rw [Finset.mul_sum]
+      rw [Finset.sum_comm]
+      refine Finset.sum_congr rfl fun x _ => ?_
+      unfold blockDist
+      rw [Finset.mul_sum, Finset.mul_sum]
+      refine Finset.sum_congr rfl fun i _ => by ring
+    rw [hrew]
+    exact hdist
+  exact ⟨Qmix, hmix_fst, hmix_dist⟩
+
+/-- Operational achievability at distortion `D` implies `D` is single-letter feasible. -/
+private lemma feasible_of_isRateDistortionAchievable {P : ProbDist α} {d : Distortion α β}
+    {D R : ℝ} (hach : IsRateDistortionAchievable P d D R) :
+    ∃ Q : ProbDist (α × β), Q.fst = P ∧ expectedDist Q d ≤ D := by
+  have hstep : ∀ k : ℕ, ∃ Q : ProbDist (α × β),
+      Q.fst = P ∧ expectedDist Q d ≤ D + 1 / ((k : ℝ) + 1) := by
+    intro k
+    obtain ⟨N, hN_pos, hN⟩ := hach.2 (1 / ((k : ℝ) + 1)) (by positivity)
+    obtain ⟨enc, dec, hcode⟩ := hN N le_rfl
+    exact exists_feasible_of_code P d hN_pos enc dec hcode
+  choose Q hQ_fst hQ_dist using hstep
+  let seq : ℕ → (α × β → ℝ) := fun k => (Q k).pmf
+  have hmem : ∀ k : ℕ, seq k ∈ rdSimplex P β := fun k => pmf_mem_rdSimplex (hQ_fst k)
+  obtain ⟨fstar, hfstar, φ, hφ, htend⟩ := (isCompact_rdSimplex P).tendsto_subseq hmem
+  let Qstar : ProbDist (α × β) := probDistOfRdSimplex hfstar
+  have hdist_tend : Filter.Tendsto (fun k => rdDistFn d (seq (φ k))) Filter.atTop
+      (nhds (rdDistFn d fstar)) :=
+    (continuous_rdDistFn d).continuousAt.tendsto.comp htend
+  have hrhs_tend : Filter.Tendsto (fun k => D + 1 / ((φ k : ℝ) + 1)) Filter.atTop
+      (nhds (D + 0)) :=
+    tendsto_const_nhds.add (tendsto_one_div_add_atTop_nhds_zero_nat.comp hφ.tendsto_atTop)
+  have hQstar_dist : expectedDist Qstar d ≤ D := by
+    have hle : rdDistFn d fstar ≤ D + 0 :=
+      le_of_tendsto_of_tendsto hdist_tend hrhs_tend (Filter.Eventually.of_forall fun k => hQ_dist (φ k))
+    simpa [Qstar, probDistOfRdSimplex, rdDistFn, expectedDist] using hle
+  exact ⟨Qstar, probDistOfRdSimplex_fst hfstar, hQstar_dist⟩
+
+/-- **Operational Rate–Distortion Converse**: every operationally achievable rate `R`
+    at distortion level `D` satisfies `rateDistortion P d D ≤ R`. -/
+theorem rateDistortion_operational_converse (P : ProbDist α) (d : Distortion α β) {D R : ℝ}
+    (hach : IsRateDistortionAchievable P d D R) :
+    rateDistortion P d D ≤ R := by
+  have hfeas : ∃ Q : ProbDist (α × β), Q.fst = P ∧ expectedDist Q d ≤ D :=
+    feasible_of_isRateDistortionAchievable hach
+  have hR_nonneg : 0 ≤ R := hach.1
+  have hle_plus : ∀ δ > 0, rateDistortion P d (D + δ) ≤ R := by
+    intro δ hδ
+    obtain ⟨N, hN_pos, hN⟩ := hach.2 δ hδ
+    let M := Nat.max 1 (Nat.floor ((2 : ℝ) ^ ((N : ℝ) * R)))
+    obtain ⟨enc, dec, hcode⟩ := hN N le_rfl
+    have hM_pos : 0 < M := lt_of_lt_of_le Nat.zero_lt_one (Nat.le_max_left 1 _)
+    have hconv : rateDistortion P d (D + δ) ≤ log2 (M : ℝ) / (N : ℝ) :=
+      rateDistortion_converse P d hN_pos hM_pos enc dec hcode
+    have hpow_ge_one : (1 : ℝ) ≤ (2 : ℝ) ^ ((N : ℝ) * R) :=
+      Real.one_le_rpow (by norm_num) (mul_nonneg (Nat.cast_nonneg N) hR_nonneg)
+    have hM_le_pow : (M : ℝ) ≤ (2 : ℝ) ^ ((N : ℝ) * R) := by
+      have hfloor_ge : 1 ≤ Nat.floor ((2 : ℝ) ^ ((N : ℝ) * R)) :=
+        Nat.le_floor (by exact_mod_cast hpow_ge_one)
+      have hM_eq : M = Nat.floor ((2 : ℝ) ^ ((N : ℝ) * R)) := Nat.max_eq_right hfloor_ge
+      rw [hM_eq]
+      exact Nat.floor_le (le_trans zero_le_one hpow_ge_one)
+    have hM_pos_r : (0 : ℝ) < (M : ℝ) := Nat.cast_pos.mpr hM_pos
+    have hlog2_pos : 0 < Real.log 2 := Real.log_pos (by norm_num)
+    have hlogM_le : log2 (M : ℝ) ≤ (N : ℝ) * R := by
+      unfold log2
+      rw [div_le_iff₀ hlog2_pos]
+      calc Real.log (M : ℝ)
+        _ ≤ Real.log ((2 : ℝ) ^ ((N : ℝ) * R)) := Real.log_le_log hM_pos_r hM_le_pow
+        _ = ((N : ℝ) * R) * Real.log 2 := Real.log_rpow (by norm_num : (0 : ℝ) < 2) _
+    have hN_pos_r : (0 : ℝ) < (N : ℝ) := Nat.cast_pos.mpr hN_pos
+    have hdiv_le : log2 (M : ℝ) / (N : ℝ) ≤ R := by
+      rw [div_le_iff₀ hN_pos_r]
+      linarith
+    exact le_trans hconv hdiv_le
+  refine le_of_forall_pos_le_add fun ε hε => ?_
+  obtain ⟨δ, hδ, hrc⟩ := rateDistortion_rightContinuous P d hfeas ε hε
+  have hR_ge := hle_plus δ hδ
+  linarith
+
+/-- **Operational Rate–Distortion Achievability**: for any feasible distortion `D`,
+    every rate `R > rateDistortion P d D` is operationally achievable. -/
+theorem rateDistortion_operational_achievability (P : ProbDist α) (d : Distortion α β) {D R : ℝ}
+    (hfeas : ∃ Q : ProbDist (α × β), Q.fst = P ∧ expectedDist Q d ≤ D)
+    (hR : rateDistortion P d D < R) :
+    IsRateDistortionAchievable P d D R := by
+  refine ⟨le_of_lt (lt_of_le_of_lt (rateDistortion_nonneg P d D) hR), fun δ hδ => ?_⟩
+  obtain ⟨N, hN⟩ := rateDistortion_achievability P d hfeas hR hδ
+  exact ⟨max N 1, lt_of_lt_of_le Nat.zero_lt_one (le_max_right N 1),
+    fun n hn => hN n (le_trans (le_max_left N 1) hn)⟩
+
+/-- **Shannon's Rate–Distortion Theorem** (Cover & Thomas, Theorem 10.2.1):
+    for any discrete memoryless source `P : ProbDist α`, distortion measure `d : Distortion α β`,
+    and feasible distortion level `D`, the operational rate–distortion function equals the
+    information-theoretic rate–distortion function:
+    `operationalRateDistortion P d D = rateDistortion P d D`. -/
+theorem shannon_rate_distortion_theorem (P : ProbDist α) (d : Distortion α β) {D : ℝ}
+    (hfeas : ∃ Q : ProbDist (α × β), Q.fst = P ∧ expectedDist Q d ≤ D) :
+    operationalRateDistortion P d D = rateDistortion P d D := by
+  unfold operationalRateDistortion
+  have hbdd : BddBelow { R : ℝ | IsRateDistortionAchievable P d D R } :=
+    ⟨0, fun _ hR => hR.1⟩
+  have hne : { R : ℝ | IsRateDistortionAchievable P d D R }.Nonempty :=
+    ⟨rateDistortion P d D + 1,
+      rateDistortion_operational_achievability P d hfeas (by linarith)⟩
+  refine le_antisymm ?_ ?_
+  · refine le_of_forall_pos_le_add fun ε hε => ?_
+    exact csInf_le hbdd (rateDistortion_operational_achievability P d hfeas (by linarith))
+  · exact le_csInf hne fun R hR => rateDistortion_operational_converse P d hR
+
+end OperationalRateDistortion
 
 end InfoTheory.Bridge

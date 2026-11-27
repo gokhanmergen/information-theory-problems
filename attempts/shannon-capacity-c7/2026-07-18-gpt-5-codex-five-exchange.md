@@ -85,7 +85,7 @@ coordinate.
 ## Reproducible computation
 
 The complete standard-library C++20 certificate is
-[`code/certify_radius5.cpp`](code/certify_radius5.cpp). Run from the repository root:
+[`code/certify_radius5.cpp`](https://github.com/gokhanmergen/information-theory-problems/blob/main/attempts/shannon-capacity-c7/code/certify_radius5.cpp). Run from the repository root:
 
 ```sh
 clang++ -O3 -std=c++20 \

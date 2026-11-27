@@ -56,7 +56,7 @@ regenerable by running `npn5`.
 
 ## Verification
 
-- **Community Review:** Verified by Antigravity (Gemini 3.5 Flash) on 2026-07-18. We compiled `npn5.c` and regenerated `npn5_reps.bin` exactly. We wrote [verify_n5_endpoints.py](file:///Users/gokhanmergen/PycharmProjects/information_theory_problems_gemini/information-theory-problems/attempts/courtade-kumar/code/verify_n5_endpoints.py) and ran both low-noise (with cutover $\alpha_0 = 10^{-4}$) and high-noise (with cutover $\rho_0 = 10^{-2}$) endpoint lemmas over all 616,126 classes. Since the float margins are all strictly larger than $10^{-4}$ (worst margin $\approx 0.00085$), all classes passed exactly. Claim 2 is fully upgraded to `[proved]`.
+- **Community Review:** Verified by Antigravity (Gemini 3.5 Flash) on 2026-07-18. We compiled `npn5.c` and regenerated `npn5_reps.bin` exactly. We wrote [`verify_n5_endpoints.py`](https://github.com/gokhanmergen/information-theory-problems/blob/main/attempts/courtade-kumar/code/verify_n5_endpoints.py) and ran both low-noise (with cutover $\alpha_0 = 10^{-4}$) and high-noise (with cutover $\rho_0 = 10^{-2}$) endpoint lemmas over all 616,126 classes. Since the float margins are all strictly larger than $10^{-4}$ (worst margin $\approx 0.00085$), all classes passed exactly. Claim 2 is fully upgraded to `[proved]`.
 
 ## References
 

@@ -16,6 +16,7 @@ untouched for MathJax.
 import html
 import re
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -25,7 +26,22 @@ ROOT = Path(__file__).parent
 SITE = ROOT / "site"
 LEAN_SOLUTIONS_DIR = ROOT / "lean" / "InfoTheory" / "Solutions"
 LEAN_CERTS_DIR = ROOT / "lean" / "InfoTheory" / "Known" / "Certificates"
-GITHUB_BLOB = "https://github.com/gokhanmergen/information-theory-problems/blob/main"
+
+
+def _resolve_git_ref():
+    try:
+        sha = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=ROOT, stderr=subprocess.DEVNULL
+        ).decode("utf-8").strip()
+        if re.fullmatch(r"[0-9a-f]{7,40}", sha):
+            return sha
+    except Exception:
+        pass
+    return "main"
+
+
+GITHUB_REF = _resolve_git_ref()
+GITHUB_BLOB = f"https://github.com/gokhanmergen/information-theory-problems/blob/{GITHUB_REF}"
 
 STATUS_LABELS = {
     "open": "open",
@@ -102,7 +118,12 @@ def _restore(text, store):
 
 
 def _inline(text):
-    text = re.sub(r"\[([^\]]+)\]\(([^)\s]+)\)", r'<a href="\2">\1</a>', text)
+    def _link(m):
+        label, url = m.group(1), m.group(2)
+        if url.startswith("file://"):
+            fail(f"local file:// URL is forbidden in public site content: {url!r}")
+        return f'<a href="{url}">{label}</a>'
+    text = re.sub(r"\[([^\]]+)\]\(([^)\s]+)\)", _link, text)
     text = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", text)
     text = re.sub(r"(?<!\*)\*([^*\n]+)\*(?!\*)", r"<em>\1</em>", text)
     return text
@@ -404,7 +425,7 @@ def main():
         problems.append(rec)
         problems_by_id[meta["id"]] = rec
 
-    # Validate solved catalog and build reverse map open_id -> [solved_entry]
+    # Validate solved catalog and build reverse map open_id -> [(solved_entry, relation)]
     solved_entries = []
     open_to_solved = {pid: [] for pid in problems_by_id}
     seen_solved_ids = set()
@@ -420,7 +441,11 @@ def main():
         for oid in entry["related_open"]:
             if oid not in problems_by_id:
                 fail(f"solved_catalog: {sid!r} references unknown open problem {oid!r}")
-            open_to_solved[oid].append(entry)
+            open_to_solved[oid].append((entry, "direct"))
+        for oid in entry.get("analogous_open", []):
+            if oid not in problems_by_id:
+                fail(f"solved_catalog: {sid!r} references unknown analogous open problem {oid!r}")
+            open_to_solved[oid].append((entry, "analogous"))
         solved_entries.append({**entry, "resolved_decls": resolved_decls})
 
     n_proved_decls, n_proof_files = count_proved_lean_theorems()
@@ -570,21 +595,32 @@ def main():
         # Related Solved Theorems (reverse cross-links!)
         rel_solved = open_to_solved[meta["id"]]
         if rel_solved:
-            parts.append(f"<h2>Related Solved Theorems (Lean 4 Proofs)</h2>")
+            parts.append("<h2>Related Solved Theorems (Lean 4 Proofs)</h2>")
             parts.append(
-                '<p class="muted">Machine-checked classical theorems in this codebase that directly '
-                'support, bound, or motivate this open problem:</p>'
+                '<p class="muted">Machine-checked classical theorems in this codebase related to '
+                'this open problem (labeled <em>direct</em> vs. <em>analogous</em>):</p>'
             )
             cards = []
-            for se in rel_solved:
+            for se, rel_kind in rel_solved:
                 scat = SOLVED_CATEGORY_LABELS.get(se["category"], se["category"])
+                rel_badge = (
+                    '<span class="badge badge-solved">direct</span>'
+                    if rel_kind == "direct"
+                    else '<span class="badge badge-partially-solved">analogous</span>'
+                )
                 cards.append(
                     f'<a class="crosslink-card" href="../solved/{html.escape(se["id"])}.html">'
                     f'<span class="crosslink-title">{html.escape(se["title"])}</span>'
                     f'<span class="crosslink-meta"><span>{html.escape(scat)}</span>'
-                    f'<span class="badge badge-solved">Lean 4 proved</span></span></a>'
+                    f'{rel_badge}</span></a>'
                 )
             parts.append(f'<div class="crosslink-grid">{"".join(cards)}</div>')
+        else:
+            parts.append("<h2>Related Solved Theorems (Lean 4 Proofs)</h2>")
+            parts.append(
+                '<p class="muted">No directly linked classical Lean proof in the '
+                '<a href="../solved/index.html">Solved Problems</a> catalog yet.</p>'
+            )
 
         # Machine-checked Certificate for this open problem (if present)
         if lean_info and lean_info["cert"]:
@@ -659,7 +695,7 @@ def main():
         cat_label = SOLVED_CATEGORY_LABELS.get(cat, cat)
         tags = " ".join(f'<span class="tag">{html.escape(t)}</span>' for t in se["tags"])
         n_decls = len(se["resolved_decls"])
-        n_rel = len(se["related_open"])
+        n_rel = len(se["related_open"]) + len(se.get("analogous_open", []))
         files_used = sorted({rp.replace("lean/InfoTheory/", "") for rp, _, _, _ in se["resolved_decls"]})
         files_str = ", ".join(files_used)
         search_blob = " ".join([
@@ -667,6 +703,7 @@ def main():
             cat, cat_label, " ".join(se["tags"]),
             " ".join(dn for _, dn, _, _ in se["resolved_decls"]),
             " ".join(se["related_open"]),
+            " ".join(se.get("analogous_open", [])),
         ]).lower()
         solved_rows.append(
             f'<a class="card" href="{html.escape(se["id"])}.html" '
@@ -788,14 +825,17 @@ def main():
         sparts.append(f'<ul class="decl-list">{"".join(decl_items)}</ul>')
 
         # Cross-links to Open Problems
-        if se["related_open"]:
-            sparts.append(f'<h2>Related Open Problems ({len(se["related_open"])})</h2>')
+        direct_open = se["related_open"]
+        analog_open = se.get("analogous_open", [])
+        n_total_open_links = len(direct_open) + len(analog_open)
+        if n_total_open_links:
+            sparts.append(f'<h2>Related Open Problems ({n_total_open_links})</h2>')
             sparts.append(
                 '<p class="muted">Open problems in the sister catalog that build on, generalize, or '
-                'remain open beyond this classical theorem:</p>'
+                'are analogous to this classical theorem:</p>'
             )
             ocards = []
-            for oid in se["related_open"]:
+            for oid, rel_kind in [(o, "direct") for o in direct_open] + [(o, "analogous") for o in analog_open]:
                 ometa, _, _, olean = problems_by_id[oid]
                 ocat = CATEGORY_LABELS.get(ometa.get("category", ""), ometa.get("category", ""))
                 cert_tag = (
@@ -803,11 +843,16 @@ def main():
                     if (olean and olean["cert"])
                     else ""
                 )
+                kind_tag = (
+                    ' <span class="badge badge-partially-solved">analogous</span>'
+                    if rel_kind == "analogous"
+                    else ""
+                )
                 ocards.append(
                     f'<a class="crosslink-card" href="../problems/{html.escape(oid)}.html">'
                     f'<span class="crosslink-title">{html.escape(ometa["title"])}</span>'
                     f'<span class="crosslink-meta"><span>{html.escape(ocat)}</span>'
-                    f'<span>{cert_tag}{badge(ometa["status"])}</span></span></a>'
+                    f'<span>{kind_tag}{cert_tag}{badge(ometa["status"])}</span></span></a>'
                 )
             sparts.append(f'<div class="crosslink-grid">{"".join(ocards)}</div>')
 

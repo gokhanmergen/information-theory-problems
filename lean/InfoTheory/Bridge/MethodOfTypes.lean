@@ -17,7 +17,9 @@ Purely additive, kernel-verified foundational theorems built directly on top of
    - `iidDist_pmf_eq_type` (Theorem 11.1.2 — `Q^n(x) = 2^{-n(H(P_x) + D(P_x ‖ Q))}`)
    - `typeClass_card_le`, `typeClass_card_ge` (Theorem 11.1.3 — `|T(P)| ≍ 2^{n H(P)}`)
    - `typeClass_prob_le`, `typeClass_prob_ge` (Theorem 11.1.4 — `Q^n(T(P)) ≍ 2^{-n D(P ‖ Q)}`)
-   - `sanov_upper_bound` (Theorem 11.4.1 — Sanov's Theorem)
+   - `sanov_upper_bound`, `sanov_lower_bound_of_type`, `exists_empiricalType_approx`,
+     `sanov_lower_bound_interior`, `sanov_theorem`, `sanov_theorem_tendsto`
+     (Theorem 11.4.1 — Sanov's Theorem, upper/lower bounds & full asymptotic convergence)
 
 All theorems leave `Core/`, `Problems/`, `STATEMENT_LOCK.json`, `Known/`, and all other
 `Bridge/` files untouched.
@@ -1133,6 +1135,406 @@ theorem sanov_upper_bound {n : ℕ} (hn : 0 < n) (E : Set (ProbDist α))
     _ = (Etypes.card : ℝ) * (2 : ℝ) ^ (-((n : ℝ) * d)) := by rw [Finset.sum_const, nsmul_eq_mul]
     _ ≤ ((n + 1 : ℝ) ^ (Fintype.card α)) * (2 : ℝ) ^ (-((n : ℝ) * d)) :=
         mul_le_mul_of_nonneg_right hcard_le hpow_nonneg
+
+/-- **Sanov's Theorem — Lower Bound for a Single Empirical Type** (Cover & Thomas, Theorem 11.4.1):
+    if `P ∈ 𝒫_n(α)` belongs to `E` and `P ≪ Q`, then
+    `((n + 1)^{|α|})⁻¹ * 2^{-n D(P ‖ Q)} ≤ Q^n({x | P_x ∈ E})`. -/
+theorem sanov_lower_bound_of_type {n : ℕ} (hn : 0 < n) (E : Set (ProbDist α))
+    [DecidablePred (· ∈ E)] (Q : ProbDist α) {P : ProbDist α}
+    (hP : P ∈ typesSet α hn) (hPE : P ∈ E) (hac : AbsCont P Q) :
+    ((n + 1 : ℝ) ^ (Fintype.card α))⁻¹ * (2 : ℝ) ^ (-((n : ℝ) * klDivergence P Q)) ≤
+      ∑ x ∈ Finset.univ.filter (fun x => empiricalType hn x ∈ E), (iidDist Q n).pmf x := by
+  refine le_trans (typeClass_prob_ge hn hP Q hac) ?_
+  refine Finset.sum_le_sum_of_subset_of_nonneg ?_ (fun x _ _ => (iidDist Q n).nonneg x)
+  intro x hx
+  simp only [typeClass, Finset.mem_filter, Finset.mem_univ, true_and] at hx ⊢
+  rwa [hx]
+
+/-- Construct a length-`n` sequence with prescribed symbol counts `k : α → ℕ` summing to `n`. -/
+private lemma exists_seq_with_counts {n : ℕ} (k : α → ℕ) (hsum : ∑ a : α, k a = n) :
+    ∃ x : Fin n → α, ∀ a : α, typeCount x a = k a := by
+  classical
+  let L : List α := (Finset.univ : Finset α).toList
+  have hlist_sum : ∀ f : α → ℕ, (L.map f).sum = ∑ b : α, f b := fun f => by
+    rw [← Multiset.sum_coe, ← Multiset.map_coe, Finset.coe_toList]
+    rfl
+  let l : List α := L.flatMap (fun b => List.replicate (k b) b)
+  have hlen : l.length = n := by
+    have h1 : l.length = (L.map (fun b => (List.replicate (k b) b).length)).sum := by
+      simp [l, List.length_flatMap]
+    simp_rw [List.length_replicate] at h1
+    rw [h1, hlist_sum k, hsum]
+  have hcount_fin : ∀ (m : List α) (a : α),
+      ∑ i : Fin m.length, (if m[i.1] = a then (1 : ℕ) else 0) = m.count a := by
+    intro m a
+    induction m with
+    | nil => simp
+    | cons b t ih =>
+      have hstep : (∑ i : Fin (b :: t).length, if (b :: t)[i.1] = a then (1 : ℕ) else 0) =
+          (if b = a then 1 else 0) + ∑ i : Fin t.length, if t[i.1] = a then (1 : ℕ) else 0 :=
+        Fin.sum_univ_succ (n := t.length)
+          (fun i : Fin (t.length + 1) => if (b :: t)[i.1] = a then (1 : ℕ) else 0)
+      rw [hstep, ih, List.count_cons]
+      by_cases hba : b = a
+      · subst hba; simp [add_comm]
+      · simp [hba, beq_false_of_ne hba]
+  have hflatMap_count : ∀ (M : List α) (f : α → List α) (a : α),
+      (M.flatMap f).count a = (M.map (fun b => (f b).count a)).sum := by
+    intro M f a
+    induction M with
+    | nil => simp
+    | cons b t ih =>
+      simp [List.flatMap_cons, List.count_append, ih]
+  let x : Fin n → α := fun i => l[i.1]'(by rw [hlen]; exact i.2)
+  refine ⟨x, fun a => ?_⟩
+  rw [typeCount_eq_card, Finset.card_filter]
+  have hsum_eq : (∑ i : Fin n, if x i = a then (1 : ℕ) else 0) =
+      ∑ j : Fin l.length, if l[j.1] = a then (1 : ℕ) else 0 := by
+    refine Fintype.sum_equiv (finCongr hlen.symm) _ _ (fun i => ?_)
+    rfl
+  rw [hsum_eq, hcount_fin l a, hflatMap_count L _ a]
+  have hrep : ∀ b : α, (List.replicate (k b) b).count a = if b = a then k b else 0 := by
+    intro b
+    rw [List.count_replicate]
+    by_cases hba : b = a
+    · subst hba; simp
+    · simp [hba, beq_false_of_ne hba]
+  simp_rw [hrep]
+  rw [hlist_sum (fun b => if b = a then k b else 0)]
+  simp
+
+/-- **Density of Empirical Types**:
+    for any `P : ProbDist α` and `δ > 0`, there exists `N` such that for every `n ≥ N`
+    (with `0 < n`), there is an empirical type `Pn ∈ 𝒫_n(α)` with `supp(Pn) ⊆ supp(P)`
+    and `|Pn(a) - P(a)| < δ` for all `a : α`. -/
+theorem exists_empiricalType_approx (P : ProbDist α) {δ : ℝ} (hδ : 0 < δ) :
+    ∃ N : ℕ, ∀ (n : ℕ) (hn : 0 < n), N ≤ n →
+      ∃ Pn ∈ typesSet α hn,
+        (∀ a : α, P.pmf a = 0 → Pn.pmf a = 0) ∧
+        (∀ a : α, |Pn.pmf a - P.pmf a| < δ) := by
+  classical
+  have ha0 : ∃ a₀ : α, 0 < P.pmf a₀ := by
+    by_contra h
+    push Not at h
+    have hzero : ∀ a : α, P.pmf a = 0 := fun a => le_antisymm (h a) (P.nonneg a)
+    have hsum : ∑ a : α, P.pmf a = 0 := Finset.sum_eq_zero fun a _ => hzero a
+    linarith [P.sum_one]
+  obtain ⟨a₀, ha₀_pos⟩ := ha0
+  obtain ⟨N, hN⟩ := exists_nat_gt (((Fintype.card α : ℝ) + 1) / δ)
+  refine ⟨N, fun n hn hNn => ?_⟩
+  have hn_pos : (0 : ℝ) < (n : ℝ) := Nat.cast_pos.mpr hn
+  let c : α → ℕ := fun a => ⌊(n : ℝ) * P.pmf a⌋₊
+  have hc_le : ∀ a : α, (c a : ℝ) ≤ (n : ℝ) * P.pmf a := fun a =>
+    Nat.floor_le (mul_nonneg (le_of_lt hn_pos) (P.nonneg a))
+  have hc_gt : ∀ a : α, (n : ℝ) * P.pmf a < (c a : ℝ) + 1 := fun a =>
+    Nat.lt_floor_add_one ((n : ℝ) * P.pmf a)
+  have hsum_c_le_real : (∑ a : α, (c a : ℝ)) ≤ (n : ℝ) := by
+    calc ∑ a : α, (c a : ℝ)
+      _ ≤ ∑ a : α, (n : ℝ) * P.pmf a := Finset.sum_le_sum fun a _ => hc_le a
+      _ = (n : ℝ) * ∑ a : α, P.pmf a := (Finset.mul_sum _ _ _).symm
+      _ = (n : ℝ) := by rw [P.sum_one, mul_one]
+  have hsum_c_le : ∑ a : α, c a ≤ n := by
+    have : ((∑ a : α, c a : ℕ) : ℝ) ≤ (n : ℝ) := by simpa [Nat.cast_sum] using hsum_c_le_real
+    exact_mod_cast this
+  have hn_le_sum_c : (n : ℝ) ≤ (∑ a : α, (c a : ℝ)) + (Fintype.card α : ℝ) := by
+    calc (n : ℝ)
+      _ = (n : ℝ) * ∑ a : α, P.pmf a := by rw [P.sum_one, mul_one]
+      _ = ∑ a : α, (n : ℝ) * P.pmf a := Finset.mul_sum _ _ _
+      _ ≤ ∑ a : α, ((c a : ℝ) + 1) := Finset.sum_le_sum fun a _ => le_of_lt (hc_gt a)
+      _ = (∑ a : α, (c a : ℝ)) + (Fintype.card α : ℝ) := by
+          rw [Finset.sum_add_distrib, Finset.sum_const, Finset.card_univ, nsmul_eq_mul, mul_one]
+  let rem : ℕ := n - ∑ a : α, c a
+  have hrem_le : (rem : ℝ) ≤ (Fintype.card α : ℝ) := by
+    have hsub : (rem : ℝ) = (n : ℝ) - ∑ a : α, (c a : ℝ) := by
+      simp only [rem, Nat.cast_sub hsum_c_le, Nat.cast_sum]
+    linarith
+  let k : α → ℕ := fun a => c a + if a = a₀ then rem else 0
+  have hsum_k : ∑ a : α, k a = n := by
+    simp only [k, Finset.sum_add_distrib, Finset.sum_ite_eq', Finset.mem_univ, ↓reduceIte, rem]
+    omega
+  obtain ⟨x, hx⟩ := exists_seq_with_counts k hsum_k
+  refine ⟨empiricalType hn x, ?_, ?_, ?_⟩
+  · simp only [typesSet, Finset.mem_image, Finset.mem_univ, true_and]
+    exact ⟨x, rfl⟩
+  · intro a ha
+    change (typeCount x a : ℝ) / (n : ℝ) = 0
+    rw [hx a]
+    have hne : a ≠ a₀ := fun h => by subst h; linarith
+    have hca : c a = 0 := by simp [c, ha]
+    simp [k, hne, hca]
+  · intro a
+    change |(typeCount x a : ℝ) / (n : ℝ) - P.pmf a| < δ
+    rw [hx a]
+    have hka_ge : (c a : ℝ) ≤ (k a : ℝ) := by
+      simp only [k]; split_ifs <;> push_cast <;> linarith
+    have hka_le : (k a : ℝ) ≤ (c a : ℝ) + (rem : ℝ) := by
+      simp only [k]; split_ifs <;> push_cast <;> linarith
+    have hdiff_upper : (k a : ℝ) - (n : ℝ) * P.pmf a < (Fintype.card α : ℝ) + 1 := by
+      linarith [hc_le a, hrem_le]
+    have hdiff_lower : -((Fintype.card α : ℝ) + 1) < (k a : ℝ) - (n : ℝ) * P.pmf a := by
+      have hcard0 : (0 : ℝ) ≤ (Fintype.card α : ℝ) := Nat.cast_nonneg _
+      linarith [hc_gt a, hka_ge]
+    have habs_num : |(k a : ℝ) - (n : ℝ) * P.pmf a| < (Fintype.card α : ℝ) + 1 :=
+      abs_lt.mpr ⟨hdiff_lower, hdiff_upper⟩
+    have hrewrite : (k a : ℝ) / (n : ℝ) - P.pmf a = ((k a : ℝ) - (n : ℝ) * P.pmf a) / (n : ℝ) := by
+      field_simp [ne_of_gt hn_pos]
+    rw [hrewrite, abs_div, abs_of_pos hn_pos]
+    have hbound : ((Fintype.card α : ℝ) + 1) / (n : ℝ) < δ := by
+      have hn_gt : ((Fintype.card α : ℝ) + 1) / δ < (n : ℝ) :=
+        lt_of_lt_of_le hN (by exact_mod_cast hNn)
+      rw [div_lt_iff₀ hn_pos]
+      have h1 := (div_lt_iff₀ hδ).mp hn_gt
+      linarith
+    exact lt_trans ((div_lt_div_iff_of_pos_right hn_pos).mpr habs_num) hbound
+
+/-- Continuity of `P' ↦ D(P' ‖ Q)` on `{P' | P' ≪ Q}` in the `ℓ∞` norm. -/
+private lemma klDivergence_continuous_at (P Q : ProbDist α) (hac : AbsCont P Q)
+    {ε : ℝ} (hε : 0 < ε) :
+    ∃ η > 0, ∀ P' : ProbDist α, AbsCont P' Q →
+      (∀ a : α, |P'.pmf a - P.pmf a| < η) →
+      |klDivergence P' Q - klDivergence P Q| < ε := by
+  classical
+  let F : (α → ℝ) → ℝ := fun v =>
+    ∑ a : α, if Q.pmf a = 0 then 0
+      else (v a * Real.log (v a) - v a * Real.log (Q.pmf a)) / Real.log 2
+  have hF_eq : ∀ R : ProbDist α, AbsCont R Q → F R.pmf = klDivergence R Q := by
+    intro R hR
+    unfold klDivergence F
+    refine Finset.sum_congr rfl fun a _ => ?_
+    by_cases hq : Q.pmf a = 0
+    · have hr : R.pmf a = 0 := hR a hq
+      simp [hq, hr]
+    · have hq_pos : 0 < Q.pmf a := lt_of_le_of_ne (Q.nonneg a) (Ne.symm hq)
+      simp only [hq, ↓reduceIte]
+      by_cases hr : R.pmf a ≤ 0
+      · have hr0 : R.pmf a = 0 := le_antisymm hr (R.nonneg a)
+        simp [hr0]
+      · have hr_pos : 0 < R.pmf a := lt_of_not_ge hr
+        simp only [hr, ↓reduceIte, log2]
+        rw [Real.log_div (ne_of_gt hr_pos) (ne_of_gt hq_pos)]
+        ring
+  have hcont_term : ∀ a : α, Continuous (fun v : α → ℝ =>
+      if Q.pmf a = 0 then (0 : ℝ)
+      else (v a * Real.log (v a) - v a * Real.log (Q.pmf a)) / Real.log 2) := by
+    intro a
+    by_cases hq : Q.pmf a = 0
+    · simp [hq, continuous_const]
+    · simp only [hq, ↓reduceIte]
+      refine Continuous.div_const ?_ _
+      exact (Real.continuous_mul_log.comp (continuous_apply a)).sub
+        ((continuous_apply a).mul continuous_const)
+  have hcont : Continuous F := by
+    have hgen : ∀ s : Finset α, Continuous (fun v : α → ℝ =>
+        ∑ a ∈ s, if Q.pmf a = 0 then (0 : ℝ)
+          else (v a * Real.log (v a) - v a * Real.log (Q.pmf a)) / Real.log 2) := by
+      intro s
+      induction s using Finset.cons_induction with
+      | empty => simpa using continuous_const
+      | cons a s ha ih =>
+        simp_rw [Finset.sum_cons]
+        exact (hcont_term a).add ih
+    exact hgen Finset.univ
+  obtain ⟨η, hη_pos, hη⟩ := Metric.continuous_iff.mp hcont P.pmf ε hε
+  refine ⟨η, hη_pos, fun P' hP' hclose => ?_⟩
+  rw [← hF_eq P' hP', ← hF_eq P hac, ← Real.dist_eq]
+  apply hη
+  rw [dist_pi_lt_iff hη_pos]
+  intro a
+  rw [Real.dist_eq]
+  exact hclose a
+
+/-- Exponential dominates polynomial: for any `c : ℕ` and `γ > 0`,
+    eventually `(n + 1)^c ≤ 2^{n γ}`. -/
+private lemma poly_le_two_rpow (c : ℕ) {γ : ℝ} (hγ : 0 < γ) :
+    ∃ N : ℕ, ∀ n : ℕ, N ≤ n → (n + 1 : ℝ) ^ c ≤ (2 : ℝ) ^ ((n : ℝ) * γ) := by
+  have hlog2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
+  set κ : ℝ := γ * Real.log 2
+  have hκ : 0 < κ := mul_pos hγ hlog2
+  obtain ⟨N, hN⟩ := exists_nat_gt (8 * (c : ℝ) ^ 2 / κ ^ 2)
+  refine ⟨max N 1, fun n hn => ?_⟩
+  have hn1 : 1 ≤ n := le_trans (le_max_right N 1) hn
+  have hnN : N ≤ n := le_trans (le_max_left N 1) hn
+  have hn_pos : (0 : ℝ) < (n : ℝ) := by exact_mod_cast (lt_of_lt_of_le Nat.zero_lt_one hn1)
+  have hn1_real : (1 : ℝ) ≤ (n : ℝ) := by exact_mod_cast hn1
+  have hn_gt : 8 * (c : ℝ) ^ 2 / κ ^ 2 < (n : ℝ) := lt_of_lt_of_le hN (by exact_mod_cast hnN)
+  have h8 : 8 * (c : ℝ) ^ 2 ≤ (n : ℝ) * κ ^ 2 := by
+    have := (div_lt_iff₀ (sq_pos_of_pos hκ)).mp hn_gt
+    linarith
+  have hsq : (2 * (c : ℝ) * Real.sqrt ((n : ℝ) + 1)) ^ 2 ≤ ((n : ℝ) * κ) ^ 2 := by
+    have hnn : (0 : ℝ) ≤ (n : ℝ) + 1 := by linarith
+    have hmul := mul_le_mul_of_nonneg_left h8 (le_of_lt hn_pos)
+    calc (2 * (c : ℝ) * Real.sqrt ((n : ℝ) + 1)) ^ 2
+      _ = 4 * (c : ℝ) ^ 2 * (Real.sqrt ((n : ℝ) + 1)) ^ 2 := by ring
+      _ = 4 * (c : ℝ) ^ 2 * ((n : ℝ) + 1) := by rw [Real.sq_sqrt hnn]
+      _ ≤ 4 * (c : ℝ) ^ 2 * (2 * (n : ℝ)) := by
+          have : (n : ℝ) + 1 ≤ 2 * (n : ℝ) := by linarith
+          have hc2 : 0 ≤ 4 * (c : ℝ) ^ 2 := by positivity
+          nlinarith
+      _ = (n : ℝ) * (8 * (c : ℝ) ^ 2) := by ring
+      _ ≤ (n : ℝ) * ((n : ℝ) * κ ^ 2) := hmul
+      _ = ((n : ℝ) * κ) ^ 2 := by ring
+  have hsqrt_le : 2 * (c : ℝ) * Real.sqrt ((n : ℝ) + 1) ≤ (n : ℝ) * κ := by
+    by_contra hlt
+    push Not at hlt
+    have h1 : 0 ≤ 2 * (c : ℝ) * Real.sqrt ((n : ℝ) + 1) := by positivity
+    have h2 : 0 ≤ (n : ℝ) * κ := by positivity
+    nlinarith
+  have hlog_le : Real.log ((n : ℝ) + 1) ≤ 2 * Real.sqrt ((n : ℝ) + 1) := by
+    have ht_pos : 0 < Real.sqrt ((n : ℝ) + 1) := Real.sqrt_pos.mpr (by linarith)
+    have hlog_sq : Real.log ((n : ℝ) + 1) = 2 * Real.log (Real.sqrt ((n : ℝ) + 1)) := by
+      have hsq' : (Real.sqrt ((n : ℝ) + 1)) ^ 2 = (n : ℝ) + 1 := Real.sq_sqrt (by linarith)
+      rw [← hsq', Real.log_pow]
+      norm_num
+    have hlog_t := Real.log_le_sub_one_of_pos ht_pos
+    linarith
+  have hexp_le : (c : ℝ) * Real.log ((n : ℝ) + 1) ≤ (n : ℝ) * γ * Real.log 2 := by
+    have hc0 : (0 : ℝ) ≤ (c : ℝ) := Nat.cast_nonneg c
+    have h1 : (c : ℝ) * Real.log ((n : ℝ) + 1) ≤ (c : ℝ) * (2 * Real.sqrt ((n : ℝ) + 1)) :=
+      mul_le_mul_of_nonneg_left hlog_le hc0
+    have h2 : (c : ℝ) * (2 * Real.sqrt ((n : ℝ) + 1)) = 2 * (c : ℝ) * Real.sqrt ((n : ℝ) + 1) := by
+      ring
+    have h3 : (n : ℝ) * κ = (n : ℝ) * γ * Real.log 2 := by simp only [κ]; ring
+    linarith
+  have hpow1 : ((n : ℝ) + 1) ^ c = Real.exp ((c : ℝ) * Real.log ((n : ℝ) + 1)) := by
+    rw [← Real.rpow_natCast, Real.rpow_def_of_pos (by linarith : (0 : ℝ) < (n : ℝ) + 1), mul_comm]
+  have hpow2 : (2 : ℝ) ^ ((n : ℝ) * γ) = Real.exp ((n : ℝ) * γ * Real.log 2) := by
+    rw [Real.rpow_def_of_pos (by norm_num : (0 : ℝ) < 2), mul_comm]
+  rw [hpow1, hpow2]
+  exact Real.exp_le_exp.mpr hexp_le
+
+/-- **Sanov's Theorem — Asymptotic Lower Bound for Interior Points**
+    (Cover & Thomas, Theorem 11.4.1):
+    if `P ≪ Q` lies in the `ℓ∞`-interior of `E`, then for every `δ > 0`, eventually
+    `2^{-n (D(P ‖ Q) + δ)} ≤ Q^n({x | P_x ∈ E})`. -/
+theorem sanov_lower_bound_interior (E : Set (ProbDist α)) [DecidablePred (· ∈ E)]
+    (P Q : ProbDist α) (hac : AbsCont P Q)
+    (hP_int : ∃ r > 0, ∀ P' : ProbDist α, (∀ a : α, |P'.pmf a - P.pmf a| < r) → P' ∈ E)
+    {δ : ℝ} (hδ : 0 < δ) :
+    ∃ N : ℕ, ∀ (n : ℕ) (hn : 0 < n), N ≤ n →
+      (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q + δ))) ≤
+        ∑ x ∈ Finset.univ.filter (fun x => empiricalType hn x ∈ E), (iidDist Q n).pmf x := by
+  obtain ⟨r, hr_pos, hr⟩ := hP_int
+  obtain ⟨η, hη_pos, hη⟩ := klDivergence_continuous_at P Q hac (half_pos hδ)
+  obtain ⟨N₁, hN₁⟩ := exists_empiricalType_approx P (lt_min hr_pos hη_pos)
+  obtain ⟨N₂, hN₂⟩ := poly_le_two_rpow (Fintype.card α) (half_pos hδ)
+  refine ⟨max N₁ N₂, fun n hn hNn => ?_⟩
+  obtain ⟨Pn, hPn_type, hPn_supp, hPn_close⟩ := hN₁ n hn (le_trans (le_max_left N₁ N₂) hNn)
+  have hPn_E : Pn ∈ E := hr Pn (fun a => lt_of_lt_of_le (hPn_close a) (min_le_left r η))
+  have hPn_ac : AbsCont Pn Q := fun a hq => hPn_supp a (hac a hq)
+  have hPn_kl : klDivergence Pn Q ≤ klDivergence P Q + δ / 2 := by
+    have hkl := hη Pn hPn_ac (fun a => lt_of_lt_of_le (hPn_close a) (min_le_right r η))
+    linarith [(abs_lt.mp hkl).2]
+  have hpoly : (n + 1 : ℝ) ^ (Fintype.card α) ≤ (2 : ℝ) ^ ((n : ℝ) * (δ / 2)) :=
+    hN₂ n (le_trans (le_max_right N₁ N₂) hNn)
+  have hpoly_inv : (2 : ℝ) ^ (-((n : ℝ) * (δ / 2))) ≤ ((n + 1 : ℝ) ^ (Fintype.card α))⁻¹ := by
+    rw [Real.rpow_neg (by norm_num : (0 : ℝ) ≤ 2)]
+    exact inv_anti₀ (by positivity) hpoly
+  have hkl_pow : (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q + δ / 2))) ≤
+      (2 : ℝ) ^ (-((n : ℝ) * klDivergence Pn Q)) := by
+    refine Real.rpow_le_rpow_of_exponent_le (by norm_num : (1 : ℝ) ≤ 2) ?_
+    have hn0 : (0 : ℝ) ≤ (n : ℝ) := Nat.cast_nonneg n
+    nlinarith
+  have hmul : (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q + δ))) ≤
+      ((n + 1 : ℝ) ^ (Fintype.card α))⁻¹ * (2 : ℝ) ^ (-((n : ℝ) * klDivergence Pn Q)) := by
+    calc (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q + δ)))
+      _ = (2 : ℝ) ^ (-((n : ℝ) * (δ / 2))) *
+            (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q + δ / 2))) := by
+          rw [← Real.rpow_add (by norm_num : (0 : ℝ) < 2)]
+          congr 1; ring
+      _ ≤ ((n + 1 : ℝ) ^ (Fintype.card α))⁻¹ *
+            (2 : ℝ) ^ (-((n : ℝ) * klDivergence Pn Q)) :=
+          mul_le_mul hpoly_inv hkl_pow
+            (le_of_lt (Real.rpow_pos_of_pos (by norm_num) _)) (by positivity)
+  exact le_trans hmul (sanov_lower_bound_of_type hn E Q hPn_type hPn_E hPn_ac)
+
+private lemma log2_two_rpow (y : ℝ) : log2 ((2 : ℝ) ^ y) = y := by
+  unfold log2
+  rw [Real.log_rpow (by norm_num : (0 : ℝ) < 2)]
+  exact mul_div_cancel_right₀ y (ne_of_gt (Real.log_pos (by norm_num)))
+
+private lemma log2_le_log2 {x y : ℝ} (hx : 0 < x) (hxy : x ≤ y) : log2 x ≤ log2 y := by
+  unfold log2
+  exact div_le_div_of_nonneg_right (Real.log_le_log hx hxy) (le_of_lt (Real.log_pos (by norm_num)))
+
+/-- **Sanov's Theorem (Full Asymptotic Form)** (Cover & Thomas, Theorem 11.4.1):
+    for a regular set `E` of distributions with `P ≪ Q` and `d = inf_{P ∈ E} D(P ‖ Q)`
+    (approximable from the `ℓ∞`-interior of `E`),
+    `-(1 / n) log₂ Q^n({x | P_x ∈ E}) → d` as `n → ∞`. -/
+theorem sanov_theorem (E : Set (ProbDist α)) [DecidablePred (· ∈ E)]
+    (Q : ProbDist α) {d : ℝ}
+    (hac : ∀ P ∈ E, AbsCont P Q)
+    (hd_le : ∀ P ∈ E, d ≤ klDivergence P Q)
+    (hreg : ∀ ε > 0, ∃ P : ProbDist α,
+      (∃ r > 0, ∀ P' : ProbDist α, (∀ a : α, |P'.pmf a - P.pmf a| < r) → P' ∈ E) ∧
+      klDivergence P Q < d + ε) :
+    ∀ ε > 0, ∃ N : ℕ, ∀ (n : ℕ) (hn : 0 < n), N ≤ n →
+      |-(log2 (∑ x ∈ Finset.univ.filter (fun x => empiricalType hn x ∈ E),
+        (iidDist Q n).pmf x)) / (n : ℝ) - d| < ε := by
+  intro ε hε
+  obtain ⟨P, hP_int, hP_kl⟩ := hreg (ε / 2) (half_pos hε)
+  have hPE : P ∈ E := by
+    obtain ⟨r, hr_pos, hr⟩ := hP_int
+    exact hr P (fun a => by simpa using hr_pos)
+  obtain ⟨N₁, hN₁⟩ := sanov_lower_bound_interior E P Q (hac P hPE) hP_int (half_pos hε)
+  obtain ⟨N₂, hN₂⟩ := poly_le_two_rpow (Fintype.card α) (half_pos hε)
+  refine ⟨max N₁ N₂, fun n hn hNn => ?_⟩
+  have hn_pos : (0 : ℝ) < (n : ℝ) := Nat.cast_pos.mpr hn
+  set S : ℝ := ∑ x ∈ Finset.univ.filter (fun x => empiricalType hn x ∈ E), (iidDist Q n).pmf x
+  -- Lower bound on S gives upper bound on -(log2 S) / n
+  have hS_ge : (2 : ℝ) ^ (-((n : ℝ) * (klDivergence P Q + ε / 2))) ≤ S :=
+    hN₁ n hn (le_trans (le_max_left N₁ N₂) hNn)
+  have hS_pos : 0 < S :=
+    lt_of_lt_of_le (Real.rpow_pos_of_pos (by norm_num) _) hS_ge
+  have hlog_ge : -((n : ℝ) * (klDivergence P Q + ε / 2)) ≤ log2 S := by
+    have := log2_le_log2 (Real.rpow_pos_of_pos (by norm_num) _) hS_ge
+    rwa [log2_two_rpow] at this
+  have hrate_upper : -(log2 S) / (n : ℝ) - d < ε := by
+    have h1 : -(log2 S) / (n : ℝ) ≤ klDivergence P Q + ε / 2 := by
+      rw [div_le_iff₀ hn_pos]
+      nlinarith
+    linarith
+  -- Upper bound on S gives lower bound on -(log2 S) / n
+  have hS_le : S ≤ (2 : ℝ) ^ (-((n : ℝ) * (d - ε / 2))) := by
+    have hup := sanov_upper_bound hn E Q hac hd_le
+    have hpoly : (n + 1 : ℝ) ^ (Fintype.card α) ≤ (2 : ℝ) ^ ((n : ℝ) * (ε / 2)) :=
+      hN₂ n (le_trans (le_max_right N₁ N₂) hNn)
+    calc S
+      _ ≤ ((n + 1 : ℝ) ^ (Fintype.card α)) * (2 : ℝ) ^ (-((n : ℝ) * d)) := hup
+      _ ≤ (2 : ℝ) ^ ((n : ℝ) * (ε / 2)) * (2 : ℝ) ^ (-((n : ℝ) * d)) :=
+          mul_le_mul_of_nonneg_right hpoly (le_of_lt (Real.rpow_pos_of_pos (by norm_num) _))
+      _ = (2 : ℝ) ^ (-((n : ℝ) * (d - ε / 2))) := by
+          rw [← Real.rpow_add (by norm_num : (0 : ℝ) < 2)]
+          congr 1; ring
+  have hlog_le : log2 S ≤ -((n : ℝ) * (d - ε / 2)) := by
+    have := log2_le_log2 hS_pos hS_le
+    rwa [log2_two_rpow] at this
+  have hrate_lower : -ε < -(log2 S) / (n : ℝ) - d := by
+    have h1 : d - ε / 2 ≤ -(log2 S) / (n : ℝ) := by
+      rw [le_div_iff₀ hn_pos]
+      nlinarith
+    linarith
+  exact abs_lt.mpr ⟨hrate_lower, hrate_upper⟩
+
+/-- **Sanov's Theorem (`Filter.Tendsto` Form)** (Cover & Thomas, Theorem 11.4.1):
+    `-(1 / (n + 1)) log₂ Q^{n+1}({x | P_x ∈ E}) → d` along `Filter.atTop`. -/
+theorem sanov_theorem_tendsto (E : Set (ProbDist α)) [DecidablePred (· ∈ E)]
+    (Q : ProbDist α) {d : ℝ}
+    (hac : ∀ P ∈ E, AbsCont P Q)
+    (hd_le : ∀ P ∈ E, d ≤ klDivergence P Q)
+    (hreg : ∀ ε > 0, ∃ P : ProbDist α,
+      (∃ r > 0, ∀ P' : ProbDist α, (∀ a : α, |P'.pmf a - P.pmf a| < r) → P' ∈ E) ∧
+      klDivergence P Q < d + ε) :
+    Filter.Tendsto
+      (fun n : ℕ =>
+        -(log2 (∑ x ∈ Finset.univ.filter (fun x => empiricalType (Nat.succ_pos n) x ∈ E),
+          (iidDist Q (n + 1)).pmf x)) / ((n + 1 : ℕ) : ℝ))
+      Filter.atTop (nhds d) := by
+  rw [Metric.tendsto_atTop]
+  intro ε hε
+  obtain ⟨N, hN⟩ := sanov_theorem E Q hac hd_le hreg ε hε
+  refine ⟨N, fun n hn => ?_⟩
+  rw [Real.dist_eq]
+  exact hN (n + 1) (Nat.succ_pos n) (Nat.le_succ_of_le hn)
 
 end MethodOfTypes
 

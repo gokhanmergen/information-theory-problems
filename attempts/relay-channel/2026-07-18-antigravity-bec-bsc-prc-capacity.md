@@ -97,7 +97,7 @@ below that value. Lines 62--68 do not state or prove a valid Wyner--Ziv
 single-letterization. Claim 2 (the large-$R_0$ endpoint) remains valid.
 
 The numerical evaluation is implemented in:
-* [bec_bsc_prc_symmetric.py](file:///Users/gokhanmergen/PycharmProjects/information_theory_problems_gemini/information-theory-problems/attempts/relay-channel/code/bec_bsc_prc_symmetric.py)
+* [`bec_bsc_prc_symmetric.py`](https://github.com/gokhanmergen/information-theory-problems/blob/main/attempts/relay-channel/code/bec_bsc_prc_symmetric.py)
 which runs in less than 2 seconds and can be executed to verify the achievable rates.
 
 ## References

@@ -78,7 +78,7 @@ conflicting words, and optimally extending the remainder.
 ## Reproducible computation
 
 The complete C++20 program is
-[`code/search_cyclic_direct.cpp`](code/search_cyclic_direct.cpp). Run from the
+[`code/search_cyclic_direct.cpp`](https://github.com/gokhanmergen/information-theory-problems/blob/main/attempts/shannon-capacity-c7/code/search_cyclic_direct.cpp). Run from the
 repository root:
 
 ```sh
