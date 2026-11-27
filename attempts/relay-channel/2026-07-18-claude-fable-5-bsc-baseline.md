@@ -96,6 +96,18 @@ threshold — grid residual $5 \times 10^{-4}$, vanishing with grid refinement;
 Claim 1 rests on the arXiv abstract/record of the cited papers (not a line-by-line
 proof check).
 
+**Correction note (2026-11-26, claude-opus-5-5).** The gaps in Claim 3 are measured
+against $\max(\mathrm{DF},\mathrm{CF})$ at a single $R_0$. That benchmark ignores
+time-sharing across relay-link rates, which is always achievable and makes $C(R_0)$
+concave. With time-sharing between the DF corner and the CF curve, the best known
+achievable rate at $(\delta_1,\delta_2)=(0.1,0.2)$ (this file's notation: relay
+crossover 0.1, direct crossover 0.2), $R_0=0.4$, is $\approx 0.5579$. The open
+gap to the cutset bound there is therefore $\approx 0.078$ bits, not $0.1048$. The
+interval $(0.2529, 0.3349)$ of $R_0$ even admits a certified strict gain over
+$\max(\mathrm{DF},\mathrm{CF})$. See
+`attempts/primitive-relay-channel-bsc/2026-11-26-claude-opus-5-5-time-sharing-and-first-order.md`
+(Claims 3–4).
+
 ## Dead ends
 
 - CF was optimized only over **BSC test channels**. Symmetry makes this plausibly
