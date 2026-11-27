@@ -1,0 +1,7 @@
+grid nodes: 8121
+Marton RTD sum rate at a = 0.158435700 (exact rational 2854123837928735/18014398509481984):  >= 0.361642884421
+UV  sum-rate envelope form (18):  <= 0.372556251547   [6s]
+J-bound (Geng Thm 1, sigma=1,gamma=1/2), J=BSC(0.189953475893000): <= 0.369317309574   [18s]
+J-bound value at Geng's published J=BSC(0.189986556858845) is >= 0.369317326769   [21s]
+GK-bound value at GLN's published (G,K) is >= 0.369297253624   [26s]
+GK-bound (16), G=(0.173114560000000, 0.793109440000000), K=mirror: <= 0.369297200757   [44s]

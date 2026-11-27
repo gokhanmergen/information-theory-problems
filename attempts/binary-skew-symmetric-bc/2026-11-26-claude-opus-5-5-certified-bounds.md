@@ -269,7 +269,7 @@ Consistency checks:
 the certificate code by audit plus a re-run, and the numbers by a separate float evaluator.
 The certified window $[0.361642884,\ 0.369297201]$ stands.
 
-- **Re-run.** I re-ran the headline command (`K=8000`, same env vars). All six output lines match
+- **Re-run.** I re-ran the headline command (`K=8000`, same env vars; log `code/review/headline_run.txt`). All six output lines match
   the block above digit for digit; the run took 44 s.
 - **Lemma A (Claim 2).** I checked every step: Fano, $I(M_1;J^n)+I(M_2;J^n)\le I(X^n;J^n)$, the
   Csiszár telescoping, $-\Sigma_J\le\sum_i[I(\hat W_i;Y_i)-I(\hat W_i;J_i)]$, the time-sharing
@@ -294,27 +294,28 @@ The certified window $[0.361642884,\ 0.369297201]$ stands.
   - `lower_env` (Claim 7) is a valid minorant. `iv.mpf` of integers up to 500 bits and `iv.log`
     enclosed the true values in 22,000 random spot checks. The rigor still rests on mpmath's
     interval library.
-- **Black-box majorant test.** At $K=400$ I sampled 3,120 random points per function and
+- **Black-box majorant test** (`code/review/majorant_test.py`). At $K=400$ I sampled 3,120 random points per function and
   evaluated at 60 digits. The PL majorants of $\mathcal C[G-Y]$, $\mathcal C[\mathcal C[G-Y]+\tfrac12(Y-G)]$,
   $\mathcal C[G-K]$ and $\mathcal C[Y-Z]$ dominate their targets everywhere, with a minimum margin
   of $+4\times10^{-30}$.
-- **Independent numbers** (my own numpy hull evaluator, $2\times10^5$–$10^6$ nodes; lower estimates).
+- **Independent numbers** (my own numpy hull evaluator, `code/review/indep_check.py`, log `indep_out.txt`; $2\times10^5$–$10^6$ nodes; lower estimates).
   - UV: the exact value is $0.37255624891826573$, from an mpmath tangent at $t=4/5$. This is
     Jog–Nair's closed form (arXiv:0901.1492v3 Sec. 3.2.1). Claim 5(c) is therefore a re-check of
     a known value; see the note at Claim 5.
   - $F_J(\tfrac12)=0.369317306037$ and $F_{GK}(\tfrac12)=0.369297196677$. Both lie below the
     certified upper values.
-  - At the published parameters, evaluated in GLN's *own* convention: $F_J=0.36931732823$ (the
+  - At the published parameters, evaluated in GLN's *own* convention (`code/review/gln_conv.py`): $F_J=0.36931732823$ (the
     published value is $0.36931656880$) and $F_{GK}=0.36929725610$ (published $0.36929634064$).
     So Claim 7 is confirmed. Its rigorous lower bounds are taken at 64-bit dyadic roundings of the
     decimal parameters; this is immaterial.
   - Uniform-grid values of 0.3693145 (201 points) and 0.3693169 (501 points) reproduce Claim 7's
     heuristic.
-- **Claim 6.** At 50 digits, the four Lean `martonInnerBound` constraints hold for the RTD point,
+- **Claim 6** (`code/review/indep_check.py`). At 50 digits, the four Lean `martonInnerBound` constraints hold for the RTD point,
   with sum $=0.36164288442149865$. The maximum over $a$ is $0.36164288442195$ at
   $a^*=0.15843497$. This value is classical (Hajek–Pursley; Nair–Wang 2008; Jog–Nair 2009), so
   Claim 6 adds only interval certification.
-- **Claim 8 (heuristic).** Reproduced with an independent Nelder–Mead at $N=2\times10^4$.
+- **Claim 8 (heuristic).** Reproduced with an independent Nelder–Mead at $N=2\times10^4$
+  (`code/review/opt_check.py`).
   - General binary $J$ with free $\gamma$ gives $\min F_J(\tfrac12)=0.3693173057$ at $J\approx\mathrm{BSC}(0.18995)$, $\gamma\approx0.50$.
   - The skew-mirror $(G,K)$ optimum is $0.3692971963$ at $G\approx(0.1731146, 0.7931094)$.
   - Ternary auxiliary receivers were not checked.
