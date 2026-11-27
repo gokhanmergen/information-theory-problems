@@ -251,7 +251,7 @@ Claim 3 is explicitly conditional on ZBS, and I read that value only in secondar
   Shannon's optimiser. The upper bound uses perspective concavity, monotonicity
   (∂Φ/∂a = −log₂(1−c/a) ≥ 0), p₀₀ ≥ 0 ⇒ a+b ≤ 1+c, and the tangent of h at 1/φ, giving
   h(t) ≤ log₂φ·(2−t). Every step checks. Both sets are nonempty and bounded, so sSup is
-  well-behaved. Own script (`check.py`, not in repo): Shannon point gives (0.1562477, 0.5527864,
+  well-behaved. Own script (`code/review/check.py`): Shannon point gives (0.1562477, 0.5527864,
   0.6942419, 0.6942419). On 60 000 random laws with kZ ≤ 4, the Claim-1 identity holds to
   9e-16 and no value exceeds log₂φ. Penalised Nelder–Mead (kZ=2) gives 0.694204.
 - *Claim 3.* The `IsTWCAchievable` codes are deterministic, adaptive on the terminal's own
@@ -264,14 +264,14 @@ Claim 3 is explicitly conditional on ZBS, and I read that value only in secondar
   Table 6.3 (TU/e PDF, full text) and in the Tandon–Ulukus 2007 abstract (Arizona portal). Bloemen
   §6.4.2 states verbatim that the plain DB constraint "does not sharpen the Shannon outer bound
   … in case of a BMC". So Claims 1–2 are not new, as the attempt says.
-- *Claim 4.* A brute-force joint law p(u,x₁,x₂)p(y|x)p_B(b|x,y) (Table 6.2) on 3000 random
+- *Claim 4* (`code/review/check2.py`; caveat: `code/review/check3_swapped.py`). A brute-force joint law p(u,x₁,x₂)p(y|x)p_B(b|x,y) (Table 6.2) on 3000 random
   instances matches the closed form to 2e-15. I(X₁;X₂|Y,B,U)=0 to 2e-15 also for *dependent*
   p(x₁,x₂|u) and arbitrary p. The leak is convex in p (MI is convex in the channel), and its
   stationary point is the attempt's p = α(1−β)/D. Caveat: under Table 6.2's labels, Bloemen's
   *printed* (6.58) is 1−p, and his printed (6.57) matches Table 6.2 under neither labelling. Used
   literally, (6.58) gives ≥ 0.6607 (worse than ZBS), so the attempt's convention is the one that
   reproduces HW. The proposed Lean fix must keep `hwCrossover` exactly as written.
-- *Claim 5.* Polishing the printed |U|=3 point with Nelder–Mead gives 0.6462831535, and the
+- *Claim 5* (`code/review/check2.py`, `check3.py`, `check4.py`). Polishing the printed |U|=3 point with Nelder–Mead gives 0.6462831535, and the
   rounded printed point gives 0.6462829. Blind DE and Nelder–Mead multistarts from random points
   reach only 0.64625 and 0.64601, so they never exceed 0.6462832. The dual logic is right: 1-homogeneous
   tangent planes c₁ = −log₂(1−t₀), c₂ = log₂((1−t₀)/t₀). Evaluated at the printed rounded
