@@ -8,7 +8,7 @@ posed_year: 1984
 tags: [network-information-theory, broadcast-channel, feedback, gaussian-channel, linear-feedback, lqg]
 lean_module: InfoTheory.Problems.GaussianBcFeedbackSumCapacity
 lean_file: lean/InfoTheory/Problems/GaussianBcFeedbackSumCapacity.lean
-review: pending-expert
+review: expert-approved (2026-11-27)
 ---
 
 ## Statement

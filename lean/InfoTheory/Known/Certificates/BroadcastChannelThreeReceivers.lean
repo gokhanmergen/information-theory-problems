@@ -6,9 +6,9 @@ import InfoTheory.Known.Certificates.BroadcastChannel
 /-!
 # Certificate for `InfoTheory.Problems.BroadcastChannelThreeReceivers`
 
-The frozen statement asks whether, for every finite three-receiver DM broadcast channel `W`
-with private messages, the operational region `bc3CapacityRegion W ⊆ ℝ³` equals the
-three-receiver Marton inner bound `marton3InnerBound W`.
+The statement (statement-fix 2026-11-27) asks whether, for every finite three-receiver DM
+broadcast channel `W` with private messages, the operational region
+`bc3CapacityRegion W ⊆ ℝ³` equals the Padakandla–Pradhan UM region `umRegion W`.
 
 ## Certified (about exactly these objects)
 * `bc3CapacityRegion_subset_box` — the trivial outer bound
@@ -16,28 +16,32 @@ three-receiver Marton inner bound `marton3InnerBound W`.
   the two messages a receiver ignores gives a point-to-point code for its marginal channel
   (`exists_slice`), then Shannon's converse.
 * `mutualInfo_add_condMutualInfo` — the chain rule `I(A; Y) + I(B; Y | A) = I(A, B; Y)` for
-  pushforwards of one joint law.
-* `marton3InnerBound_subset_box` — **the three-receiver Marton region satisfies the same outer
-  bound**: e.g. `R₁ ≤ I(W₀; Y₁) + I(V₁; Y₁ | W₀) = I(W₀, V₁; Y₁) ≤ C₁` (chain rule and data
-  processing through `p(y₁ | x)`).
-* `zero_mem_bc3CapacityRegion`, `zero_mem_marton3InnerBound` — both sides contain the origin.
+  pushforwards of one joint law; `condMutualInfo_swap` — `I(A; B | C) = I(B; A | C)`.
+* `umRate_le_capacity`, `umRegion_subset_box` — **the UM region satisfies the same outer
+  bound**: receiver `i`'s packing constraint (11) plus the covering constraint (2) for the
+  pair `(U_ki, U_ij)` give `R_i ≤ I(W, U_ij, U_ki, V_i; Y_i | Q) ≤ I(Q, W, U, V; Y_i) ≤ C_i`
+  (chain rule and data processing through `p(yᵢ | x)`); the box is closed and convex, so it
+  also contains the closed convex hull.
+* `zero_mem_bc3CapacityRegion`, `zero_mem_umRegion` — both sides contain the origin.
   So both sides of the statement are nonempty bounded sets.
 
 ## Not certified
-* Achievability of `marton3InnerBound` (needs multivariate covering; two-receiver
-  superposition coding is now in `Bridge.superpositionInnerBound_subset_bcCapacityRegion`), and any converse beyond the box (e.g. Nair–El Gamal's counterexample
-  showing that the natural extension of the Körner–Marton region is not tight).
-* **Frozen `Statement` is false (on paper; catalog error, statement-fix pending).** Adding a
-  constant third output to the Gohari–El Gamal–Anantharam degraded channel (arXiv:1006.5166,
-  Claim 1) collapses `marton3InnerBound` to Marton's region without a superposition variable,
-  which is certifiably below capacity (`sup(R₁ + 2.35 R₂) ≤ 0.12131588 < 0.12131597`); see
-  `problems/broadcast-channel-three-receivers.md` and
-  `attempts/broadcast-channel-three-receivers/2026-11-26-claude-opus-5-5-useless-receiver-catalog-error.md`.
-  A Lean `statement_false` is very high effort (an upper bound on `marton3InnerBound` over
-  auxiliaries of unbounded cardinality). The mathematical problem remains open.
+* Achievability of `umRegion` (Padakandla–Pradhan, Theorem 2; needs multivariate covering and
+  superposition — two-receiver superposition coding is in
+  `Bridge.superpositionInnerBound_subset_bcCapacityRegion`), and any converse beyond the box.
+* The useless-receiver check (on paper, see the module docstring of the problem file):
+  for every 3-DMBC, `martonInnerBound (Y₁, Y₂) × {0} ⊆ umRegion W` (take `Q, W` constant,
+  `U₁₂ := W_Marton`, `V₁ := U`, `V₂ := V`, the rest constant; Fourier–Motzkin on the
+  rate-split, with `U = V =` const when `I(U;Y₁|W) + I(V;Y₂|W) < I(U;V|W)`). Hence the
+  Gohari–El Gamal–Anantharam gap that refuted the pre-fix region `marton3InnerBound` does
+  not apply.
+* Known suboptimality results: Padakandla–Pradhan (arXiv:1207.3146) prove the UM region is
+  strictly suboptimal for some 3-DMBCs *with an input cost*; Huang–Liu–Liu (arXiv:2608.19869,
+  unrefereed) claim two-receiver Marton is suboptimal, which via a useless third receiver
+  would refute the statement. Neither is formalised.
 
-Sources: Nair–El Gamal, IEEE Trans. IT 2009; El Gamal–Kim, *Network Information Theory*,
-§5.1, §8.6.
+Sources: Padakandla–Pradhan, arXiv:1207.3146v6, §II-D; Nair–El Gamal, IEEE Trans. IT 2009;
+El Gamal–Kim, *Network Information Theory*, §5.1, Ch. 8.
 -/
 
 open scoped BigOperators
@@ -372,30 +376,105 @@ theorem hV₃ (W : BroadcastChannel3 X Y₁ Y₂ Y₃) (x : X) (z : Y₃) :
   · intro b _ hb; simp [hb]
   · simp
 
-/-- **Marton's three-receiver region satisfies the trivial outer bound.** -/
-theorem marton3InnerBound_subset_box (W : BroadcastChannel3 X Y₁ Y₂ Y₃) :
-    marton3InnerBound W ⊆ box3 W := by
-  refine closure_minimal (fun r hr => ?_) (isClosed_Icc.prod (isClosed_Icc.prod isClosed_Icc))
-  obtain ⟨h1, h2, h3, k₀, k₁₂, k₁₃, k₂₃, k₁, k₂, k₃, P, r₁₀, r₂₀, r₃₀, r₁₂, r₁₃, r₂₃, r₁₁, r₂₁,
-    r₃₁, rp₁, rp₂, rp₃, n10, n20, n30, n12, n13, n23, n11, n21, n31, np1, np2, np3, e1, e2, e3,
-    hc⟩ := hr
-  obtain ⟨c0, c1, c2, c3, -⟩ := hc
-  have m1 := c0.trans (min_le_left _ _)
-  have m2 := c0.trans ((min_le_right _ _).trans (min_le_left _ _))
-  have m3 := c0.trans ((min_le_right _ _).trans (min_le_right _ _))
-  refine ⟨⟨h1, ?_⟩, ⟨h2, ?_⟩, ⟨h3, ?_⟩⟩
-  · rw [e1, show r₁₀ + r₁₂ + r₁₃ + r₁₁ = r₁₀ + (r₁₂ + r₁₃ + r₁₁) by ring]
-    exact le_trans (add_le_add (by linarith) (by linarith))
-      (chain_le_capacity W (marg₁ W) (fun y => y.1) (hV₁ W) P (fun a => a.2.2.2) _
-        (fun _ => rfl) (fun a => a.1) (fun t => (t.2.1.1, t.2.1.2.1, t.2.2.1.1)))
-  · rw [e2, show r₂₀ + r₂₃ + r₂₁ = r₂₀ + (r₂₃ + r₂₁) by ring]
-    exact le_trans (add_le_add (by linarith) (by linarith))
-      (chain_le_capacity W (marg₂ W) (fun y => y.2.1) (hV₂ W) P (fun a => a.2.2.2) _
-        (fun _ => rfl) (fun a => a.1) (fun t => (t.2.1.1, t.2.1.2.2, t.2.2.1.2.1)))
-  · rw [e3]
-    exact le_trans (add_le_add (by linarith) (by linarith))
-      (chain_le_capacity W (marg₃ W) (fun y => y.2.2) (hV₃ W) P (fun a => a.2.2.2) _
-        (fun _ => rfl) (fun a => a.1) (fun t => (t.2.1.2.1, t.2.1.2.2, t.2.2.1.2.2)))
+/-! ### The UM region satisfies the same bound -/
+
+section UM
+
+variable {Ω A B Z : Type*} [Fintype Ω] [Fintype A] [Fintype B] [Fintype Z]
+
+/-- **Symmetry**: `I(A; B | C) = I(B; A | C)`. -/
+theorem condMutualInfo_swap (J : ProbDist Ω) (f : Ω → A) (g : Ω → B) (c : Ω → Z) :
+    condMutualInfo (J.map fun t => (g t, f t, c t)) =
+      condMutualInfo (J.map fun t => (f t, g t, c t)) := by
+  unfold condMutualInfo
+  dsimp only
+  simp only [map_comp_eq, Function.comp_def]
+  have e : shannonEntropy (J.map fun t => (g t, f t, c t)) =
+      shannonEntropy (J.map fun t => (f t, g t, c t)) :=
+    ent_congr J (fun t => (f t, g t, c t)) _
+      { toFun := fun p => (p.2.1, p.1, p.2.2)
+        invFun := fun p => (p.2.1, p.1, p.2.2)
+        left_inv := fun _ => rfl
+        right_inv := fun _ => rfl } (fun _ => rfl)
+  rw [e]
+  ring
+
+/-- The input-side marginal of the joint law `P(a) W(y | f a)` is `P`. -/
+theorem map_fst_of_joint {Yf : Type*} [Fintype Yf] (W : DMC X Yf) (P : ProbDist A) (f : A → X)
+    (J : ProbDist (A × Yf)) (hJ : ∀ t, J.pmf t = P.pmf t.1 * W.trans (f t.1) t.2) :
+    J.map Prod.fst = P := by
+  classical
+  refine probDist_eq_of_pmf fun a => ?_
+  simp only [ProbDist.map, hJ]
+  rw [Fintype.sum_prod_type, Finset.sum_eq_single a]
+  · simp [← Finset.mul_sum, W.sum_one]
+  · intro b _ hb
+    exact Finset.sum_eq_zero fun y _ => by simp [hb]
+  · simp
+
+theorem fin3_add_two_add_one (i : Fin 3) : i + 2 + 1 = i := by
+  revert i; decide
+
+open Classical in
+/-- **Each UM rate is at most the capacity of the receiver's marginal channel.** For receiver
+    `i`, packing constraint (11) bounds the sum of all rates it decodes by
+    `I(W, U_ij, U_ki, V_i; Y_i | Q) + I(U_ij; U_ki | Q W)`, and covering constraint (2) for the
+    pair `(U_ki, U_ij)` pays for the second term with bin rates. -/
+theorem umRate_le_capacity {k : ℕ} {Yf : Type*} [Fintype Yf] (W : DMC X Yf) (V : DMC X Z)
+    (π : Yf → Z) (hV : ∀ x z, V.trans x z = ∑ y, if π y = z then W.trans x y else 0)
+    (P : ProbDist (UMAux k X)) (J : ProbDist (UMAux k X × Yf))
+    (hJ : ∀ t, J.pmf t = P.pmf t.1 * W.trans t.1.2.2.2.2 t.2) (i : Fin 3)
+    {K Ks L S T Sv : Fin 3 → ℝ}
+    (hnn : ∀ i, 0 ≤ K i ∧ 0 ≤ Ks i ∧ 0 ≤ L i ∧ 0 ≤ S i ∧ 0 ≤ T i ∧ 0 ≤ Sv i)
+    (hcov : umCoveringConstraints P S Sv)
+    (hdec : umDecodingConstraints (J.map fun z => (z.1, π z.2)) i K Ks L S T Sv) :
+    T i + Ks i + L (i + 2) + K i ≤ V.capacity := by
+  obtain ⟨-, -, -, -, h11⟩ := hdec
+  obtain ⟨hc, -, -⟩ := hcov
+  have h2 := (hc (i + 2)).1
+  rw [fin3_add_two_add_one] at h2
+  simp only [map_comp_eq, Function.comp_def] at h11
+  -- the covering constraint, rewritten as a function of `J`
+  have hP : J.map Prod.fst = P := map_fst_of_joint W P (fun t => t.2.2.2.2) J hJ
+  have hIab : condMutualInfo (J.map fun z =>
+      (z.1.2.2.1 i, z.1.2.2.1 (i + 2), (z.1.1, z.1.2.1))) ≤ S (i + 2) + S i := by
+    rw [← condMutualInfo_swap]
+    have : J.map (fun z => (z.1.2.2.1 (i + 2), z.1.2.2.1 i, (z.1.1, z.1.2.1))) =
+        P.map (fun t => (t.2.2.1 (i + 2), t.2.2.1 i, (t.1, t.2.1))) := by
+      rw [← hP, map_comp_eq]; rfl
+    rw [this]
+    exact h2
+  have hch := chain_le_capacity W V π hV P (fun a => a.2.2.2.2) J hJ (fun t => t.1)
+    (fun t => (t.2.1, t.2.2.1 i, t.2.2.1 (i + 2), t.2.2.2.1 i))
+  have hmi := mutualInfo_nonneg (J.map fun t => (t.1.1, π t.2))
+  obtain ⟨k0, -, -, -, -, -⟩ := hnn 0
+  obtain ⟨k1, -, -, -, -, -⟩ := hnn 1
+  obtain ⟨k2, -, -, -, -, -⟩ := hnn 2
+  obtain ⟨-, -, li, -, -, svi⟩ := hnn i
+  obtain ⟨-, ks2, -, -, -, -⟩ := hnn (i + 2)
+  have hK : K i ≤ K 0 + K 1 + K 2 := by
+    fin_cases i <;> simp <;> linarith
+  linarith
+
+/-- **The UM region satisfies the trivial outer bound.** -/
+theorem umRegion_subset_box (W : BroadcastChannel3 X Y₁ Y₂ Y₃) :
+    umRegion W ⊆ box3 W := by
+  have hconv : Convex ℝ (box3 W) :=
+    (convex_Icc _ _).prod ((convex_Icc _ _).prod (convex_Icc _ _))
+  refine closure_minimal (convexHull_min (fun r hr => ?_) hconv)
+    (isClosed_Icc.prod (isClosed_Icc.prod isClosed_Icc))
+  obtain ⟨k, P, K, Ks, L, S, T, Sv, hnn, rfl, hcov, d1, d2, d3⟩ := hr
+  have n0 := hnn 0
+  have n1 := hnn 1
+  have n2 := hnn 2
+  refine ⟨⟨by dsimp only; linarith [n0.2.2.1, n2.2.2.1], ?_⟩,
+    ⟨by dsimp only; linarith [n1.2.2.1, n0.2.2.1], ?_⟩,
+    ⟨by dsimp only; linarith [n2.2.2.1, n1.2.2.1], ?_⟩⟩
+  · exact umRate_le_capacity W (marg₁ W) (fun y => y.1) (hV₁ W) P _ (fun _ => rfl) 0 hnn hcov d1
+  · exact umRate_le_capacity W (marg₂ W) (fun y => y.2.1) (hV₂ W) P _ (fun _ => rfl) 1 hnn hcov d2
+  · exact umRate_le_capacity W (marg₃ W) (fun y => y.2.2) (hV₃ W) P _ (fun _ => rfl) 2 hnn hcov d3
+
+end UM
 
 /-! ### Both sides contain the origin -/
 
@@ -418,50 +497,11 @@ theorem zero_mem_bc3CapacityRegion [Nonempty X] (W : BroadcastChannel3 X Y₁ Y�
   simp only [this, Finset.sum_const_zero, mul_zero]
   exact hε.le
 
-/-- Conditional entropy vanishes when the first variable is constant. -/
-theorem condEntropy_eq_zero_of_subsingleton {α β : Type*} [Fintype α] [Fintype β]
-    [Subsingleton α] (P : ProbDist (α × β)) : condEntropy P = 0 := by
-  classical
-  rcases isEmpty_or_nonempty α with hα | ⟨⟨a₀⟩⟩
-  · exfalso
-    have : ∑ t : α × β, P.pmf t = 0 := Finset.sum_eq_zero fun t _ => (IsEmpty.false t.1).elim
-    linarith [P.sum_one]
-  unfold condEntropy
-  have : shannonEntropy P = shannonEntropy ((P.map Prod.snd).map (fun b => (a₀, b))) := by
-    rw [map_comp_eq, ← shannonEntropy_map_equiv (Equiv.refl _) P]
-    congr 2
-    funext t
-    exact Prod.ext (Subsingleton.elim _ _) rfl
-  rw [this, shannonEntropy_map_of_injective _ (fun x y h => (Prod.mk.inj h).2), map_snd_eq_snd]
-  ring
-
-theorem zero_mem_marton3InnerBound [Nonempty X] (W : BroadcastChannel3 X Y₁ Y₂ Y₃) :
-    ((0 : ℝ), (0 : ℝ), (0 : ℝ)) ∈ marton3InnerBound W := by
-  refine subset_closure ⟨le_rfl, le_rfl, le_rfl, 1, 1, 1, 1, 1, 1, 1, ProbDist.uniform,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, le_rfl, le_rfl, le_rfl, le_rfl, le_rfl, le_rfl, le_rfl,
-    le_rfl, le_rfl, le_rfl, le_rfl, le_rfl, by norm_num, by norm_num, by norm_num, ?_⟩
-  intro J IW_Y1 IW_Y2 IW_Y3 V1 V2 V3 IV1_Y1 IV2_Y2 IV3_Y3 I12 I13 I23 HV1 HV2 HV3 HV123
-  have z12 : I12 = 0 := condMutualInfo_eq_zero_of_subsingleton_fst _
-  have z13 : I13 = 0 := condMutualInfo_eq_zero_of_subsingleton_fst _
-  have z23 : I23 = 0 := condMutualInfo_eq_zero_of_subsingleton_fst _
-  have zH1 : HV1 = 0 := condEntropy_eq_zero_of_subsingleton _
-  have zH2 : HV2 = 0 := condEntropy_eq_zero_of_subsingleton _
-  have zH3 : HV3 = 0 := condEntropy_eq_zero_of_subsingleton _
-  have zH : HV123 = 0 := condEntropy_eq_zero_of_subsingleton _
-  have n1 : 0 ≤ IW_Y1 := mutualInfo_nonneg _
-  have n2 : 0 ≤ IW_Y2 := mutualInfo_nonneg _
-  have n3 : 0 ≤ IW_Y3 := mutualInfo_nonneg _
-  have n4 : 0 ≤ IV1_Y1 := condMutualInfo_nonneg _
-  have n5 : 0 ≤ IV2_Y2 := condMutualInfo_nonneg _
-  have n6 : 0 ≤ IV3_Y3 := condMutualInfo_nonneg _
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · simp only [add_zero]; exact le_min n1 (le_min n2 n3)
-  · simp only [add_zero]; exact n4
-  · simp only [add_zero]; exact n5
-  · simp only [add_zero]; exact n6
-  · rw [z12]; norm_num
-  · rw [z13]; norm_num
-  · rw [z23]; norm_num
-  · rw [zH1, zH2, zH3, zH]; norm_num
+theorem zero_mem_umRegion [Nonempty X] (W : BroadcastChannel3 X Y₁ Y₂ Y₃) :
+    ((0 : ℝ), (0 : ℝ), (0 : ℝ)) ∈ umRegion W := by
+  refine subset_closure (subset_convexHull ℝ _ ⟨1, ProbDist.uniform, 0, 0, 0, 0, 0, 0,
+    fun _ => by simp, by simp, ?_, ?_⟩)
+  · simp [umCoveringConstraints, condMutualInfo_eq_zero_of_subsingleton_fst]
+  · simp [umDecodingConstraints, condMutualInfo_eq_zero_of_subsingleton_fst]
 
 end InfoTheory.Known.Certificates.BroadcastChannelThreeReceivers

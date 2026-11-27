@@ -8,7 +8,7 @@ posed_year: 2002
 tags: [network-information-theory, mac, feedback, gaussian-channel, linear-feedback, dependence-balance]
 lean_module: InfoTheory.Problems.GaussianMacFeedbackLinearOptimality
 lean_file: lean/InfoTheory/Problems/GaussianMacFeedbackLinearOptimality.lean
-review: pending-expert
+review: expert-approved (2026-11-27)
 ---
 
 ## Statement

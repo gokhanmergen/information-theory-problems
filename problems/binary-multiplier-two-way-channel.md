@@ -21,31 +21,50 @@ $$
 Let $C_{\mathrm{sym}}(\mathrm{BMC}) = \sup \{ R \ge 0 : (R, R) \in \mathcal{C}_{\mathrm{TWC}}(\mathrm{BMC}) \}$
 denote its symmetric (equal-rate) capacity.
 
-The **Hekstra–Willems dependence-balance outer bound** (1989) for the symmetric capacity of
-the BMC is
+The **Hekstra–Willems dependence-balance bound with an adaptive parallel channel** (1989) is
+the sharpest known upper bound on $C_{\mathrm{sym}}$. Augment the channel with an auxiliary
+output $B$ produced by a parallel channel $p_B(b \mid x_1, x_2, y)$ that may depend on the
+conditional input law given an auxiliary $U$: with
+$\alpha_u = P(X_1 = 1 \mid U = u)$, $\beta_u = P(X_2 = 1 \mid U = u)$ and crossover
 $$
-C_{\mathrm{DB}}(\mathrm{BMC}) = \sup_{p(z, x_1, x_2)} \min\!\big(I(X_1; Y \mid X_2, Z),\; I(X_2; Y \mid X_1, Z)\big),
+p_u = \frac{\alpha_u (1 - \beta_u)}{(1 - \alpha_u)\beta_u + \alpha_u (1 - \beta_u)},
 $$
-where the supremum ranges over all finite-alphabet auxiliaries $Z$ and joint distributions
-$p(z, x_1, x_2)$ satisfying the dependence-balance constraint
+the inputs $(0,0)$ give $B = 0$ with probability $p_u$ and $B = 1$ otherwise, $(0,1)$ gives
+$B = 1$, $(1,0)$ gives $B = 0$, and $(1,1)$ gives a constant $B$ (Bloemen 1996, Thm 6.3 and
+Table 6.2). The bound is
 $$
-I(X_1; X_2 \mid Z) \le I(X_1; X_2 \mid Y, Z).
+C_{\mathrm{HW}} = \sup_{p(u, x_1, x_2)} \min\big\{ I(X_1; Y B \mid X_2 U),\ I(X_1; Y \mid X_2),\
+I(X_2; Y B \mid X_1 U),\ I(X_2; Y \mid X_1) \big\}
+\quad\text{s.t.}\quad I(X_1; X_2 \mid U) \le I(X_1; X_2 \mid Y, B, U).
 $$
+Since $(Y, B)$ always determines one of the inputs, $I(X_1; X_2 \mid Y, B, U) = 0$, so the
+constraint forces $X_1 \perp X_2 \mid U$. With $h$ the binary entropy, $U$ taking values
+$u$ with weights $w_u$, $P_1 = \sum_u w_u \alpha_u$, $P_2 = \sum_u w_u \beta_u$ and
+$P_{11} = \sum_u w_u \alpha_u \beta_u$, the four terms become
+$$
+\begin{aligned}
+r_1 &= \textstyle\sum_u w_u \big[\beta_u h(\alpha_u) + (1 - \beta_u)\big(h((1-\alpha_u)(1-p_u)) - (1-\alpha_u) h(p_u)\big)\big], \\
+r_2 &= \textstyle\sum_u w_u \big[\alpha_u h(\beta_u) + (1 - \alpha_u)\big(h((1-\beta_u)p_u) - (1-\beta_u) h(p_u)\big)\big],
+\end{aligned}
+$$
+$I(X_1; Y \mid X_2) = P_2\, h(P_{11}/P_2)$ and $I(X_2; Y \mid X_1) = P_1\, h(P_{11}/P_1)$. So
+$$
+C_{\mathrm{HW}} = \sup_{k,\ w,\ \alpha,\ \beta \in [0,1]^k} \min\big\{ r_1,\ P_2 h(P_{11}/P_2),\ r_2,\ P_1 h(P_{11}/P_1) \big\}
+\approx 0.64628,
+$$
+which is the Lean `bmcHWParallelChannelBound` (a term with $P_2 = 0$ or $P_1 = 0$ is read as
+$0$, and $p_u$ is read as $0$ when $\alpha_u = \beta_u \in \{0, 1\}$, where it does not matter).
 
-**Does $C_{\mathrm{sym}}(\mathrm{BMC}) = C_{\mathrm{DB}}(\mathrm{BMC})$?**
+**Does $C_{\mathrm{sym}}(\mathrm{BMC}) = C_{\mathrm{HW}}$?**
 
-> **Catalog error (flagged 2026-11-26, statement-fix pending).** The functional $C_{\mathrm{DB}}$
-> displayed above, which is also the Lean `bmcDependenceBalanceBound`, is the *plain*
-> dependence-balance bound. For the BMC this bound is vacuous. For a deterministic channel the
-> constraint reads $H(Y\mid Z) \le I(X_1;Y\mid X_2,Z) + I(X_2;Y\mid X_1,Z)$, and it holds
-> automatically once the two rate terms sum to at least 1 bit. Consequently
-> $C_{\mathrm{DB}}(\mathrm{BMC}) = \log_2\phi \approx 0.69424$, Shannon's outer bound, not
-> $0.64628$; see also Bloemen (1996, §6.4.2). The frozen Lean `Statement` therefore asserts
-> $C_{\mathrm{sym}} = \log_2\phi$, which is false by the Zhang–Berger–Schalkwijk bound
-> $C_{\mathrm{sym}} \le 0.64891$. The value $0.64628$ belongs to the Hekstra–Willems DB bound
-> **with an adaptive parallel channel**. The intended question is whether $C_{\mathrm{sym}}$
-> equals that bound. Proof, closed form of the corrected bound, numerical reproduction of
-> $0.64628$, and proposed Lean text:
+> **Statement-fix (2026-11-27).** The previous right-hand side was the *plain*
+> dependence-balance bound, $\sup \min(I(X_1; Y \mid X_2, Z), I(X_2; Y \mid X_1, Z))$ subject
+> to $I(X_1; X_2 \mid Z) \le I(X_1; X_2 \mid Y, Z)$. For the BMC that constraint is inactive at
+> symmetric rates $\ge 1/2$, so the bound equals Shannon's outer bound
+> $\log_2\phi \approx 0.69424$, and the old statement contradicted the Zhang–Berger–Schalkwijk
+> bound $C_{\mathrm{sym}} \le 0.64891$. The right-hand side is now the bound the value
+> $0.64628$ actually belongs to, in the closed form derived (and numerically reproduced as
+> $0.6462832$) in
 > `attempts/binary-multiplier-two-way-channel/2026-11-26-claude-opus-5-5-db-catalog-error-survey.md`.
 
 ## Background
@@ -87,8 +106,8 @@ remains unknown, pinned between $0.63072$ and $0.64628$ bits per channel use.
   - Zhang, Berger, and Schalkwijk (1986) broke Shannon's outer bound, proving
     $C_{\mathrm{sym}}(\mathrm{BMC}) \le 0.64891$ bits.
   - Hekstra and Willems (1989) introduced the dependence-balance (DB) bound. In its plain
-    form (the $C_{\mathrm{DB}}$ displayed above) it does **not** improve on Shannon's outer
-    bound for the BMC (see the catalog-error note). With an **adaptive parallel channel**
+    form it does **not** improve on Shannon's outer bound for the BMC: it equals
+    $\log_2\phi$ (Bloemen 1996, §6.4.2; see the statement-fix note). With an **adaptive parallel channel**
     (Bloemen 1996, Thm 6.3 and Table 6.2) it gives
     $C_{\mathrm{sym}}(\mathrm{BMC}) \le 0.64628$ bits, which is still the sharpest known
     upper bound. Tandon and Ulukus (2007) showed that HW's choice is optimal among all

@@ -3,12 +3,49 @@ import InfoTheory.Core
 open scoped BigOperators Classical
 open MeasureTheory
 
+/-!
+# Exact capacity region of the two-user Gaussian interference channel
+
+Channel: `Y₁ = X₁ + a X₂ + Z₁`, `Y₂ = b X₁ + X₂ + Z₂`, `Zᵢ ~ N(0, 1)` independent, average
+power constraints `P₁, P₂`; receiver `i` decodes only message `i`.
+
+**Statement-fix (2026-11-27).**  The previous frozen statement compared the capacity region
+with the *convex hull* of single-phase Gaussian Han–Kobayashi (HK) polytopes under power
+control (plain time-sharing).  That set is strictly smaller than Gaussian HK with a coded
+time-sharing variable `Q`, which is achievable: at `a = b = 1/2`, `P₁ = P₂ = 100` coded
+time-sharing reaches sum rate `3.9229`, whereas the convex hull stays `≤ 3.8356`
+(`attempts/gaussian-interference-channel/2026-11-26-claude-opus-5-5-coded-time-sharing-catalog-error.md`).
+So the old statement was false as written.  The region below is the HK region *with a
+time-sharing variable* `Q` (finite support, `ℙ(Q = i) = w i`), Gaussian superposition inputs
+`Xⱼ = Uⱼ + Vⱼ` in each phase, and power control across phases
+(`𝔼_Q[Pⱼc(Q) + Pⱼp(Q)] ≤ Pⱼ`): each of the seven right-hand sides of the compact HK region
+(Chong–Motani–Garg 2008; Kobayashi–Han 2007; El Gamal–Kim Thm 6.4) is averaged over `Q`
+separately.  This is `ℛ_{HK-GS}` of Costa–Gohari–Nair–Ng (ISIT 2023, Def. 2), extended from
+the Z-channel to the two-sided channel.  The question "does Gaussian HK with time-sharing and
+power control achieve capacity?" is posed in that paper ("it is still unknown whether the HK
+achievable region (restricted to Gaussian inputs and allowing for power control) represents the
+capacity region") and is open even for the Z-channel.
+
+**Known facts** (it is known that `HK-GS ⊆ capacity region`, with equality in the cases below):
+* the region contains `(0, 0)` and the old convex-hull region (certified);
+* every point satisfies `Rⱼ ≤ ½ log₂(1 + Pⱼ)` (certified), so it is bounded;
+* `a = b = 0` (two separate AWGN links): the region is exactly
+  `[0, ½ log₂(1 + P₁)] × [0, ½ log₂(1 + P₂)]` (certified), which is the capacity region;
+* strong interference `a² ≥ 1, b² ≥ 1` (Sato 1981; Han–Kobayashi 1981): equality;
+* sum capacity is attained in the noisy-interference, mixed and Z regimes
+  (Shang–Kramer–Chen, Motahari–Khandani, Annapureddy–Veeravalli 2009), and the region is within
+  one bit of capacity everywhere (Etkin–Tse–Wang 2008);
+* the achievability `HK-GS ⊆ capacity` (Han–Kobayashi 1981 with `Q`, Gaussian inputs) is
+  classical but not formalized here.
+-/
+
 namespace InfoTheory.Problems.GaussianInterferenceChannel
 
-/-- Single-letter Gaussian Han–Kobayashi achievable rate pair `(R₁, R₂)` for the
-    two-user Gaussian interference channel `Y₁ = X₁ + a X₂ + Z₁`, `Y₂ = b X₁ + X₂ + Z₂`
-    with power constraints `P₁, P₂` and power splits `P₁ = P₁c + P₁p`, `P₂ = P₂c + P₂p`
-    (without time-sharing; full convex hull is taken in `InGaussianHKRegion`). -/
+/-- Single-letter Gaussian Han–Kobayashi rate polytope for one fixed power split
+    `P₁ = P₁c + P₁p`, `P₂ = P₂c + P₂p` (common/private), without time-sharing: the seven
+    compact HK inequalities (Chong–Motani–Garg 2008; El Gamal–Kim Thm 6.4) evaluated at
+    independent Gaussian `Uⱼ ~ N(0, Pⱼc)`, `Vⱼ ~ N(0, Pⱼp)`.  This is the `m = 1` case of
+    `InGaussianHKRegion`. -/
 def InGaussianHKBasic (a b P₁ P₂ R₁ R₂ : ℝ) : Prop :=
   0 ≤ R₁ ∧ 0 ≤ R₂ ∧
   ∃ (P₁c P₁p P₂c P₂p : ℝ),
@@ -27,19 +64,42 @@ def InGaussianHKBasic (a b P₁ P₂ R₁ R₂ : ℝ) : Prop :=
     R₁ + 2 * R₂ ≤ cap ((P₂c + P₂p + b ^ 2 * P₁c) / N₂) + cap (P₂p / N₂) +
                   cap ((P₁p + a ^ 2 * P₂c) / N₁)
 
-/-- Convex hull (time-sharing with power control) of Gaussian Han–Kobayashi achievable rate pairs. -/
+/-- Gaussian Han–Kobayashi region **with a coded time-sharing variable `Q`** and power
+    control (`ℛ_{HK-GS}`, Costa–Gohari–Nair–Ng 2023, Def. 2, for the two-sided channel).
+    `Q` takes values in `Fin m` with `ℙ(Q = i) = w i`; in phase `i` user `j` sends
+    `Xⱼ = Uⱼ + Vⱼ` with independent Gaussian common/private parts of powers `Pⱼc i`, `Pⱼp i`,
+    subject to the *average* power constraints `∑ᵢ w i (Pⱼc i + Pⱼp i) ≤ Pⱼ`.  Each of the seven
+    compact HK right-hand sides is averaged over `Q` **separately** (`E f = ∑ᵢ w i f i`); this is
+    what distinguishes coded time-sharing from the convex hull of single-phase polytopes. -/
 def InGaussianHKRegion (a b P₁ P₂ R₁ R₂ : ℝ) : Prop :=
-  ∃ (m : ℕ) (w : Fin m → ℝ) (p₁ p₂ r₁ r₂ : Fin m → ℝ),
-    (∀ i, 0 ≤ w i) ∧ (∑ i : Fin m, w i = 1) ∧
-    (∀ i, 0 ≤ p₁ i ∧ 0 ≤ p₂ i) ∧
-    (∑ i : Fin m, w i * p₁ i ≤ P₁) ∧
-    (∑ i : Fin m, w i * p₂ i ≤ P₂) ∧
-    (∀ i, InGaussianHKBasic a b (p₁ i) (p₂ i) (r₁ i) (r₂ i)) ∧
-    R₁ = ∑ i : Fin m, w i * r₁ i ∧
-    R₂ = ∑ i : Fin m, w i * r₂ i
+  0 ≤ R₁ ∧ 0 ≤ R₂ ∧
+  ∃ (m : ℕ) (w P₁c P₁p P₂c P₂p : Fin m → ℝ),
+    (∀ i, 0 ≤ w i) ∧ (∑ i, w i = 1) ∧
+    (∀ i, 0 ≤ P₁c i ∧ 0 ≤ P₁p i ∧ 0 ≤ P₂c i ∧ 0 ≤ P₂p i) ∧
+    (∑ i, w i * (P₁c i + P₁p i) ≤ P₁) ∧ (∑ i, w i * (P₂c i + P₂p i) ≤ P₂) ∧
+    let cap (s : ℝ) : ℝ := (1 / 2 : ℝ) * log2 (1 + s)
+    let E (f : Fin m → ℝ) : ℝ := ∑ i, w i * f i
+    let N₁ := fun i => 1 + a ^ 2 * P₂p i
+    let N₂ := fun i => 1 + b ^ 2 * P₁p i
+    R₁ ≤ E (fun i => cap ((P₁c i + P₁p i) / N₁ i)) ∧
+    R₂ ≤ E (fun i => cap ((P₂c i + P₂p i) / N₂ i)) ∧
+    R₁ + R₂ ≤ E (fun i => cap ((P₁c i + P₁p i + a ^ 2 * P₂c i) / N₁ i) +
+                          cap (P₂p i / N₂ i)) ∧
+    R₁ + R₂ ≤ E (fun i => cap (P₁p i / N₁ i) +
+                          cap ((P₂c i + P₂p i + b ^ 2 * P₁c i) / N₂ i)) ∧
+    R₁ + R₂ ≤ E (fun i => cap ((P₁p i + a ^ 2 * P₂c i) / N₁ i) +
+                          cap ((P₂p i + b ^ 2 * P₁c i) / N₂ i)) ∧
+    2 * R₁ + R₂ ≤ E (fun i => cap ((P₁c i + P₁p i + a ^ 2 * P₂c i) / N₁ i) +
+                              cap (P₁p i / N₁ i) +
+                              cap ((P₂p i + b ^ 2 * P₁c i) / N₂ i)) ∧
+    R₁ + 2 * R₂ ≤ E (fun i => cap ((P₂c i + P₂p i + b ^ 2 * P₁c i) / N₂ i) +
+                              cap (P₂p i / N₂ i) +
+                              cap ((P₁p i + a ^ 2 * P₂c i) / N₁ i))
 
-/-- Operational Gaussian IC achievability with measurable decoders, average power
-    constraints `P₁, P₂`, and error evaluated via Lebesgue `lintegral`. -/
+/-- Operational Gaussian IC achievability with measurable decoders, per-codeword power
+    constraints `∑ᵢ xᵢ² ≤ n Pⱼ`, and average error over both messages evaluated via Lebesgue
+    `lintegral` against the i.i.d. `N(0, 1)` noise densities (a value in `[0, 1]`, so `toReal`
+    is not a junk value). -/
 def InGaussianICAchievable (a b P₁ P₂ R₁ R₂ : ℝ) : Prop :=
   0 ≤ R₁ ∧ 0 ≤ R₂ ∧
   ∀ ε > 0, ∃ N : ℕ, ∀ n ≥ N,
@@ -60,11 +120,14 @@ def InGaussianICAchievable (a b P₁ P₂ R₁ R₂ : ℝ) : Prop :=
       ((1 : ℝ) / ((M₁ * M₂ : ℕ) : ℝ)) * ∑ m₁ : Fin M₁, ∑ m₂ : Fin M₂, errProb m₁ m₂ ≤ ε
 
 /-- Exact Capacity Region of the Two-User Gaussian Interference Channel (Ahlswede; Carleial 1974;
-    Han–Kobayashi 1981): Does the closure of the Gaussian Han–Kobayashi inner bound (with
-    time-sharing) equal the closed capacity region for all coupling coefficients `(a, b)`
-    and positive powers `(P₁, P₂)`? -/
+    Han–Kobayashi 1981; Costa–Gohari–Nair–Ng 2023): does the closure of the Gaussian
+    Han–Kobayashi region with coded time-sharing and power control equal the closed capacity
+    region for all nonnegative coupling coefficients `(a, b)` (standard form) and positive
+    powers `(P₁, P₂)`? Cross gains are restricted to `a, b ≥ 0`, as in the literature: the
+    Gaussian HK region depends only on `a², b²`, while sign changes of the inputs/outputs only
+    map `(a, b) ↦ (-a, -b)`, so no published result covers the sign of `ab`. -/
 def Statement : Prop :=
-  ∀ (a b P₁ P₂ : ℝ), 0 < P₁ → 0 < P₂ →
+  ∀ (a b P₁ P₂ : ℝ), 0 ≤ a → 0 ≤ b → 0 < P₁ → 0 < P₂ →
     closure { p : ℝ × ℝ | InGaussianICAchievable a b P₁ P₂ p.1 p.2 } =
       closure { p : ℝ × ℝ | InGaussianHKRegion a b P₁ P₂ p.1 p.2 }
 

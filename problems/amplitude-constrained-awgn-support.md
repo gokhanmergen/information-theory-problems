@@ -8,7 +8,7 @@ posed_year: 2010
 tags: [channel-capacity, gaussian-channel, peak-power, amplitude-constraint, discrete-input, mass-points]
 lean_module: InfoTheory.Problems.AmplitudeConstrainedAwgnSupport
 lean_file: lean/InfoTheory/Problems/AmplitudeConstrainedAwgnSupport.lean
-review: pending-expert
+review: expert-approved (2026-11-27)
 ---
 
 ## Statement

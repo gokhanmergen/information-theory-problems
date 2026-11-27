@@ -93,10 +93,13 @@ Every cataloged problem in `problems/<id>.md` has a paired frozen Lean 4 stateme
   `InfoTheory.Known.Certificates.<Module>`) prove the known facts claimed in the docstring of
   `Problems/<Module>.lean` ("it is known that A ≤ X ≤ B") about the *exact* objects in its
   `Statement`. They are the machine-checked evidence that a statement is non-vacuous; the
-  audit reports coverage (`certificate coverage: k/109`). A certificate must not prove or
+  audit reports coverage (`certificate coverage: k/N`). A certificate must not prove or
   disprove the open problem — unless a known fact shows the statement is trivially settled,
-  which is a catalog error: prove it there (`statement_false` / `statement_true`) and open a
-  statement-fix PR. Add the module to `lean/InfoTheory/Known/Certificates.lean`.
+  which is a catalog error: prove it there (`statement_false : ¬ Statement` /
+  `statement_true : Statement`) and open a statement-fix PR. The audit lists such settled
+  statements separately and excludes them from coverage. After the statement is repaired,
+  keep the old disproof as a theorem about the old proposition spelled out, not as
+  `statement_false`. Add the module to `lean/InfoTheory/Known/Certificates.lean`.
 
 ### Working alongside other agents
 

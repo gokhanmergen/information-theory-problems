@@ -22,22 +22,37 @@ standard Gaussian noises, the source codeword satisfies
 $\frac{1}{n} \sum_{i=1}^n X_i^2 \le P_1$, and the causal relay outputs
 $X_{r,i} = f_i(Y_r^{i-1})$ satisfy $\frac{1}{n} \sum_{i=1}^n \mathbb{E}[X_{r,i}^2] \le P_2$.
 
-Writing $C(s) = \frac{1}{2} \log_2(1 + s)$, the Gaussian hybrid decode-and-forward /
-compress-and-forward (Cover–El Gamal Theorem 7) achievable rate is
-$$
-R_{\mathrm{hyb}}(g_{12}, g_{13}, g_{23}, P_1, P_2) = \sup_{\substack{\alpha,\beta,\gamma \ge 0,\; \alpha+\beta+\gamma \le 1 \\ \theta \in [0, 1],\; \sigma^2 > 0}} \sup \{ R_1 + R_2 : R_1, R_2 \ge 0 \},
-$$
-subject to:
-$$
-\begin{aligned}
-R_1 &\le C\!\left(\frac{g_{12}^2 \beta P_1}{1 + g_{12}^2 \gamma P_1}\right), \\
-R_2 &\le \min\!\left(C\!\left(g_{13}^2 \gamma P_1 + \frac{g_{12}^2 \gamma P_1}{1 + \sigma^2}\right),\; C\!\big(g_{13}^2 \gamma P_1 + g_{23}^2 (1 - \theta) P_2\big) - C\!\left(\frac{1}{\sigma^2}\right)\right), \\
-R_1 + R_2 &\le C\!\Big(g_{13}^2 P_1 + g_{23}^2 P_2 + 2 |g_{13} g_{23}| \sqrt{\alpha \theta P_1 P_2}\Big) - C\!\left(\frac{1}{\sigma^2}\right).
-\end{aligned}
-$$
+Let $C_{\mathrm{Gauss}}(g_{12}, g_{13}, g_{23}, P_1, P_2)$ be its operational capacity. It is
+unknown for every choice of nonzero gains. The formal statement poses the sharpest open
+first-order question at the standard benchmark of unit gains and equal powers
+$P_1 = P_2 = P$: the cutset bound gives $C_{\mathrm{Gauss}}(1,1,1,P,P) \le \tfrac12\log_2(1+2P)
+\le P/\ln 2$, so the capacity per unit power is at most $1/\ln 2$ bits.
 
-**Does $R_{\mathrm{hyb}}$ equal the exact capacity $C_{\mathrm{Gauss}}(g_{12}, g_{13}, g_{23}, P_1, P_2)$
-for all gains $(g_{12}, g_{13}, g_{23})$ and powers $P_1, P_2 > 0$?**
+**Is the cutset bound tight to first order at low SNR, i.e. does**
+$$
+\lim_{P \to 0^+} \frac{C_{\mathrm{Gauss}}(1, 1, 1, P, P)}{P} = \frac{1}{\ln 2}\ ?
+$$
+This is the minimum energy-per-bit question of El Gamal–Mohseni–Zahedi (2006) at this
+benchmark, with per-node power normalization: does the minimum energy-per-bit equal the
+cutset lower bound?
+
+In Lean: `Statement : Filter.Tendsto (fun P => gaussianRelayCapacity 1 1 1 P P / ENNReal.ofReal P)
+(nhdsWithin 0 (Set.Ioi 0)) (nhds (ENNReal.ofReal (1 / Real.log 2)))`. The capacity is valued in
+`ℝ≥0∞` (an unbounded achievable set gives `⊤`, never a junk `0`); the source constraint is per
+codeword, the relay constraint is a per-message expectation over the relay noise, and the
+error and power integrals are Lebesgue integrals in `ℝ≥0∞`.
+
+> **Statement-fix (2026-11-27).** The previous statement asked whether $C_{\mathrm{Gauss}}$
+> equals the Gaussian hybrid decode-forward/compress-forward rate $R_{\mathrm{hyb}}$ (Cover–El
+> Gamal Theorem 7 with jointly Gaussian inputs) for all gains and powers. $R_{\mathrm{hyb}}$
+> has no power time-sharing, while the model allows bursty signalling, so bursty
+> compress-forward (El Gamal–Mohseni–Zahedi 2006, eq. (8)) beats it; their block-length-2
+> linear relaying beats it and even its upper concave envelope. The old statement was
+> therefore false by known results; see
+> `attempts/gaussian-relay-channel-capacity/2026-11-26-claude-opus-5-5-time-sharing-catalog-error.md`.
+> Since every "capacity = single-letter Gaussian DF/CF/hybrid rate" re-posing is refuted or
+> very likely refuted in the same way, the statement now asks about the low-SNR capacity
+> slope, whose value is unknown.
 
 ## Background
 
@@ -78,16 +93,17 @@ capacity remains one of the flagship open problems in wireless information theor
   approaches the cutset bound. For this model (independent noises, all gains nonzero),
   however, the generalized block-Markov lower bound never meets the cutset bound
   (El Gamal–Mohseni–Zahedi 2006, Sec. 2), consistent with the strict gap of El Gamal–Gohari–Nair.
-- **Catalog note (2026-11-26).** The hybrid rate $R_{\mathrm{hyb}}$ in the Statement contains
-  no time-sharing. When $g_{12}^2 \le g_{13}^2$ it equals the closed-form Gaussian
-  compress-and-forward rate exactly. Bursty compress-and-forward (EMZ eq. (8)) therefore
-  exceeds it: e.g. at $g = (1,1,1)$, $P_1 = 10^{-3}$, $P_2 = 10^{-1}$ the gain is a factor
-  1.59. The block-length-2 linear relaying of EMZ also exceeds it: $0.0883 > 0.0738$ at unit
-  gains and $P_1 = P_2 = 1/10$. So the question as posed has a negative answer that follows
-  from known results, and the frozen Lean `Statement` is false. Even the upper concave
-  envelope of $R_{\mathrm{hyb}}$ over power allocations is beaten. Certificates and a proposed
-  re-posing are in
-  `attempts/gaussian-relay-channel-capacity/2026-11-26-claude-opus-5-5-time-sharing-catalog-error.md`.
+- Low-SNR bounds at unit gains and $P_1 = P_2 = P$: the direct link with a silent relay gives
+  $C_{\mathrm{Gauss}} \ge \tfrac12\log_2(1+P)$, slope $\ge 1/(2\ln 2) \approx 0.7213$
+  (certified in Lean); EMZ Example 1 with bursting gives $C_{\mathrm{Gauss}} \ge 0.88283\,P$
+  for $P \in (0, 1/10]$ (see attempt log); the cutset slope is $1/\ln 2 \approx 1.4427$.
+  Kosut–Effros–Langberg (arXiv:2401.15495, 2024) improve the achievable minimum
+  energy-per-bit with rank-1 linear relaying and still compare against the cutset lower
+  bound only.
+- The Gaussian hybrid DF/CF rate (Cover–El Gamal Theorem 7 with jointly Gaussian inputs, no
+  time-sharing) equals the closed-form Gaussian compress-forward rate when
+  $g_{12}^2 \le g_{13}^2$, and is strictly beaten by bursty compress-forward and by EMZ
+  Example 1 (e.g. $0.0883 > 0.0738$ at unit gains, $P_1 = P_2 = 1/10$); see attempt log.
 
 ## References
 
@@ -103,3 +119,6 @@ capacity remains one of the flagship open problems in wireless information theor
 - A. El Gamal, A. Gohari, and C. Nair, "A strengthened cutset upper bound on the capacity
   of the relay channel and applications," *IEEE Trans. Inf. Theory*, vol. 68, no. 7,
   pp. 4247–4263, 2022.
+- O. Kosut, M. Effros, and M. Langberg, "Nobody expects a differential equation: minimum
+  energy-per-bit for the Gaussian relay channel with rank-1 linear relaying,"
+  arXiv:2401.15495, 2024.

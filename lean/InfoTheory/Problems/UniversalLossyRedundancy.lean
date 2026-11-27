@@ -2,6 +2,39 @@ import InfoTheory.Core
 
 open scoped BigOperators
 
+/-!
+# Exact minimax redundancy constant for universal `d`-semifaithful lossy coding
+
+**Statement-fix (2026-11-27).**  The previous frozen statement took the supremum over the
+*whole* simplex `ProbDist (Fin m)` and asked for `(n / log₂ n) · R_n ≤ m/2 + ε`.  It was false:
+the simplex contains zero-rate boundary sources such as `Bern(1/4)` at `D = 1/4`
+(`R(P, D) = 0`, i.e. `D = D_max(P)`), where every `d`-semifaithful code has redundancy
+`Ω(n^{-1/2})`; certified in `InfoTheory.Known.Certificates.UniversalLossyRedundancy`
+(`fullSimplex_version_false`); see also Mahmood–Wagner, *Minimax rate-distortion*
+(ISIT 2022; journal version), Cor. 5 and App. D, which show `Θ̃(n^{-1/2})` minimax
+redundancy whenever the class reaches the zero-rate boundary.  All `O(log n / n)` results
+(Yu–Speed 1993; Zhang–Yang–Wei 1997; Yang–Zhang) assume regularity conditions that hold on the
+open set `{P : (m - 1) · minₓ P(x) > D}` (Hamming distortion: then
+`R(P, D) = H(P) - h(D) - D log₂(m - 1)` and the optimal reproduction law has full support).
+The source class is now the compact set `interiorClass m D δ` of sources with every letter
+probability `≥ D/(m-1) + δ`; for `0 < δ < 1/m - D/(m-1)` it contains the uniform source in its
+relative interior, and every compact subset of the regular region lies in some such class.
+
+The leading constant is also changed from `m/2` to `(m+1)/2`.  Known bounds:
+* known source (`|S| = 1`): `½ · log n / n ≤ redundancy ≤ log n / n` (Zhang–Yang–Wei 1997;
+  the lower bound "in most cases");
+  `½` is exact for the uniform source (Sriramu–Wagner, arXiv:2601.11927, 2026);
+* weakly universal (pointwise, "most" `P`): pre-log between `K/2` and `(K+2)/2`, `K = m` the
+  reproduction alphabet size (Yang–Zhang, unpublished, as reported by Mahmood–Wagner);
+* `m = 2`, minimax over an interval `[p₁, p₂] ⊂ (D, 1/2)`: lower bound `3/2`, so `m/2 = 1` is
+  *not* the minimax constant; for general `m` a matching `(m+1)/2` upper/lower bound is claimed
+  at sketch level (`attempts/universal-lossy-redundancy/2026-11-26-gemini-4-neon.md`,
+  Claims 4–6; not in the refereed literature).
+The statement below asks whether the minimax constant over every such interior class is exactly
+`(m+1)/2 = (m-1)/2 + 1` (universal estimation penalty plus the known-source `d`-semifaithful
+covering penalty of a non-uniform source).
+-/
+
 namespace InfoTheory.Problems.UniversalLossyRedundancy
 
 /-- Hamming distortion on `Fin m`: `0` if `x = y`, `1` otherwise. -/
@@ -24,25 +57,38 @@ noncomputable def expectedRate {m : ℕ} (P : ProbDist (Fin m)) (n M : ℕ)
     (enc : (Fin n → Fin m) → Fin M) (len : Fin M → ℕ) : ℝ :=
   (∑ x : Fin n → Fin m, (∏ i : Fin n, P.pmf (x i)) * (len (enc x) : ℝ)) / (n : ℝ)
 
-/-- Minimax universal redundancy `R_n^{univ}(m, d, D)` over all i.i.d. distributions on `Fin m`. -/
-noncomputable def minimaxLossyRedundancy (m : ℕ) (d : Distortion (Fin m) (Fin m))
-    (D : ℝ) (n : ℕ) : ℝ :=
+/-- Minimax redundancy `inf_{codes} sup_{P ∈ S} ((1/n) 𝔼_P ℓ - R(P, D))` of `d`-semifaithful
+    codes of blocklength `n` over a source class `S`.  (The defining set is nonempty — the
+    fixed-length lossless code — and, for nonempty `S`, bounded below; see the certificate.) -/
+noncomputable def minimaxLossyRedundancyOn (m : ℕ) (d : Distortion (Fin m) (Fin m))
+    (D : ℝ) (S : Set (ProbDist (Fin m))) (n : ℕ) : ℝ :=
   sInf { r : ℝ | ∃ (M : ℕ) (enc : (Fin n → Fin m) → Fin M)
     (dec : Fin M → (Fin n → Fin m)) (len : Fin M → ℕ),
     IsDSemifaithfulCode m d D n M enc dec len ∧
-    ∀ P : ProbDist (Fin m), expectedRate P n M enc len - rateDistortion P d D ≤ r }
+    ∀ P ∈ S, expectedRate P n M enc len - rateDistortion P d D ≤ r }
 
-/-- Minimax Redundancy Benchmark for Universal `d`-Semifaithful Lossy Source Coding
-    (Yu–Speed 1993; Zhang–Yang–Wei 1997; Yang–Zhang 1999):
-    for `d`-semifaithful lossy coding on an `m`-ary i.i.d. source under Hamming distortion
-    `0 < D < 1 - 1/m`, the conjectured optimal minimax redundancy coefficient is `m / 2`
-    (combining the `(m - 1) / 2` universal estimation penalty with the `1 / 2` known-source
-    `d`-semifaithful covering penalty). Does `m / 2 · (log₂ n / n)` suffice asymptotically? -/
+/-- Compact interior source class under Hamming distortion at level `D`: every letter has
+    probability at least `D/(m-1) + δ`.  On it `(m - 1) · minₓ P(x) > D`, so the regularity
+    conditions of Zhang–Yang–Wei / Yang–Zhang hold uniformly and `R(P, D) > 0`. -/
+def interiorClass (m : ℕ) (D δ : ℝ) : Set (ProbDist (Fin m)) :=
+  { P | ∀ x : Fin m, D / ((m : ℝ) - 1) + δ ≤ P.pmf x }
+
+/-- Minimax universal redundancy `R_n(m, D, δ)` of `d`-semifaithful codes under Hamming
+    distortion over the interior class `interiorClass m D δ`. -/
+noncomputable def minimaxLossyRedundancy (m : ℕ) (D δ : ℝ) (n : ℕ) : ℝ :=
+  minimaxLossyRedundancyOn m (hammingDist m) D (interiorClass m D δ) n
+
+/-- Minimax Redundancy Constant for Universal `d`-Semifaithful Lossy Source Coding
+    (Yu–Speed 1993; Zhang–Yang–Wei 1997; Yang–Zhang; statement-fixed 2026-11-27):
+    for an `m`-ary memoryless source under Hamming distortion `0 < D < 1 - 1/m`, and every
+    interior class `interiorClass m D δ` with `0 < δ < 1/m - D/(m-1)` (nonempty, compact, with
+    nonempty relative interior), is the minimax redundancy asymptotically
+    `((m + 1)/2) · log₂ n / n`, i.e. `(n / log₂ n) · R_n(m, D, δ) → (m + 1)/2`? -/
 def Statement : Prop :=
   ∀ (m : ℕ), 2 ≤ m → ∀ (D : ℝ), 0 < D → D < 1 - 1 / (m : ℝ) →
+    ∀ (δ : ℝ), 0 < δ → δ < 1 / (m : ℝ) - D / ((m : ℝ) - 1) →
     ∀ (ε : ℝ), 0 < ε → ∃ N : ℕ, 2 ≤ N ∧ ∀ n : ℕ, N ≤ n →
-      ((n : ℝ) / log2 (n : ℝ)) * minimaxLossyRedundancy m (hammingDist m) D n ≤
-        (m : ℝ) / 2 + ε
+      |((n : ℝ) / log2 (n : ℝ)) * minimaxLossyRedundancy m D δ n - ((m : ℝ) + 1) / 2| ≤ ε
 
 def problem : OpenProblem where
   id := "universal-lossy-redundancy"

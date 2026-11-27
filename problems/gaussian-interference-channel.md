@@ -69,14 +69,37 @@ descends from partial answers to this question.
   - Claimed full solutions are not accepted: Vaezi–Poor (arXiv:1509.02953) was withdrawn
     for a flawed outer bound, and Khandani's preprints (arXiv:2011.12981, arXiv:2501.14941)
     are unrefereed.
-- Formalization note (2026-11). The frozen Lean statement compares capacity with the
-  *convex hull* of Gaussian HK polytopes under power control, i.e. plain time-sharing.
-  That set is strictly smaller than Gaussian HK with a coded time-sharing variable $Q$:
-  at $a=b=1/2$, $P_1=P_2=100$, coded time-sharing achieves sum rate $3.9229$, while the
-  convex hull is certified to stay at or below $3.8355$. So the Lean statement is false as
-  written. A statement fix to the coded-time-sharing region is proposed; see
-  `attempts/gaussian-interference-channel/2026-11-26-claude-opus-5-5-coded-time-sharing-catalog-error.md`.
-  The mathematical problem, the exact region in the weak regime, remains open.
+- **Statement-fix (2026-11-27).** The earlier Lean statement compared capacity with the
+  *convex hull* of single-phase Gaussian HK polytopes under power control (plain
+  time-sharing). That set is strictly smaller than Gaussian HK with a coded time-sharing
+  variable $Q$, which is achievable: at $a=b=1/2$, $P_1=P_2=100$ coded time-sharing reaches
+  sum rate $3.9229$, while the convex hull stays at or below $3.8355$. So the old statement
+  was false as written
+  (`attempts/gaussian-interference-channel/2026-11-26-claude-opus-5-5-coded-time-sharing-catalog-error.md`).
+  The Lean region `InGaussianHKRegion` is now Gaussian HK **with a time-sharing variable
+  $Q$ and power control**: each of the seven compact HK right-hand sides is averaged over
+  $Q$ separately, under the average power constraints
+  $\mathbb E_Q[P_{jc}(Q)+P_{jp}(Q)]\le P_j$. This is $\mathcal R_{\rm HK\text{-}GS}$ of
+  Costa–Gohari–Nair–Ng (Def. 2), extended to the two-sided channel. The certificate
+  `InfoTheory.Known.Certificates.GaussianInterferenceChannel` proves that the new region:
+  - contains $(0,0)$ and the old convex-hull region;
+  - is bounded by $R_j\le\tfrac12\log_2(1+P_j)$;
+  - equals the capacity rectangle when $a=b=0$.
+
+  It also proves that $(0,0)$ is operationally achievable.
+
+## Formal question
+
+For all cross gains $a,b\ge0$ (standard form) and $P_1,P_2>0$, is the closure of the operational capacity region equal to
+the closure of the Gaussian Han–Kobayashi region with coded time-sharing and power control?
+
+That is, is Gaussian HK with time-sharing and power control capacity-achieving? Costa–Gohari–
+Nair–Ng (ISIT 2023) write that "it is still unknown whether the HK achievable region
+(restricted to Gaussian inputs and allowing for power control) represents the capacity
+region". This is open even for the Z-channel. Cross gains are taken nonnegative, as in the
+literature. The Gaussian HK region depends only on $a^2, b^2$, but negating an input together
+with its output maps $(a,b)$ to $(-a,-b)$, so the sign of $ab$ cannot be normalized away and is
+excluded from the formal question.
 
 ## References
 
@@ -102,5 +125,7 @@ descends from partial answers to this question.
   Z-interference channels," arXiv:2209.00163, 2022.
 - M. Costa, A. Gohari, C. Nair, and D. Ng, "A proof of the noiseberg conjecture for the
   Gaussian Z-interference channel," ISIT 2023.
+- H.-F. Chong, M. Motani, H. K. Garg, and H. El Gamal, "On the Han–Kobayashi region for the
+  interference channel," IEEE Trans. Inf. Theory 54(7):3188–3195, 2008.
 - C. Nair, L. Xia, and M. Yazdanpanah, "Sub-optimality of Han–Kobayashi achievable region
   for interference channels," ISIT 2015, pp. 2416–2420; arXiv:1502.02589.

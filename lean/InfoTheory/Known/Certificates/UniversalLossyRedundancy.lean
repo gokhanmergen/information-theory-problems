@@ -4,39 +4,47 @@ import InfoTheory.Known
 /-!
 # Certificate for `InfoTheory.Problems.UniversalLossyRedundancy`
 
-The frozen statement asks whether the minimax redundancy of universal
-`d`-semifaithful codes on `m`-ary memoryless sources under Hamming distortion satisfies
-`(n / log₂ n) · R_n ≤ m/2 + ε` for all large `n`.
+The statement (fixed 2026-11-27) asks whether the minimax redundancy
+`R_n(m, D, δ) = minimaxLossyRedundancy m D δ n` of `d`-semifaithful codes on `m`-ary
+memoryless sources under Hamming distortion, over the interior class
+`interiorClass m D δ = {P : ∀ x, P(x) ≥ D/(m-1) + δ}`, satisfies
+`(n / log₂ n) · R_n → (m + 1)/2`.
 
 ## Certified (about exactly these objects)
-* `rateDistortion_dirac` — `R(D) = 0` for a point-mass source, `D ≥ 0`.
-* `minimaxSet_nonneg`, `minimaxLossyRedundancy_nonneg` — `R_n ≥ 0` for `m ≥ 1`, `D ≥ 0`
-  (test any code on a point mass).
-* `minimaxLossyRedundancy_le` — the fixed-length lossless code (all `mⁿ` sequences,
-  `⌈n log₂ m⌉`-bit codewords, Kraft verified) is `d`-semifaithful, so the defining set is
-  nonempty and `R_n ≤ ⌈n log₂ m⌉ / n`. Together: `R_n` is a genuine finite infimum, not a junk
-  value, on the whole range of `Statement`.
-
-* `statement_false` — **catalog/modeling error (`¬ Statement`)**: because `Statement` takes
-  the supremum over the entire simplex `ProbDist (Fin m)` rather than a compact interior subset,
-  evaluating any `d`-semifaithful code on the zero-rate boundary source `P₀ = Bern(1/4)` at
-  `m = 2, D = 1/4` (`R(P₀, 1/4) = 0`) yields redundancy `≥ 1 / (54432 √n) ≫ (log₂ n) / n`
-  (fourth-moment anticoncentration + uniform Chernoff cap + Kraft split), refuting the frozen
-  statement and showing a statement-fix PR is required.
+* `uniform_mem_interiorClass`, `interiorClass_nonempty` : for `m ≥ 2` and
+  `δ < 1/m - D/(m-1)` the class contains the uniform source, so the supremum is over a
+  nonempty class (an empty class would make the minimax set all of `ℝ` and `sInf` junk).
+* `interiorClass_regular` : every `P` in the class satisfies `D < (m-1) · P(x)` for all `x`,
+  i.e. lies strictly inside the regular region where the `O(log n / n)` theory applies
+  (in particular it stays away from the zero-rate boundary `D = D_max(P)`).
+* `bern14_not_mem_interiorClass` : the old counterexample source `Bern(1/4)` at `D = 1/4` is
+  not in any class `interiorClass 2 (1/4) δ`, `δ > 0`.
+* `losslessCode_mem`, `minimaxLossyRedundancyOn_le`, `neg_rateDistortion_le_minimaxOn` :
+  the defining set is nonempty (fixed-length lossless code with `⌈n log₂ m⌉`-bit codewords)
+  and bounded below by `-R(P, D)` for any `P` in the class; so `R_n` is a genuine finite
+  infimum with `-R(P, D) ≤ R_n ≤ ⌈n log₂ m⌉ / n`.
+* `minimaxLossyRedundancyOn_mono`, `minimaxLossyRedundancy_le_fullSimplex` : `R_n` is monotone in
+  the class; the interior-class redundancy is at most the full-simplex one.
+* `fullSimplex_version_false` — **record of the catalog error fixed on 2026-11-27**: the old
+  frozen proposition `FullSimplexStatement` (supremum over the whole simplex, constant `m/2`)
+  is false. Evaluating any `d`-semifaithful code on the zero-rate boundary source
+  `P₀ = Bern(1/4)` at `m = 2, D = 1/4` (`R(P₀, 1/4) = 0`) yields redundancy
+  `≥ 1 / (54432 √n) ≫ (log₂ n) / n` (fourth-moment anticoncentration + uniform Chernoff cap +
+  Kraft split).  `fullSimplexMinimax_nonneg` and `fullSimplexMinimax_le` show that old object
+  was itself non-junk.
 
 ## Not certified
-* The `Θ(log n / n)` order of the redundancy **on compact subsets of the interior of the
-  simplex** (Yu–Speed 1993; Zhang–Yang–Wei 1997; Yang–Zhang 1999); over the full simplex it
-  fails, by `statement_false` above:
-  needs type-covering lemmas and the `½ log n / n` known-source lower bound, which are not in
-  `Bridge`.
+* Nonnegativity of `R_n` over the interior class (a converse `𝔼 ℓ ≥ n R(P, D)`), the
+  `Θ(log n / n)` order on interior classes (Yu–Speed 1993; Zhang–Yang–Wei 1997; Yang–Zhang),
+  and any bound on the constant (`3/2` lower bound for `m = 2` in the attempt file); these need
+  type-covering lemmas that are not in `Bridge`.
 -/
 
 open scoped BigOperators
 
 namespace InfoTheory.Known.Certificates.UniversalLossyRedundancy
 
-section ExistingCertificate
+section InteriorClassCertificate
 
 open InfoTheory InfoTheory.Bridge InfoTheory.Known.Operational
 open InfoTheory.Problems.UniversalLossyRedundancy
@@ -53,36 +61,35 @@ theorem rateDistortion_dirac {m : ℕ} (a : Fin m) {D : ℝ} (hD : 0 ≤ D) :
 
 theorem expectedRate_nonneg {m : ℕ} (P : ProbDist (Fin m)) (n M : ℕ)
     (enc : (Fin n → Fin m) → Fin M) (len : Fin M → ℕ) : 0 ≤ expectedRate P n M enc len :=
-  div_nonneg (Finset.sum_nonneg fun x _ => mul_nonneg
-    (Finset.prod_nonneg fun i _ => P.nonneg _) (Nat.cast_nonneg _)) (Nat.cast_nonneg _)
+  div_nonneg (Finset.sum_nonneg fun _ _ => mul_nonneg
+    (Finset.prod_nonneg fun _ _ => P.nonneg _) (Nat.cast_nonneg _)) (Nat.cast_nonneg _)
 
-/-- Every element of the minimax set is `≥ 0` (test the code on a point-mass source, whose
-    rate–distortion function vanishes). -/
-theorem minimaxSet_nonneg {m : ℕ} (hm : 0 < m) {D : ℝ} (hD : 0 ≤ D) (n : ℕ) :
-    ∀ r ∈ { r : ℝ | ∃ (M : ℕ) (enc : (Fin n → Fin m) → Fin M)
-      (dec : Fin M → (Fin n → Fin m)) (len : Fin M → ℕ),
-      IsDSemifaithfulCode m (hammingDist m) D n M enc dec len ∧
-      ∀ P : ProbDist (Fin m), expectedRate P n M enc len -
-        rateDistortion P (hammingDist m) D ≤ r }, 0 ≤ r := by
-  rintro r ⟨M, enc, dec, len, -, hP⟩
-  have := hP (diracDist ⟨0, hm⟩)
-  rw [rateDistortion_dirac _ hD, sub_zero] at this
-  exact le_trans (expectedRate_nonneg _ _ _ _ _) this
+/-- The set whose infimum is `minimaxLossyRedundancyOn m d D S n`. -/
+def minimaxSet (m : ℕ) (d : Distortion (Fin m) (Fin m)) (D : ℝ) (S : Set (ProbDist (Fin m)))
+    (n : ℕ) : Set ℝ :=
+  { r : ℝ | ∃ (M : ℕ) (enc : (Fin n → Fin m) → Fin M)
+    (dec : Fin M → (Fin n → Fin m)) (len : Fin M → ℕ),
+    IsDSemifaithfulCode m d D n M enc dec len ∧
+    ∀ P ∈ S, expectedRate P n M enc len - rateDistortion P d D ≤ r }
 
-/-- **The minimax redundancy is nonnegative** (for `m ≥ 1`, `D ≥ 0`). -/
-theorem minimaxLossyRedundancy_nonneg {m : ℕ} (hm : 0 < m) {D : ℝ} (hD : 0 ≤ D) (n : ℕ) :
-    0 ≤ minimaxLossyRedundancy m (hammingDist m) D n :=
-  Real.sInf_nonneg (minimaxSet_nonneg hm hD n)
+theorem minimaxLossyRedundancyOn_eq (m : ℕ) (d : Distortion (Fin m) (Fin m)) (D : ℝ)
+    (S : Set (ProbDist (Fin m))) (n : ℕ) :
+    minimaxLossyRedundancyOn m d D S n = sInf (minimaxSet m d D S n) := rfl
 
-/-- **The minimax redundancy is a genuine finite infimum**: the fixed-length lossless code
-    (all `mⁿ` sequences, each with a `⌈n log₂ m⌉`-bit codeword) is `d`-semifaithful and has
-    redundancy at most `⌈n log₂ m⌉ / n` against every source, so the defining set is nonempty
-    and `R_n ≤ ⌈n log₂ m⌉ / n`. -/
-theorem minimaxLossyRedundancy_le {m : ℕ} (hm : 0 < m) {D : ℝ} (hD : 0 ≤ D) {n : ℕ}
-    (hn : 0 < n) :
-    minimaxLossyRedundancy m (hammingDist m) D n ≤
-      (Nat.ceil ((n : ℝ) * log2 (m : ℝ)) : ℝ) / (n : ℝ) := by
-  haveI : Nonempty (Fin m) := ⟨⟨0, hm⟩⟩
+/-- Every element of the minimax set is `≥ -R(P, D)` for each `P` in the class. -/
+theorem minimaxSet_lower {m : ℕ} {d : Distortion (Fin m) (Fin m)} {D : ℝ}
+    {S : Set (ProbDist (Fin m))} {n : ℕ} {P : ProbDist (Fin m)} (hP : P ∈ S) :
+    ∀ r ∈ minimaxSet m d D S n, -rateDistortion P d D ≤ r := by
+  rintro r ⟨M, enc, dec, len, -, hr⟩
+  linarith [hr P hP, expectedRate_nonneg P n M enc len]
+
+/-- The fixed-length lossless code (all `mⁿ` sequences, each with a `⌈n log₂ m⌉`-bit codeword)
+    is `d`-semifaithful and has redundancy at most `⌈n log₂ m⌉ / n` against every source, for
+    every class `S`. -/
+theorem losslessCode_mem {m : ℕ} (hm : 0 < m) {D : ℝ} (hD : 0 ≤ D) {n : ℕ} (hn : 0 < n)
+    (S : Set (ProbDist (Fin m))) :
+    (Nat.ceil ((n : ℝ) * log2 (m : ℝ)) : ℝ) / (n : ℝ) ∈ minimaxSet m (hammingDist m) D S n := by
+  have : Nonempty (Fin m) := ⟨⟨0, hm⟩⟩
   set L := Nat.ceil ((n : ℝ) * log2 (m : ℝ)) with hL
   let e := Fintype.equivFin (Fin n → Fin m)
   have hlog : (2 : ℝ) ^ (log2 (m : ℝ)) = m := by
@@ -95,8 +102,7 @@ theorem minimaxLossyRedundancy_le {m : ℕ} (hm : 0 < m) {D : ℝ} (hD : 0 ≤ D
       _ = (2 : ℝ) ^ ((n : ℝ) * log2 (m : ℝ)) := by
           rw [← Real.rpow_natCast, ← Real.rpow_mul (by norm_num), mul_comm]
       _ ≤ (2 : ℝ) ^ (L : ℝ) := Real.rpow_le_rpow_of_exponent_le (by norm_num) (Nat.le_ceil _)
-  refine csInf_le ⟨0, minimaxSet_nonneg hm hD n⟩ ⟨_, e, e.symm, fun _ => L,
-    ⟨hn, Fintype.card_pos, ?_, fun x => ?_⟩, fun P => ?_⟩
+  refine ⟨_, e, e.symm, fun _ => L, ⟨hn, Fintype.card_pos, ?_, fun x => ?_⟩, fun P _ => ?_⟩
   · rw [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
     have hcard : ((Fintype.card (Fin n → Fin m) : ℕ) : ℝ) = (m : ℝ) ^ n := by
       simp
@@ -111,7 +117,106 @@ theorem minimaxLossyRedundancy_le {m : ℕ} (hm : 0 < m) {D : ℝ} (hD : 0 ≤ D
     rw [hrate]
     linarith [rateDistortion_nonneg P (hammingDist m) D]
 
-end ExistingCertificate
+/-- `R_n(S) ≤ ⌈n log₂ m⌉ / n` for every nonempty class `S`. -/
+theorem minimaxLossyRedundancyOn_le {m : ℕ} (hm : 0 < m) {D : ℝ} (hD : 0 ≤ D) {n : ℕ}
+    (hn : 0 < n) {S : Set (ProbDist (Fin m))} (hS : S.Nonempty) :
+    minimaxLossyRedundancyOn m (hammingDist m) D S n ≤
+      (Nat.ceil ((n : ℝ) * log2 (m : ℝ)) : ℝ) / (n : ℝ) := by
+  obtain ⟨P, hP⟩ := hS
+  exact csInf_le ⟨_, minimaxSet_lower hP⟩ (losslessCode_mem hm hD hn S)
+
+/-- `-R(P, D) ≤ R_n(S)` for every `P ∈ S` (the infimum is over a nonempty set). -/
+theorem neg_rateDistortion_le_minimaxOn {m : ℕ} (hm : 0 < m) {D : ℝ} (hD : 0 ≤ D) {n : ℕ}
+    (hn : 0 < n) {S : Set (ProbDist (Fin m))} {P : ProbDist (Fin m)} (hP : P ∈ S) :
+    -rateDistortion P (hammingDist m) D ≤ minimaxLossyRedundancyOn m (hammingDist m) D S n :=
+  le_csInf ⟨_, losslessCode_mem hm hD hn S⟩ (minimaxSet_lower hP)
+
+/-- Monotonicity in the source class. -/
+theorem minimaxLossyRedundancyOn_mono {m : ℕ} (hm : 0 < m) {D : ℝ} (hD : 0 ≤ D) {n : ℕ}
+    (hn : 0 < n) {S T : Set (ProbDist (Fin m))} (hS : S.Nonempty) (hST : S ⊆ T) :
+    minimaxLossyRedundancyOn m (hammingDist m) D S n ≤
+      minimaxLossyRedundancyOn m (hammingDist m) D T n := by
+  obtain ⟨P, hP⟩ := hS
+  refine csInf_le_csInf ⟨_, minimaxSet_lower hP⟩ ⟨_, losslessCode_mem hm hD hn T⟩ ?_
+  rintro r ⟨M, enc, dec, len, hc, hr⟩
+  exact ⟨M, enc, dec, len, hc, fun Q hQ => hr Q (hST hQ)⟩
+
+/-- For `m ≥ 2` and `δ ≤ 1/m - D/(m-1)` the uniform source lies in the interior class. -/
+theorem uniform_mem_interiorClass {m : ℕ} [Nonempty (Fin m)] {D δ : ℝ}
+    (hδ : δ ≤ 1 / (m : ℝ) - D / ((m : ℝ) - 1)) :
+    (ProbDist.uniform : ProbDist (Fin m)) ∈ interiorClass m D δ := by
+  intro x
+  simp only [ProbDist.uniform, Fintype.card_fin]
+  linarith
+
+theorem interiorClass_nonempty {m : ℕ} (hm : 2 ≤ m) {D δ : ℝ}
+    (hδ : δ ≤ 1 / (m : ℝ) - D / ((m : ℝ) - 1)) : (interiorClass m D δ).Nonempty :=
+  have : Nonempty (Fin m) := ⟨⟨0, by omega⟩⟩
+  ⟨_, uniform_mem_interiorClass hδ⟩
+
+/-- Every source in the class is strictly regular: `D < (m - 1) · P(x)` for all letters. -/
+theorem interiorClass_regular {m : ℕ} (hm : 2 ≤ m) {D δ : ℝ} (hδ : 0 < δ)
+    {P : ProbDist (Fin m)} (hP : P ∈ interiorClass m D δ) (x : Fin m) :
+    D < ((m : ℝ) - 1) * P.pmf x := by
+  have hm1 : (0 : ℝ) < (m : ℝ) - 1 := by
+    have : (2 : ℝ) ≤ m := by exact_mod_cast hm
+    linarith
+  have h := mul_le_mul_of_nonneg_left (hP x) hm1.le
+  rw [mul_add, mul_div_cancel₀ _ hm1.ne'] at h
+  nlinarith
+
+/-- The interior-class redundancy is a genuine finite infimum:
+    `-R(uniform, D) ≤ R_n(m, D, δ) ≤ ⌈n log₂ m⌉ / n`. -/
+theorem minimaxLossyRedundancy_bounds {m : ℕ} [Nonempty (Fin m)] (hm : 2 ≤ m) {D δ : ℝ}
+    (hD : 0 ≤ D) (hδ : δ ≤ 1 / (m : ℝ) - D / ((m : ℝ) - 1)) {n : ℕ} (hn : 0 < n) :
+    -rateDistortion (ProbDist.uniform : ProbDist (Fin m)) (hammingDist m) D ≤
+        minimaxLossyRedundancy m D δ n ∧
+      minimaxLossyRedundancy m D δ n ≤ (Nat.ceil ((n : ℝ) * log2 (m : ℝ)) : ℝ) / (n : ℝ) :=
+  ⟨neg_rateDistortion_le_minimaxOn (by omega) hD hn (uniform_mem_interiorClass hδ),
+    minimaxLossyRedundancyOn_le (by omega) hD hn (interiorClass_nonempty hm hδ)⟩
+
+/-- The interior-class redundancy is at most the full-simplex redundancy. -/
+theorem minimaxLossyRedundancy_le_fullSimplex {m : ℕ} (hm : 2 ≤ m) {D δ : ℝ} (hD : 0 ≤ D)
+    (hδ : δ ≤ 1 / (m : ℝ) - D / ((m : ℝ) - 1)) {n : ℕ} (hn : 0 < n) :
+    minimaxLossyRedundancy m D δ n ≤
+      minimaxLossyRedundancyOn m (hammingDist m) D Set.univ n :=
+  minimaxLossyRedundancyOn_mono (by omega) hD hn (interiorClass_nonempty hm hδ)
+    (Set.subset_univ _)
+
+end InteriorClassCertificate
+
+/-! ## The old (pre-2026-11-27) full-simplex proposition -/
+
+section FullSimplex
+
+open InfoTheory InfoTheory.Problems.UniversalLossyRedundancy
+
+/-- The old frozen object: minimax redundancy over the *entire* simplex. -/
+noncomputable def fullSimplexMinimax (m : ℕ) (D : ℝ) (n : ℕ) : ℝ :=
+  minimaxLossyRedundancyOn m (hammingDist m) D Set.univ n
+
+/-- The old frozen `Statement` (before the 2026-11-27 statement fix), spelled out:
+    supremum over the whole simplex and conjectured constant `m/2`. -/
+def FullSimplexStatement : Prop :=
+  ∀ (m : ℕ), 2 ≤ m → ∀ (D : ℝ), 0 < D → D < 1 - 1 / (m : ℝ) →
+    ∀ (ε : ℝ), 0 < ε → ∃ N : ℕ, 2 ≤ N ∧ ∀ n : ℕ, N ≤ n →
+      ((n : ℝ) / log2 (n : ℝ)) * fullSimplexMinimax m D n ≤ (m : ℝ) / 2 + ε
+
+/-- The old object was non-junk: `0 ≤ fullSimplexMinimax` (test on a point mass). -/
+theorem fullSimplexMinimax_nonneg {m : ℕ} (hm : 0 < m) {D : ℝ} (hD : 0 ≤ D) (n : ℕ) :
+    0 ≤ fullSimplexMinimax m D n := by
+  refine Real.sInf_nonneg ?_
+  rintro r ⟨M, enc, dec, len, -, hP⟩
+  have := hP (InfoTheory.Known.Operational.diracDist ⟨0, hm⟩) (Set.mem_univ _)
+  rw [rateDistortion_dirac _ hD, sub_zero] at this
+  exact le_trans (expectedRate_nonneg _ _ _ _ _) this
+
+theorem fullSimplexMinimax_le {m : ℕ} (hm : 0 < m) {D : ℝ} (hD : 0 ≤ D) {n : ℕ} (hn : 0 < n) :
+    fullSimplexMinimax m D n ≤ (Nat.ceil ((n : ℝ) * log2 (m : ℝ)) : ℝ) / (n : ℝ) :=
+  minimaxLossyRedundancyOn_le hm hD hn
+    ⟨InfoTheory.Known.Operational.diracDist (⟨0, hm⟩ : Fin m), Set.mem_univ _⟩
+
+end FullSimplex
 
 section BoundaryKink
 
@@ -782,8 +887,8 @@ private lemma expectedRate_P₀_ge {n M : ℕ}
 /-! ### Step 6: Nonemptiness of the feasible redundancy set and lower bound on `minimaxLossyRedundancy` -/
 
 private lemma minimaxLossyRedundancy_ge {n : ℕ} (hn : 0 < n) (ht20 : 20 ≤ t₀ n) :
-    t₀ n / (1296 * (n : ℝ)) ≤ minimaxLossyRedundancy 2 (Problems.UniversalLossyRedundancy.hammingDist 2) (1 / 4) n := by
-  unfold minimaxLossyRedundancy
+    t₀ n / (1296 * (n : ℝ)) ≤ fullSimplexMinimax 2 (1 / 4) n := by
+  unfold fullSimplexMinimax minimaxLossyRedundancyOn
   refine le_csInf ?_ ?_
   · -- Nonempty: trivial lossless code `M = 2^n`, `len c = n`, `r = 1`
     refine ⟨1, 2 ^ n, ?_⟩
@@ -799,7 +904,7 @@ private lemma minimaxLossyRedundancy_ge {n : ℕ} (hn : 0 < n) (ht20 : 20 ≤ t�
         exact le_rfl
       · intro x
         simp [Problems.UniversalLossyRedundancy.hammingDist]
-    · intro P
+    · intro P _
       have hR0 : 0 ≤ rateDistortion P (Problems.UniversalLossyRedundancy.hammingDist 2) (1 / 4) :=
         rateDistortion_nonneg P (Problems.UniversalLossyRedundancy.hammingDist 2) (1 / 4)
       have hrate : expectedRate P n (2 ^ n) e (fun _ => n) = 1 := by
@@ -812,7 +917,7 @@ private lemma minimaxLossyRedundancy_ge {n : ℕ} (hn : 0 < n) (ht20 : 20 ≤ t�
       linarith
   · -- Lower bound for every `r` in the set
     rintro r ⟨M, enc, dec, len, hcode, hr⟩
-    have hP₀ := hr P₀
+    have hP₀ := hr P₀ (Set.mem_univ _)
     rw [rateDistortion_P₀_eq_zero, sub_zero] at hP₀
     exact le_trans (expectedRate_P₀_ge enc dec len hcode ht20) hP₀
 
@@ -833,8 +938,9 @@ private lemma log2_le_eight_rpow_quarter {n : ℕ} (hn : 1 ≤ n) :
   have hnonneg : (0 : ℝ) ≤ (n : ℝ) ^ ((1 : ℝ) / 4) := Real.rpow_nonneg hn_pos.le _
   nlinarith
 
-/-- Disproof of the frozen `InfoTheory.Problems.UniversalLossyRedundancy.Statement`. -/
-theorem statement_false : ¬ InfoTheory.Problems.UniversalLossyRedundancy.Statement := by
+/-- **Record of the catalog error fixed on 2026-11-27**: the old frozen statement (supremum over
+    the whole simplex, constant `m/2`) is false. -/
+theorem fullSimplex_version_false : ¬ FullSimplexStatement := by
   intro hstmt
   rcases hstmt 2 (by norm_num) (1 / 4) (by norm_num) (by norm_num) 1 (by norm_num) with
     ⟨N, hN2, hbound⟩
@@ -882,7 +988,7 @@ theorem statement_false : ¬ InfoTheory.Problems.UniversalLossyRedundancy.Statem
     calc
       t₀ n / (1296 * log2 (n : ℝ))
         = ((n : ℝ) / log2 (n : ℝ)) * (t₀ n / (1296 * (n : ℝ))) := hsimp.symm
-      _ ≤ ((n : ℝ) / log2 (n : ℝ)) * minimaxLossyRedundancy 2 (Problems.UniversalLossyRedundancy.hammingDist 2) (1 / 4) n :=
+      _ ≤ ((n : ℝ) / log2 (n : ℝ)) * fullSimplexMinimax 2 (1 / 4) n :=
           mul_le_mul_of_nonneg_left hminimax (div_nonneg hn_rpos.le hlog2_pos.le)
       _ ≤ (2 : ℝ) / 2 + 1 := hupper
   -- Since `√n = (n^(1/4))^2`, we get `t₀ n ≥ (n^(1/4))^2 / 42`
@@ -900,6 +1006,16 @@ theorem statement_false : ¬ InfoTheory.Problems.UniversalLossyRedundancy.Statem
   -- Hence `n^(1/4) ≤ 870912 < 10^6`, contradiction!
   nlinarith
 
+
+/-- The old counterexample source `Bern(1/4)` (any source with `P(1) = 1/4`, at `D = 1/4`)
+    is excluded from every interior class of the fixed statement. -/
+theorem bern14_not_mem_interiorClass {δ : ℝ} (hδ : 0 < δ) {P : ProbDist (Fin 2)}
+    (hP : P.pmf 1 = 1 / 4) : P ∉ interiorClass 2 (1 / 4) δ := by
+  intro h
+  have := h 1
+  rw [hP] at this
+  norm_num at this
+  linarith
 
 end BoundaryKink
 

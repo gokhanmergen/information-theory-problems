@@ -5,9 +5,10 @@ import InfoTheory.Bridge
 /-!
 # Certificate for `InfoTheory.Problems.RelayChannel`
 
-The frozen statement asks whether, for every finite DM relay channel `W`, the operational
-capacity `relayCapacity W` (Core: causal relay functions `X_{r,i} = f_i(Y_r^{i-1})`) equals the
-Cover–El Gamal Theorem 7 rate `coverElGamalTheorem7Rate W`.
+The statement asks whether, for every finite DM relay channel `W`, the operational capacity
+`relayCapacity W` (Core: causal relay functions `X_{r,i} = f_i(Y_r^{i-1})`) equals the
+Cover–El Gamal Theorem 7 rate `coverElGamalTheorem7Rate W` in its three-constraint form
+(Chong–Motani 2011, Lemma 2; El Gamal–Gohari–Nair, Theorem 1), statement-fixed 2026-11-27.
 
 ## Certified (about exactly these objects)
 * `relay_err_ge` — a counting converse: for **every** relay code (any causal relay strategy),
@@ -23,33 +24,31 @@ Cover–El Gamal Theorem 7 rate `coverElGamalTheorem7Rate W`.
   `C(p(y | x, x_r)) ≤ relayCapacity W` for every `x_r` (Shannon's theorem,
   `Bridge.shannon_channel_coding_achievability`).
 * `relayCutsetBound_nonneg`, `relayCutsetBound_le_log2_card` — the cutset bound of Core lies in
-  `[0, log₂ |Y|]`.
-* `coverElGamalTheorem7Rate_nonneg`, `coverElGamalTheorem7Rate_le_log2_card` — the right-hand
-  side of the statement lies in `[0, log₂ |Y|]` (for the lower bound take `U` and `Ŷ` constant;
-  then the compression penalty `I(Y_r; Ŷ | U, X, X_r, Y)` vanishes,
-  `condMutualInfo_eq_zero_of_subsingleton`).
+  `[0, log₂ |Y|]`; `relayCapacity_le_cutset` re-exports the cutset converse
+  `Bridge.relayCapacity_le_cutsetBound`.
+* `thm7MinRate_le_log2_card`, `thm7Rates_bddAbove`, `thm7Rates_nonempty`,
+  `coverElGamalTheorem7Rate_nonneg`, `coverElGamalTheorem7Rate_le_log2_card` — the right-hand
+  side is the `sSup` of a nonempty set bounded above by `log₂ |Y|`, and lies in `[0, log₂ |Y|]`.
+  Upper bound: `min(c₁, c₂, c₃) ≤ c₁ ≤ I(X, X_r; Y | Q) ≤ log₂ |Y|`. Lower bound: all
+  auxiliaries constant (`Fin 1`); then both compression penalties `I(Y_r; V | ⋯)` vanish
+  (`condMutualInfo_eq_zero_of_subsingleton`) and the remaining terms are nonnegative.
 
 So both sides of the equation are finite reals in `[0, log₂ |Y|]`, and the operational side is
-`≥` every fixed-relay direct-link capacity. Neither side is a junk value.
+`≥` every fixed-relay direct-link capacity and `≤` the cutset bound. Neither side is a junk value.
+(For degenerate alphabets with `Fin 0` input or relay alphabet both sides are `sSup ∅ = 0`.)
 
 ## Not certified
-* (Now in `Bridge`, db659ea: the cutset converse `relayCapacity W ≤ relayCutsetBound W`,
-  `Bridge.relayCapacity_le_cutsetBound`. It does not bear on the statement below, since on
-  the catalog-error channel the cutset bound equals the Lean functional `log₂ 3`.)
-* Achievability of `coverElGamalTheorem7Rate` (decode-and-forward / compress-and-forward):
-  this needs block-Markov coding, which is not in the library.
-* **Frozen `Statement` is false (on paper; catalog error, statement-fix pending).**
-  `coverElGamalTheorem7Rate` keeps two of Theorem 7's three constraints and allows an
-  arbitrary joint law `P(u, x, x_r)`; on a 4×2→6×2 channel capacity is exactly `3/2` while the
-  Lean functional equals `log₂ 3` (`problems/relay-channel.md`, formalization note;
-  `attempts/relay-channel/2026-11-26-claude-opus-5-5-thm7-transcription-catalog-error.md`).
-  Proving it here as `statement_false` is medium effort (explicit entropies plus a
-  multi-letter converse adapting `Bridge.relay_mac_cut_le_sum`). The mathematical problem
-  (is the faithful Theorem 7 rate the capacity?) remains open; Zhang 1988 and
-  El Gamal–Gohari–Nair 2022 show only that the *cutset bound* is loose.
+* Achievability of `coverElGamalTheorem7Rate` (`coverElGamalTheorem7Rate W ≤ relayCapacity W`,
+  CEG79): this needs block-Markov coding, which is not in the library.
+* `coverElGamalTheorem7Rate W ≤ relayCutsetBound W`, and equality with the decode-forward rate
+  on degraded channels (choose `W = X_r`, `U = X`, `V` constant): routine but long entropy
+  bookkeeping, not done.
+* The catalog-error channel of the earlier statement
+  (`attempts/relay-channel/2026-11-26-claude-opus-5-5-thm7-transcription-catalog-error.md`):
+  the faithful Theorem 7 rate equals `3/2 = C` there (on paper, Claim 3 of that attempt).
 
 Sources: Cover–El Gamal, "Capacity theorems for the relay channel", IEEE Trans. IT 1979;
-El Gamal–Kim, *Network Information Theory*, Ch. 16.
+Chong–Motani, IEEE Trans. IT 57(3), 2011; El Gamal–Kim, *Network Information Theory*, Ch. 16.
 -/
 
 open scoped BigOperators
@@ -326,14 +325,49 @@ theorem condMutualInfo_eq_zero_of_subsingleton {α β γ : Type*} [Fintype α] [
   rw [h1, h2, shannonEntropy_map_of_injective _ hc1, shannonEntropy_map_of_injective _ hc2]
   ring
 
+/-- `I(A; B | C) ≤ log₂ |B|`. -/
+theorem condMutualInfo_le_log2_card {α β γ : Type*} [Fintype α] [Fintype β] [Fintype γ]
+    [Nonempty β] (P : ProbDist (α × β × γ)) : condMutualInfo P ≤ log2 (Fintype.card β) := by
+  unfold condMutualInfo
+  dsimp only
+  have h1 : shannonEntropy (P.map (fun t => (t.1, t.2.2))) ≤ shannonEntropy P :=
+    shannonEntropy_map_le _ P
+  have h2 := shannonEntropy_subadd (P.map (fun t => (t.2.1, t.2.2)))
+  rw [← map_fst_eq_fst, ← map_snd_eq_snd, map_comp_eq, map_comp_eq] at h2
+  simp only [Function.comp_def] at h2
+  have h3 := shannonEntropy_le_log2_card (P.map (fun t => t.2.1))
+  linarith
+
+/-- The cutset converse (re-exported from `Bridge`). -/
+theorem relayCapacity_le_cutset (W : RelayChannel X Xr Y Yr) :
+    relayCapacity W ≤ relayCutsetBound W :=
+  Bridge.relayCapacity_le_cutsetBound W
+
+/-- **Upper bound on the Theorem 7 rate of any joint law**:
+    `min(c₁, c₂, c₃) ≤ c₁ ≤ I(X, X_r; Y | Q) ≤ log₂ |Y|`. -/
+theorem thm7MinRate_le_log2_card [Nonempty Y] {Q Wc U V : Type*} [Fintype Q] [Fintype Wc]
+    [Fintype U] [Fintype V] (J : ProbDist (Q × Wc × U × X × Xr × Y × Yr × V)) :
+    thm7MinRate J ≤ log2 (Fintype.card Y) := by
+  unfold thm7MinRate
+  dsimp only
+  refine min_le_of_left_le ?_
+  exact le_trans (sub_le_self _ (condMutualInfo_nonneg _)) (condMutualInfo_le_log2_card _)
+
+theorem thm7Rates_bddAbove [Nonempty Y] (W : RelayChannel X Xr Y Yr) :
+    BddAbove { r : ℝ | ∃ (kQ kW kU kV : ℕ) (pQ : ProbDist (Fin kQ)) (pW : DMC (Fin kQ) (Fin kW))
+      (pU : DMC (Fin kW × Fin kQ) (Fin kU)) (pX : DMC (Fin kU × Fin kQ) X)
+      (pXr : DMC (Fin kW × Fin kQ) Xr) (pV : DMC (Fin kU × Xr × Yr × Fin kQ) (Fin kV)),
+      r = thm7MinRate (thm7Joint W pQ pW pU pX pXr pV) } := by
+  refine ⟨log2 (Fintype.card Y), fun r hr => ?_⟩
+  obtain ⟨_, _, _, _, _, _, _, _, _, _, rfl⟩ := hr
+  exact thm7MinRate_le_log2_card _
+
 theorem coverElGamalTheorem7Rate_le_log2_card [Nonempty Y] (W : RelayChannel X Xr Y Yr) :
     coverElGamalTheorem7Rate W ≤ log2 (Fintype.card Y) := by
   unfold coverElGamalTheorem7Rate
   refine Real.sSup_le (fun r hr => ?_) (log2_card_nonneg Y)
-  obtain ⟨kU, kYh, P, Q, rfl⟩ := hr
-  refine min_le_of_right_le ?_
-  exact le_trans (sub_le_self _ (condMutualInfo_nonneg _))
-    ((mutualInfo_le_entropy_snd _).trans (shannonEntropy_le_log2_card _))
+  obtain ⟨_, _, _, _, _, _, _, _, _, _, rfl⟩ := hr
+  exact thm7MinRate_le_log2_card _
 
 /-- The trivial test channel into `Fin 1`. -/
 def trivialTest (α : Type*) [Fintype α] : DMC α (Fin 1) where
@@ -341,17 +375,47 @@ def trivialTest (α : Type*) [Fintype α] : DMC α (Fin 1) where
   nonneg _ _ := zero_le_one
   sum_one _ := by simp
 
+/-- The constant kernel `α → P`. -/
+def constKernel (α : Type*) {β : Type*} [Fintype α] [Fintype β] (P : ProbDist β) : DMC α β where
+  trans _ b := P.pmf b
+  nonneg _ b := P.nonneg b
+  sum_one _ := P.sum_one
+
+/-- **Lower bound on the Theorem 7 rate with all auxiliaries constant**: when `V` is constant,
+    both compression penalties vanish and `min(c₁, c₂, c₃) ≥ 0`. -/
+theorem thm7MinRate_nonneg_of_const {Q Wc U : Type*} [Fintype Q] [Fintype Wc] [Fintype U]
+    (J : ProbDist (Q × Wc × U × X × Xr × Y × Yr × Fin 1)) : 0 ≤ thm7MinRate J := by
+  unfold thm7MinRate
+  dsimp only
+  have z1 := condMutualInfo_eq_zero_of_subsingleton (J.map fun t =>
+    (t.2.2.2.2.2.2.1, t.2.2.2.2.2.2.2,
+      (t.2.2.1, t.2.2.2.1, t.2.2.2.2.1, t.2.2.2.2.2.1, t.1)))
+  have z2 := condMutualInfo_eq_zero_of_subsingleton (J.map fun t =>
+    (t.2.2.2.2.2.2.1, t.2.2.2.2.2.2.2, (t.2.2.1, t.2.2.2.2.1, t.2.2.2.2.2.1, t.1)))
+  rw [z1, z2, sub_zero, sub_zero]
+  have h1 := condMutualInfo_nonneg (J.map fun t =>
+    ((t.2.2.2.1, t.2.2.2.2.1), t.2.2.2.2.2.1, t.1))
+  have h2 := condMutualInfo_nonneg (J.map fun t =>
+    (t.2.2.2.1, (t.2.2.2.2.2.2.2, t.2.2.2.2.2.1), (t.2.2.1, t.2.2.2.2.1, t.1)))
+  have h3 := condMutualInfo_nonneg (J.map fun t =>
+    (t.2.2.1, t.2.2.2.2.2.2.1, (t.2.1, t.2.2.2.2.1, t.1)))
+  have h4 := condMutualInfo_nonneg (J.map fun t => (t.2.2.2.2.1, t.2.2.2.2.2.1, (t.2.1, t.1)))
+  exact le_min h1 (le_min (by linarith) (by linarith))
+
+theorem thm7Rates_nonempty [Nonempty X] [Nonempty Xr] (W : RelayChannel X Xr Y Yr) :
+    ∃ r : ℝ, ∃ (kQ kW kU kV : ℕ) (pQ : ProbDist (Fin kQ)) (pW : DMC (Fin kQ) (Fin kW))
+      (pU : DMC (Fin kW × Fin kQ) (Fin kU)) (pX : DMC (Fin kU × Fin kQ) X)
+      (pXr : DMC (Fin kW × Fin kQ) Xr) (pV : DMC (Fin kU × Xr × Yr × Fin kQ) (Fin kV)),
+      r = thm7MinRate (thm7Joint W pQ pW pU pX pXr pV) :=
+  ⟨_, 1, 1, 1, 1, ProbDist.uniform, trivialTest _, trivialTest _, constKernel _ ProbDist.uniform,
+    constKernel _ ProbDist.uniform, trivialTest _, rfl⟩
+
 theorem coverElGamalTheorem7Rate_nonneg [Nonempty X] [Nonempty Xr] [Nonempty Y]
     (W : RelayChannel X Xr Y Yr) : 0 ≤ coverElGamalTheorem7Rate W := by
   unfold coverElGamalTheorem7Rate
-  refine le_csSup_of_le ⟨log2 (Fintype.card Y), fun r hr => ?_⟩
-    ⟨1, 1, ProbDist.uniform, trivialTest _, rfl⟩ ?_
-  · obtain ⟨kU, kYh, P, Q, rfl⟩ := hr
-    refine min_le_of_right_le ?_
-    exact le_trans (sub_le_self _ (condMutualInfo_nonneg _))
-      ((mutualInfo_le_entropy_snd _).trans (shannonEntropy_le_log2_card _))
-  · refine le_min (add_nonneg (condMutualInfo_nonneg _) (condMutualInfo_nonneg _)) ?_
-    rw [condMutualInfo_eq_zero_of_subsingleton, sub_zero]
-    exact mutualInfo_nonneg _
+  refine le_csSup_of_le (thm7Rates_bddAbove W)
+    ⟨1, 1, 1, 1, ProbDist.uniform, trivialTest _, trivialTest _, constKernel _ ProbDist.uniform,
+      constKernel _ ProbDist.uniform, trivialTest _, rfl⟩ ?_
+  exact thm7MinRate_nonneg_of_const _
 
 end InfoTheory.Known.Certificates.RelayChannel

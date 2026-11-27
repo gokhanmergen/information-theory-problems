@@ -21,6 +21,41 @@ $Y_r^{i-1}$) to help.
 discrete memoryless relay channel.** The Gaussian case with fixed channel gains is
 already open.
 
+The formal statement asks whether the best classical single-letter scheme, Cover–El Gamal
+Theorem 7 (partial decode-forward combined with compress-forward, with time sharing), is
+capacity-achieving. In the three-constraint form of Chong–Motani (2011, Lemma 2) and
+El Gamal–Gohari–Nair (orthogonal-receiver paper, Theorem 1), $R_{\rm Thm7}$ is the
+supremum of all $R$ with
+$$
+\begin{aligned}
+R &\le I(X, X_r; Y \mid Q) - I(Y_r; V \mid U, X, X_r, Y, Q),\\
+R &\le I(X; V, Y \mid U, X_r, Q) + I(U; Y_r \mid W, X_r, Q),\\
+R &\le I(X; V, Y \mid U, X_r, Q) + I(U; Y_r \mid W, X_r, Q) + I(X_r; Y \mid W, Q)
+       - I(Y_r; V \mid U, X_r, Y, Q).
+\end{aligned}
+$$
+for some finite auxiliaries with joint law
+$p(q)\,p(w\mid q)\,p(u\mid w,q)\,p(x\mid u,q)\,p(x_r\mid w,q)\,p(y,y_r\mid x,x_r)\,p(v\mid u,x_r,y_r,q)$.
+
+**Does $R_{\rm Thm7} = C$ for every finite-alphabet discrete memoryless relay channel $p(y, y_r \mid x, x_r)$?** (The auxiliary $W$ above is not the channel; in Lean the channel is `W` and the auxiliary alphabet is `Fin kW`.)
+
+In Lean: `Statement : ∀ kX kXr kY kYr (W : RelayChannel (Fin kX) (Fin kXr) (Fin kY) (Fin kYr)),
+relayCapacity W = coverElGamalTheorem7Rate W`. `thm7Joint` is the joint law above on tuples
+$(q, w, u, x, x_r, y, y_r, v)$, with all auxiliary alphabets `Fin k`; `thm7MinRate` is the
+minimum of the three right-hand sides; `coverElGamalTheorem7Rate W` is its `sSup` over all
+auxiliary alphabets and kernels. That set is nonempty and bounded by $\log_2|\mathcal Y|$
+(`Known.Certificates.RelayChannel`).
+
+> **Statement-fix (2026-11-27).** The previous `coverElGamalTheorem7Rate` kept only two of
+> Theorem 7's three constraints and allowed an arbitrary joint law $P(u,x,x_r)$, which credits
+> compress-forward with coherent source and relay inputs. On a 4×2→6×2 channel (the relay
+> observes the destination's noise; the destination sees $X_1\oplus Z$ and the adder
+> $X_2+X_r$) capacity is $3/2$ but the old functional equals $\log_2 3$, so the old statement
+> was false. The statement now uses the faithful three-constraint form above, which equals
+> $3/2$ on that channel; see
+> `attempts/relay-channel/2026-11-26-claude-opus-5-5-thm7-transcription-catalog-error.md`.
+> The mathematical problem remains open.
+
 ## Background
 
 The three-node relay channel is the smallest network in which *cooperation* appears,
@@ -80,15 +115,6 @@ information theory is.
     three of Ponniah's rates are at most $0.5310$. The paper's definitions (82)–(97) are
     partly inconsistent. This bound reads each rate under the same joint law as its own
     feasibility constraint (see attempt log).
-- Formalization note (2026-11). The frozen Lean functional `coverElGamalTheorem7Rate`
-  keeps two of Theorem 7's three constraints and allows an arbitrary joint law
-  $P(u,x,x_r)$. That permits compress-forward with coherent source and relay inputs. On a
-  4×2→6×2 channel where the relay observes the destination's noise and the destination
-  sees a binary adder $X_2+X_r$, capacity is exactly $3/2$ but the Lean functional equals
-  $\log_2 3$. So the Lean statement is false as written. A faithful three-constraint
-  Theorem 7 statement is proposed in
-  `attempts/relay-channel/2026-11-26-claude-opus-5-5-thm7-transcription-catalog-error.md`.
-  The mathematical problem remains open.
 - Approximate capacity: for Gaussian relay networks, capacity is known within a
   constant gap (Avestimehr–Diggavi–Tse deterministic-model program).
 
