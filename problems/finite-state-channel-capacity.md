@@ -32,6 +32,17 @@ By contrast, when **noiseless feedback** is available, Permuter, Cuff, Van Roy, 
 - **Multi-letter capacity theorem (Gallager, 1968):** For every indecomposable FSC, $C(W) = \lim_{n \to \infty} \frac{1}{n} \max_{P(x^n)} I(X^n; Y^n \mid s_0)$ exists independently of $s_0$ and satisfies $\underline{C}_n \le C(W) \le \overline{C}_n$ with $\overline{C}_n - \underline{C}_n \le \frac{\log_2 |\mathcal{S}|}{n}$.
 - **Density of finite-order Markov sources:** The supremum over all finite-order stationary Markov input processes approaches $C(W)$ as the Markov order $M \to \infty$ (i.e., $\sup_{M \ge 0} C^{(M)}(W) = C(W)$), and generalized Blahut–Arimoto algorithms (Vontobel–Arnold 2001; Kavčić 2001) compute tight lower bounds $C^{(M)}(W)$ for small $M$.
 - **Exact solutions with feedback (Permuter–Cuff–Van Roy–Weissman, 2008; Elishco–Permuter, 2014):** Dynamic programming yields closed-form *feedback* capacities for the Trapdoor channel ($\log_2 \frac{1+\sqrt{5}}{2} \approx 0.6942$ bits), the Ising channel, and several unifilar FSCs, whereas their *non-feedback* capacities remain open.
+- **Best known non-feedback bounds for the two flagship instances** (folded in from the dropped
+  draft entries `ising-channel-capacity` and `trapdoor-channel-capacity`, expert review 2026-11-26):
+  - *Ising channel* (Berger–Bonomi 1990): $0.5451 \le C \le 0.5482$ (lower: Sharov–Roth, IEEE
+    Trans. IT 2017; upper: Huleihel–Sabag–Permuter–Kashyap–Shamai, IEEE Trans. IT 2021, Thm 8),
+    versus feedback capacity $\approx 0.5755$ (Elishco–Permuter 2014) and zero-error capacity $1/2$.
+    Whether a finite-state input achieves the non-feedback capacity is the Ising instance of the
+    question formalized here.
+  - *Trapdoor channel*: $0.572 \le C \le \log_2(3/2) \approx 0.585$ (Kobayashi–Morita–Hoshi 2003;
+    Huleihel et al. 2021, Thm 7). $\log_2(3/2)$ is exactly the capacity with feedback delayed by two
+    steps (Huleihel–Sabag–Permuter–Kostina, IEEE Trans. IT 2024). An unrefereed, AI-assisted
+    computation (GitHub `certified-trapdoor-channel`) claims $C \in [0.57493, 0.57497]$.
 - **Computability for general non-indecomposable FSCs (Boche–Schaefer–Poor, 2020):** Without indecomposability, channel capacity can be Turing-uncomputable; with indecomposability, $C(W)$ is approximable via Gallager's bounds, while exact attainment by finite-order Markov inputs remains open.
 
 ## References

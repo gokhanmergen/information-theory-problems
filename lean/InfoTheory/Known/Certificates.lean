@@ -1,4 +1,6 @@
+import InfoTheory.Known.Certificates.CorrelatedSourcesOverMac
 import InfoTheory.Known.Certificates.CourtadeKumar
+import InfoTheory.Known.Certificates.DegradedMessageSetsBcThreeReceivers
 import InfoTheory.Known.Certificates.DeletionChannel
 import InfoTheory.Known.Certificates.DeletionChannelHighDLimit
 import InfoTheory.Known.Certificates.DeletionChannelSmallDAsymptotics

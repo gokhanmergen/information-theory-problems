@@ -15,9 +15,11 @@ import InfoTheory.Problems.CognitiveInterferenceChannel
 import InfoTheory.Problems.CommonInformationExactVsWyner
 import InfoTheory.Problems.ConditionalEntropyPowerConjecture
 import InfoTheory.Problems.ConditionalEntropySharpContinuity
+import InfoTheory.Problems.CorrelatedSourcesOverMac
 import InfoTheory.Problems.CourtadeKumar
 import InfoTheory.Problems.CourtadeKumarQary
 import InfoTheory.Problems.CovertCommunicationSecondOrder
+import InfoTheory.Problems.DegradedMessageSetsBcThreeReceivers
 import InfoTheory.Problems.DeletionChannel
 import InfoTheory.Problems.DeletionChannelHighDLimit
 import InfoTheory.Problems.DeletionChannelSmallDAsymptotics

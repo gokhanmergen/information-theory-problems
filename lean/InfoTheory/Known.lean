@@ -5,6 +5,7 @@ import InfoTheory.Known.Coding
 import InfoTheory.Known.ZeroError
 import InfoTheory.Known.Operational
 import InfoTheory.Known.GaussianChannel
+import InfoTheory.Known.MarkovSource
 
 /-!
 # Known Results
