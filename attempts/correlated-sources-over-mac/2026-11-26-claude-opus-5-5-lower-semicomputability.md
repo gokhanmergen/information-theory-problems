@@ -368,7 +368,7 @@ its output matches the Verification block above. The coordinator applied this pa
 `code/certificate_demo.py` in the review commit and re-ran it (output: certificate
 rho* > 0.8248915, cut-set rho* <= 0.94271591).
 
-I also wrote an independent script that does not reuse the author's code. It computes the
+I also wrote an independent script (`code/review/indep_check.py`) that does not reuse the author's code. It computes the
 exact MAP error by hand and capacities by Blahut–Arimoto upper/lower bounds:
 - MAP error $=0.01$.
 - $A_1=A_2=C_1=C_2=0.949621556437883$.
