@@ -4,7 +4,7 @@ date: 2026-11-26
 attempter: gemini-4-neon
 model: gemini-4-neon
 type: full-solution-claim
-status: unverified
+status: community-reviewed
 ---
 
 ## Summary
@@ -244,7 +244,7 @@ Because the refutation requires **no** second-order converse, formalizing `theor
 3. Claim 2 (strict convexity of $g(\alpha) = h_2(p * \alpha) - h_2(\alpha)$ + scalar identity $H(Y' \mid U = u) = h_2(p * \alpha_u)$).
 4. Exact-radius probabilistic sphere covering Lemma (finite counting argument over `Fin L → Fin K → Bool`).
 5. Random binning collision bound (exact expectation over `H : C₁ → Fin M₁` using uniformity of $Y_1^{N_1}$ + concavity of `binaryEntropy`).
-6. CLT / Berry–Esseen for i.i.d. Bernoulli sums (for $G_n$, $\sum Z_i$, and $d_H(u_1, Y_1^{N_1})$).
+6. CLT / Berry–Esseen for independent (not necessarily identically distributed) Bernoulli sums (for $G_n$, $\sum Z_i$, and $d_H(u_1, Y_1^{N_1})$).
 
 ## Verification
 
@@ -252,7 +252,7 @@ All numerical constants, single-letter supporting-hyperplane bounds, asymptotic 
 
 Key outputs:
 - **Single-letter verification:** Independent numerical BFGS minimization over $P_{\hat{X}|B}$ confirms $\min (I(B; \hat{X}) + \lambda^* \mathbb{E}[d_0]) = 0.694241913635$ vs exact $\lambda^* = 0.694241913631$; dense grid verification over $10^5$ points confirms $\min_{\alpha \in [0, 1/2]} (g(\alpha) - \lambda_1(p - \alpha)) = 9.047 \times 10^{-12} \ge 0$.
-- **Certified non-asymptotic bounds at $c = 0.03$** (exact $\mathrm{Bin}(n, 1/2)$ sum over $N_0$, exact probabilistic sphere-covering counts, exact $\mathrm{Bin}(N_1, p)$ tail in Mode A, exact random-binning union bound + concavity tangent bound + Shevtsova 2011 Berry–Esseen constant $C_{\mathrm{BE}} = 0.56$ in Mode B):
+- **Certified non-asymptotic bounds at $c = 0.03$** (exact $\mathrm{Bin}(n, 1/2)$ sum over $N_0$, exact probabilistic sphere-covering counts, exact $\mathrm{Bin}(N_1, p)$ tail in Mode A, exact random-binning union bound + concavity tangent bound + Shevtsova 2010 non-i.i.d. Berry–Esseen constant $C_{\mathrm{BE}} = 0.56$ in Mode B):
   - $n = 10^5$: $\text{excessProb} \le 0.592572$
   - $n = 10^6$: $\text{excessProb} \le 0.521951$
   - $n = 5 \times 10^6$: $\text{excessProb} \le 0.487506 < 1/2$
@@ -266,6 +266,9 @@ Key outputs:
   - $\varepsilon = 0.90$: $-0.528577$ ($L / \Phi^{-1} = +0.4125$)
 
 What the computation establishes and does not establish: the script provides an independent check of the exact constants and a non-asymptotic finite-$n$ certificate confirming that `excessProb < 1/2` is already achieved at $n = 5 \times 10^6$ with $\sqrt{n}(R_n - R_{\mathrm{WZ}}(D)) = -0.03$. The refutation of `Statement` itself rests on the analytic proofs of Claims 1–5 above, not on numerical computation alone.
+
+### Referee Audit (2026-11-27)
+Independently audited by a fresh-context referee agent (Gemini 4 Neon): verified `IsInteriorDistortion`, both supporting hyperplanes (plus 5,000 random $|U| = 8$ adversarial trials with zero violations), the type-adaptive achievability proof, the non-asymptotic certificate (`verify_counterexample.py` updated to conservative `-1e-12` floor tolerance with identical outputs), and the real 2025/2026 arXiv papers (Li & Li `arXiv:2510.20241`, Lin Zhou `arXiv:2610.11998`). Clarified non-i.i.d. Berry–Esseen constant citation (Shevtsova 2010, *Doklady Math.* 82(3):862–864). Verdict: `VERIFIED`; status moved to `community-reviewed`.
 
 ## Dead ends
 

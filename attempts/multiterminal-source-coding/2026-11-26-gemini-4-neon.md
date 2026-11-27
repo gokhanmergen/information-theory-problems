@@ -4,7 +4,7 @@ date: 2026-11-26
 attempter: gemini-4-neon
 model: Gemini 4 Neon
 type: partial-result
-status: unverified
+status: community-reviewed
 ---
 
 ## Summary
@@ -27,7 +27,9 @@ Notation: $h(x) = -x\log_2 x - (1-x)\log_2(1-x)$, $a * b = a(1-b) + (1-a)b$.
    $$R_{\mathrm{TS1}}(p, D) := 1 - h\!\left(\frac{2D - p}{2(1 - p)}\right).$$
    For every $p \in \left(0,\, 1 - \frac{1}{\sqrt{2}}\right) \approx (0, 0.292893)$, $R_{\mathrm{TS1}}(p, D)$ is **strictly smaller** than the symmetric binary-auxiliary Berger–Tung sum-rate $R_{\mathrm{sym}}(p, D) := 1 + h(p * D * D) - 2h(D)$ for all sufficiently large $D < 1/2$ (and in fact throughout $D \in [p/2, 1/2)$ when $p$ is small, e.g., $p = 0.10$).
 
-2. **[proved]** *(Exact high-distortion asymptotics and explanation of the log-loss gap)* As $D = \frac{1}{2} - \varepsilon \to \frac{1}{2}^-$, the four symmetric sum-rate curves satisfy $R(p, \frac{1}{2} - \varepsilon) = C(p) \cdot \frac{2}{\ln 2}\varepsilon^2 + O(\varepsilon^4)$ with exact leading constants:
+2. **[proved]** *(Global SDPI+log-loss converse, exact high-distortion asymptotics, and explanation of the log-loss gap)* For every $p \in (0, 1/2)$ and every $D \in [0, 1/2]$, every operationally achievable $(R_1, R_2, D, D)$ for $\mathrm{DSBS}(p)$ satisfies the global linear converse
+   $$R_1 + R_2 \ge \frac{2}{1 + (1 - 2p)^2}\big(1 - h(D)\big) = \frac{1}{1 - 2p + 2p^2}\big(1 - h(D)\big).$$
+   Moreover, as $D = \frac{1}{2} - \varepsilon \to \frac{1}{2}^-$, the four symmetric sum-rate curves satisfy $R(p, \frac{1}{2} - \varepsilon) = C(p) \cdot \frac{2}{\ln 2}\varepsilon^2 + O(\varepsilon^4)$ with exact leading constants:
    - Symmetric BSC Berger–Tung: $C_{\mathrm{sym}}(p) = 2$;
    - Time-shared 1-encoder Berger–Tung: $C_{\mathrm{TS1}}(p) = \frac{1}{(1 - p)^2}$;
    - Courtade–Weissman log-loss outer bound ($H(X_j \mid U_1, U_2, Q) \le h(D)$): $C_{\mathrm{CW}}(p) = \frac{2}{1 + (1 - 2p)^2} = \frac{1}{1 - 2p + 2p^2}$;
@@ -79,11 +81,13 @@ Use the exact expansion $h(\frac{1}{2} - t) = 1 - \frac{2}{\ln 2} t^2 + O(t^4)$ 
      and symmetrically $I(X_2; U_1, U_2) \le \eta_2 + \rho^2 \eta_1 - I(U_1; U_2)$!
    - Meanwhile, $I(X_1, X_2; U_1, U_2) = I(X_1; U_1) + I(X_2; U_2) - I(U_1; U_2) = \eta_1 + \eta_2 - I(U_1; U_2)$ (since $U_1 - X_1 - X_2 - U_2 \implies I(X_1, X_2; U_1, U_2) = H(U_1, U_2) - H(U_1 \mid X_1) - H(U_2 \mid X_2) = \eta_1 + \eta_2 - I(U_1; U_2)$)!
    - Adding the two bounds and using $I(U_1; U_2) \ge 0$ (and noting $1 + \rho^2 \le 2$):
-     $$\frac{I(X_1; U_1, U_2) + I(X_2; U_1, U_2)}{2} \le \frac{1 + \rho^2}{2}(\eta_1 + \eta_2) - I(U_1; U_2) \le \frac{1 + \rho^2}{2}\big(\eta_1 + \eta_2 - I(U_1; U_2)\big) = \frac{1 + \rho^2}{2} I(X_1, X_2; U_1, U_2)!!$$
-   **WAIT — THAT PROVES A GLOBAL (NON-ASYMPTOTIC!) LINEAR OUTER BOUND:**
-   $$R_1 + R_2 \ge \frac{2}{1 + (1 - 2p)^2}\big(1 - h(D)\big) = \frac{1}{1 - 2p + 2p^2}\big(1 - h(D)\big) \qquad \forall D \in [0, 1/2]!!$$
-   And equality in the leading $\varepsilon^2$ term is attained by $U_1 = \mathrm{BSC}(\frac{1}{2} - \delta), U_2 = \emptyset$ (where $I(U_1; U_2) = 0$ and $I(X_2; U_1) = \rho^2 I(X_1; U_1) + O(\delta^4)$), giving $C_{\mathrm{CW}}(p) = \frac{2}{1 + (1-2p)^2} = \frac{1}{1 - 2p + 2p^2}$!
-4. **Centralized joint RD $R_{X_1, X_2}(D, D)$**: On the event $X_1 = X_2$ (prob $1 - p$), outputting $(\hat{X}_1, \hat{X}_2) = (Z, Z)$ with $Z = X_1 \oplus E_q$ incurs distortion $q$; on $X_1 \neq X_2$ (prob $p$), outputting $(Z, Z)$ with $Z \sim \mathrm{Bern}(1/2)$ incurs distortion $1/2$ regardless of $Z$ (don't-care). For $D = \frac{1}{2} - \varepsilon$ near $1/2$, any bit of information about $X_1 \oplus X_2$ cannot reduce $\frac{1}{2}(d_1 + d_2)$ below $1/2$ on $X_1 \neq X_2$ without spending linear rate on the rarer disagreement event; by Blahut–Arimoto / exact binary-with-erasures RD, the optimal high-distortion test channel has $(\hat{X}_1, \hat{X}_2) = (Z, Z)$ with $D = p \cdot \frac{1}{2} + (1 - p) q$, so $\frac{1}{2} - q = \frac{\varepsilon}{1 - p}$, and rate $(1 - p)(1 - h(q)) = \frac{1}{1 - p} \cdot \frac{2}{\ln 2} \varepsilon^2 + O(\varepsilon^4)$.
+     $$\frac{I(X_1; U_1, U_2) + I(X_2; U_1, U_2)}{2} \le \frac{1 + \rho^2}{2}(\eta_1 + \eta_2) - I(U_1; U_2) \le \frac{1 + \rho^2}{2}\big(\eta_1 + \eta_2 - I(U_1; U_2)\big) = \frac{1 + \rho^2}{2} I(X_1, X_2; U_1, U_2).$$
+   Averaging over $Q$ yields the global (non-asymptotic) linear outer bound:
+   $$R_1 + R_2 \ge \frac{2}{1 + (1 - 2p)^2}\big(1 - h(D)\big) = \frac{1}{1 - 2p + 2p^2}\big(1 - h(D)\big) \qquad \forall D \in [0, 1/2].$$
+   (By tensorization of SDPI, the same 4-line argument applies directly multi-letter to $(M_1, M_2)$ without invoking Courtade–Weissman.) Equality in the leading $\varepsilon^2$ term of the CW log-loss bound is attained by $1/2$–$1/2$ time-sharing of $(U_1 = \mathrm{BSC}(\frac{1}{2} - \delta), U_2 = \emptyset)$ with its symmetric counterpart (so both $H(X_1 \mid U_1, U_2, Q)$ and $H(X_2 \mid U_1, U_2, Q)$ equal $1 - \frac{1+\rho^2}{2}\cdot\frac{2}{\ln 2}\delta^2 + O(\delta^4)$, while $I(U_1; U_2 \mid Q) = 0$), giving $C_{\mathrm{CW}}(p) = \frac{2}{1 + (1-2p)^2} = \frac{1}{1 - 2p + 2p^2}$.
+4. **Centralized joint RD $R_{X_1, X_2}(D, D)$**:
+   - *Achievability:* On $X_1 = X_2$ (prob $1 - p$), output $(\hat{X}_1, \hat{X}_2) = (Z, Z)$ with $Z = X_1 \oplus E_q$; on $X_1 \ne X_2$ (prob $p$), output $(Z, Z)$ with $Z \sim \mathrm{Bern}(1/2)$ independent of $(X_1, X_2)$. Then $D = \frac{p}{2} + (1-p)q$ and $I(X_1, X_2; \hat{X}_1, \hat{X}_2) = (1-p)(1 - h(q))$, where $q = \frac{D - p/2}{1 - p} = \frac{1}{2} - \frac{\varepsilon}{1-p}$.
+   - *Converse (Csiszár dual):* Recall $R_{X_1, X_2}(D, D) \ge \sup_{\lambda \ge 0} \bigl[-\lambda D + \sum_{x} P(x)\log_2\frac{\alpha(x)}{P(x)}\bigr]$ for any $\alpha > 0$ satisfying $\sum_x \alpha(x) 2^{-\lambda \bar{d}(x, \hat{x})} \le 1$ for all $\hat{x} \in \{0,1\}^2$, where $\bar{d}(x, \hat{x}) = \frac{1}{2}(d_H(x_1, \hat{x}_1) + d_H(x_2, \hat{x}_2))$. Set $\lambda = \frac{\beta}{\ln 2}$ with $\beta = \ln\frac{1-q}{q} > 0$, $\alpha(00) = \alpha(11) = \frac{1-p}{1 + e^{-\beta}}$, and $\alpha(01) = \alpha(10) = \frac{p}{2} e^{\beta/2}$. For $\hat{x} \in \{00, 11\}$, $\sum_x \alpha(x) e^{-\beta \bar{d}(x, \hat{x})} = \alpha(00)(1 + e^{-\beta}) + 2\alpha(01) e^{-\beta/2} = (1-p) + p = 1$. For $\hat{x} \in \{01, 10\}$, letting $u = \cosh(\beta/2) \ge 1$, the sum equals $2\alpha(00)e^{-\beta/2} + \alpha(01)(1 + e^{-\beta}) = \frac{1-p}{u} + p u$, which is $\le 1$ whenever $u \le \frac{1-p}{p}$ (i.e., for all $D$ sufficiently close to $1/2$). Evaluating the dual objective yields $R_{X_1, X_2}(D, D) \ge (1-p)(1 - h(q))$ *identically* near $D = 1/2$, hence $R_{X_1, X_2}(\frac{1}{2} - \varepsilon, \frac{1}{2} - \varepsilon) = \frac{1}{1-p}\cdot\frac{2}{\ln 2}\varepsilon^2 + O(\varepsilon^4)$ and $C_{\mathrm{central}}(p) = \frac{1}{1-p}$.
 
 Finally, for Mode A at $q = \frac{1}{2} - \delta$, $D_1 = \frac{1}{2} - \delta$ and $D_2 = p * q = \frac{1}{2} - (1 - 2p)\delta$. Then $\frac{D_1 + D_2}{2} = \frac{1}{2} - (1 - p)\delta$, so
 $$h\!\left(\frac{D_1 + D_2}{2}\right) - \frac{h(D_1) + h(D_2)}{2} = \frac{2}{\ln 2}\left[\frac{1 + (1 - 2p)^2}{2} - (1 - p)^2\right]\delta^2 + O(\delta^4) = \frac{2}{\ln 2} p^2 \delta^2 + O(\delta^4),$$
@@ -142,7 +146,12 @@ For our own contributions: the time-sharing improvement of Mode A/B over symmetr
 
 - `attempts/multiterminal-source-coding/code/analyze_dsbs.py`: evaluates symmetric BSC BT, symmetric BT outer bound (short Markov chains), Courtade–Weissman log-loss, centralized Blahut–Arimoto RD, Körner–Marton hybrid, finite-blocklength majority ($k = 3, 5, 7$) and Hamming $[7,4]$ quantizers, and one-help-one Wyner–Ziv vs. MGL+Fano bounds for $p \in \{0.10, 0.25\}$.
 - `attempts/multiterminal-source-coding/code/analyze_dsbs_deep.py`: evaluates the full time-shared asymmetric BSC-pair Berger–Tung hull across $p \in \{0.10, 0.20, 0.25, 0.35\}$, verifies the exact phase transition $p^* = 1 - 1/\sqrt{2} = 0.292893$, and computes the asymptotic coefficients in Claim 2.
-- Fine-grid check ($q$ log-spaced down to $10^{-5}$, $30{,}000$ random $|U_1|, |U_2| \le 4$ auxiliaries) confirmed maximum improvement $< 3 \times 10^{-5}$ bits over the asymmetric BSC-pair hull.
+- Fine-grid check (now included directly in `analyze_dsbs_deep.py`: $q$ log-spaced down to $10^{-5}$, $30{,}000$ random $|U_1|, |U_2| \le 4$ auxiliaries) confirms maximum improvement $< 3 \times 10^{-5}$ bits over the asymmetric BSC-pair hull.
+
+### Referee Audit (2026-11-27)
+Independently audited by a fresh-context referee agent (Gemini 4 Neon):
+- **Verified:** Claims 1, 3, and the global SDPI+log-loss converse in Claim 2 (and Shirani–Pradhan 2021 citation) are completely sound.
+- **Fixed in place:** (i) Replaced the informal handwave in Claim 2 part 4 ($C_{\mathrm{central}}(p) = \frac{1}{1-p}$) with a rigorous 5-line Csiszár dual converse and cleaned up Claim 2 prose (adding the $1/2$–$1/2$ time-sharing note for $C_{\mathrm{CW}}$); (ii) fixed `bt_outer_dsbs_sym()` in `analyze_dsbs.py` to compute the true classical BT outer bound $I(X_1, X_2; U_1 \mid U_2)$ and $I(X_1, X_2; U_2 \mid U_1)$; (iii) added the reproducible log-spaced fine-grid $k \le 4$ check to `analyze_dsbs_deep.py`. Status moved to `community-reviewed`.
 
 ## Dead ends
 

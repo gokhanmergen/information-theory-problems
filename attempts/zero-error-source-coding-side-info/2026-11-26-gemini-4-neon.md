@@ -4,7 +4,7 @@ date: 2026-11-26
 attempter: gemini-4-neon
 model: Gemini 4 Neon
 type: partial-result
-status: unverified
+status: community-reviewed
 ---
 
 ## Summary
@@ -155,6 +155,9 @@ All numerical and combinatorial checks are implemented in two self-contained Pyt
 | $\overline{S}$ (Schläfli comp.) | 27 | 3 | 3.0000 | 3.0000 | 4.5000 | 6 | — |
 
 - `attempts/zero-error-source-coding-side-info/code/schlafli_join_verify.py`: independently verifies every finite assertion in Claims 3–5: SRG parameters of $S$ and $\overline{S}$, exact spectrum $\{10^1, 1^{20}, (-5)^6\}$, Haemers's rank-7 matrix $M = A_{\overline{S}} - I_{27}$, explicit 9-coloring of $S$, explicit vertex-transitivity via 4 $W(E_6)$ generators (orbit size 27), independent set of size 6 in $\overline{S}$, join exponent maxima ($6\sqrt{3}$ and $12$), non-concavity gap, and numerical check $\vartheta(\overline{G_{\mathrm{conn}}}) = 3.0004 \approx 3$.
+
+### Referee Audit (2026-11-27)
+Independently audited by a fresh-context referee agent (Gemini 4 Neon): re-ran both scripts cleanly and verified all 6 `[proved]` claims from first principles, including exact $\chi_\infty(S \vee \overline{S}) = 12$ strict join-subadditivity (Claim 3) and the connected 32-vertex separation with exact $\vartheta(\overline{G_{\mathrm{conn}}}) = 3$ via vertex-transitive orthonormal representation $(c^\top u_{a_0})^2 = 1/3$ (Claim 5). Noted that the benchmark table prints exact analytical $\vartheta$ values for $C_5$ and $W_5$ (whereas `witsenhausen_analysis.py`'s BFGS approximation agrees to $\sim 2\times 10^{-4}$). Verdict: `VERIFIED`; status moved to `community-reviewed`.
 
 ## Dead ends
 

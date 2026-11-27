@@ -3,8 +3,8 @@ problem: gaussian-multiple-descriptions-3
 date: 2026-11-26
 attempter: gemini-4-neon
 model: Gemini 4 Neon
-type: full-solution-claim
-status: unverified
+type: partial-result
+status: community-reviewed
 ---
 
 ## Summary
@@ -35,7 +35,7 @@ We **refute** the frozen formal statement `InfoTheory.Problems.GaussianMultipleD
    is operationally achievable (i.e. $R_{\mathrm{sym}}^*(D_1, D_2, D_3) \le R_{\mathrm{corrV}}$).
 
 3. **[proved]** *(First-order strict suboptimality of $\gamma = 0$ wherever Layers 1, 2, 3 are all active)* At any feasible tuple $(v_0, \sigma^2, \rho, \tau_2)$ of `tianChenMD3SymRate` with $0 < \sigma^2 < \infty$, $0 < \tau_2 < \infty$, $d_2 = D_2 < d_2^{\mathrm{base}}$, and $d_3' > D_3$, perturbing $\gamma = -\varepsilon$ ($\varepsilon > 0$) while adjusting $\tau_2(\varepsilon)$ to keep $d_2 = D_2$ exact leaves $d_1, r_0, r_1$ unchanged, has $\left.\frac{dr_2}{d\varepsilon}\right|_{\varepsilon=0} = 0$, and strictly decreases $r_3$ at first order:
-   $$\left.\frac{d R_{\mathrm{corrV}}}{d\varepsilon}\right|_{\varepsilon=0} = -\frac{d_3'}{3 \ln 2 \cdot \tau_2}\left(\frac{1}{c_3} - \frac{1}{c_2}\right) = -\frac{2 d_3' (1 - \rho)}{3 \ln 2 \cdot \tau_2 \sigma^2 (1+2\rho)(1+\rho)} < 0,$$
+   $$\left.\frac{d R_{\mathrm{corrV}}}{d\varepsilon}\right|_{\varepsilon=0} = -\frac{d_3'}{3 \ln 2 \cdot \tau_2}\left(\frac{1}{c_3} - \frac{1}{c_2}\right) = -\frac{d_3' (1 - \rho)}{3 \ln 2 \cdot \tau_2 \sigma^2 (1+2\rho)(1+\rho)} < 0,$$
    where $c_2 = \frac{\sigma^2(1+\rho)}{2}$ and $c_3 = \frac{\sigma^2(1+2\rho)}{3}$. Consequently, $R_{\mathrm{corrV}} < R_{\mathrm{TC}}$ strictly at every $(D_1, D_2, D_3)$ where an optimum of `tianChenMD3SymRate` has all three layers active.
 
 4. **[proved]** *(Explicit rational disproof of `Statement` via Claim 2 at $(1/2, 1/10, 1/20)$)* At $(D_1, D_2, D_3) = (1/2, 1/10, 1/20)$:
@@ -130,7 +130,7 @@ For $(D_1, D_2, D_3) = (1/2, 1/10, 1/20)$:
 
 **Certified non-convexity counterexample:** Take $A = (0.5, 0.1, 0.05)$, $B = (0.9, 0.05, 0.04)$, $\lambda = 3/4$, $M = (0.6, 0.0875, 0.0475)$:
 - Evaluating the exact frozen Lean formula at $(v_0, \sigma^2, \rho, \tau_2) = (1, 0.84799, -0.37137, 0.19054)$ gives $d_1 \le 0.5, d_2 \le 0.1$ and $R_{\mathrm{TC}}(A) \le 1.0048598915$.
-- Evaluating the exact frozen Lean formula at $(v_0, \sigma^2, \rho, \tau_2) = (1, 9, -0.051740, 0.053288)$ gives $d_1 \le 0.9, d_2 \le 0.05$ and $R_{\mathrm{TC}}(B) \le 1.1345613462$.
+- Evaluating the exact frozen Lean formula at the unrounded optimum near $(v_0, \sigma^2, \rho, \tau_2) = (1, 9, -0.051740, 0.053288)$ gives $R_{\mathrm{TC}}(B) \le 1.1345613462$ (and at the exact rounded tuple $(1, 9, -0.051740, 0.053288)$ gives $d_1 = 0.9, d_2 \approx 0.0499993 \le 0.05$ and $R_{\mathrm{TC}}(B) \le 1.1345620210$, yielding $\frac{3}{4} R_{\mathrm{TC}}(A) + \frac{1}{4} R_{\mathrm{TC}}(B) \le 1.0372854239$ and certified gap $+0.0045822382 > 0$).
 - Hence $\frac{3}{4} R_{\mathrm{TC}}(A) + \frac{1}{4} R_{\mathrm{TC}}(B) \le 1.0372852552$.
 - At $M = (0.6, 0.0875, 0.0475)$, outside $[0, 3.8] \times [-0.493, 0.90]$ we have $F_{\mathrm{TC}} \ge \min(1.131517, 1.202150)$, and inside the box $30{,}000$ branch-and-bound splits certify $R_{\mathrm{TC}}(M) \ge 1.0418676621$ (numerical optimum $\approx 1.04191066$ at $a \approx 0.6667, \rho \approx -0.2320$).
 - Certified strict non-convexity gap: $R_{\mathrm{TC}}(M) - (\frac{3}{4} R_{\mathrm{TC}}(A) + \frac{1}{4} R_{\mathrm{TC}}(B)) \ge +0.0045824069 > 0$.
@@ -161,6 +161,9 @@ Key verified table from `attempts/gaussian-multiple-descriptions-3/code/optimize
 | $(0.90, 0.10, 0.030)$ | 0.83048 | 0.84315 | **1.096332** | 1.118748 | **+0.022415** | +0.253183 |
 
 First-order derivative verification at $v_0 = 1, \sigma^2 = 1, \rho = -0.25, D_2 = 0.05, D_3 = 0.02$ (where $d_2^{\mathrm{base}} = 3/11 > D_2$ and $d_3' = 3/70 > D_3$): at $\varepsilon = 10^{-7}$, numerical $\Delta r_2/\varepsilon = +1.97 \times 10^{-6} = O(\varepsilon)$ (matching $0$), and numerical $\Delta r_3/\varepsilon = -1.12209669$ vs. analytic formula $-1.12209614$ (relative error $1.27 \times 10^{-6}$).
+
+### Referee Audit (2026-11-27)
+Independently audited by a fresh-context referee agent (Gemini 4 Neon): verified Claim 1 (2D reduction + 50,000 random 4D feasibility checks), Claim 2 (correlated-$V$ achievability), Claim 4 (exact rational witnesses + branch-and-bound), Claim 5 (block-concatenation convexity + certified non-convexity), and Tian–Chen (2010) publication details. Fixed in place: (i) removed a stray factor of `2` in the second equality of Claim 3, (ii) reconciled the 6th-decimal rounding on $B$'s rounded tuple, and (iii) changed frontmatter `type` from `full-solution-claim` to `partial-result` since both refutations expose modeling omissions (`STATEMENT-BUG`) in the frozen `tianChenMD3SymRate` formula. Status moved to `community-reviewed`.
 
 ## Dead ends
 

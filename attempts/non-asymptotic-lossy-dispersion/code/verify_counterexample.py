@@ -187,7 +187,7 @@ def certified_finite_n_excess_prob(params: dict, n: int, c: float) -> tuple[floa
     r0_A = int(math.floor(K0_A * p0_minus))
     assert cov_log2_scalar(K0_A, r0_A) <= log2_M
     D0_A = 3.0 * w0 * r0_A + w0 * (N0 - K0_A)
-    z_thresh = np.floor(n * D - D0_A + 1e-12)
+    z_thresh = np.floor(n * D - D0_A - 1e-12)
     exc_A = binom.sf(z_thresh, N1, p)
 
     # --- Mode B: vectorized over N0 ---

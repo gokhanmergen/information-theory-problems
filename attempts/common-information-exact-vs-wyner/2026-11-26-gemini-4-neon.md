@@ -4,7 +4,7 @@ date: 2026-11-26
 attempter: gemini-4-neon
 model: Gemini 4 Neon
 type: full-solution-claim
-status: unverified
+status: verified
 ---
 
 ## Summary
@@ -27,7 +27,7 @@ To obtain a **strict** separation for every finite $n \ge 1$ on $P = \mathrm{SBE
 
 ### Novelty Check
 
-- **Sources checked:** Web searches on Kumar–Li–El Gamal (2014, arXiv:1402.0062), Yu–Tan (2020, arXiv:1810.00807), and queries for `"exact common information" "symmetric binary erasure" finite blocklength / attainment / G_1(X^n; Y^n)`. Also inspected `problems/common-information-exact-vs-wyner.md` (no prior attempts existed in `attempts/common-information-exact-vs-wyner/`).
+- **Sources checked:** Web searches on Kumar–Li–El Gamal (2014, arXiv:1402.0062), Yu–Tan (2020, arXiv:1810.13246), and queries for `"exact common information" "symmetric binary erasure" finite blocklength / attainment / G_1(X^n; Y^n)`. Also inspected `problems/common-information-exact-vs-wyner.md` (no prior attempts existed in `attempts/common-information-exact-vs-wyner/`).
 - **Assessment:** The asymptotic equality $G(X; Y) = h(e)$ for $\mathrm{SBES}(e)$ with $e > 1/2$ and the one-shot gap $G_1(X; Y) > h(e)$ are known from Kumar–Li–El Gamal (2014). Our literature search did not locate an explicit published proof of strict non-attainment $G_1(X^n; Y^n)/n > h(3/4)$ for *every* finite $n \ge 1$ on $\mathrm{SBES}(3/4)$, nor a prior formalization resolving `InfoTheory.Problems.CommonInformationExactVsWyner.Statement`. Regardless of whether a folklore argument existed for SBES, this resolves the cataloged Lean 4 formal statement completely. Note that the broader informal question in the problem description—whether $G(X; Y)$ admits a computable single-letter formula for arbitrary finite sources—is not addressed by this disproof of finite-letter attainment.
 
 ## Claims
@@ -77,6 +77,9 @@ VERIFIED common-information-exact-vs-wyner: OK disproof of InfoTheory.Problems.C
 STATEMENT LOCK CHECK PASSED: 127 frozen files match SHA-256 hashes.
 ```
 
+### Referee Audit (2026-11-27)
+Independently audited by a fresh-context referee agent (Gemini 4 Neon): re-ran `verify_proof.py --verify common-information-exact-vs-wyner`, `leanchecker`, `CheckSolution`, and `--check-lock` (all passed, standard axioms only), confirmed zero modeling loopholes in `bipartitePower`/`exactCommonInfoSingle`/`Statement` (the finite-$n$ gap $c(n) > 0$ is independent of $k_W$ and extends to countable $W$), verified all 5 claims against their Lean theorems, and corrected the inherited arXiv ID typo for Yu–Tan (2020) from `arXiv:1810.00807` to `arXiv:1810.13246`. Status moved to `verified`.
+
 ## Dead ends
 
 - **Direct Wyner-bound comparison:** The inequality $G_1(X^n; Y^n) \ge n C_W(X; Y) = n h(3/4)$ is non-strict and cannot by itself rule out finite-$n$ attainment. Establishing strictness required the quantitative stability bound (Pinsker's inequality + Cauchy–Schwarz on the event $A$) linking the conditional entropy deficit $n - H(X^n, Y^n \mid W)$ to the conditional entropy $H(W \mid X^n, Y^n)$ at $(0^n, 2^n)$.
@@ -88,5 +91,5 @@ STATEMENT LOCK CHECK PASSED: 127 frozen files match SHA-256 hashes.
 - Problem specification: `problems/common-information-exact-vs-wyner.md`, `lean/InfoTheory/Problems/CommonInformationExactVsWyner.lean`.
 - Formal solution: `lean/InfoTheory/Solutions/CommonInformationExactVsWyner.lean`.
 - G. R. Kumar, C. T. Li, and A. El Gamal, "Exact common information," Proc. IEEE ISIT, 2014; arXiv:1402.0062.
-- L. Yu and V. Y. F. Tan, "Exact channel synthesis," IEEE Trans. Inf. Theory, 2020; arXiv:1810.00807.
+- L. Yu and V. Y. F. Tan, "Exact channel synthesis," IEEE Trans. Inf. Theory, 2020; arXiv:1810.13246.
 - A. D. Wyner, "The common information of two dependent random variables," IEEE Trans. Inf. Theory, 1975.

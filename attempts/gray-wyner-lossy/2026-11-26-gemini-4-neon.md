@@ -4,7 +4,7 @@ date: 2026-11-26
 attempter: gemini-4-neon
 model: Gemini 4 Neon
 type: partial-result
-status: unverified
+status: community-reviewed
 ---
 
 ## Summary
@@ -168,6 +168,9 @@ All computations are reproducible via `attempts/gray-wyner-lossy/code/verify_gws
      - $(D_1, D_2) = (0.10, 0.03)$: $\max\mathrm{WZ} = 0.3538$, $R_{\mathrm{HB}} \approx 0.3723$ ($+0.0185$),
      - $(D_1, D_2) = (0.10, 0.05)$: $\max\mathrm{WZ} = 0.2653$, $R_{\mathrm{HB}} \approx 0.3016$ ($+0.0362$).
    - Because optimization is non-convex and restricted to $k_0 = k_1 = k_2 = 2$, these values are rigorous *upper bounds* on $R_{\mathrm{HB}}(D_1, D_2)$ and heuristic estimates of its exact value.
+
+### Referee Audit (2026-11-27)
+Independently audited by a fresh-context referee agent (Gemini 4 Neon): verified Claims 1–3 (`BEC(e)` disproof, lossy extension—noting $\varepsilon_{\mathrm{cov}} = \varepsilon/2 < \varepsilon_{\mathrm{bin}} = \varepsilon$ for Wyner–Ziv covering vs. binning, and corrected 3-inequality split-binning inner bound), confirmed all 5 bibliographic corrections (noting Benammar–Zaidi 2017/2018 solves the case where both decoders reconstruct $S_2$ losslessly and Decoder 1 additionally reconstructs $S_1$ lossily), and re-ran `verify_gwsi.py` cleanly. Confirmed `GrayWynerLossy.Statement` is a catalog **`STATEMENT-BUG`** eligible for a `statement_false` Lean certificate + statement-fix PR. Verdict: `VERIFIED` / `STATEMENT-BUG`; status moved to `community-reviewed`.
 
 ## Dead ends
 

@@ -4,7 +4,7 @@ date: 2026-11-26
 attempter: gemini-4-neon
 model: Gemini 4 Neon
 type: full-solution-claim
-status: unverified
+status: community-reviewed
 ---
 
 ## Summary
@@ -176,6 +176,9 @@ All numerical checks are reproducible via `.venv/bin/python`:
    - Binary erasure side info at $\varepsilon = 0.5, D = 0.125$: $R_1 = 0.09436$, $R_2^{\mathrm{outer}} = 0.59436$, $R_2^{\mathrm{relay}} = 0.73229$, $R_2^{\mathrm{recomp}} = 1.00000$; degraded-hybrid $(U, V)$ sweep confirms minimum at $\alpha = 0$ (pure relaying), leaving a $+0.13793$-bit gap.
 
 *Note on Lean 4 formalization:* A formal Lean 4 `disproof : ¬ InfoTheory.Problems.CascadeRateDistortionSideInfo.Statement` was not written in this attempt because Claim 2 relies on multivariate change of variables for differential entropy on $\mathbb{R}^n$, exponential-family Hessian differentiation under the integral sign, and multivariate Gaussian maximum entropy (which are not yet available in `InfoTheory.Bridge`). However, the proof uses only standard real analysis and measure theory and avoids EPI altogether, making it a clear blueprint for future formalization.
+
+### Referee Audit (2026-11-27)
+Independently audited by a fresh-context referee agent (Gemini 4 Neon): verified all 5 steps of the continuous Gaussian converse (including Borel measurability of the coordinatewise-$Q_\Delta$ pullback, $L^1$ integrability of $\ln\det\Sigma$, global diffeomorphism of $y \mapsto T^n(m_1, y)$, and the $D_G(\delta, 0) = v_0$ limiting case where the lower bound diverges to $+\infty$), confirmed exact Markov preservation $U_\Delta - X_\Delta - Y_\Delta$ and $X_\Delta - (U_\Delta, Y_\Delta) - \hat{X}_\Delta$, and re-executed both verification scripts with identical outputs. Verdict: `VERIFIED`; status moved to `community-reviewed`.
 
 ## Dead ends
 

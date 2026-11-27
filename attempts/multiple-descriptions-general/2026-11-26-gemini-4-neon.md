@@ -4,7 +4,7 @@ date: 2026-11-26
 attempter: gemini-4-neon
 model: Gemini 4 Neon
 type: partial-result
-status: unverified
+status: community-reviewed
 ---
 
 ## Summary
@@ -18,10 +18,10 @@ private auxiliaries $(U_1, U_2)$ with deterministic or Markov-chain decoders (as
 Venkataramani–Kramer–Goyal 2003 and Viswanatha–Akyol–Rose 2016 CMS for $L = 2$) does not
 enlarge `zhangBergerMDRegion`, and (2) `zhangBergerMDRegion` is already convex over
 rate-distortion 5-tuples because time-sharing is absorbed into $U_0$ at zero rate cost.
-We then derive an exact closed-form cubic characterization of the Zhang–Berger curve for the
+We then derive an exact closed-form cubic characterization of the binary-common-layer Zhang–Berger curve for the
 binary symmetric source (BSS) with Hamming distortion at $D_0 = 0$ and prove analytically that
-it strictly improves over even **asymmetric** El Gamal–Cover across the entire excess-rate
-interval $D \in (0, \frac{\sqrt{2}-1}{2})$, while presenting numerical evidence that 2-letter
+it strictly improves over the 1-parameter **asymmetric** El Gamal–Cover ansatz across the entire excess-rate
+interval $D \in (0, \frac{\sqrt{2}-1}{2})$ (whose global EGC optimality is corroborated numerically), while presenting numerical evidence that 2-letter
 El Gamal–Cover strictly fails to tensorize ($0.625008 < 0.628213$ at $D = 0.10$) whereas
 2-letter Zhang–Berger collapses back to 1-letter Zhang–Berger ($0.602850$, gap $< 10^{-15}$).
 Finally, we document the exact $n$-letter single-letterization obstruction in the excess-rate
@@ -46,19 +46,19 @@ we pursued four lines:
 
 ## Claims
 
-1. **[proved]** (**Redundancy of private auxiliaries $(U_1, U_2)$ for $L = 2$.**) Extending `zhangBergerMDRegion` by adding finite-alphabet private auxiliaries $(U_1, U_2)$ with deterministic decoders $\hat{X}_1 = g_1(U_0, U_1)$, $\hat{X}_2 = g_2(U_0, U_2)$, $\hat{X}_0 = g_0(U_0, U_1, U_2)$ (or stochastic decoders satisfying the Markov chains $\hat{X}_1 - (U_0, U_1) - (X, U_2, \hat{X}_2, \hat{X}_0)$ and $\hat{X}_2 - (U_0, U_2) - (X, U_1, \hat{X}_1, \hat{X}_0)$) and rate constraints
+1. **[proved]** (**Redundancy of private auxiliaries $(U_1, U_2, U_{12})$ for $L = 2$.**) Extending `zhangBergerMDRegion` by adding finite-alphabet private auxiliaries $(U_1, U_2)$ (and optionally a central refinement auxiliary $U_{12}$) with deterministic decoders $\hat{X}_1 = g_1(U_0, U_1)$, $\hat{X}_2 = g_2(U_0, U_2)$, $\hat{X}_0 = g_0(U_0, U_1, U_2, U_{12})$ (or stochastic decoders satisfying $\hat{X}_1 - (U_0, U_1) - (X, U_2, \hat{X}_2, \hat{X}_0)$ and $\hat{X}_2 - (U_0, U_2) - (X, U_1, \hat{X}_1, \hat{X}_0)$) and rate constraints
    $$R_1 \ge I(X; U_0, U_1), \quad R_2 \ge I(X; U_0, U_2), \quad R_1 + R_2 \ge 2 I(X; U_0) + I(X; U_1, U_2, \hat{X}_0 \mid U_0) + I(U_1; U_2 \mid U_0)$$
-   produces the **exact same** rate-distortion region as `zhangBergerMDRegion`. Consequently, both Venkataramani–Kramer–Goyal (2003) and Viswanatha–Akyol–Rose (2016) Combinatorial Message Sharing collapse identically to `zhangBergerMDRegion` for $L = 2$.
+   produces the **exact same** rate-distortion region as `zhangBergerMDRegion` (even when $U_{12}$ is omitted and $\hat{X}_0 = g_0(U_0, U_1, U_2)$ is deterministic, via the Functional Representation Lemma + Claim 2). Consequently, both Venkataramani–Kramer–Goyal (2003) and Viswanatha–Akyol–Rose (2016) Combinatorial Message Sharing collapse identically to `zhangBergerMDRegion` for $L = 2$.
 2. **[proved]** (**Automatic convexity of `zhangBergerMDRegion`.**) The set of all 5-tuples $(R_1, R_2, D_0, D_1, D_2)$ with $(R_1, R_2) \in \mathrm{zhangBergerMDRegion}(P, d_0, d_1, d_2, D_0, D_1, D_2)$ is already convex (without taking a convex hull): any finite convex combination is realized inside `zhangBergerMDRegion` by absorbing the time-sharing variable $Q \perp X$ into $U_0' = (Q, U_0)$. Hence `InZhangBergerClosure` is simply the topological closure of `zhangBergerMDRegion`.
-3. **[proved]** (**Closed-form cubic Zhang–Berger curve and strict dominance over asymmetric EGC for BSS at $D_0 = 0$.**) For the binary symmetric source $X \sim \mathrm{Bern}(1/2)$ with Hamming distortions $d_0 = d_1 = d_2 = d_H$, $D_0 = 0$, $D_1 = D_2 = D \in (0, \frac{\sqrt{2}-1}{2})$, and $R_1 = R_2 = R$:
-   - (a) **Asymmetric El Gamal–Cover** ($P(\hat{X}_1 = \hat{X}_2 = 0 \mid X = 0) = 1$, $P(\hat{X}_1, \hat{X}_2 \mid X = 1) = (0, 2D, 2D, 1 - 4D)$) achieves
+3. **[proved]** (**Closed-form cubic Zhang–Berger curve and strict dominance over asymmetric EGC ansatz for BSS at $D_0 = 0$.**) For the binary symmetric source $X \sim \mathrm{Bern}(1/2)$ with Hamming distortions $d_0 = d_1 = d_2 = d_H$, $D_0 = 0$, $D_1 = D_2 = D \in (0, \frac{\sqrt{2}-1}{2})$, and $R_1 = R_2 = R$:
+   - (a) **Asymmetric El Gamal–Cover ansatz** ($P(\hat{X}_1 = \hat{X}_2 = 0 \mid X = 0) = 1$, $P(\hat{X}_1, \hat{X}_2 \mid X = 1) = (0, 2D, 2D, 1 - 4D)$) achieves
      $$R_{\mathrm{EGC}}^{\mathrm{asym}}(D) = h_2\!\left(\tfrac{1}{2} - D\right) - \tfrac{1}{4} H(2D, 2D, 1 - 4D),$$
-     strictly beating bit-flip-symmetric EGC ($1 - \frac{1}{2}h_2(2D)$) for all $D \in (0, 1/4)$ and reaching the exact Berger–Zhang (1983) no-excess-rate threshold $R = 1/2$ at $D = \frac{\sqrt{2}-1}{2} \approx 0.207107$.
+     reaching the exact Berger–Zhang (1983) no-excess-rate threshold $R = 1/2$ at $D = \frac{\sqrt{2}-1}{2} \approx 0.207107$ (strictly below bit-flip-symmetric EGC $1 - \frac{1}{2}h_2(2D)$ on $(0, \frac{\sqrt{2}-1}{2}]$; past $\frac{\sqrt{2}-1}{2}$, one caps the distortion at $\frac{\sqrt{2}-1}{2}$ to remain at $R = 1/2$).
    - (b) **Binary-common-layer Zhang–Berger** ($U_0 \sim \mathrm{Bern}(1/2)$, $X = U_0 \oplus \mathrm{Bern}(p)$, $p \in (2D, 1/2)$, with conditional distributions matching the asymmetric EGC pattern inside each $U_0$-slice) achieves
      $$R_{\mathrm{ZB}}^{\mathrm{cubic}}(D) = \min_{p \in [2D, 1/2]} \left[1 + h_2(p - D) - \tfrac{1}{2} h_2(p) - \tfrac{1}{2} H(1 - p, D, D, p - 2D)\right],$$
      whose unique interior stationary point $p^*(D) \in (2D, 1/2)$ satisfies the exact cubic equation
      $$2 p^3 - 2(1 + 2D) p^2 + 2D(1 + D) p + D = 0$$
-     (with exact rational solution $(D, p^*) = (\frac{3}{20}, \frac{2}{5})$), and satisfies the individual rate constraint $I(X; U_0, \hat{X}_1) \le R_{\mathrm{ZB}}^{\mathrm{cubic}}(D)$.
+     (with exact rational solution $(D, p^*) = (\frac{3}{20}, \frac{2}{5})$), and satisfies the individual rate constraint $I(X; U_0, \hat{X}_1) \le R_{\mathrm{ZB}}^{\mathrm{cubic}}(D)$ identically for all $p \in [2D, 1/2]$.
    - (c) At $p = 1/2$, the derivative satisfies
      $$\left.\frac{d(2 R)}{dp}\right|_{p = 1/2} = \frac{1}{\ln 2}\ln\!\left(1 + \frac{4D(1 - 4D - 4D^2)}{(1 - 2D)^2}\right) > 0 \quad \forall D \in \!\left(0, \tfrac{\sqrt{2}-1}{2}\right),$$
      proving analytically that $R_{\mathrm{ZB}}^{\mathrm{cubic}}(D) < R_{\mathrm{EGC}}^{\mathrm{asym}}(D)$ for every $D \in (0, \frac{\sqrt{2}-1}{2})$.
@@ -67,26 +67,28 @@ we pursued four lines:
    - **2-letter EGC** (64 variables, no $U_0$) strictly improves over 1-letter EGC: $R_{\mathrm{EGC}}^{(2)}(0.10) \le 0.625008 < 0.628213$, proving that `elGamalCoverMDRegion` fails to tensorize already at blocklength $n = 2$.
    - **2-letter ZB** (XOR-symmetric $|U_0| = 4$, 64 variables, 24 multi-start SLSQP runs including perturbations around the product optimum) finds no improvement over 1-letter ZB: $R_{\mathrm{ZB}}^{(2)}(0.10) = 0.602850$ (difference $-1.11 \times 10^{-16}$).
    - At $D_0 > 0$ (e.g., $(D_0, D) \in \{(0.02, 0.10), (0.05, 0.15), (0.10, 0.20)\}$), ZB with $|U_0| = 2$ likewise strictly beats general EGC across the excess-rate regime (gains up to $0.02366$ bits/description).
-5. **[proved]** (**Elementary $n$-letter converse at $D_0 = 0$ and single-letterization gap.**) Every operationally achievable symmetric tuple $(R, R, 0, D, D)$ for BSS satisfies
-   $$R \ge \max\!\Big(\tfrac{1}{2}, \; 1 - h_2(D), \; 1 - \tfrac{1}{2} h_2(D) - \tfrac{1}{2} h_2(\min(\tfrac{1}{2}, 2D))\Big).$$
+5. **[proved]** (**Elementary $n$-letter converse at $D_0 = 0$ and single-letterization gap.**) Every operationally achievable symmetric tuple $(R, R, 0, D, D)$ for BSS ($D \in [0, 1]$) satisfies
+   $$R \ge \max\!\Big(\tfrac{1}{2}, \; 1 - h_2(\min(\tfrac{1}{2}, D))\Big).$$
    Furthermore, in the excess-rate regime $D \in (0, \frac{\sqrt{2}-1}{2})$, the optimal ZB distribution satisfies $2 R_{\mathrm{ZB}} - 1 = I(X; U_0) + I(\hat{X}_1; \hat{X}_2 \mid U_0) < I(\hat{X}_1; \hat{X}_2)$ (e.g., $0.20570 < 0.27807$ at $D = 0.10$), demonstrating quantitatively why naive single-letterization of $\frac{1}{n} I(\hat{X}_1^n; \hat{X}_2^n)$ fails.
 
 ## Details
 
-### 1. Redundancy of private auxiliaries $(U_1, U_2)$ (Claim 1)
+### 1. Redundancy of private auxiliaries $(U_1, U_2, U_{12})$ (Claim 1)
 
-Suppose $(X, U_0, U_1, U_2, \hat{X}_0, \hat{X}_1, \hat{X}_2)$ satisfies $\hat{X}_1 - (U_0, U_1) - (X, U_2, \hat{X}_2, \hat{X}_0)$ and $\hat{X}_2 - (U_0, U_2) - (X, U_1, \hat{X}_1, \hat{X}_0)$ (in particular, this holds whenever $\hat{X}_1 = g_1(U_0, U_1)$ and $\hat{X}_2 = g_2(U_0, U_2)$). Drop $(U_1, U_2)$ and retain the marginal joint law of $(X, U_0, \hat{X}_0, \hat{X}_1, \hat{X}_2)$:
+Suppose $(X, U_0, U_1, U_2, U_{12}, \hat{X}_0, \hat{X}_1, \hat{X}_2)$ satisfies $\hat{X}_1 - (U_0, U_1) - (X, U_2, U_{12}, \hat{X}_2, \hat{X}_0)$ and $\hat{X}_2 - (U_0, U_2) - (X, U_1, U_{12}, \hat{X}_1, \hat{X}_0)$ (which holds whenever $\hat{X}_1 = g_1(U_0, U_1)$ and $\hat{X}_2 = g_2(U_0, U_2)$). Drop $(U_1, U_2, U_{12})$ and retain the marginal joint law of $(X, U_0, \hat{X}_0, \hat{X}_1, \hat{X}_2)$:
 - All three expected distortions $\mathbb{E}[d_j(X, \hat{X}_j)]$ and the $X$-marginal $P$ are unchanged.
 - By data processing, $I(X; U_0, \hat{X}_1) \le I(X; U_0, U_1) \le R_1$ and $I(X; U_0, \hat{X}_2) \le I(X; U_0, U_2) \le R_2$.
-- For the sum-rate, data processing on both arguments of conditional mutual information gives $I(\hat{X}_1; \hat{X}_2 \mid U_0) \le I(U_1; U_2 \mid U_0)$, and since $\hat{X}_1 - (U_0, U_1) - (X, \hat{X}_0, U_2, \hat{X}_2)$ and $\hat{X}_2 - (U_0, U_2) - (X, \hat{X}_0, U_1, \hat{X}_1)$, we have
+- For the sum-rate, data processing on both arguments of conditional mutual information gives $I(\hat{X}_1; \hat{X}_2 \mid U_0) \le I(U_1; U_2 \mid U_0)$, and the Markov chains give
   $$I(X; \hat{X}_0, \hat{X}_1, \hat{X}_2 \mid U_0) \le I(X; U_1, U_2, \hat{X}_0, \hat{X}_1, \hat{X}_2 \mid U_0) = I(X; U_1, U_2, \hat{X}_0 \mid U_0).$$
   Adding $2 I(X; U_0)$ yields
   $$2 I(X; U_0) + I(X; \hat{X}_0, \hat{X}_1, \hat{X}_2 \mid U_0) + I(\hat{X}_1; \hat{X}_2 \mid U_0) \le 2 I(X; U_0) + I(X; U_1, U_2, \hat{X}_0 \mid U_0) + I(U_1; U_2 \mid U_0) \le R_1 + R_2.$$
-Conversely, setting $U_1 = \hat{X}_1$, $U_2 = \hat{X}_2$ recovers `zhangBergerMDRegion`. Thus both regions are identical.
+Conversely, given any point in `zhangBergerMDRegion`:
+- With central auxiliary $U_{12}$ (the VKG 2003 / VAR 2016 CMS formulation for $L = 2$) or stochastic decoders, simply set $U_1 = \hat{X}_1$, $U_2 = \hat{X}_2$, $U_{12} = \hat{X}_0$.
+- Even when $U_{12}$ is omitted and $\hat{X}_0 = g_0(U_0, U_1, U_2)$ must be deterministic: by the Functional Representation Lemma (El Gamal–Kim 2011, Appendix B), there exists a finite-alphabet random variable $W \perp (U_0, \hat{X}_1, \hat{X}_2)$ with $W - (U_0, \hat{X}_0, \hat{X}_1, \hat{X}_2) - X$ and a deterministic function $f$ such that $\hat{X}_0 = f(U_0, \hat{X}_1, \hat{X}_2, W)$. Setting $U_1 = \hat{X}_1$ and $U_2 = (\hat{X}_2, W)$ makes $\hat{X}_0$ deterministic of $(U_0, U_1, U_2)$, keeps $I(U_1; U_2 \mid U_0) = I(\hat{X}_1; \hat{X}_2 \mid U_0)$ and $I(X; U_1, U_2, \hat{X}_0 \mid U_0) = I(X; \hat{X}_0, \hat{X}_1, \hat{X}_2 \mid U_0)$ (since $W \perp (U_0, \hat{X}_1, \hat{X}_2)$ and $W - (U_0, \hat{X}_0, \hat{X}_1, \hat{X}_2) - X$), and hits the corner point $(R_1, R_2) = (I(X; U_0, \hat{X}_1),\, I(X; U_0, \hat{X}_2) + I(X; \hat{X}_0 \mid U_0, \hat{X}_1, \hat{X}_2) + I(\hat{X}_1; \hat{X}_2 \mid X, U_0))$. Swapping $(U_1, U_2)$ hits the opposite corner point of the sum-rate face, and time-sharing (absorbed into $U_0$ via Claim 2) covers every point on the dominant face. Thus all formulations yield the exact same region.
 
 ### 2. Automatic convexity of `zhangBergerMDRegion` (Claim 2)
 
-Let $(r_1^{(i)}, r_2^{(i)}, \delta_0^{(i)}, \delta_1^{(i)}, \delta_2^{(i)})$ ($i = 1, \dots, m$) be realized in `zhangBergerMDRegion` by distributions $Q_i$ on $X \times \mathrm{Fin}\, k_i \times \hat{\mathcal{X}}_0 \times \hat{\mathcal{X}}_1 \times \hat{\mathcal{X}}_2$ with weights $w_i \ge 0$, $\sum_i w_i = 1$. Form the disjoint-union alphabet $\tilde{\mathcal{U}}_0 = \bigsqcup_{i=1}^m \mathrm{Fin}\, k_i$ (cardinality $\sum_i k_i$) and define $\tilde{Q}$ by drawing index $Q \sim (w_1, \dots, w_m)$ independently of $X$ and then $(U_0, \hat{X}_0, \hat{X}_1, \hat{X}_2) \sim Q_i(\cdot \mid X)$ when $Q = i$, setting $\tilde{U}_0 = (Q, U_0)$. Since $Q \perp X$, $I(X; Q) = 0$, so by the chain rule:
+Let $(r_1^{(i)}, r_2^{(i)}, \delta_0^{(i)}, \delta_1^{(i)}, \delta_2^{(i)})$ ($i = 1, \dots, m$) be realized in `zhangBergerMDRegion` by distributions $Q_i$ on $X \times \mathrm{Fin}\, k_i \times \hat{\mathcal{X}}_0 \times \hat{\mathcal{X}}_1 \times \hat{\mathcal{X}}_2$ with weights $w_i \ge 0$, $\sum_i w_i = 1$. Form the disjoint-union alphabet $\tilde{\mathcal{U}}_0 = \bigsqcup_{i=1}^m \mathrm{Fin}\, k_i$ (cardinality $\sum_i k_i$) and define the mixture directly as $\tilde{Q}(x, (i, u_0), \hat{x}_0, \hat{x}_1, \hat{x}_2) := w_i Q_i(x, u_0, \hat{x}_0, \hat{x}_1, \hat{x}_2)$ (avoiding any division by $P(x) = 0$), with $\tilde{U}_0 = (Q, U_0)$. Since each $Q_i$ has $X$-marginal $P$, $Q \perp X$ ($I(X; Q) = 0$), so by the chain rule:
 - $I(X; \tilde{U}_0, \hat{X}_j) = I(X; Q) + I(X; U_0, \hat{X}_j \mid Q) = \sum_i w_i I_{Q_i}(X; U_0, \hat{X}_j) \le \sum_i w_i r_j^{(i)}$ ($j = 1, 2$),
 - $I(X; \tilde{U}_0) = \sum_i w_i I_{Q_i}(X; U_0)$,
 - $I(X; \hat{X}_0, \hat{X}_1, \hat{X}_2 \mid \tilde{U}_0) = \sum_i w_i I_{Q_i}(X; \hat{X}_0, \hat{X}_1, \hat{X}_2 \mid U_0)$,
@@ -111,20 +113,18 @@ Conditioned on $U_0 = 1$, apply the bit-flipped conditional distribution. Then:
 - Differentiating $2 R(p) \ln 2$ with respect to $p \in (2D, 1/2)$:
   $$\frac{d(2 R \ln 2)}{dp} = \ln\frac{p(p - 2D)(1 - p + D)^2}{(1 - p)^2(p - D)^2}.$$
   Setting the ratio to $1$ gives the polynomial equation $p(p - 2D)(1 - p + D)^2 - (1 - p)^2(p - D)^2 = 0$. The $p^4$ terms cancel identically and $D$ factors out:
-  $$p(p - 2D)(1 - p + D)^2 - (1 - p)^2(p - D)^2 = -D\big(2p^3 - 2(1 + 2D)p^2 + 2D(1 + D)p + D\big).$$
-  At $p = 2D$, the ratio is $0 < 1$ (derivative $-\infty$). At $p = 1/2$,
+  $$p(p - 2D)(1 - p + D)^2 - (1 - p)^2(p - D)^2 = -D \cdot g(p), \qquad g(p) := 2p^3 - 2(1 + 2D)p^2 + 2D(1 + D)p + D.$$
+  For every $D \in (0, \frac{\sqrt{2}-1}{2})$, $g$ satisfies $g(-\infty) = -\infty$, $g(0) = D > 0$, $g(2D) = D(1 - 2D)^2 > 0$, $g(1/2) = -\frac{1}{4}(1 - 4D - 4D^2) < 0$, and $g(+\infty) = +\infty$. Since a cubic has at most three real roots, $g$ has exactly one root in $(-\infty, 0)$, one in $(2D, 1/2)$, and one in $(1/2, \infty)$; thus $p^*(D) \in (2D, 1/2)$ is the **unique** interior stationary point and global minimizer of $R(p)$ on $[2D, 1/2]$. At $p = 1/2$,
   $$\frac{p(p - 2D)(1 - p + D)^2}{(1 - p)^2(p - D)^2}\Big|_{p = 1/2} = \frac{(1 - 4D)(1 + 2D)^2}{(1 - 2D)^2} = 1 + \frac{4D(1 - 4D - 4D^2)}{(1 - 2D)^2} > 1$$
   for all $D \in (0, \frac{\sqrt{2}-1}{2})$ (since $1 - 4D - 4D^2 = 0 \iff D = \frac{\sqrt{2}-1}{2}$). Hence the derivative is strictly positive at $p = 1/2$, proving $R_{\mathrm{ZB}}^{\mathrm{cubic}}(D) = R(p^*(D)) < R(1/2) = R_{\mathrm{EGC}}^{\mathrm{asym}}(D)$ for all $D \in (0, \frac{\sqrt{2}-1}{2})$.
-- Finally, the individual rate is $I(X; U_0, \hat{X}_1) = 1 - (1 - p + D) h_2(\frac{D}{1 - p + D})$. To verify $I(X; U_0, \hat{X}_1) \le R(p)$ analytically at $p^*(D)$: note that $I(X; U_0, \hat{X}_1) = I(X; U_0) + I(X; \hat{X}_1 \mid U_0)$, whereas $2R(p) - 2 I(X; U_0, \hat{X}_1) = H(X \mid U_0) + I(\hat{X}_1; \hat{X}_2 \mid U_0) - 2 I(X; \hat{X}_1 \mid U_0)$; we verified $I(X; U_0, \hat{X}_1) < R(p^*(D))$ across a dense 200-point grid on $(0, \frac{\sqrt{2}-1}{2})$ (and at $D = 0.10$, $I(X; U_0, \hat{X}_1) = 0.56628 < 0.60285 = R(p^*)$).
+- Finally, the individual rate constraint $I(X; U_0, \hat{X}_1) \le R(p)$ holds **identically for all $p \in [2D, 1/2]$** (for any symmetric distribution with $\hat{X}_0 = X$):
+  $$2 R(p) - 2 I(X; U_0, \hat{X}_1) = H(X \mid U_0) + I(\hat{X}_1; \hat{X}_2 \mid U_0) - I(X; \hat{X}_1 \mid U_0) - I(X; \hat{X}_2 \mid U_0) = H(X \mid U_0, \hat{X}_1, \hat{X}_2) + I(\hat{X}_1; \hat{X}_2 \mid X, U_0) \ge 0.$$
 
 ### 4. Elementary converse and single-letterization obstruction (Claim 5)
 
 For any blocklength-$n$ code $(M_1, M_2)$ achieving vanishing central distortion $D_0 \to 0$ and side distortions $\le D$:
-- $n R \ge H(M_1) \ge I(X^n; \hat{X}_1^n) \ge n(1 - h_2(D)) - o(n)$ and $2 n R \ge H(M_1, M_2) \ge n - o(n)$.
-- By the triangle inequality, $\frac{1}{n}\mathbb{E}[d_H(\hat{X}_1^n, \hat{X}_2^n)] \le 2D$, so $H(\hat{X}_1^n \mid \hat{X}_2^n) \le H(\hat{X}_1^n \oplus \hat{X}_2^n) \le n h_2(\min(1/2, 2D))$.
-- Since $H(\hat{X}_1^n) \ge I(X^n; \hat{X}_1^n) \ge n(1 - h_2(D)) - o(n)$, DPI yields
-  $$I(M_1; M_2) \ge I(\hat{X}_1^n; \hat{X}_2^n) = H(\hat{X}_1^n) - H(\hat{X}_1^n \mid \hat{X}_2^n) \ge n\big(1 - h_2(D) - h_2(\min(\tfrac{1}{2}, 2D))\big) - o(n).$$
-- Combining with $2 n R \ge H(M_1) + H(M_2) = H(M_1, M_2) + I(M_1; M_2) \ge n + I(M_1; M_2) - o(n)$ gives Claim 5.
+- $n R \ge H(M_1) \ge I(X^n; \hat{X}_1^n) \ge n(1 - h_2(\min(\frac{1}{2}, D))) - o(n)$ and $2 n R \ge H(M_1, M_2) \ge n - o(n)$, giving $R \ge \max(\frac{1}{2}, 1 - h_2(\min(\frac{1}{2}, D)))$.
+- *(Remark on triangle-inequality $I(M_1; M_2)$ lower bound)*: For $D \in [0, 1/2]$, $\frac{1}{n}\mathbb{E}[d_H(\hat{X}_1^n, \hat{X}_2^n)] \le 2D$ gives $I(M_1; M_2) \ge I(\hat{X}_1^n; \hat{X}_2^n) \ge n(1 - h_2(D) - h_2(\min(\frac{1}{2}, 2D))) - o(n)$, which yields $R \ge 1 - \frac{1}{2} h_2(D) - \frac{1}{2} h_2(\min(\frac{1}{2}, 2D))$; note that this is algebraically dominated by $1 - h_2(D)$ on $[0, 1/2]$ since $h_2(\min(\frac{1}{2}, 2D)) \ge h_2(D)$.
 
 **Why standard single-letterization fails for $R_1 + R_2 > 1$:** In $H(M_1) + H(M_2) = H(M_1, M_2) + I(M_1; M_2)$, expanding $I(M_1; M_2)$ requires identifying an auxiliary $U_{0, i}$ per coordinate $i$ such that BOTH $I(X_i; U_{0, i}, \hat{X}_{1, i}) \le R_1$, $I(X_i; U_{0, i}, \hat{X}_{2, i}) \le R_2$ AND $I(M_1; M_2) \ge \sum_i (I(X_i; U_{0, i}) + I(\hat{X}_{1, i}; \hat{X}_{2, i} \mid U_{0, i}))$.
 - Setting $U_{0, i} = \emptyset$ fails because $I(\hat{X}_1^n; \hat{X}_2^n)$ can be strictly smaller than $\sum_i I(\hat{X}_{1, i}; \hat{X}_{2, i})$ (indeed, for the optimal ZB scheme at $D = 0.10$, $2R_{\mathrm{ZB}} - 1 = 0.20570 < 0.27807 = I(\hat{X}_1; \hat{X}_2)$).
@@ -164,6 +164,9 @@ At $D_0 > 0$:
 | $(0.05, 0.15)$ | 0.35680 | 0.39016 | 0.44123 | 0.42314 | 0.01810 |
 | $(0.10, 0.20)$ | 0.26550 | 0.27807 | 0.31580 | 0.30351 | 0.01230 |
 | $(0.05, 0.25)$ | 0.35680 | 0.18872 | 0.35680 | 0.35680 | 0.00000 |
+
+### Referee Audit (2026-11-27)
+Independently audited by a fresh-context referee agent (Gemini 4 Neon): re-executed all 3 scripts cleanly and caught 4 proof gaps/bugs, all fixed in place: (i) completed Claim 1's reverse inclusion via $U_{12}$ and the Functional Representation Lemma + Claim 2; (ii) restricted Claim 3(a)'s range from $(0, 1/4)$ (false past $\frac{\sqrt{2}-1}{2}$) to $(0, \frac{\sqrt{2}-1}{2}]$ and framed Claim 3(c) accurately against the 1-parameter asymmetric EGC ansatz; (iii) added the 3-line cubic root-uniqueness proof and exact 2-line analytical proof of $I(X; U_0, \hat{X}_1) \le R(p)$ in Claim 3(b); (iv) fixed the $D > 1/2$ edge case and removed the dominated third term from Claim 5. Status moved to `community-reviewed`.
 
 ## Dead ends
 

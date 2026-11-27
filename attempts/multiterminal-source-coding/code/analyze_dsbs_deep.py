@@ -258,6 +258,39 @@ def main():
 
     analyze_1enc_vs_cw_dsbs()
 
+    print("\n" + "=" * 78)
+    print("FINE LOG-SPACED GRID CHECK (30,000 RANDOM |U1|, |U2| <= 4 AUXILIARIES)")
+    print("=" * 78)
+    qs_fine = np.unique(np.concatenate([
+        [0.0],
+        np.geomspace(1e-5, 0.05, 80),
+        np.linspace(0.05, 0.5, 181),
+    ]))
+    rng = np.random.default_rng(2026)
+    for p in [0.10, 0.25]:
+        P = dsbs_joint(p)
+        pts_fine = [(0.5, 0.0), (0.0, 1.0 + h2(p))]
+        for q1 in qs_fine:
+            Q1 = np.array([[1 - q1, q1], [q1, 1 - q1]])
+            for q2 in qs_fine:
+                if q2 < q1:
+                    continue
+                Q2 = np.array([[1 - q2, q2], [q2, 1 - q2]])
+                Rsum, D1, D2, _, _ = eval_dsbs_bt(P, Q1, Q2)
+                pts_fine.append((0.5 * (D1 + D2), Rsum))
+        hull_fine = lower_hull(pts_fine)
+        max_imp = -1e9
+        for k in (2, 3, 4):
+            for _ in range(10000):
+                al = rng.choice([0.1, 0.3, 1.0])
+                Q1 = rng.dirichlet([al] * k, size=2)
+                Q2 = rng.dirichlet([al] * k, size=2)
+                Rsum, D1, D2, _, _ = eval_dsbs_bt(P, Q1, Q2)
+                imp = float(eval_hull(hull_fine, 0.5 * (D1 + D2))) - Rsum
+                if imp > max_imp:
+                    max_imp = imp
+        print(f"  p={p:.2f}: max improvement over fine BSC-pair hull (30,000 samples, k<=4): {max_imp:+.7f}")
+
 
 if __name__ == "__main__":
     main()
