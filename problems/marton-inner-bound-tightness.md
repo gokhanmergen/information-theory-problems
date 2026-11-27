@@ -56,18 +56,38 @@ coding beats it — is one of the central unresolved questions of multiuser info
   1980), product of reversely degraded, and Gaussian MIMO broadcast channels
   (Weingarten–Steinberg–Shamai 2006).
 - With private messages only ($R_0 = 0$), Marton's region coincides with the projection
-  of $\mathcal{R}_{\mathrm{M}}(W)$ onto $R_0 = 0$, though the common auxiliary $U_0$ is
-  essential even for private messages on non-binary channels.
+  of $\mathcal{R}_{\mathrm{M}}(W)$ onto $R_0 = 0$, and the common auxiliary $U_0$ is
+  essential even for private messages: Gohari, El Gamal, and Anantharam (2014) show that
+  Marton's scheme without it is suboptimal even for some degraded broadcast channels.
 - Gohari and Anantharam (2012) proved finite cardinality bounds on $(U_0, U_1, U_2)$ for
   evaluating $\mathcal{R}_{\mathrm{M}}(W)$, and showed that deterministic mappings
   $X = f(U_0, U_1, U_2)$ suffice on the boundary.
 - The Nair–El Gamal (2007) UV outer bound strictly exceeds Marton's inner bound on the
-  binary skew-symmetric broadcast channel (Nair–Wang–Geng 2010), and Gohari–Nair (2022)
-  introduced an auxiliary-receiver outer bound that strictly tightens the UV bound; however,
-  a positive gap between inner and outer bounds remains.
-- Unlike the three-receiver case — where Nair and El Gamal (2009) proved that naive
-  superposition is suboptimal even with degraded message sets — no counterexample to
-  Marton's inner bound is known for any two-receiver DMBC.
+  binary skew-symmetric broadcast channel (Nair–Wang–Geng 2010). Gohari–Nair (2022)
+  introduced auxiliary-receiver outer bounds that strictly tighten UV, with examples on the
+  erasure Blackwell and product channels. On the BSSC, later auxiliary-receiver bounds,
+  Geng (ISIT 2025) and Gohari–Liu–Nair (manuscript), narrow the sum-rate window. It is now
+  certified as $[0.361642884, 0.369297201]$ bits (see the `binary-skew-symmetric-bc` attempt
+  log); a positive gap remains.
+- **Claimed counterexample (2026).** Huang, Liu, and Liu ("Sub-optimality of Marton's inner
+  bound for the two-receiver broadcast channel", arXiv:2608.19869, Aug. 2026; not yet peer
+  reviewed) claim a finite two-receiver DMBC $\tilde T$ whose two-letter Marton sum-rate
+  strictly exceeds twice its one-letter Marton sum-rate (with the common auxiliary $W$).
+  Hence the one-letter Marton region, with or without a common message, would be strictly
+  inside the capacity region.
+  - The construction starts from a ternary-input base channel with a certified fixed-input
+    two-letter gain of about $3\times10^{-6}$ nats.
+  - "Gradient shaping" and "constraint removal" then turn it into an unconstrained channel
+    with input alphabet $\{0,1,2\}\times[2^{2\cdot 10^6}]$.
+  - The numerics are certified with exact rationals and outward-rounded MPFR. The
+    acknowledgments state that Nair and Gohari checked the non-numerical arguments.
+  - An independent re-computation of the base-channel numbers is in the attempt log.
+- **Consequence for this entry.** If the claim is correct, the answer to the question above
+  is **no**, and the frozen Lean `Statement` is false. The binary-input case remains open:
+  Huang–Liu–Liu note that counterexamples appear to require non-binary inputs.
+- Before this, the only known suboptimality of this kind was for three receivers: Nair and
+  El Gamal (2009) proved that naive superposition is suboptimal even with degraded message
+  sets.
 
 ## References
 
@@ -78,10 +98,18 @@ coding beats it — is one of the central unresolved questions of multiuser info
 - Y. Liang and G. Kramer, "Rate regions for relay broadcast channels," *IEEE Trans. Inf.
   Theory*, vol. 53, no. 10, pp. 3517–3535, 2007.
 - C. Nair and A. El Gamal, "An outer bound to the capacity region of the broadcast channel,"
-  *IEEE Trans. Inf. Theory*, vol. 53, no. 1, pp. 401–405, 2007.
+  *IEEE Trans. Inf. Theory*, vol. 53, no. 1, pp. 350–355, 2007.
+- A. Gohari, A. El Gamal, and V. Anantharam, "On Marton's inner bound for the general
+  broadcast channel," *IEEE Trans. Inf. Theory*, vol. 60, no. 7, pp. 3748–3762, 2014.
 - A. A. Gohari and V. Anantharam, "Evaluation of Marton's inner bound for the general
   broadcast channel," *IEEE Trans. Inf. Theory*, vol. 58, no. 2, pp. 608–619, 2012.
 - A. Gohari and C. Nair, "Outer bounds for multiuser settings: the auxiliary receiver
   approach," *IEEE Trans. Inf. Theory*, vol. 68, no. 2, pp. 701–736, 2022.
 - A. El Gamal and Y.-H. Kim, *Network Information Theory*, Cambridge Univ. Press, 2011,
   Theorem 8.3.
+- Y. Liang, G. Kramer, and H. V. Poor, "On the equivalence of two achievable regions for the
+  broadcast channel," *IEEE Trans. Inf. Theory*, vol. 57, no. 1, pp. 95–100, 2011.
+- Y. Geng, "A simple auxiliary receiver outer bound for broadcast channels," *IEEE Int. Symp.
+  Inf. Theory (ISIT)*, 2025.
+- M. Huang, Y. Liu, and Y. Liu, "Sub-optimality of Marton's inner bound for the two-receiver
+  broadcast channel," arXiv:2608.19869, 2026.
