@@ -34,9 +34,6 @@ Discrete Memoryless Broadcast Channels (`InfoTheory.BroadcastChannel`, `IsBCAchi
    - `bergmansBSDBCRegion`, `degradedBSC_isPhysicallyDegraded`
    - `degradedBSC_operational_capacity_region`: upgrades `Bridge/MrsGerber.lean`'s
      single-letter Bergmans theorem to the full operational `bcCapacityRegion`.
-
-All definitions and theorems leave `Core/`, `Problems/`, `Known/`, `Bridge.lean`, and all
-other `Bridge/*` files untouched.
 -/
 
 open scoped BigOperators Topology
@@ -734,7 +731,7 @@ noncomputable def supTypicalSet (W : BroadcastChannel X Y₁ Y₂) (Pux : ProbDi
     (fun i => (t.1 i, t.2.2 i)) ∈ weakTypicalSet P_UY1 n ε ∧
     (fun i => ((t.1 i, t.2.1 i), t.2.2 i)) ∈ weakTypicalSet P_UXY1 n ε
 
-private lemma mem_supTypicalSet (W : BroadcastChannel X Y₁ Y₂) (Pux : ProbDist (U × X))
+lemma mem_supTypicalSet (W : BroadcastChannel X Y₁ Y₂) (Pux : ProbDist (U × X))
     (n : ℕ) (ε : ℝ) (t : (Fin n → U) × (Fin n → X) × (Fin n → Y₁)) :
     let J := bcAuxJoint W Pux
     t ∈ supTypicalSet W Pux n ε ↔
@@ -747,7 +744,9 @@ private lemma mem_supTypicalSet (W : BroadcastChannel X Y₁ Y₂) (Pux : ProbDi
   classical
   simp [supTypicalSet]
 
-private def supZipEquiv (U X Y₁ : Type*) (n : ℕ) :
+/-- Equivalence zipping a triple of length-`n` sequences `(u^n, x^n, y₁^n)` into
+    a length-`n` sequence of triples `((u_i, x_i), y_{1,i})`. -/
+def supZipEquiv (U X Y₁ : Type*) (n : ℕ) :
     ((Fin n → U) × (Fin n → X) × (Fin n → Y₁)) ≃ (Fin n → (U × X) × Y₁) where
   toFun := fun t i => ((t.1 i, t.2.1 i), t.2.2 i)
   invFun := fun z => (fun i => (z i).1.1, fun i => (z i).1.2, fun i => (z i).2)
@@ -827,7 +826,7 @@ private lemma supTypicalSet_card_le (W : BroadcastChannel X Y₁ Y₂) (Pux : Pr
     · intro t₁ _ t₂ _ h; exact (supZipEquiv U X Y₁ n).injective h
   exact le_trans (by exact_mod_cast hle) (weakTypicalSet_card_le _ n ε)
 
-private lemma sup_aep_prob_tendsto_one (W : BroadcastChannel X Y₁ Y₂) (Pux : ProbDist (U × X))
+lemma sup_aep_prob_tendsto_one (W : BroadcastChannel X Y₁ Y₂) (Pux : ProbDist (U × X))
     {ε δ : ℝ} (hε : 0 < ε) (hδ : 0 < δ) :
     let P_UXY1 := (bcAuxJoint W Pux).map (fun z => (z.1, z.2.1))
     ∃ N : ℕ, ∀ n ≥ N,

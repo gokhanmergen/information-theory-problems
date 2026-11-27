@@ -42,9 +42,6 @@ correlated sources `(X, Y) ~ P` with decoder side information `Y`, built on top 
    - `wynerZiv_operational_achievability`, `wynerZiv_operational_converse`
    - `wyner_ziv_theorem` (`operationalWynerZivRate P d D = wynerZivRateDistortion P d D`
      at every strictly feasible distortion `D`)
-
-All theorems leave `Core/`, `Problems/`, `Known/`, `Bridge.lean`, and all existing `Bridge/*`
-files untouched.
 -/
 
 open scoped BigOperators
@@ -1483,7 +1480,7 @@ noncomputable def strongTypicalSet (P : ProbDist α) (n : ℕ) (ε : ℝ) : Fins
   classical
   exact Finset.univ.filter fun x => ∀ a : α, |empFreq x a - P.pmf a| ≤ ε * P.pmf a
 
-private lemma mem_strongTypicalSet [DecidableEq α] {P : ProbDist α} {n : ℕ} {ε : ℝ}
+lemma mem_strongTypicalSet [DecidableEq α] {P : ProbDist α} {n : ℕ} {ε : ℝ}
     {x : Fin n → α} :
     x ∈ strongTypicalSet P n ε ↔ ∀ a : α, |empFreq x a - P.pmf a| ≤ ε * P.pmf a := by
   classical
@@ -1533,7 +1530,7 @@ theorem strongTypicalSet_map (P : ProbDist α) (f : α → β) (n : ℕ) (ε : �
 /-- **Typical Average Lemma** (El Gamal–Kim §2.4):
     for any `0 < n`, `x ∈ T_ε^(n)(P)`, and nonnegative `f : α → ℝ`,
     `(1 / n) ∑_i f(x_i) ≤ (1 + ε) ∑_a P(a) f(a)`. -/
-private lemma strongTypicalSet_typical_average (P : ProbDist α) {n : ℕ} (hn : 0 < n) {ε : ℝ}
+lemma strongTypicalSet_typical_average (P : ProbDist α) {n : ℕ} (hn : 0 < n) {ε : ℝ}
     {x : Fin n → α} (hx : x ∈ strongTypicalSet P n ε)
     (f : α → ℝ) (hf : ∀ a, 0 ≤ f a) :
     (1 / (n : ℝ)) * ∑ i : Fin n, f (x i) ≤ (1 + ε) * ∑ a : α, P.pmf a * f a := by
@@ -1666,7 +1663,7 @@ theorem strongTypicalSet_subset_weakTypicalSet (P : ProbDist α) {n : ℕ} (hn :
     exact (div_le_iff₀ hlog2_pos).mp h1
 
 /-- Strongly typical pairs are jointly weakly typical for scaled tolerance `ε'`. -/
-private lemma strongTypicalSet_mem_jointTypicalSet (Q : ProbDist (α × β)) {n : ℕ} (hn : 0 < n)
+lemma strongTypicalSet_mem_jointTypicalSet (Q : ProbDist (α × β)) {n : ℕ} (hn : 0 < n)
     {ε ε' : ℝ} (hε : 0 ≤ ε)
     (h1 : ε * shannonEntropy Q.fst ≤ ε')
     (h2 : ε * shannonEntropy Q.snd ≤ ε')
@@ -1870,7 +1867,7 @@ theorem strongTypicalSet_prob_tendsto_one (P : ProbDist α) {ε δ : ℝ} (hε :
 
 /-- Conditional channel `W_{Y|X} : DMC X Y` extracted from a joint distribution `P : ProbDist (X × Y)`
     (with an arbitrary uniform row on zero-mass `x`). -/
-private noncomputable def condChannelOfJoint (P : ProbDist (α × β)) : DMC α β := by
+noncomputable def condChannelOfJoint (P : ProbDist (α × β)) : DMC α β := by
   classical
   have hne : Nonempty (α × β) := wz_nonempty_of_probDist P
   have : Nonempty β := ⟨hne.some.2⟩
@@ -1889,7 +1886,7 @@ private noncomputable def condChannelOfJoint (P : ProbDist (α × β)) : DMC α 
         · simp only [ite_eq_right_iff.mpr (fun h => absurd h ha), ← Finset.sum_div]
           exact div_self ha }
 
-private lemma condChannelOfJoint_mul (P : ProbDist (α × β)) (a : α) (b : β) :
+lemma condChannelOfJoint_mul (P : ProbDist (α × β)) (a : α) (b : β) :
     P.fst.pmf a * (condChannelOfJoint P).trans a b = P.pmf (a, b) := by
   classical
   unfold condChannelOfJoint; dsimp only
@@ -1901,7 +1898,7 @@ private lemma condChannelOfJoint_mul (P : ProbDist (α × β)) (a : α) (b : β)
   · simp only [ite_eq_right_iff.mpr (fun h => absurd h ha)]
     exact mul_div_cancel₀ _ ha
 
-private lemma jointIidDist_eq_fst_mul_condChannelPower (P : ProbDist (α × β)) (n : ℕ)
+lemma jointIidDist_eq_fst_mul_condChannelPower (P : ProbDist (α × β)) (n : ℕ)
     (x : Fin n → α) (y : Fin n → β) :
     (jointIidDist P n).pmf (x, y) =
       (iidDist P.fst n).pmf x * ((condChannelOfJoint P).power n).trans x y := by
@@ -2239,6 +2236,58 @@ theorem markov_lemma {X Y U : Type*} [Fintype X] [Fintype Y] [Fintype U]
     _ = (∑ t : X × Y × U, if 0 < Q.pmf t then 1 / Q.pmf t ^ 2 else 0) /
           ((n : ℝ) * (ε₂ - ε₁) ^ 2) := by
         rw [Finset.sum_div]
+
+open Classical in
+/-- **Channel-Parameterized Markov Lemma** (El Gamal–Kim Lemma 12.1):
+    for any user-supplied DMC `W : DMC X Y` agreeing with the `(X, Y)` marginal of `Q`
+    (i.e. `Q_{XY}(a, b) = Q_X(a) * W(b | a)`), the Markov Lemma bound holds directly for
+    `W.power n` without referencing `condChannelOfJoint`. -/
+theorem markov_lemma_of_channel {X Y U : Type*} [Fintype X] [Fintype Y] [Fintype U]
+    (Q : ProbDist (X × Y × U)) (W : DMC X Y)
+    (hW : ∀ a b, (Q.map (fun t => (t.1, t.2.1))).pmf (a, b) =
+      (Q.map (fun t => t.1)).pmf a * W.trans a b)
+    (hmarkov : condMutualInfo (Q.map (fun t => (t.2.2, t.2.1, t.1))) = 0)
+    {n : ℕ} (hn : 0 < n) {ε₁ ε₂ : ℝ} (hε₁ : 0 ≤ ε₁) (hε : ε₁ < ε₂)
+    {x : Fin n → X} {u : Fin n → U}
+    (hxu : (fun i => (x i, u i)) ∈ strongTypicalSet (Q.map (fun t => (t.1, t.2.2))) n ε₁) :
+    ∑ y : Fin n → Y, (W.power n).trans x y *
+        (if (fun i => (x i, y i, u i)) ∉ strongTypicalSet Q n ε₂ then (1 : ℝ) else 0) ≤
+      (∑ t : X × Y × U, if 0 < Q.pmf t then 1 / Q.pmf t ^ 2 else 0) /
+        ((n : ℝ) * (ε₂ - ε₁) ^ 2) := by
+  classical
+  have hbase := markov_lemma Q hmarkov hn hε₁ hε hxu
+  dsimp only at hbase
+  let P := Q.map (fun t => (t.1, t.2.1))
+  let Qxu := Q.map (fun t => (t.1, t.2.2))
+  have hPfst : P.fst = Q.map (fun t => t.1) := by
+    rw [← wz_probDist_map_fst]; unfold P; rw [map_comp_eq]; rfl
+  have hQxu_fst : Qxu.fst = Q.map (fun t => t.1) := by
+    rw [← wz_probDist_map_fst]; unfold Qxu; rw [map_comp_eq]; rfl
+  have hpow_eq : ∀ y : Fin n → Y, (W.power n).trans x y = ((condChannelOfJoint P).power n).trans x y := by
+    intro y
+    unfold DMC.power; dsimp only
+    refine Finset.prod_congr rfl fun i _ => ?_
+    have hxu_pos : 0 < Qxu.pmf (x i, u i) := by
+      by_contra hle
+      have h0 : Qxu.pmf (x i, u i) = 0 := le_antisymm (not_lt.mp hle) (Qxu.nonneg _)
+      have hfi := (mem_strongTypicalSet.mp hxu) (x i, u i)
+      rw [h0, sub_zero, mul_zero] at hfi
+      have hfreq0 : empFreq (fun j => (x j, u j)) (x i, u i) = 0 := abs_nonpos_iff.mp hfi
+      have hcard_pos : 0 < (Finset.univ.filter fun j : Fin n => (x j, u j) = (x i, u i)).card :=
+        Finset.card_pos.mpr ⟨i, Finset.mem_filter.mpr ⟨Finset.mem_univ i, rfl⟩⟩
+      have hfreq_pos : 0 < empFreq (fun j => (x j, u j)) (x i, u i) :=
+        div_pos (Nat.cast_pos.mpr hcard_pos) (Nat.cast_pos.mpr hn)
+      linarith
+    have hxpos : 0 < P.fst.pmf (x i) := by
+      rw [hPfst, ← hQxu_fst]
+      exact lt_of_lt_of_le hxu_pos
+        (Finset.single_le_sum (fun c _ => Qxu.nonneg (x i, c)) (Finset.mem_univ (u i)))
+    have h1 := condChannelOfJoint_mul P (x i) (y i)
+    have h2 : P.fst.pmf (x i) * W.trans (x i) (y i) = P.pmf (x i, y i) := by
+      rw [hPfst]; exact (hW (x i) (y i)).symm
+    exact mul_left_cancel₀ (ne_of_gt hxpos) (h2.trans h1.symm)
+  simp_rw [hpow_eq]
+  exact hbase
 
 end StrongTypicalityAndMarkov
 

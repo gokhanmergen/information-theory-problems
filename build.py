@@ -14,6 +14,7 @@ numbered lists, > blockquotes, ``` fenced code, | tables, **bold**, *italic*,
 untouched for MathJax.
 """
 import html
+import os
 import re
 import shutil
 import subprocess
@@ -37,6 +38,9 @@ def _resolve_git_ref():
             return sha
     except Exception:
         pass
+    env_sha = os.environ.get("GITHUB_SHA", "").strip()
+    if re.fullmatch(r"[0-9a-f]{7,40}", env_sha):
+        return env_sha
     return "main"
 
 
@@ -206,7 +210,40 @@ def md_to_html(body):
 
 # ---------------------------------------------------------------- Lean helpers
 
-_DECL_RE = re.compile(r"^(theorem|lemma|def)\s+([A-Za-z0-9_']+)\b")
+def _strip_lean_comments(text):
+    """Strip Lean `/- ... -/` block comments (nested) and `-- ...` line comments, preserving line count."""
+    out = []
+    i, n, depth = 0, len(text), 0
+    while i < n:
+        if depth == 0 and text[i:i + 2] == "--":
+            while i < n and text[i] != "\n":
+                i += 1
+        elif text[i:i + 2] == "/-":
+            depth += 1
+            i += 2
+        elif depth > 0 and text[i:i + 2] == "-/":
+            depth -= 1
+            i += 2
+        else:
+            ch = text[i]
+            out.append(ch if depth == 0 or ch == "\n" else " ")
+            i += 1
+    return "".join(out)
+
+
+def _find_top_level_assign(line):
+    """Return index of a declaration-level `:=` in `line`, ignoring `let`/`letI`/`have` bindings."""
+    stripped = line.lstrip()
+    if re.match(r"^(?:let|letI|have|haveI)\b", stripped):
+        return -1
+    # Ignore `:=` that follows a `let ` on the same line (e.g. `∃ ..., let x := ...`)
+    m_let = re.search(r"\b(?:let|letI)\b", line)
+    pos = line.find(" :=")
+    if pos == -1:
+        return -1
+    if m_let and m_let.start() < pos:
+        return -1
+    return pos
 
 
 def extract_lean_declaration(rel_path, decl_name):
@@ -215,20 +252,27 @@ def extract_lean_declaration(rel_path, decl_name):
     if not p.is_file():
         fail(f"solved_catalog: Lean file {rel_path!r} does not exist")
     lines = p.read_text(encoding="utf-8").splitlines()
-    pat = re.compile(rf"^(?:noncomputable\s+)?(?:theorem|lemma|def)\s+{re.escape(decl_name)}\b")
+    pat = re.compile(
+        rf"^(?:@\[[^\]]+\]\s+)?(?:protected\s+)?(?:noncomputable\s+)?(?:theorem|lemma|def)\s+{re.escape(decl_name)}\b"
+    )
     for idx, line in enumerate(lines):
         if pat.match(line):
             sig_lines = []
-            for j in range(idx, min(idx + 14, len(lines))):
+            for j in range(idx, min(idx + 24, len(lines))):
                 cur = lines[j]
+                if j > idx and re.match(r"^\s*\|", cur):
+                    # Pattern-matching equation compiler arms (`| 0 => ...`) start the proof/body
+                    sig_lines.append("  | …")
+                    break
                 if " := by" in cur:
                     sig_lines.append(cur.split(" := by", 1)[0] + " := by …")
                     break
                 if cur.rstrip().endswith(":= by"):
                     sig_lines.append(cur + " …")
                     break
-                if " :=" in cur and j > idx:
-                    sig_lines.append(cur.split(" :=", 1)[0] + " := …")
+                assign_pos = _find_top_level_assign(cur)
+                if assign_pos != -1:
+                    sig_lines.append(cur[:assign_pos] + " := …")
                     break
                 sig_lines.append(cur)
                 if cur.strip().endswith("where"):
@@ -237,18 +281,28 @@ def extract_lean_declaration(rel_path, decl_name):
     fail(f"solved_catalog: declaration {decl_name!r} not found in {rel_path!r}")
 
 
+_THEOREM_LINE_RE = re.compile(
+    r"^(?:@\[[^\]]+\]\s+)?(?:private\s+|protected\s+)?(?:theorem|lemma)\s+[A-Za-z0-9_']+\b"
+)
+_PUBLIC_THEOREM_LINE_RE = re.compile(
+    r"^(?:@\[[^\]]+\]\s+)?(?:protected\s+)?(?:theorem|lemma)\s+[A-Za-z0-9_']+\b"
+)
+
+
 def count_proved_lean_theorems():
-    """Count `theorem`/`lemma` declarations across Known/ and Bridge/."""
+    """Count source-level `theorem`/`lemma` declarations across Known/ and Bridge/
+    (stripping comments and excluding 0-theorem import barrels)."""
     total = 0
-    files = []
+    proof_files = 0
     for base in (ROOT / "lean" / "InfoTheory" / "Bridge", ROOT / "lean" / "InfoTheory" / "Known"):
         if base.is_dir():
             for f in sorted(base.rglob("*.lean")):
-                files.append(f)
-                for line in f.read_text(encoding="utf-8").splitlines():
-                    if re.match(r"^(?:private\s+|protected\s+)?(?:theorem|lemma)\s+[A-Za-z0-9_']+\b", line):
-                        total += 1
-    return total, len(files)
+                cleaned = _strip_lean_comments(f.read_text(encoding="utf-8"))
+                n_in_file = sum(1 for line in cleaned.splitlines() if _THEOREM_LINE_RE.match(line))
+                if n_in_file > 0:
+                    proof_files += 1
+                    total += n_in_file
+    return total, proof_files
 
 
 def load_certificate_info(short_mod):
@@ -256,14 +310,16 @@ def load_certificate_info(short_mod):
     if not cert_path.is_file():
         return None
     text = cert_path.read_text(encoding="utf-8")
+    cleaned_lines = _strip_lean_comments(text).splitlines()
     rel_path = f"lean/InfoTheory/Known/Certificates/{short_mod}.lean"
     doc_match = re.search(r"/-!(.*?)-/", text, flags=re.S)
     doc = doc_match.group(1).strip() if doc_match else ""
     decls = []
-    for idx, line in enumerate(text.splitlines(), 1):
-        m = re.match(r"^(theorem|lemma)\s+([A-Za-z0-9_']+)\b", line)
-        if m:
-            decls.append((m.group(2), idx))
+    for idx, line in enumerate(cleaned_lines, 1):
+        if _PUBLIC_THEOREM_LINE_RE.match(line):
+            m = re.search(r"\b(?:theorem|lemma)\s+([A-Za-z0-9_']+)\b", line)
+            if m:
+                decls.append((m.group(1), idx))
     return {
         "file": rel_path,
         "module": f"InfoTheory.Known.Certificates.{short_mod}",
@@ -871,10 +927,16 @@ def main():
             encoding="utf-8",
         )
 
+    # Post-render privacy guard: refuse any file:// or local home-directory path anywhere in site/
+    for html_file in sorted(SITE.rglob("*.html")):
+        rendered = html_file.read_text(encoding="utf-8")
+        if re.search(r"file://", rendered, flags=re.I) or "/Users/" in rendered:
+            fail(f"local path / file:// leak detected in rendered HTML: {html_file}")
+
     print(
         f"built site/ — {n_total} open-catalog problems ({n_open} open/partial, {n_solved_open_cat} solved, "
         f"{n_lean} Lean 4 formalized, {n_certified} certified), "
-        f"{n_classical} classical solved theorems ({n_proved_decls} Lean declarations across {n_proof_files} modules), "
+        f"{n_classical} classical solved theorems ({n_proved_decls} source-level theorem/lemma declarations across {n_proof_files} modules), "
         f"{sum(len(a) for _, _, a, _ in problems)} attempts"
     )
 

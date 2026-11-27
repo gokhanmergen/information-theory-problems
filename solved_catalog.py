@@ -92,6 +92,7 @@ SOLVED_THEOREMS = [
             "hypercontractivity-ribbon-discrete",
             "courtade-kumar",
             "courtade-kumar-qary",
+            "li-medard-conjecture",
             "deletion-channel",
             "intrinsic-vs-secret-key-gap",
         ],
@@ -153,8 +154,10 @@ SOLVED_THEOREMS = [
         ),
         "lean_decls": [
             ("lean/InfoTheory/Bridge/CoverThomas.lean", "shannonEntropy_chain_rule"),
+            ("lean/InfoTheory/Bridge/CoverThomas.lean", "shannonEntropy_map_le"),
             ("lean/InfoTheory/Bridge/CoverThomas.lean", "condEntropy_nonneg"),
             ("lean/InfoTheory/Bridge/CoverThomas.lean", "condMutualInfo_nonneg"),
+            ("lean/InfoTheory/Bridge/CoverThomas.lean", "condMutualInfo_eq_zero_iff"),
             ("lean/InfoTheory/Bridge/CoverThomas.lean", "subsetEntropyVec_isPolymatroid"),
             ("lean/InfoTheory/Known/EntropyRegion.lean", "almostEntropic_isPolymatroid"),
         ],
@@ -479,7 +482,7 @@ SOLVED_THEOREMS = [
         "reference": "Cover & Thomas, §§7.1.4–7.1.5",
         "tags": ["bsc", "bec", "capacity", "ch7"],
         "statement": (
-            "For $p, \\varepsilon \\in [0, 1]$ and any finite alphabet $\\mathcal{X}$:\n"
+            "For $p, \\varepsilon \\in [0, 1]$ and any nonempty finite alphabet $\\mathcal{X}$:\n"
             "$$C(\\mathrm{BSC}(p)) = 1 - h(p), \\qquad C(\\mathrm{BEC}(\\varepsilon)) = 1 - \\varepsilon, "
             "\\qquad C(\\mathrm{Id}_{\\mathcal{X}}) = \\log_2 |\\mathcal{X}|.$$"
         ),
@@ -601,6 +604,8 @@ SOLVED_THEOREMS = [
             "mac-with-feedback",
             "wiretap-with-feedback-capacity",
             "zero-error-feedback-variable-length",
+        ],
+        "analogous_open": [
             "timing-channel-general-queue",
         ],
     },
@@ -643,10 +648,10 @@ SOLVED_THEOREMS = [
             "discrete-entropy-power-inequality",
             "gaussian-optimality-mutual-information",
             "mmse-dimension-single-crossing",
-            "timing-channel-general-queue",
         ],
         "analogous_open": [
             "quantum-entropy-power-sharp",
+            "timing-channel-general-queue",
         ],
     },
     {
@@ -658,10 +663,11 @@ SOLVED_THEOREMS = [
         "reference": "Cover & Thomas, Theorem 9.1.1 & §9.2",
         "tags": ["awgn", "gaussian-channel", "capacity", "ch9"],
         "statement": (
-            "For an additive white Gaussian noise channel $Y = X + Z$ with $Z \\sim \\mathcal{N}(0, N)$ "
-            "independent of $X$ and input power $\\mathbb{E}[X^2] \\le P$,\n"
+            "For an additive white Gaussian noise channel $Y = X + Z$ with $Z \\sim \\mathcal{N}(0, N)$ ($N > 0$) "
+            "independent of a density $X$ with finite second moment $\\mathbb{E}[X^2] \\le P$ and finite output "
+            "differential entropy,\n"
             "$$h(X + Z) - h(Z) \\le \\frac{1}{2}\\ln\\left(1 + \\frac{P}{N}\\right),$$\n"
-            "with exact equality for $X \\sim \\mathcal{N}(0, P)$ (where $X + Z \\sim \\mathcal{N}(0, P + N)$). "
+            "with exact equality for $X \\sim \\mathcal{N}(0, P)$ ($P > 0$, where $X + Z \\sim \\mathcal{N}(0, P + N)$). "
             "Across $n$ uses with average power $\\frac{1}{n}\\sum_i P_i \\le P$, Jensen concavity gives "
             "$\\frac{1}{n}\\sum_i \\frac{1}{2}\\ln(1 + P_i/N) \\le \\frac{1}{2}\\ln(1 + P/N)$."
         ),
@@ -694,10 +700,10 @@ SOLVED_THEOREMS = [
         "tags": ["awgn", "operational-capacity", "measurable-codes", "ch9"],
         "statement": (
             "Over the memoryless AWGN channel $Y_i = X_i + Z_i$ ($Z_i \\sim \\mathcal{N}(0, N)$ i.i.d., "
-            "$N > 0$) with measurable decoders, per-codeword power constraint $\\sum_{i=1}^n x_i(m)^2 \\le n P$, "
-            "and `ENNReal`-valued measure error probabilities:\n"
-            "$$0 < C_{\\mathrm{BSC}}(Q(\\sqrt{P/N})) \\le C_{\\mathrm{op}}^{\\mathrm{AWGN}}(P, N) \\le \\frac{1}{2}\\log_2\\left(1 + \\frac{P}{N}\\right)$$\n"
-            "(with the strict lower bound holding for $P > 0, N > 0$)."
+            "$P \\ge 0$, $N > 0$) with measurable decoders, per-codeword power constraint "
+            "$\\sum_{i=1}^n x_i(m)^2 \\le n P$, and `ENNReal`-valued measure error probabilities:\n"
+            "$$C_{\\mathrm{BSC}}(Q(\\sqrt{P/N})) \\le C_{\\mathrm{op}}^{\\mathrm{AWGN}}(P, N) \\le \\frac{1}{2}\\log_2\\left(1 + \\frac{P}{N}\\right),$$\n"
+            "with $0 < C_{\\mathrm{op}}^{\\mathrm{AWGN}}(P, N)$ strictly for $P > 0, N > 0$."
         ),
         "proof_notes": (
             "Proved in `Known/GaussianChannel.lean` against the junk-proof measurable-code definitions in "
@@ -778,11 +784,13 @@ SOLVED_THEOREMS = [
         "statement": (
             "For the stationary binary symmetric Markov source $\\mathrm{BSMS}(q)$ with switching "
             "probability $q \\in [0, 1]$ under block-averaged Hamming distortion:\n"
-            "- Its $(n+1)$-block entropy is $H(X^{n+1}) = 1 + n\\,h(q)$ (entropy rate $h(q)$).\n"
-            "- Its rate–distortion function $R(D) = \\inf_{n \\ge 1} R_n(D)/n$ satisfies $R(D) \\in [0, 1]$, "
-            "$R(D) = 0$ for $D \\ge 1/2$, and the **Shannon lower bound**\n"
-            "$$R(D) \\ge h(q) - h(D) \\qquad (0 \\le D \\le 1/2),$$\n"
-            "which is tight below Gray's critical distortion $D_c(q) = \\frac{1}{2}(1 - \\sqrt{1 - (q/(1-q))^2})$."
+            "- Its $(n+1)$-block entropy is $H(X^{n+1}) = 1 + n\\,h(q)$.\n"
+            "- Its rate–distortion function $R(D) = \\inf_{n \\ge 1} R_n(D)/n$ satisfies $0 \\le R(D) \\le 1$ "
+            "(for $D \\ge 0$), $R(D) = 0$ for $D \\ge 1/2$, and the **Shannon lower bound**\n"
+            "$$R(D) \\ge h(q) - h(D) \\qquad (0 \\le D \\le 1/2).$$\n"
+            "- For $0 < q < 1/2$, Gray's critical distortion $D_c(q) = \\frac{1}{2}(1 - \\sqrt{1 - (q/(1-q))^2})$ "
+            "satisfies $0 < D_c(q) < 1/2$ (classically, Gray 1970 showed the lower bound is tight on $[0, D_c(q)]$; "
+            "tightness itself is not yet formalized here)."
         ),
         "proof_notes": (
             "Proved in `Known/MarkovSource.lean` via the reversible prepend construction `bsmsBlock`, "
@@ -793,9 +801,11 @@ SOLVED_THEOREMS = [
             ("lean/InfoTheory/Known/MarkovSource.lean", "entropy_bsmsBlock"),
             ("lean/InfoTheory/Known/MarkovSource.lean", "rateDistortion_eq_zero_of_half_le"),
             ("lean/InfoTheory/Known/MarkovSource.lean", "shannon_lower_bound"),
+            ("lean/InfoTheory/Known/MarkovSource.lean", "criticalDistortion_pos"),
+            ("lean/InfoTheory/Known/MarkovSource.lean", "criticalDistortion_lt_half"),
         ],
-        "related_open": [
-            "finite-state-channel-capacity",
+        "related_open": [],
+        "analogous_open": [
             "universal-lossy-redundancy",
         ],
     },
@@ -845,11 +855,14 @@ SOLVED_THEOREMS = [
             "2. Every $x^n$ of type $P$ with $P \\ll Q$ has exact probability $Q^n(x^n) = 2^{-n(H(P) + D(P \\| Q))}$.\n"
             "3. Each type class $T(P)$ satisfies $(n+1)^{-|\\mathcal{X}|} 2^{n H(P)} \\le |T(P)| \\le 2^{n H(P)}$, "
             "and whenever $P \\ll Q$, $(n+1)^{-|\\mathcal{X}|} 2^{-n D(P \\| Q)} \\le Q^n(T(P)) \\le 2^{-n D(P \\| Q)}$.\n"
-            "4. **Sanov's Theorem (Upper, Lower, and Asymptotic Limit):** For any set $E$ of distributions with "
-            "$P \\ll Q$ and $D(P \\| Q) \\ge d$ on $E$, $Q^n(\\{x^n : \\hat P_{x^n} \\in E\\}) \\le (n+1)^{|\\mathcal{X}|} 2^{-n d}$; "
+            "4. **Sanov's Theorem (Upper, Lower, and Asymptotic Limit):** For any set $E$ of distributions such "
+            "that $D(P \\| Q) \\ge d$ whenever $P \\in E$ and $P \\ll Q$, "
+            "$Q^n(\\{x^n : \\hat P_{x^n} \\in E\\}) \\le (n+1)^{|\\mathcal{X}|} 2^{-n d}$; "
             "for any $\\ell_\\infty$-interior point $P \\in E$ with $P \\ll Q$, eventually "
             "$Q^n(\\{x^n : \\hat P_{x^n} \\in E\\}) \\ge 2^{-n(D(P \\| Q) + \\delta)}$; and when $d$ is approached "
-            "from the interior of $E$, $-\\frac{1}{n}\\log_2 Q^n(\\{x^n : \\hat P_{x^n} \\in E\\}) \\to d$."
+            "by $\\ell_\\infty$-interior points $P \\in E$ with $P \\ll Q$, "
+            "$-\\frac{1}{n}\\log_2 Q^n(\\{x^n : \\hat P_{x^n} \\in E\\}) \\to d$ (valid for arbitrary $Q$, "
+            "including distributions with zero-mass atoms)."
         ),
         "proof_notes": (
             "The lower bound on $|T(P)|$ uses exact multinomial counting $|T(P)| \\prod_a N(a|x)! = n!$ "
@@ -1040,12 +1053,13 @@ SOLVED_THEOREMS = [
         "reference": "El Gamal & Kim, Ch. 5, 6, 16, 17",
         "tags": ["operational-definitions", "broadcast-channel", "interference-channel", "relay-channel", "mac"],
         "statement": (
-            "The multi-user operational capacity definitions in `InfoTheory.Core.Channels` recover the "
-            "exact textbook single-user reductions in every degenerate regime:\n"
+            "For channels with nonempty input alphabets, the multi-user operational capacity definitions in "
+            "`InfoTheory.Core.Channels` recover the exact textbook single-user reductions in every degenerate regime:\n"
             "- **Broadcast channel** with a one-symbol receiver $Y_2$: $\\mathcal{C}_{\\mathrm{BC}}(W) = [0, C_1] \\times \\{0\\}$.\n"
             "- **Interference channel** without interference ($W_1 \\otimes W_2$): $\\mathcal{C}_{\\mathrm{IC}}(W_1 \\otimes W_2) = [0, C(W_1)] \\times [0, C(W_2)]$.\n"
-            "- **Useless relay** (output independent of $X_r$): $C_{\\mathrm{relay}} = C_{\\mathrm{cutset}} = C(p(y|x))$.\n"
-            "- **MAC with feedback** and a silent user: $[0, C(V)] \\times \\{0\\} \\subseteq \\mathcal{C}_{\\mathrm{FB}} \\subseteq [0, \\infty) \\times \\{0\\}$."
+            "- **Relay ignoring $X_r$** (and useless relay): $C_{\\mathrm{relay}} = C_{\\mathrm{cutset}} = C(p(y|x))$.\n"
+            "- **MAC with feedback** and a silent user: $[0, C(V)] \\times \\{0\\} \\subseteq \\mathcal{C}_{\\mathrm{FB}} \\subseteq [0, \\infty) \\times \\{0\\}$ "
+            "(with the matching $R_1 \\le C(V)$ converse now also proved in `Bridge/FeedbackConverse.lean`)."
         ),
         "proof_notes": (
             "Proved in `Known/Operational.lean` by reducing each multi-user error expression directly to "
@@ -1055,8 +1069,9 @@ SOLVED_THEOREMS = [
         "lean_decls": [
             ("lean/InfoTheory/Known/Operational.lean", "bcCapacityRegion_eq_of_unique"),
             ("lean/InfoTheory/Known/Operational.lean", "icCapacityRegion_icProduct"),
-            ("lean/InfoTheory/Known/Operational.lean", "relayCapacity_useless"),
+            ("lean/InfoTheory/Known/Operational.lean", "relayCapacity_relayIgnoringInput"),
             ("lean/InfoTheory/Known/Operational.lean", "relayCutsetBound_relayIgnoringInput"),
+            ("lean/InfoTheory/Known/Operational.lean", "Icc_prod_zero_subset_macFeedbackCapacityRegion"),
             ("lean/InfoTheory/Known/Operational.lean", "macFeedbackCapacityRegion_macIgnoringSecond_subset"),
         ],
         "related_open": [
@@ -1075,9 +1090,8 @@ SOLVED_THEOREMS = [
         "reference": "Cover & Thomas, Theorem 15.10.1; El Gamal & Kim, Theorem 16.1",
         "tags": ["relay-channel", "cutset-bound", "network-it", "converse", "ch15"],
         "statement": (
-            "For any discrete memoryless relay channel $W(y, y_r \\mid x, x_r)$ with nonempty input "
-            "alphabets, the operational relay capacity with strictly causal relaying obeys the single-letter "
-            "cut-set upper bound:\n"
+            "For any discrete memoryless relay channel $W(y, y_r \\mid x, x_r)$, the operational relay "
+            "capacity with strictly causal relaying obeys the single-letter cut-set upper bound:\n"
             "$$C_{\\mathrm{relay}}(W) \\le \\sup_{P(x, x_r)} \\min\\!\\big\\{ I(X; Y, Y_r \\mid X_r),\\; I(X, X_r; Y) \\big\\}.$$"
         ),
         "proof_notes": (
@@ -1171,6 +1185,7 @@ SOLVED_THEOREMS = [
         ),
         "lean_decls": [
             ("lean/InfoTheory/Bridge/WynerZiv.lean", "markov_lemma"),
+            ("lean/InfoTheory/Bridge/WynerZiv.lean", "markov_lemma_of_channel"),
             ("lean/InfoTheory/Bridge/WynerZiv.lean", "wynerZivRateDistortion_convex"),
             ("lean/InfoTheory/Bridge/WynerZiv.lean", "wynerZiv_converse"),
             ("lean/InfoTheory/Bridge/WynerZiv.lean", "wynerZiv_achievability"),
@@ -1255,7 +1270,6 @@ SOLVED_THEOREMS = [
             "linear-network-coding-gap",
             "index-coding-linear-nonlinear-gap",
             "index-coding-single-letter",
-            "li-medard-conjecture",
             "undirected-network-coding-li-li",
             "secret-sharing-optimal-info-ratio",
         ],
@@ -1271,7 +1285,7 @@ SOLVED_THEOREMS = [
         "reference": "Lovász (1979), On the Shannon Capacity of a Graph, IEEE Trans. IT",
         "tags": ["lovasz-theta", "shannon-capacity", "c5", "zero-error"],
         "statement": (
-            "For every finite simple graph $G$, the Shannon zero-error capacity $\\Theta(G)$ is bounded "
+            "For every nonempty finite simple graph $G$, the Shannon zero-error capacity $\\Theta(G)$ is bounded "
             "by the Lovász theta number:\n"
             "$$\\alpha(G) \\le \\Theta(G) \\le \\vartheta(G).$$\n"
             "For the 5-cycle $C_5$, the umbrella orthonormal representation in $\\mathbb{R}^3$ gives "
@@ -1310,7 +1324,7 @@ SOLVED_THEOREMS = [
             "Machine-checked classical brackets on flagship open zero-error quantities:\n"
             "- **7-cycle:** $\\sqrt{10} \\le \\Theta(C_7) \\le \\vartheta(C_7) \\le \\frac{7\\cos(\\pi/7)}{1 + \\cos(\\pi/7)} < \\frac{7}{2}$.\n"
             "- **Trifferent codes:** Elias's bound $|C| \\le 2(3/2)^n$ gives $C_{\\mathrm{trif}} \\le \\log_2(3/2)$.\n"
-            "- **Binary adder MAC:** $1 + \\frac{1}{2}\\log_2 3 \\le C_{\\mathrm{sum}}^{\\mathrm{ZEMAC}} \\le \\log_2 3$."
+            "- **Binary adder MAC:** $\\frac{1 + \\log_2 3}{2} \\le C_{\\mathrm{sum}}^{\\mathrm{ZEMAC}} \\le \\log_2 3$."
         ),
         "proof_notes": (
             "Proved in `Known/ZeroError.lean` and `Known/Certificates/{ShannonCapacityC7,"
@@ -1320,6 +1334,8 @@ SOLVED_THEOREMS = [
         "lean_decls": [
             ("lean/InfoTheory/Known/Certificates/ShannonCapacityC7.lean", "sqrt10_le_shannonCapacity_cycle7"),
             ("lean/InfoTheory/Known/Certificates/ShannonCapacityC7.lean", "lovaszTheta_cycle7_le"),
+            ("lean/InfoTheory/Known/Certificates/ListDecodingZeroErrorCapacity.lean", "card_le_of_isTrifferentCode"),
+            ("lean/InfoTheory/Known/Certificates/ListDecodingZeroErrorCapacity.lean", "zeroErrorList2Cap32_le"),
             ("lean/InfoTheory/Known/ZeroError.lean", "one_add_log2_three_div_two_le_zeroErrorAdderMACSumCapacity"),
             ("lean/InfoTheory/Known/ZeroError.lean", "zeroErrorAdderMACSumCapacity_le_log2_three"),
         ],

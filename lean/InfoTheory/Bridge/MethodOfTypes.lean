@@ -1090,11 +1090,12 @@ theorem typeClass_prob_ge {n : ℕ} (hn : 0 < n) {P : ProbDist α} (hP : P ∈ t
         mul_le_mul_of_nonneg_right (typeClass_card_ge hn hP) hpow_nonneg
 
 /-- **Sanov's Theorem (Upper Bound)** (Cover & Thomas, Theorem 11.4.1):
-    for any set of distributions `E` with `P ≪ Q` and `d ≤ D(P ‖ Q)` for all `P ∈ E`,
-    `Q^n({x | P_x ∈ E}) ≤ (n + 1)^{|α|} * 2^{-n d}`. -/
+    for any set of distributions `E` such that `d ≤ D(P ‖ Q)` for every `P ∈ E` with `P ≪ Q`,
+    `Q^n({x | P_x ∈ E}) ≤ (n + 1)^{|α|} * 2^{-n d}`.
+    (Empirical types violating `P ≪ Q` carry zero `Q^n`-probability and contribute `0`.) -/
 theorem sanov_upper_bound {n : ℕ} (hn : 0 < n) (E : Set (ProbDist α))
     [DecidablePred (· ∈ E)] (Q : ProbDist α) {d : ℝ}
-    (hac : ∀ P ∈ E, AbsCont P Q) (hd : ∀ P ∈ E, d ≤ klDivergence P Q) :
+    (hd : ∀ P ∈ E, AbsCont P Q → d ≤ klDivergence P Q) :
     ∑ x ∈ Finset.univ.filter (fun x => empiricalType hn x ∈ E), (iidDist Q n).pmf x ≤
       ((n + 1 : ℝ) ^ (Fintype.card α)) * (2 : ℝ) ^ (-((n : ℝ) * d)) := by
   classical
@@ -1120,10 +1121,29 @@ theorem sanov_upper_bound {n : ℕ} (hn : 0 < n) (E : Set (ProbDist α))
       ∑ x ∈ typeClass hn P, (iidDist Q n).pmf x ≤ (2 : ℝ) ^ (-((n : ℝ) * d)) := by
     intro P hP
     have hPE : P ∈ E := (Finset.mem_filter.mp hP).2
-    refine le_trans (typeClass_prob_le hn P Q (hac P hPE)) ?_
-    refine Real.rpow_le_rpow_of_exponent_le (by norm_num : (1 : ℝ) ≤ 2) ?_
-    have hn0 : (0 : ℝ) ≤ (n : ℝ) := Nat.cast_nonneg n
-    nlinarith [hd P hPE]
+    by_cases hacP : AbsCont P Q
+    · refine le_trans (typeClass_prob_le hn P Q hacP) ?_
+      refine Real.rpow_le_rpow_of_exponent_le (by norm_num : (1 : ℝ) ≤ 2) ?_
+      have hn0 : (0 : ℝ) ≤ (n : ℝ) := Nat.cast_nonneg n
+      nlinarith [hd P hPE hacP]
+    · have hzero : ∑ x ∈ typeClass hn P, (iidDist Q n).pmf x = 0 := by
+        unfold AbsCont at hacP
+        push Not at hacP
+        obtain ⟨a, hQa, hPa⟩ := hacP
+        refine Finset.sum_eq_zero fun x hx => ?_
+        have htx : empiricalType hn x = P := (Finset.mem_filter.mp hx).2
+        have hpmf : (empiricalType hn x).pmf a ≠ 0 := by rwa [htx]
+        have hcard_ne : (Finset.univ.filter fun i : Fin n => x i = a).card ≠ 0 := by
+          intro hc
+          apply hpmf
+          change ((Finset.univ.filter fun i : Fin n => x i = a).card : ℝ) / (n : ℝ) = 0
+          simp [hc]
+        obtain ⟨i, hi⟩ := Finset.card_pos.mp (Nat.pos_of_ne_zero hcard_ne)
+        have hxia : x i = a := (Finset.mem_filter.mp hi).2
+        unfold iidDist; dsimp only
+        exact Finset.prod_eq_zero (Finset.mem_univ i) (by rw [hxia, hQa])
+      rw [hzero]
+      exact le_of_lt (Real.rpow_pos_of_pos (by norm_num) _)
   have hcard_le : (Etypes.card : ℝ) ≤ (n + 1 : ℝ) ^ (Fintype.card α) := by
     have h1 : Etypes.card ≤ (typesSet α hn).card := Finset.card_filter_le _ _
     have h2 : Etypes.card ≤ (n + 1) ^ (Fintype.card α) := le_trans h1 (card_typesSet_le α hn)
@@ -1457,25 +1477,23 @@ private lemma log2_le_log2 {x y : ℝ} (hx : 0 < x) (hxy : x ≤ y) : log2 x ≤
   exact div_le_div_of_nonneg_right (Real.log_le_log hx hxy) (le_of_lt (Real.log_pos (by norm_num)))
 
 /-- **Sanov's Theorem (Full Asymptotic Form)** (Cover & Thomas, Theorem 11.4.1):
-    for a regular set `E` of distributions with `P ≪ Q` and `d = inf_{P ∈ E} D(P ‖ Q)`
-    (approximable from the `ℓ∞`-interior of `E`),
-    `-(1 / n) log₂ Q^n({x | P_x ∈ E}) → d` as `n → ∞`. -/
+    for a set `E` of distributions with `d ≤ D(P ‖ Q)` for every `P ∈ E` satisfying `P ≪ Q`,
+    such that `d` is approximable by `ℓ∞`-interior points `P ∈ E` with `P ≪ Q`,
+    `-(1 / n) log₂ Q^n({x | P_x ∈ E}) → d` as `n → ∞`.
+    (Valid for arbitrary `Q`, including reference distributions with zero-mass atoms.) -/
 theorem sanov_theorem (E : Set (ProbDist α)) [DecidablePred (· ∈ E)]
     (Q : ProbDist α) {d : ℝ}
-    (hac : ∀ P ∈ E, AbsCont P Q)
-    (hd_le : ∀ P ∈ E, d ≤ klDivergence P Q)
+    (hd_le : ∀ P ∈ E, AbsCont P Q → d ≤ klDivergence P Q)
     (hreg : ∀ ε > 0, ∃ P : ProbDist α,
+      AbsCont P Q ∧
       (∃ r > 0, ∀ P' : ProbDist α, (∀ a : α, |P'.pmf a - P.pmf a| < r) → P' ∈ E) ∧
       klDivergence P Q < d + ε) :
     ∀ ε > 0, ∃ N : ℕ, ∀ (n : ℕ) (hn : 0 < n), N ≤ n →
       |-(log2 (∑ x ∈ Finset.univ.filter (fun x => empiricalType hn x ∈ E),
         (iidDist Q n).pmf x)) / (n : ℝ) - d| < ε := by
   intro ε hε
-  obtain ⟨P, hP_int, hP_kl⟩ := hreg (ε / 2) (half_pos hε)
-  have hPE : P ∈ E := by
-    obtain ⟨r, hr_pos, hr⟩ := hP_int
-    exact hr P (fun a => by simpa using hr_pos)
-  obtain ⟨N₁, hN₁⟩ := sanov_lower_bound_interior E P Q (hac P hPE) hP_int (half_pos hε)
+  obtain ⟨P, hPac, hP_int, hP_kl⟩ := hreg (ε / 2) (half_pos hε)
+  obtain ⟨N₁, hN₁⟩ := sanov_lower_bound_interior E P Q hPac hP_int (half_pos hε)
   obtain ⟨N₂, hN₂⟩ := poly_le_two_rpow (Fintype.card α) (half_pos hε)
   refine ⟨max N₁ N₂, fun n hn hNn => ?_⟩
   have hn_pos : (0 : ℝ) < (n : ℝ) := Nat.cast_pos.mpr hn
@@ -1495,7 +1513,7 @@ theorem sanov_theorem (E : Set (ProbDist α)) [DecidablePred (· ∈ E)]
     linarith
   -- Upper bound on S gives lower bound on -(log2 S) / n
   have hS_le : S ≤ (2 : ℝ) ^ (-((n : ℝ) * (d - ε / 2))) := by
-    have hup := sanov_upper_bound hn E Q hac hd_le
+    have hup := sanov_upper_bound hn E Q hd_le
     have hpoly : (n + 1 : ℝ) ^ (Fintype.card α) ≤ (2 : ℝ) ^ ((n : ℝ) * (ε / 2)) :=
       hN₂ n (le_trans (le_max_right N₁ N₂) hNn)
     calc S
@@ -1519,9 +1537,9 @@ theorem sanov_theorem (E : Set (ProbDist α)) [DecidablePred (· ∈ E)]
     `-(1 / (n + 1)) log₂ Q^{n+1}({x | P_x ∈ E}) → d` along `Filter.atTop`. -/
 theorem sanov_theorem_tendsto (E : Set (ProbDist α)) [DecidablePred (· ∈ E)]
     (Q : ProbDist α) {d : ℝ}
-    (hac : ∀ P ∈ E, AbsCont P Q)
-    (hd_le : ∀ P ∈ E, d ≤ klDivergence P Q)
+    (hd_le : ∀ P ∈ E, AbsCont P Q → d ≤ klDivergence P Q)
     (hreg : ∀ ε > 0, ∃ P : ProbDist α,
+      AbsCont P Q ∧
       (∃ r > 0, ∀ P' : ProbDist α, (∀ a : α, |P'.pmf a - P.pmf a| < r) → P' ∈ E) ∧
       klDivergence P Q < d + ε) :
     Filter.Tendsto
@@ -1531,7 +1549,7 @@ theorem sanov_theorem_tendsto (E : Set (ProbDist α)) [DecidablePred (· ∈ E)]
       Filter.atTop (nhds d) := by
   rw [Metric.tendsto_atTop]
   intro ε hε
-  obtain ⟨N, hN⟩ := sanov_theorem E Q hac hd_le hreg ε hε
+  obtain ⟨N, hN⟩ := sanov_theorem E Q hd_le hreg ε hε
   refine ⟨N, fun n hn => ?_⟩
   rw [Real.dist_eq]
   exact hN (n + 1) (Nat.succ_pos n) (Nat.le_succ_of_le hn)

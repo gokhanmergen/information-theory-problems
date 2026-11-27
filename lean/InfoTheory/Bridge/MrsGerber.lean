@@ -1599,7 +1599,7 @@ theorem degradedBSC_mutualInfo_U_Y2_le {U : Type*} [Fintype U]
     for any `0 ≤ p₁ ≤ p₂ ≤ 1/2`, finite auxiliary `U`, and input distribution `P_XU` forming
     `U — X — Y₁ — Y₂` across `degradedBSC p₁ p₂`, there exists `α ∈ [0, 1/2]` such that
     `I(U; Y₂) ≤ 1 - h(α ★ p₂)` and `I(X; Y₁ | U) ≤ h(α ★ p₁) - h(p₁)`
-    (with `I(X; Y₁ | U) = h(α ★ p₁) - h(p₁)` at the witness `α` whenever `p₁ < 1/2`). -/
+    (constructed from `α = (h⁻¹(H(Y₁ | U)) - p₁) / (1 - 2 p₁)` when `p₁ < 1/2`). -/
 theorem degradedBSC_bergmans_outer_bound {U : Type*} [Fintype U]
     (P_XU : ProbDist (Bool × U)) {p₁ p₂ : ℝ} (hp₁ : 0 ≤ p₁) (h12 : p₁ ≤ p₂) (hp₂ : p₂ ≤ 1 / 2) :
     let J : ProbDist ((Bool × U) × (Bool × Bool)) :=

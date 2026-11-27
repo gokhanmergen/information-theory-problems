@@ -1195,15 +1195,62 @@ theorem isRelayAchievable_le_cutsetBound (W : RelayChannel X Xr Y Yr) {R : ℝ}
     linarith
 
 /-- **Operational Relay Channel Cut-Set Bound** (Cover & Thomas Theorem 15.10.1;
-    El Gamal–Kim Theorem 16.1): for any discrete memoryless relay channel `W` with nonempty
-    input alphabets, the operational capacity is bounded above by the cut-set bound:
-    `C(W) ≤ max_{p(x, x_r)} min{ I(X; Y, Y_r | X_r), I(X, X_r; Y) }`. -/
-theorem relayCapacity_le_cutsetBound [Nonempty X] [Nonempty Xr]
+    El Gamal–Kim Theorem 16.1): for any discrete memoryless relay channel `W`, the operational
+    capacity is bounded above by the cut-set bound:
+    `C(W) ≤ sup_{p(x, x_r)} min{ I(X; Y, Y_r | X_r), I(X, X_r; Y) }`.
+    (Holds unconditionally, including empty input alphabets where both sides equal `0`.) -/
+theorem relayCapacity_le_cutsetBound
     (W : RelayChannel X Xr Y Yr) :
     relayCapacity W ≤ relayCutsetBound W := by
-  unfold relayCapacity
-  exact Real.sSup_le (fun R hR => isRelayAchievable_le_cutsetBound W hR)
-    (relayCutsetBound_nonneg W)
+  by_cases hX : Nonempty X
+  · by_cases hXr : Nonempty Xr
+    · unfold relayCapacity
+      exact Real.sSup_le (fun R hR => isRelayAchievable_le_cutsetBound W hR)
+        (relayCutsetBound_nonneg W)
+    · have hemp₁ : { R : ℝ | IsRelayAchievable W R } = ∅ := by
+        ext R
+        simp only [Set.mem_setOf_eq, Set.mem_empty_iff_false, iff_false]
+        intro hR
+        obtain ⟨N, hN⟩ := hR.2 1 one_pos
+        obtain ⟨_, relay, _, _⟩ := hN (max N 1) (le_max_left _ _)
+        exact hXr ⟨relay ⟨0, lt_of_lt_of_le Nat.zero_lt_one (le_max_right _ _)⟩
+          (fun j => (Nat.not_lt_zero _ j.2).elim)⟩
+      have hemp₂ : { r : ℝ | ∃ P : ProbDist (X × Xr),
+          let J := W.joint P
+          let I_X_YYr_given_Xr := condMutualInfo (J.map (fun z => (z.1.1, z.2, z.1.2)))
+          let I_XXr_Y := mutualInfo (J.map (fun z => (z.1, z.2.1)))
+          r = min I_X_YYr_given_Xr I_XXr_Y } = ∅ := by
+        ext r
+        simp only [Set.mem_setOf_eq, Set.mem_empty_iff_false, iff_false]
+        rintro ⟨P, _⟩
+        have h1 := P.sum_one
+        have h0 : ∑ z : X × Xr, P.pmf z = 0 :=
+          Finset.sum_eq_zero fun z _ => (hXr ⟨z.2⟩).elim
+        linarith
+      unfold relayCapacity relayCutsetBound
+      rw [hemp₁, hemp₂, Real.sSup_empty]
+  · have hemp₁ : { R : ℝ | IsRelayAchievable W R } = ∅ := by
+      ext R
+      simp only [Set.mem_setOf_eq, Set.mem_empty_iff_false, iff_false]
+      intro hR
+      obtain ⟨N, hN⟩ := hR.2 1 one_pos
+      obtain ⟨enc, _, _, _⟩ := hN (max N 1) (le_max_left _ _)
+      exact hX ⟨enc ⟨0, lt_of_lt_of_le Nat.zero_lt_one (le_max_left _ _)⟩
+        ⟨0, lt_of_lt_of_le Nat.zero_lt_one (le_max_right _ _)⟩⟩
+    have hemp₂ : { r : ℝ | ∃ P : ProbDist (X × Xr),
+        let J := W.joint P
+        let I_X_YYr_given_Xr := condMutualInfo (J.map (fun z => (z.1.1, z.2, z.1.2)))
+        let I_XXr_Y := mutualInfo (J.map (fun z => (z.1, z.2.1)))
+        r = min I_X_YYr_given_Xr I_XXr_Y } = ∅ := by
+      ext r
+      simp only [Set.mem_setOf_eq, Set.mem_empty_iff_false, iff_false]
+      rintro ⟨P, _⟩
+      have h1 := P.sum_one
+      have h0 : ∑ z : X × Xr, P.pmf z = 0 :=
+        Finset.sum_eq_zero fun z _ => (hX ⟨z.1⟩).elim
+      linarith
+    unfold relayCapacity relayCutsetBound
+    rw [hemp₁, hemp₂, Real.sSup_empty]
 
 end OperationalConverse
 
