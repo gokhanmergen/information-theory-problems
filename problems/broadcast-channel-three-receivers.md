@@ -66,6 +66,20 @@ making the three-receiver broadcast channel substantially harder than the two-re
   above; further extensions incorporating pairwise common clouds $(W_{12}, W_{13}, W_{23})$
   and indirect decoding have been studied by Nair–Wang (2011) and Gohari–Nair (2022), yet
   no matching converse is known.
+- **Catalog error (found 2026-11-26).** The region displayed above, and the frozen Lean region
+  `marton3InnerBound`, are *strictly* smaller than capacity for an explicit channel. Take the
+  degraded two-receiver channel of Gohari–El Gamal–Anantharam (X→Y₁ BSC(0.3), Y₁→Y₂ a
+  Z-channel; arXiv:1006.5166, Claim 1) and add a constant third output. Both regions then
+  collapse to Marton's region *without a superposition variable* for (Y₁, Y₂). In the Lean
+  region, the pairwise cloud W₁₂ is charged its full entropy in the covering constraint
+  I(V₁;V₂|W₀). That region is certifiably suboptimal here:
+  sup(R₁ + 2.35 R₂) ≤ 0.12131588 < 0.12131597 ≤ R₁* + 2.35 R₂*, where (R₁*, R₂*) is a
+  superposition-coding rate pair. See
+  `attempts/broadcast-channel-three-receivers/2026-11-26-claude-opus-5-5-useless-receiver-catalog-error.md`.
+  That attempt proposes a corrected statement based on the Padakandla–Pradhan "UM region",
+  which has public, semi-private and private layers. Padakandla–Pradhan (arXiv:1207.3146)
+  prove that the UM region is itself strictly suboptimal (coset codes do better) for some
+  3-receiver BCs *with input cost constraints*.
 
 ## References
 
@@ -80,3 +94,8 @@ making the three-receiver broadcast channel substantially harder than the two-re
   approach," *IEEE Trans. Inf. Theory*, vol. 68, no. 2, pp. 701–736, 2022.
 - A. El Gamal and Y.-H. Kim, *Network Information Theory*, Cambridge Univ. Press, 2011,
   Ch. 8.
+- A. Gohari, A. El Gamal, and V. Anantharam, "On Marton's inner bound for the general
+  broadcast channel," *IEEE Trans. Inf. Theory*, vol. 60, no. 7, 2014 (arXiv:1006.5166).
+- A. Padakandla and S. S. Pradhan, "Achievable rate region for three user discrete broadcast
+  channel based on coset codes," arXiv:1207.3146v6, 2015 (conference version: Proc. IEEE ISIT
+  2013).
