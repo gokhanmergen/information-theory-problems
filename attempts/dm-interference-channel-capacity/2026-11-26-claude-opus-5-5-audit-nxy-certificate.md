@@ -4,7 +4,7 @@ date: 2026-11-26
 attempter: claude
 model: claude-opus-5-5
 type: new-bound
-status: unverified
+status: verified
 ---
 
 ## Summary
@@ -24,7 +24,9 @@ gap `R_HK^(1)(W) ⊊ R_HK^(2)(W) ⊆ C(W)` on their binary CZI channel. Their pr
 unstated "tedious exercise". We certify `max_{R_HK^(1)}(2R1+R2) ≤ 1.1080300 < 1.1080356 ≤
 max_{R_HK^(2)}(2R1+R2)`. We then found a simple explicit **3-letter** scheme: `X1` a
 repetition code, `X2^3` never `000`. It gives `2R1+R2 = 1.1102046` in `HK^(3)`, which widens
-the certified separation `HK^(1) ⊊ HK^(3) ⊆ C` about 400-fold, to `2.2·10⁻³`. Numerical
+the certified separation `HK^(1) ⊊ HK^(3) ⊆ C` about 400-fold, to `2.2·10⁻³` (reviewer: the
+400-fold factor comes from stopping the certificate at 1.10803, just below the two-letter value. Against
+the reviewer's certified bound `≤ 1.1078`, the margins are `2.4·10⁻³` vs `2.4·10⁻⁴`, about 10-fold). Numerical
 `k`-letter TIN values for `k ≤ 6` (1.10752, 1.10814, 1.11020, …) and an elementary
 single-letter outer bound (1.2290) bracket `max_C(2R1+R2)`. Whether the hierarchy stabilises
 remains open.
@@ -67,7 +69,9 @@ Notation: `HK^(k)(W) := hanKobayashiKLetterRegion k W = cl{ r : k·r ∈ R_HK(W^
    `max_{(R1,R2) ∈ HK^(1)(W)} (2R1+R2) ≤ 1.1080300`, while the NXY two-letter TIN point gives
    `2R1+R2 = 1.1080356322…` in `HK^(2)(W)`. Hence `HK^(1)(W) ⊊ HK^(2)(W) ⊆ C(W)`, so
    `HK^(1)(W) ≠ C(W)`. The certificate uses interval branch-and-bound with outward rounding;
-   code is in `code/certify_hk1_bound.py`.
+   code is in `code/certify_hk1_bound.py`. (Reviewer: the bound and `HK^(1) ⊊ HK^(2)` need only
+   Claims 2 and 6 plus the computation. The step `HK^(2) ⊆ C`, and with it `HK^(1) ≠ C`, rests on
+   Claim 3, which is a `[sketch]`; NXY Prop. 3 asserts the same.)
 8. **[proved]** (Elementary outer bound in the NXY direction.) For every CZI channel (`Y2 = X2`),
    `max_C(2R1+R2) ≤ max_{p1⊗p2}[I(X1X2;Y1) + H(X2|Y1,X1) + I(X1;Y1|X2)]`. For the NXY channel
    this is `≈ 1.229039` at `(p,q) ≈ (0.4298, 0.4115)` (numerical maximisation of an explicit
@@ -77,6 +81,9 @@ Notation: `HK^(k)(W) := hanKobayashiKLetterRegion k W = cl{ r : k·r ∈ R_HK(W^
    `V_1 ≈ 1.1075163` (equal to the numerical `HK^(1)` maximum, since `U2 = const` is optimal
    here, as NXY observed), `V_2 ≥ 1.1081413` (reproduces NXY Table 1's `R_two` value
    `1.108141`), `V_3 ≥ 1.1102045`, `V_4 ≥ 1.1095325`, `V_5 ≥ 1.1093792`, `V_6 ≥ 1.1102045`.
+   (Reviewer: the `V_4` and `V_5` figures are the concatenation values `(3V_3+V_1)/4` and
+   `(3V_3+2V_2)/5`, not optimiser output. The run log reaches only `1.1095319` and `1.1093789`. Both
+   are valid lower bounds, since a Kronecker product of the optima attains the concatenation value.)
    For `k = 4, 5, 6` the optimiser recovered only concatenations of the `k = 3` and
    `k = 1, 2` optima (`(3V_3+V_1)/4`, `(3V_3+2V_2)/5`, `V_3`). Every number is attained by an
    explicit distribution, so it is a valid lower bound. Because `k·V_k` is superadditive,
@@ -88,7 +95,8 @@ Notation: `HK^(k)(W) := hanKobayashiKLetterRegion k W = cl{ r : k·r ∈ R_HK(W^
    arithmetic, `R1 = 0.0878251069`, `R2 = 0.9345543681`, `2R1+R2 = 1.11020458194`. With Claim 7,
    `max_{HK^(1)}(2R1+R2) ≤ 1.1080300 < 1.1102045 ≤ max_{HK^(3)}(2R1+R2)`, so
    `HK^(1)(W) ⊊ HK^(3)(W)` with margin `2.17·10⁻³`, against `5.6·10⁻⁶` for NXY's
-   two-letter point. Intuition: `X2 = 0` erases `Y1`, so `X2^3` avoids the all-zero word and
+   two-letter point (reviewer: the `5.6·10⁻⁶` is an artifact of the 1.10803 stopping target. With
+   the reviewer's certified `≤ 1.1078`, the two-letter margin is `2.4·10⁻⁴`). Intuition: `X2 = 0` erases `Y1`, so `X2^3` avoids the all-zero word and
    each block keeps at least one Z-channel use for the repeated `X1` symbol. This is a block
    version of NXY's §2.2 "Markov `X2`" intuition.
 
@@ -278,7 +286,92 @@ a rigorous lower bound.
 * Claim 7's branch-and-bound was run as described. Its soundness rests on `mpmath.iv` outward
   rounding and on the monotone-piece enclosures of `h` and `φ` (`h` increases on `[0,1/2]`;
   `φ` increases on `[0,1/e]`, with the code's split thresholds `0.3678 < 1/e < 0.3679`).
-* Not independently reviewed.
+* Not independently reviewed by the author (see the reviewer note below).
+
+### Reviewer note (claude-opus-5-5, independent review, 2026-11-27)
+
+Scripts are in the reviewer's scratch folder, not the repo. Each was written from scratch and imports
+none of the author's code.
+
+* **Primary source.** I read arXiv:1502.02589v1 in full (pdftotext).
+  - The channel in `czi_common.py` is Table 1 row 1 (`P(Y1=0|x1,x2)`: `(0,0)→1, (0,1)→½,
+    (1,0)→1, (1,1)→0`, matching Fig. 3).
+  - `f` is eq. (13), and `f_qq` is eq. (15).
+  - NXY's numbers are `max_Rhk = 1.107516` and `max_Rtwo = 1.108141` (Table 1), the non-rigorous
+    bound `1.107577` (eq. 18), and the explicit two-letter point `1.1080356`. The attempt quotes
+    all of them correctly.
+  - NXY leave two steps unproved. Lemma 2's "one can verify `q̂ = 1−2p`" and the "tedious
+    exercise" that the envelope of `F` is supported at `(p0,q0)`. The attempt's B&B needs neither.
+* **Claim 6** (sympy, `sym_check.py`, `tangency_table.py`).
+  - `f` and `g` derived symbolically from the channel equal the closed forms exactly.
+  - `f_qq` minus the claimed formula simplifies to 0.
+  - The tangency residual reduces to 0 by hand after `log((1−p)²) = 2log(1−p)`. It is `≤ 1e-50`
+    numerically at 5 values of `p`.
+  - All 5 rows of the coefficient table agree on both sides.
+  - `σ(p) = f_q(p,1−2p)` holds, and `q̂ − q* = 2(1−p)(1−2p)/(3−2p) ≥ 0`.
+  - The majorant/concavity argument for `E` is correct.
+* **Reduction in Claim 7.** Checked against the Lean `hanKobayashiRegion`. `a1` and the third
+  constraint `b1+c2` give `2R1+R2 ≤ a1+b1+c2`, with `c2 = H(X2|U2,Q)` because `U1 ⊥ (U2,X2) | Q`
+  in `J`. The chain rule gives `g + Σ p(u2|q) f`, and concavity of `E` finishes. No cardinality
+  bound is needed (any finite `kU2`, `kQ`), and the closure is harmless.
+* **Interval code in Claim 7.**
+  - I read `certify_hk1_bound.py` and probed the `mpmath.iv` semantics (`iv_semantics.py`).
+  - `.a`/`.b` return degenerate intervals, and `iv.mpf([A.a,B.b])` encloses correctly.
+  - An undecidable comparison returns `None`, which falls through to the conservative branch.
+  - `1−x` is exact for the dyadic box ends and an outward interval otherwise.
+  - The monotone pieces are right: `h` on `[0,½]`, and `φ` with `0.3678 < 1/e < 0.3679`.
+  - The boxes cover `[0,1]²`, and the stop rule (max upper bound `< TARGET`) is correct. No float leak found.
+* **Independent B&B** (`indep_bnb.py`, `mpmath.iv` at 20 digits). It uses the exact piecewise `g+E`
+  instead of the tangent line on all of `p ≤ ½`.
+  - `python indep_bnb.py 1.10803`: `CERTIFIED ... <= 1.10802997885819218768 < 1.10803; splits
+    54945`. This is the same bound as the author's, as expected: the binding boxes have `p > ½`,
+    where both codes use the same formula and the same bisection.
+  - `python indep_bnb.py 1.1078`: `CERTIFIED ... <= 1.10779999832167 < 1.1078; splits 98434`.
+    So `max_{HK^(1)}(2R1+R2) ≤ 1.1078` holds, which is stronger than Claim 7.
+* **Claim 10, and NXY's two-letter point** (`indep_eval.py`, 60 digits).
+  - The evaluator builds `W^{⊗k}` with `Y2 = X2` and evaluates all eight Lean quantities `a1…d2`
+    for `kQ = kU1 = kU2 = 1`. All 7 constraints hold at `k·(R1,R2)`.
+  - 3-letter scheme: `R1 = 0.0878251069048244`, `R2 = 0.934554368130239`,
+    `2R1+R2 = 1.11020458193988723`.
+  - NXY two-letter point: `1.10803563221621534`.
+  - Bit-flipped convention check: `1.0286`. So the "never `000`" orientation matters and is the
+    right one.
+  - Interval enclosure (`iv_k3_and_outer.py`, 40 digits):
+    an interval of width `1.4·10⁻³⁹` about `1.11020458193988723482`. Claim 10 is therefore rigorous.
+  - Under the Lean definition the point lies in `{r : 3r ∈ R_HK(icPower W 3)} ⊆ HK^(3)`.
+    `HK^(1) ⊆ HK^(3)` is Claim 2.
+* **Claim 8.** The derivation checks. I reproduced the value `1.2290392` at `(0.42983, 0.41146)`
+  numerically (not certified, as the claim says).
+* **Claims 1, 2 and 4** (read and re-derived against `Core/Channels.lean: icCapacityRegion`). The
+  convexity argument also needs a common `kU_j = max`, which is a trivial embedding. The Fano step
+  is fine with the Lean definition `M_j = max 1 ⌊2^{nR_j}⌋` for all `n ≥ N`.
+* **Claim 5.**
+  - The empty-alphabet, silent-user and product cases are checked against Lean.
+    `icCapacityRegion_icProduct` and `icCapacityRegion_isClosed` exist.
+  - The strong-interference reduction to Costa–El Gamal is re-derived.
+  - The El Gamal–Costa item is taken on citation.
+* **Corrections made in place.**
+  - The "400-fold" factor (Summary, Claim 10) is an artifact of the stopping target. It is about
+    10-fold against the certified `1.1078`.
+  - The `V_4` and `V_5` values in Claim 9 are concatenation values, not optimiser output.
+  - Claim 7's `⊆ C` step uses Claim 3 (`[sketch]`).
+  - None of these changes a conclusion.
+  - In the problem file, "No result is known on whether the k-letter HK hierarchy stabilises"
+    became "We found no result …". The other sentences of that edit check out against NXY,
+    Telatar–Tse (abstract), Nair–Ng (abstract) and the repo's BS-ZIC file.
+* **Novelty of the 3-letter scheme.** I searched the web (the queries "three-letter/multi-letter
+  Han–Kobayashi clean Z", NXY follow-ups, Gohari–Nair, Anantharam–Gohari–Nair) and read the
+  NXY paper, the Huleihel–Merhav CCIT report #886 (Gaussian, codewords with memory) and the
+  D. Ng CUHK thesis (2021, Gaussian multi-letter HK; it cites only NXY's two-letter result).
+  None of these has a `k ≥ 3` scheme for the NXY channel. The scheme realises NXY §2.2's
+  "Markov `X2`" suggestion in block form. I cannot exclude unpublished or thesis work (Xia,
+  Yazdanpanah) that I could not find.
+* **Status → `verified`.** Every `[proved]` claim was checked (6, 7, 8 and 10 by independent
+  computation; 1, 2 and 4 by re-derivation; 5 modulo its cited theorems). Claim 3 stays a
+  `[sketch]`.
+* **Not checked.** Claim 3 in detail. The El Gamal–Costa achievability. The `k = 4,5,6`
+  optimiser runs (not re-run). The commit message's phrase "the paper states the gap without
+  proof" overstates slightly: NXY give the argument with one step omitted.
 
 ## Dead ends
 

@@ -87,7 +87,7 @@ exists at all — must go beyond Han–Kobayashi rate splitting.
   (product distributions), and by Fano's inequality (with $U_1, U_2, Q$ constant)
   $\overline{\bigcup_k \mathcal{R}_{\mathrm{HK}}^{(k)}} = \mathcal{C}$. For the Gaussian IC,
   Nair–Ng (2019) proved that the $k$-letter HK region with temporally correlated Gaussian
-  inputs equals the single-letter Gaussian-input HK region for every $k$. No result is known
+  inputs equals the single-letter Gaussian-input HK region for every $k$. We found no result
   on whether the $k$-letter HK hierarchy stabilises at a finite $k$ for every DM-IC. That is
   exactly the frozen question.
 - **Outer bounds**: for DM-ICs, Sato (1977), Carleial (1983), Telatar–Tse (2007), and
