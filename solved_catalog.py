@@ -566,6 +566,44 @@ SOLVED_THEOREMS = [
             "awgn-feedback-error-exponent",
         ],
     },
+    {
+        "id": "feedback-does-not-increase-dmc-capacity",
+        "title": "Feedback Does Not Increase the Capacity of a Discrete Memoryless Channel",
+        "category": "ch7-channel",
+        "authors": "Claude E. Shannon",
+        "year": "1956",
+        "reference": "Cover & Thomas, Theorem 7.12.1; El Gamal & Kim, §3.1.2",
+        "tags": ["feedback", "dmc", "capacity", "converse", "ch7"],
+        "statement": (
+            "For every discrete memoryless channel $W : \\mathcal{X} \\to \\mathcal{Y}$ with noiseless "
+            "causal output feedback (where the $i$-th transmitted symbol $X_i(M, Y^{i-1})$ may depend "
+            "adaptively on all past outputs), every $(n, M)$ feedback code satisfies "
+            "$I(M; Y^n) \\le n C(W)$, and the operational feedback capacity equals the non-feedback capacity:\n"
+            "$$C_{\\mathrm{FB}}(W) = C(W).$$\n"
+            "As a multi-user corollary, over any DM-MAC with feedback whose output ignores user 2 "
+            "($W(y \\mid x_1, x_2) = V(y \\mid x_1)$), every achievable pair satisfies $R_1 \\le C(V)$."
+        ),
+        "proof_notes": (
+            "Proves causal product normalization (`feedbackCausalProd_sum_one`), inducts on blocklength "
+            "$n$ peeling off the last channel use to prove `dmcFeedback_mutualInfo_le_mul_capacity`, "
+            "combines with sharp Fano's inequality (`dmcFeedback_weak_converse`), wraps "
+            "`shannon_channel_coding_achievability` for the achievability direction, and extracts "
+            "the silent-user MAC-with-feedback converse `isMACFeedbackAchievable_le_capacity_of_ignores_second`."
+        ),
+        "lean_decls": [
+            ("lean/InfoTheory/Bridge/FeedbackConverse.lean", "dmcFeedback_mutualInfo_le_mul_capacity"),
+            ("lean/InfoTheory/Bridge/FeedbackConverse.lean", "dmcFeedback_weak_converse"),
+            ("lean/InfoTheory/Bridge/FeedbackConverse.lean", "dmc_feedback_converse"),
+            ("lean/InfoTheory/Bridge/FeedbackConverse.lean", "dmc_feedback_capacity_theorem"),
+            ("lean/InfoTheory/Bridge/FeedbackConverse.lean", "macFeedbackCapacityRegion_fst_le_of_ignores_second"),
+        ],
+        "related_open": [
+            "mac-with-feedback",
+            "wiretap-with-feedback-capacity",
+            "zero-error-feedback-variable-length",
+            "timing-channel-general-queue",
+        ],
+    },
 
     # ------------------------------------------------------------------ Ch. 8–9
     {
@@ -646,6 +684,41 @@ SOLVED_THEOREMS = [
             "awgn-feedback-error-exponent",
         ],
     },
+    {
+        "id": "awgn-operational-converse",
+        "title": "AWGN Channel Operational Converse and BPSK Positive-Rate Achievability",
+        "category": "ch8-9-gaussian",
+        "authors": "Claude E. Shannon",
+        "year": "1948",
+        "reference": "Cover & Thomas, §9.1; El Gamal & Kim, §3.3",
+        "tags": ["awgn", "operational-capacity", "measurable-codes", "ch9"],
+        "statement": (
+            "Over the memoryless AWGN channel $Y_i = X_i + Z_i$ ($Z_i \\sim \\mathcal{N}(0, N)$ i.i.d., "
+            "$N > 0$) with measurable decoders, per-codeword power constraint $\\sum_{i=1}^n x_i(m)^2 \\le n P$, "
+            "and `ENNReal`-valued measure error probabilities:\n"
+            "$$0 < C_{\\mathrm{BSC}}(Q(\\sqrt{P/N})) \\le C_{\\mathrm{op}}^{\\mathrm{AWGN}}(P, N) \\le \\frac{1}{2}\\log_2\\left(1 + \\frac{P}{N}\\right)$$\n"
+            "(with the strict lower bound holding for $P > 0, N > 0$)."
+        ),
+        "proof_notes": (
+            "Proved in `Known/GaussianChannel.lean` against the junk-proof measurable-code definitions in "
+            "`Core/GaussianOperational.lean`: proves non-measurable decoders are excluded, verifies the "
+            "achievable-rate set is nonempty and bounded above, proves the operational converse via exact "
+            "Gaussian likelihood-ratio change of measure against $\\mathcal{N}(0, (P+N)I_n)$, and proves "
+            "positive operational capacity via BPSK + hard decisions reducing to `bsc_capacity` and "
+            "`shannon_channel_coding_achievability`."
+        ),
+        "lean_decls": [
+            ("lean/InfoTheory/Known/GaussianChannel.lean", "awgn_code_converse"),
+            ("lean/InfoTheory/Known/GaussianChannel.lean", "awgnOperationalCapacity_le"),
+            ("lean/InfoTheory/Known/GaussianChannel.lean", "bsc_rate_le_awgnOperationalCapacity"),
+            ("lean/InfoTheory/Known/GaussianChannel.lean", "awgnOperationalCapacity_pos"),
+        ],
+        "related_open": [
+            "gaussian-interference-channel",
+            "gaussian-relay-channel-capacity",
+            "awgn-feedback-error-exponent",
+        ],
+    },
 
     # ------------------------------------------------------------------ Ch. 10
     {
@@ -691,6 +764,38 @@ SOLVED_THEOREMS = [
             "gray-wyner-lossy",
             "cascade-rate-distortion-side-info",
             "non-asymptotic-lossy-dispersion",
+            "universal-lossy-redundancy",
+        ],
+    },
+    {
+        "id": "markov-source-shannon-lower-bound",
+        "title": "Binary Symmetric Markov Source Entropy Rate & Shannon Lower Bound",
+        "category": "ch10-rate-distortion",
+        "authors": "Robert M. Gray; Toby Berger",
+        "year": "1970",
+        "reference": "Gray (1970/1971); Berger (1971), §4.3",
+        "tags": ["markov-source", "shannon-lower-bound", "rate-distortion", "ch10"],
+        "statement": (
+            "For the stationary binary symmetric Markov source $\\mathrm{BSMS}(q)$ with switching "
+            "probability $q \\in [0, 1]$ under block-averaged Hamming distortion:\n"
+            "- Its $(n+1)$-block entropy is $H(X^{n+1}) = 1 + n\\,h(q)$ (entropy rate $h(q)$).\n"
+            "- Its rate–distortion function $R(D) = \\inf_{n \\ge 1} R_n(D)/n$ satisfies $R(D) \\in [0, 1]$, "
+            "$R(D) = 0$ for $D \\ge 1/2$, and the **Shannon lower bound**\n"
+            "$$R(D) \\ge h(q) - h(D) \\qquad (0 \\le D \\le 1/2),$$\n"
+            "which is tight below Gray's critical distortion $D_c(q) = \\frac{1}{2}(1 - \\sqrt{1 - (q/(1-q))^2})$."
+        ),
+        "proof_notes": (
+            "Proved in `Known/MarkovSource.lean` via the reversible prepend construction `bsmsBlock`, "
+            "exact block entropy induction, and a block-level Hamming-error Fano/entropy lower bound "
+            "combined with concavity of binary entropy."
+        ),
+        "lean_decls": [
+            ("lean/InfoTheory/Known/MarkovSource.lean", "entropy_bsmsBlock"),
+            ("lean/InfoTheory/Known/MarkovSource.lean", "rateDistortion_eq_zero_of_half_le"),
+            ("lean/InfoTheory/Known/MarkovSource.lean", "shannon_lower_bound"),
+        ],
+        "related_open": [
+            "finite-state-channel-capacity",
             "universal-lossy-redundancy",
         ],
     },
@@ -902,8 +1007,8 @@ SOLVED_THEOREMS = [
             "`convexOn_mglFun` via elementary derivative monotonicity of $(1 - w^2) \\operatorname{artanh}(w) / w$, "
             "deduces scalar MGL via Jensen, proves the $n$-letter vector form by induction, and derives "
             "both the single-letter Bergmans outer bound and single-letter achievability (evaluating the "
-            "mutual informations at the symmetric input distribution; an operational BC coding theorem is "
-            "not yet included)."
+            "mutual informations at the symmetric input distribution; upgraded to the full operational "
+            "capacity region in `Bridge/BroadcastCoding.lean`)."
         ),
         "lean_decls": [
             ("lean/InfoTheory/Bridge/MrsGerber.lean", "binaryEntropy_invBinaryEntropy"),
@@ -924,6 +1029,160 @@ SOLVED_THEOREMS = [
             "courtade-kumar",
             "primitive-relay-channel-bsc",
             "marton-inner-bound-tightness",
+        ],
+    },
+    {
+        "id": "multiuser-operational-degenerate-cases",
+        "title": "Degenerate-Case Operational Capacity Regions (BC, IC, Relay, Feedback MAC)",
+        "category": "ch15-network",
+        "authors": "Abbas El Gamal and Young-Han Kim",
+        "year": "2011",
+        "reference": "El Gamal & Kim, Ch. 5, 6, 16, 17",
+        "tags": ["operational-definitions", "broadcast-channel", "interference-channel", "relay-channel", "mac"],
+        "statement": (
+            "The multi-user operational capacity definitions in `InfoTheory.Core.Channels` recover the "
+            "exact textbook single-user reductions in every degenerate regime:\n"
+            "- **Broadcast channel** with a one-symbol receiver $Y_2$: $\\mathcal{C}_{\\mathrm{BC}}(W) = [0, C_1] \\times \\{0\\}$.\n"
+            "- **Interference channel** without interference ($W_1 \\otimes W_2$): $\\mathcal{C}_{\\mathrm{IC}}(W_1 \\otimes W_2) = [0, C(W_1)] \\times [0, C(W_2)]$.\n"
+            "- **Useless relay** (output independent of $X_r$): $C_{\\mathrm{relay}} = C_{\\mathrm{cutset}} = C(p(y|x))$.\n"
+            "- **MAC with feedback** and a silent user: $[0, C(V)] \\times \\{0\\} \\subseteq \\mathcal{C}_{\\mathrm{FB}} \\subseteq [0, \\infty) \\times \\{0\\}$."
+        ),
+        "proof_notes": (
+            "Proved in `Known/Operational.lean` by reducing each multi-user error expression directly to "
+            "`InfoTheory.Bridge.shannon_channel_coding_theorem` and proving causal-chain normalization "
+            "`sum_causal_prod_eq_one` for feedback codes."
+        ),
+        "lean_decls": [
+            ("lean/InfoTheory/Known/Operational.lean", "bcCapacityRegion_eq_of_unique"),
+            ("lean/InfoTheory/Known/Operational.lean", "icCapacityRegion_icProduct"),
+            ("lean/InfoTheory/Known/Operational.lean", "relayCapacity_useless"),
+            ("lean/InfoTheory/Known/Operational.lean", "relayCutsetBound_relayIgnoringInput"),
+            ("lean/InfoTheory/Known/Operational.lean", "macFeedbackCapacityRegion_macIgnoringSecond_subset"),
+        ],
+        "related_open": [
+            "broadcast-channel",
+            "dm-interference-channel-capacity",
+            "relay-channel",
+            "mac-with-feedback",
+        ],
+    },
+    {
+        "id": "relay-channel-cutset-bound",
+        "title": "Operational Cut-Set Outer Bound for the Discrete Memoryless Relay Channel",
+        "category": "ch15-network",
+        "authors": "Thomas M. Cover and Abbas El Gamal",
+        "year": "1979",
+        "reference": "Cover & Thomas, Theorem 15.10.1; El Gamal & Kim, Theorem 16.1",
+        "tags": ["relay-channel", "cutset-bound", "network-it", "converse", "ch15"],
+        "statement": (
+            "For any discrete memoryless relay channel $W(y, y_r \\mid x, x_r)$ with nonempty input "
+            "alphabets, the operational relay capacity with strictly causal relaying obeys the single-letter "
+            "cut-set upper bound:\n"
+            "$$C_{\\mathrm{relay}}(W) \\le \\sup_{P(x, x_r)} \\min\\!\\big\\{ I(X; Y, Y_r \\mid X_r),\\; I(X, X_r; Y) \\big\\}.$$"
+        ),
+        "proof_notes": (
+            "Proved directly against `InfoTheory.Core.Channels.{RelayChannel, IsRelayAchievable, "
+            "relayCapacity, relayCutsetBound}`: constructs the causal relay block law `relayCodeJoint`, "
+            "proves both the broadcast cut (`relay_broadcast_cut_single_letter`) and the MAC cut "
+            "(`relay_mac_cut_single_letter`) at the same time-averaged input distribution `relayTimeAvgInput`, "
+            "and applies Fano's inequality to establish `relayCapacity_le_cutsetBound`."
+        ),
+        "lean_decls": [
+            ("lean/InfoTheory/Bridge/RelayCoding.lean", "relay_broadcast_cut_single_letter"),
+            ("lean/InfoTheory/Bridge/RelayCoding.lean", "relay_mac_cut_single_letter"),
+            ("lean/InfoTheory/Bridge/RelayCoding.lean", "relay_code_cutset_converse"),
+            ("lean/InfoTheory/Bridge/RelayCoding.lean", "isRelayAchievable_le_cutsetBound"),
+            ("lean/InfoTheory/Bridge/RelayCoding.lean", "relayCapacity_le_cutsetBound"),
+        ],
+        "related_open": [
+            "relay-channel",
+            "primitive-relay-channel-bsc",
+            "gaussian-relay-channel-capacity",
+        ],
+    },
+    {
+        "id": "degraded-broadcast-channel-capacity",
+        "title": "Superposition Coding & Operational Capacity Region of Degraded Broadcast Channels",
+        "category": "ch15-network",
+        "authors": "Thomas M. Cover; Patrick P. Bergmans; Robert G. Gallager",
+        "year": "1974",
+        "reference": "Cover & Thomas, Theorem 15.6.2 & §15.6.2; El Gamal & Kim, Theorems 5.1 & 5.2",
+        "tags": ["broadcast-channel", "superposition-coding", "degraded-bc", "bergmans", "flagship", "ch15"],
+        "statement": (
+            "For any two-receiver discrete memoryless broadcast channel $W(y_1, y_2 \\mid x)$:\n"
+            "- **Superposition Coding Inner Bound:** Every pair $(R_1, R_2) \\ge 0$ with "
+            "$R_2 \\le I(U; Y_2)$, $R_1 \\le I(X; Y_1 \\mid U)$, and $R_1 + R_2 \\le I(X; Y_1)$ "
+            "for some $U - X - (Y_1, Y_2)$ lies in the operational capacity region $\\mathcal{C}(W)$.\n"
+            "- **Degraded BC Capacity Theorem:** Whenever $W$ is physically degraded ($X - Y_1 - Y_2$), "
+            "$\\mathcal{C}(W)$ equals the closure of $\\{(R_1, R_2) \\ge 0 : R_2 \\le I(U; Y_2),\\; R_1 \\le I(X; Y_1 \\mid U)\\}$.\n"
+            "- **Operational Bergmans BS-DBC:** For the binary symmetric degraded BC with crossovers "
+            "$0 \\le p_1 \\le p_2 \\le 1/2$,\n"
+            "$$\\mathcal{C}(\\mathrm{BS\\text{-}DBC}(p_1, p_2)) = \\{(R_1, R_2) \\ge 0 : \\exists \\alpha \\in [0, 1/2],\\; "
+            "R_1 \\le h(\\alpha \\star p_1) - h(p_1),\\; R_2 \\le 1 - h(\\alpha \\star p_2)\\}.$$"
+        ),
+        "proof_notes": (
+            "Proved directly against `InfoTheory.Core.Channels.{BroadcastChannel, IsBCAchievable, "
+            "bcCapacityRegion}`: random superposition codebooks (cloud centers `u(m₂)` and conditionally "
+            "i.i.d. satellites `x(m₁, m₂)`) with 2-way and 3-way joint-typicality decoding give "
+            "`superpositionInnerBound_subset_bcCapacityRegion`; Gallager's converse with auxiliary "
+            "$U_i = (M_2, Y_1^{i-1})$ and time-sharing gives `degradedBC_converse`; and combining "
+            "`degradedBC_capacity_theorem` with `Bridge/MrsGerber.lean` proves `degradedBSC_operational_capacity_region`."
+        ),
+        "lean_decls": [
+            ("lean/InfoTheory/Bridge/BroadcastCoding.lean", "superposition_coding_achievability"),
+            ("lean/InfoTheory/Bridge/BroadcastCoding.lean", "superpositionInnerBound_subset_bcCapacityRegion"),
+            ("lean/InfoTheory/Bridge/BroadcastCoding.lean", "degradedBC_converse"),
+            ("lean/InfoTheory/Bridge/BroadcastCoding.lean", "degradedBC_capacity_theorem"),
+            ("lean/InfoTheory/Bridge/BroadcastCoding.lean", "degradedBSC_operational_capacity_region"),
+        ],
+        "related_open": [
+            "broadcast-channel",
+            "broadcast-channel-three-receivers",
+            "degraded-message-sets-bc-three-receivers",
+            "marton-inner-bound-tightness",
+            "binary-skew-symmetric-bc",
+            "mrs-gerber-general",
+        ],
+    },
+    {
+        "id": "markov-lemma-and-wyner-ziv",
+        "title": "Strong Typicality, the Markov Lemma, and the Wyner–Ziv Theorem",
+        "category": "ch15-network",
+        "authors": "Aaron D. Wyner and Jacob Ziv; Toby Berger",
+        "year": "1976",
+        "reference": "Cover & Thomas, §15.9; El Gamal & Kim, §2.4, Theorem 11.3 & Lemma 12.1",
+        "tags": ["wyner-ziv", "markov-lemma", "strong-typicality", "side-information", "flagship", "ch15"],
+        "statement": (
+            "For a finite i.i.d. correlated source $(X, Y) \\sim P_{XY}$ and distortion $d : \\mathcal{X} \\times \\hat{\\mathcal{X}} \\to \\mathbb{R}_{\\ge 0}$, "
+            "where the encoder observes only $X^n$ and the decoder observes side information $Y^n$:\n"
+            "- **Markov Lemma:** If $U - X - Y$ and $(x^n, u^n)$ is $\\varepsilon_1$-strongly typical, then "
+            "for $\\varepsilon_2 > \\varepsilon_1$, $(x^n, u^n, Y^n)$ is $\\varepsilon_2$-strongly typical "
+            "with probability $\\ge 1 - O(1/(n(\\varepsilon_2 - \\varepsilon_1)^2))$ uniformly in $(x^n, u^n)$.\n"
+            "- **Wyner–Ziv Theorem:** At every strictly feasible distortion $D > D_{\\min}$, the operational "
+            "rate–distortion function with decoder side information equals\n"
+            "$$R_{\\mathrm{op}}^{\\mathrm{WZ}}(D) = R_{\\mathrm{WZ}}(D) = \\inf_{\\substack{U - X - Y \\\\ \\mathbb{E}[d(X, g(U, Y))] \\le D}} I(X; U \\mid Y).$$"
+        ),
+        "proof_notes": (
+            "Proves convexity and right-continuity of `wynerZivRateDistortion` at every strictly feasible $D$; "
+            "proves `wynerZiv_converse` with auxiliary $U_i = (i, T, Y^{\\setminus i})$; builds self-contained "
+            "strong typicality (`strongTypicalSet`) and `markov_lemma` via Chebyshev bounds conditioned on fixed "
+            "$(x^n, u^n)$; and combines `covering_lemma_subset`, `markov_lemma`, and uniform random binning "
+            "for `wynerZiv_achievability` and exact operational equality `wyner_ziv_theorem`."
+        ),
+        "lean_decls": [
+            ("lean/InfoTheory/Bridge/WynerZiv.lean", "markov_lemma"),
+            ("lean/InfoTheory/Bridge/WynerZiv.lean", "wynerZivRateDistortion_convex"),
+            ("lean/InfoTheory/Bridge/WynerZiv.lean", "wynerZiv_converse"),
+            ("lean/InfoTheory/Bridge/WynerZiv.lean", "wynerZiv_achievability"),
+            ("lean/InfoTheory/Bridge/WynerZiv.lean", "wyner_ziv_theorem"),
+        ],
+        "related_open": [
+            "non-asymptotic-lossy-dispersion",
+            "multiterminal-source-coding",
+            "ceo-problem-general",
+            "gray-wyner-lossy",
+            "cascade-rate-distortion-side-info",
+            "universal-lossy-redundancy",
         ],
     },
 

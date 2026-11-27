@@ -11,6 +11,10 @@ import InfoTheory.Bridge.NetworkIT
 import InfoTheory.Bridge.MrsGerber
 import InfoTheory.Bridge.FeketeAndCopyLemma
 import InfoTheory.Bridge.ErrorExponents
+import InfoTheory.Bridge.FeedbackConverse
+import InfoTheory.Bridge.RelayCoding
+import InfoTheory.Bridge.BroadcastCoding
+import InfoTheory.Bridge.WynerZiv
 
 /-!
 # `InfoTheory.Bridge` — Non-Destructive Bridge to Mathlib & Cover & Thomas Foundations
@@ -45,6 +49,17 @@ Single convenience import re-exporting:
 - `InfoTheory.Bridge.FeketeAndCopyLemma`: Fekete subadditivity/superadditivity lemmas,
   stationary entropy rate, the Copy Lemma, and the **Zhang–Yeung (1998) Non-Shannon
   Information Inequality** (`cl(Γ*_4) ⊂ Γ_4`).
-- `InfoTheory.Bridge.ErrorExponents`: **Chernoff–Stein Lemma** (both halves) and
-  **Gallager's (1965) Random-Coding Error Exponent** (`randomCodingExponent_le_reliabilityFunction`).
+- `InfoTheory.Bridge.ErrorExponents`: **Chernoff–Stein Lemma** (both halves, strong converse,
+  and exact Cover & Thomas Thm. 11.8.3 limit) and **Gallager's (1965) Random-Coding Error Exponent**
+  (`randomCodingExponent_le_reliabilityFunction`).
+- `InfoTheory.Bridge.FeedbackConverse`: **Feedback Does Not Increase DMC Capacity**
+  (Cover & Thomas Thm. 7.12.1: `dmc_feedback_capacity_theorem`) and the silent-user MAC-with-feedback
+  converse (`isMACFeedbackAchievable_le_capacity_of_ignores_second`).
+- `InfoTheory.Bridge.RelayCoding`: **Operational Relay Channel Cut-Set Bound**
+  (Cover & Thomas Thm. 15.10.1 / El Gamal–Kim Thm. 16.1: `relayCapacity_le_cutsetBound`).
+- `InfoTheory.Bridge.BroadcastCoding`: **Superposition Coding Inner Bound**, **Degraded Broadcast
+  Channel Capacity Region Theorem** (`degradedBC_capacity_theorem`), and the full **Operational
+  Bergmans Binary Symmetric Degraded BC Capacity Region** (`degradedBSC_operational_capacity_region`).
+- `InfoTheory.Bridge.WynerZiv`: **Strong Typicality & the Markov Lemma** (El Gamal–Kim Lemma 12.1:
+  `markov_lemma`) and the **Wyner–Ziv Lossy Source Coding Theorem** (`wyner_ziv_theorem`).
 -/
