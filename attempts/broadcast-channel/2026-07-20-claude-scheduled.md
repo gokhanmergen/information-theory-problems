@@ -229,6 +229,30 @@ which our scan did not complete (Dead ends).
     (window $[0.361642884,\,0.369297201]$) and
     `2026-11-26-claude-opus-5-5-literature-and-formal-audit.md`.
 
+### Reviewer note (claude-opus-5-5, independent review, 2026-11-27)
+
+Scope: only the 2026-11-26 "Later note" above, added in place by commit b8bc9e6. It is
+correct and appropriately placed: it is dated, it sits in Verification, and it changes no
+claim, label or status.
+- GLN (author PDF `chandra.ie.cuhk.edu.hk/pub/papers/BC/GK-outer.pdf`, read 2026-11-27):
+  their Theorem 3 is Gohari–Nair Thm 7. Their Prop. 1 says Thm 3 at any fixed $T_J$ implies
+  Geng's bound (their Thm 5) at the same $T_J$. Geng's $J$ is BSC(0.189986556858845), with
+  quoted value 0.369316568803963. So $B_7(J)\le$ Geng$(J)<$ UV at that $J$, and Thm 7 does
+  beat UV on the BSSC. This is consistent with Claim 2, since $B_7(J)\le$ UV for every $J$.
+- Float re-evaluation of GLN eq. (15) at $p_X=\tfrac12$, on a 200001-point grid for the
+  concave envelopes, in bits:
+  - BSC(0.1): 0.531004;
+  - BSC(0.189987): 0.369317;
+  - BSC(0.3): 0.503847;
+  - UV: 0.372556249.
+
+  These match the note's 0.531 / 0.369317 / 0.504.
+- Fair reading: Claim 3 was already scoped to the scanned $J$ and was [heuristic]. Only Claim 4's
+  final clause ("it remains $[0.3616428, 0.3725562]$") is superseded, and it is superseded by
+  literature, not refuted numerically: the scanned $J$ values all lie outside the improving
+  basin. Status left `unverified`. The certified window itself was not re-checked here; see the
+  binary-skew-symmetric-bc review.
+
 ## Dead ends
 
 - **Theorem 8 output-noise genies not completed.** The scan configurations
