@@ -7,6 +7,10 @@ import InfoTheory.Bridge.ChannelAchievability
 import InfoTheory.Bridge.RateDistortion
 import InfoTheory.Bridge.MethodOfTypes
 import InfoTheory.Bridge.ContinuousIT
+import InfoTheory.Bridge.NetworkIT
+import InfoTheory.Bridge.MrsGerber
+import InfoTheory.Bridge.FeketeAndCopyLemma
+import InfoTheory.Bridge.ErrorExponents
 
 /-!
 # `InfoTheory.Bridge` — Non-Destructive Bridge to Mathlib & Cover & Thomas Foundations
@@ -34,4 +38,13 @@ Single convenience import re-exporting:
   Csiszár's sum identity, Method of Types (Thms. 11.1.1–11.1.4), and Sanov's Theorem.
 - `InfoTheory.Bridge.ContinuousIT`: translation/scaling of differential entropy, multivariate
   product Gaussians, AWGN capacity bound & Gaussian achievability, and multi-letter Jensen bound.
+- `InfoTheory.Bridge.NetworkIT`: **Slepian–Wolf Theorem** (`slepian_wolf_theorem`) and
+  **Two-User DMC MAC Capacity Region Theorem** (`mac_capacity_theorem`).
+- `InfoTheory.Bridge.MrsGerber`: scalar & vector **Mrs. Gerber's Lemma** (`mrs_gerber_scalar`,
+  `mrs_gerber_vector`) and Bergmans's Binary Symmetric Degraded Broadcast Channel bounds.
+- `InfoTheory.Bridge.FeketeAndCopyLemma`: Fekete subadditivity/superadditivity lemmas,
+  stationary entropy rate, the Copy Lemma, and the **Zhang–Yeung (1998) Non-Shannon
+  Information Inequality** (`cl(Γ*_4) ⊂ Γ_4`).
+- `InfoTheory.Bridge.ErrorExponents`: **Chernoff–Stein Lemma** (both halves) and
+  **Gallager's (1965) Random-Coding Error Exponent** (`randomCodingExponent_le_reliabilityFunction`).
 -/
