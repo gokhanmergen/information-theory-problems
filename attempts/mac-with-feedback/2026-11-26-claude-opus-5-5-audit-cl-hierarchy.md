@@ -304,7 +304,7 @@ Reviewer scripts and logs are in `code/review/`:
    `h'(a) = Σ(w1−w0)log₂m` and the right sign at each end, and skips an end where the
    derivative is infinite. The bisection covers `[0,1]²`. The final bound uses the same exact
    `α`, `L` and `ε`, with an interval-normalised `r`. `iv.mpf` of a 40-digit `mpf` is exact
-   (tested). I found no float leak.
+   (tested interactively; no script kept). I found no float leak.
 5. *Majorisation, re-proved by a different method* (`code/review/rev_k1_ub.py`; the `psi_float`
    comparison is in `rev_sanity.py`). By hand,
    `ψ(a,b) = b g(1−a) + (1−b) g(a) + a g(1−b) + (1−a) g(b)` with `g(t) = h(t/2) − t`. This

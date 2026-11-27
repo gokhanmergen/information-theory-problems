@@ -169,7 +169,8 @@ We recommend the following:
 
 **Remaining citation nits (not errors).** The Markdown and the Lean docstring cite "El Gamal–Kim
 Theorem 8.3" for the common-message region. We could not consult the book to confirm the number,
-so this is unverified; it may be Theorem 8.4.
+so this is unverified; it may be Theorem 8.4. *(Resolved 2026-11-27: it is Theorem 8.4, as cited by
+Liu–Cuff–Verdú, arXiv:1504.04092; the problem file and Lean docstring now say so.)*
 
 ## Verification
 

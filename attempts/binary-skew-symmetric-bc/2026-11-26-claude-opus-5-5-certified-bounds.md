@@ -292,7 +292,7 @@ The certified window $[0.361642884,\ 0.369297201]$ stands.
   - Docstring nit: after `roundup` the hull node values are *not* exactly concave (160 violations
     at the $2^{-140}$ level at $K=400$). Concavity is not needed for soundness.
   - `lower_env` (Claim 7) is a valid minorant. `iv.mpf` of integers up to 500 bits and `iv.log`
-    enclosed the true values in 22,000 random spot checks. The rigor still rests on mpmath's
+    enclosed the true values in 22,000 random spot checks (spot-check script not kept). The rigor still rests on mpmath's
     interval library.
 - **Black-box majorant test** (`code/review/majorant_test.py`). At $K=400$ I sampled 3,120 random points per function and
   evaluated at 60 digits. The PL majorants of $\mathcal C[G-Y]$, $\mathcal C[\mathcal C[G-Y]+\tfrac12(Y-G)]$,
@@ -309,7 +309,7 @@ The certified window $[0.361642884,\ 0.369297201]$ stands.
     So Claim 7 is confirmed. Its rigorous lower bounds are taken at 64-bit dyadic roundings of the
     decimal parameters; this is immaterial.
   - Uniform-grid values of 0.3693145 (201 points) and 0.3693169 (501 points) reproduce Claim 7's
-    heuristic.
+    heuristic (grid script not kept).
 - **Claim 6** (`code/review/indep_check.py`). At 50 digits, the four Lean `martonInnerBound` constraints hold for the RTD point,
   with sum $=0.36164288442149865$. The maximum over $a$ is $0.36164288442195$ at
   $a^*=0.15843497$. This value is classical (Hajek–Pursley; Nair–Wang 2008; Jog–Nair 2009), so
