@@ -1,41 +1,28 @@
 import InfoTheory.Problems.SpernerCapacityDirectedGraphs
 import InfoTheory.Known
+import Mathlib.Analysis.SpecialFunctions.Log.Base
 
 /-!
 # Certificate for `InfoTheory.Problems.SpernerCapacityDirectedGraphs`
 
-**Outcome: the frozen `Statement` is FALSE** (catalog error), see `statement_false`.
+The frozen `Statement` is **Alon's random-tournament conjecture** (Alon 1998, *On the
+capacity of digraphs*): a uniformly random tournament `T_n` satisfies
+`2^{Σ(T_n)} ≤ c · log₂ n` with probability `→ 1`.
 
-The docstring asserts (via Alon's out-degree bound `Σ(D) ≤ log₂(Δ⁺(D)+1)`) that
-`Σ(\vec{C}_5) ≤ 1` and asks whether `Σ(\vec{C}_5) < 1`. With the project's definition of
-`IsSpernerCode` (for every ordered pair `x ≠ y` there is a coordinate `i` with an edge
-`x i → y i`), *every* digraph with at least one edge `u → v` has `Σ(D) ≥ 1`: the
-balanced binary words over `{u, v}` of length `2m` with exactly `m` letters `v` form a Sperner
-code (for distinct words of equal weight, some coordinate carries `u` in the first word and
-`v` in the second), of size `C(2m, m) ≥ 4^m / (2m+1)`, whose rate tends to `1`. This is the
-classical observation (via Sperner's theorem) that a single oriented edge already has Sperner
-capacity `1`, cf. Gargano–Körner–Vaccaro, *Sperner capacities*, Graphs Combin. 9 (1993) 31–46,
-and Körner–Simonyi, *A Sperner-type theorem and qualitative independence*,
-J. Combin. Theory Ser. A 59 (1992) 90–103; the non-trivial content of Blokhuis (1993),
-Calderbank–Frankl–Graham–Li–Shepp (1993) for `\vec{C}_3` and of Alon (1998) in general is
-the *upper* bound `≤ 1`.
+Certified about the exact objects in `Statement`:
+* `known_bounds_tournament` — for every tournament `T` on `n ≥ 2` vertices,
+  `2 ≤ 2^{Σ(T)} ≤ n`. So the quantity compared with `c · log₂ n` is a genuine (bounded,
+  non-junk) supremum, and the conjecture asks for a real improvement over the trivial `≤ n`.
+* General lemmas: `one_le_spernerCapacity` (`1 ≤ Σ(D)` for every digraph with an edge, via
+  balanced binary codes and `C(2m, m) ≥ 4^m/(2m+1)`; classical, cf. Gargano–Körner–Vaccaro,
+  *Sperner capacities*, Graphs Combin. 9 (1993); Körner–Simonyi, JCTA 59 (1992)).
 
-Hence `Σ(\vec{C}_5) ≥ 1`, so `Σ(\vec{C}_5) < 1` is false; together with Alon's bound quoted in
-the problem docstring, `Σ(\vec{C}_5) = 1`. The catalog entry is therefore not an open problem
-as stated and needs to be replaced (e.g. by a genuinely open Sperner-capacity question).
+History: the entry previously stated `Σ(\vec{C}_5) < 1`; `one_le_spernerCapacity_directedCycle`
+shows that was false (with Alon's out-degree bound `Σ(\vec{C}_m) = 1`), which is why the
+entry was replaced (statement-fix commit 0c19d64).
 
-Certified:
-* `isSpernerCode_balancedCode` — the balanced code is a Sperner code;
-* `card_balancedCode` — it has `C(2m, m)` words;
-* `one_sub_log2_le_spernerCapacity` — `1 - log₂(2m+1)/(2m) ≤ Σ(D)` for `m ≥ 1`;
-* `one_le_spernerCapacity` — `1 ≤ Σ(D)` whenever `D` has an edge;
-* `one_le_spernerCapacity_directedCycle` — `1 ≤ Σ(\vec{C}_5)`;
-* `spernerCapacity_directedCycle_le_log2_five` — the trivial upper bound `Σ(\vec{C}_5) ≤ log₂ 5`
-  (reused from `InfoTheory.Known`), so the `sSup` is not junk;
-* `statement_false : ¬ Statement`.
-
-Not certified: Alon's bound `Σ(\vec{C}_5) ≤ 1` (Alon, *The Shannon capacity of a union*,
-Combinatorica 18 (1998); needs the polynomial method), and hence not `Σ(\vec{C}_5) = 1`.
+Not certified: Alon's construction of tournaments with `2^{Σ} ≥ n/2` and transitive
+subtournaments of size `O(log n)`, and the out-degree upper bound.
 -/
 
 open scoped BigOperators
@@ -150,9 +137,41 @@ theorem spernerCapacity_directedCycle_le_log2_five :
   have := spernerCapacity_le_log2_card (directedCycle 5)
   simpa [ZMod.card] using this
 
-/-- **The frozen statement `Σ(\vec{C}_5) < 1` is false.** -/
-theorem statement_false :
-    ¬ InfoTheory.Problems.SpernerCapacityDirectedGraphs.Statement := fun h =>
-  absurd one_le_spernerCapacity_directedCycle (not_le.2 h)
+/-- Every tournament on `n ≥ 2` vertices has an edge between vertices `0` and `1`. -/
+theorem tournament_has_edge {n : ℕ} (hn : 2 ≤ n)
+    (ori : { p : Fin n × Fin n // p.1 < p.2 } → Bool) :
+    ∃ u v : Fin n, (InfoTheory.Problems.SpernerCapacityDirectedGraphs.tournamentOfBits n ori).edge u v := by
+  let a : Fin n := ⟨0, by omega⟩
+  let b : Fin n := ⟨1, by omega⟩
+  have hab : a < b := by simp [a, b, Fin.lt_def]
+  cases h : ori ⟨(a, b), hab⟩
+  · refine ⟨b, a, ?_⟩
+    simp only [InfoTheory.Problems.SpernerCapacityDirectedGraphs.tournamentOfBits,
+      not_lt.2 hab.le, dif_neg, not_false_eq_true, hab, dif_pos, h]
+  · refine ⟨a, b, ?_⟩
+    simp only [InfoTheory.Problems.SpernerCapacityDirectedGraphs.tournamentOfBits, hab, dif_pos, h]
+
+/-- **Certificate for Alon's conjecture:** for every tournament `T` on `n ≥ 2` vertices,
+`2 ≤ 2^{Σ(T)} ≤ n`. The lower bound is `one_le_spernerCapacity`; the upper bound is the
+trivial `Σ(D) ≤ log₂ |V|`. -/
+theorem known_bounds_tournament {n : ℕ} (hn : 2 ≤ n)
+    (ori : { p : Fin n × Fin n // p.1 < p.2 } → Bool) :
+    let T := InfoTheory.Problems.SpernerCapacityDirectedGraphs.tournamentOfBits n ori
+    2 ≤ (2 : ℝ) ^ spernerCapacity T ∧ (2 : ℝ) ^ spernerCapacity T ≤ n := by
+  intro T
+  haveI : Nonempty (Fin n) := ⟨⟨0, by omega⟩⟩
+  obtain ⟨u, v, huv⟩ := tournament_has_edge hn ori
+  have h1 : 1 ≤ spernerCapacity T := one_le_spernerCapacity T huv
+  have h2 : spernerCapacity T ≤ log2 (Fintype.card (Fin n)) := spernerCapacity_le_log2_card T
+  have hn0 : (0 : ℝ) < n := by exact_mod_cast (show 0 < n by omega)
+  refine ⟨?_, ?_⟩
+  · calc (2 : ℝ) = 2 ^ (1 : ℝ) := (Real.rpow_one 2).symm
+      _ ≤ 2 ^ spernerCapacity T := Real.rpow_le_rpow_of_exponent_le (by norm_num) h1
+  · calc (2 : ℝ) ^ spernerCapacity T ≤ 2 ^ log2 (Fintype.card (Fin n)) :=
+          Real.rpow_le_rpow_of_exponent_le (by norm_num) h2
+      _ = n := by
+          rw [Fintype.card_fin]
+          have : log2 (n : ℝ) = Real.logb 2 n := rfl
+          rw [this, Real.rpow_logb (by norm_num) (by norm_num) hn0]
 
 end InfoTheory.Known.Certificates.SpernerCapacityDirectedGraphs
