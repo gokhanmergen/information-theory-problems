@@ -1,0 +1,14 @@
+1. Lean point on W*: r1 = log(54)/(3*log(2)) = 1.9182958340544896 ; r2 = log(3)/log(2) = 1.584962500721156
+   r2 - log2(3) simplifies to 0
+2. max_t G(t) on (0,1/2] grid = 1.49999999811461  (must be <= 1.5)
+   multistart max H(B1+B2) = 1.5
+   max I(M;Y^3) over 1200 random codes (relay strictly causal) = 3.8851921421607365  bound 4.5
+   structured (uncoded X, relay forwards Z_{i-1}) I(M;Y^n)/n for n=1..4: [1.0, 1.25, 1.333333, 1.375]
+3. CEG79 (83) at author's point (Yh=Yr): min=1.500000 t1=2.000000 t2=1.500000  constraint 1.000000 <= 0.500000 ?
+   CEG79 (83) with Yh=Yr xor Bern(0.110028): min=1.500000 t1=1.500000 t2=1.500000  constraint 0.500000 <= 0.500000
+   (83a) with (83b) kept but (83c) dropped: min=1.584963 t1=1.918296 t2=1.584963  [(83c): 1.000000 <= 0.000000 violated]
+   log2 3 = 1.584962500721156
+4. q=0.189298  1-h(.1)=0.531004  I(X;Y1,Yr)=0.635823  cutset=min(0.635823,0.578072)
+   Thm7 time-sharing: lam=0.082026  rate=0.539602  (line3=0.771788 slack)
+   Ponniah U-CF/C-CF analytic bound 1-h(.2)+0.8*0.3 = 0.518072
+   optimised feasible C-CF rate (150 starts) = 0.000000  (analytic bound 0.518072, DF 0.531004)

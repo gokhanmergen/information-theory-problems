@@ -377,8 +377,8 @@ capacity of every finite DM relay channel?". Three remarks:
 
 **Verdict: the headline holds. `InfoTheory.Problems.RelayChannel.Statement` is false as
 written.** Status changed to `verified`: I independently checked every `[proved]` claim
-(1–4, 6, 7); the scope of each check is below. My scripts are in the reviewer scratch space
-(`review_check.py`, `ccf_opt.py`), not in the repo.
+(1–4, 6, 7); the scope of each check is below. My scripts are in `code/review/`
+(`review_check.py`, `ccf_opt.py`, with the logs `review_check_out.txt` and `author_run.txt`).
 
 - **Primary source.** I read CEG79 Theorem 7 from the scan
   (isl.stanford.edu/groups/elgamal/abbas_publications/J003.pdf, p. 582, (83a–c)). In Lean
@@ -422,7 +422,7 @@ written.** Status changed to `verified`: I independently checked every `[proved]
   block-Markov scheme.
 - **Code.** It runs in float64 and is sound for what it claims. (A) matches the closed forms;
   (B), (C) and (D) are sanity checks, not proofs. (D)'s random C-CF search reaches only about
-  0.41, so it barely tests the 0.518 bound. My SLSQP run (180 starts, $|\hat Y|\le4$,
+  0.41, so it barely tests the 0.518 bound. My SLSQP run (`code/review/ccf_opt.py`; 180 starts, $|\hat Y|\le4$,
   correlated inputs, constraint (93) in the same law) peaks at 0.431412, below 0.518072.
 - **Ponniah.** arXiv:2609.15709 exists: v1 is dated 14 Sep 2026, v2 20 Sep 2026; I read v2
   through pdftotext. Theorem 4 says, verbatim, "The capacity of the relay channel is
