@@ -397,12 +397,12 @@ linear-relaying rates use an expected relay constraint). It does not affect any 
 
 *Claim 2 (Lemma 1).* Re-derived each step: A ≤ C(s₁₂) − C(γs₁₂); max over c of min(B₁, B₂) at
 c* = d/(1+a+b); both log-summands nondecreasing in γ when s₁₂ ≤ s₁₃; attainment at
-α = β = θ = 0, γ = 1 (C4 holds with equality, like C3). Correct. Cross-check by
+α = β = θ = 0, γ = 1 (C4 holds with equality, like C3). Correct. Cross-check (`code/review/numeric_checks.py`) by
 `scipy.differential_evolution` on the raw Lean formula at 9 points with g₁₂² ≤ g₁₃² (including
 all three certificate points): |hyb − R_CF| ≤ 2e-15. At 3 points with g₁₂² > g₁₃², hyb > R_CF
 by 0.13–0.34.
 
-*Claims 3, 5, 7 numbers.* Own script, exact `Fraction` arithmetic only. ln 2 and ln(·) use
+*Claims 3, 5, 7 numbers.* Own script (`code/review/exact_checks.py`), exact `Fraction` arithmetic only. ln 2 and ln(·) use
 artanh series with a rigorous tail bound; √ uses integer isqrt. Results:
 - A1: 333/280 > (551601/551000)¹⁰⁰.
 - A2: (64/51)³ > (33/31)¹⁰.
@@ -418,11 +418,11 @@ read via pdftotext; eqs. (7), (8), (13)–(15) and Example 1 are as quoted. Exam
 same full-duplex, strictly causal model as the Lean one (EMZ normalise g₁₃ = 1).
 
 *Claim 4.* The Taylor argument (φ(0) = φ′(0) = 0, φ″(0) = (1/λ − 1)m(2bd − a²)) is correct.
-The tangency point is P* = 0.11040 (own computation).
+The tangency point is P* = 0.11040 (own computation, `code/review/numeric_checks.py`).
 
 *Claim 6.* Re-derived the reduction, including the sup formula (√K − √(μD))₊² and the
-q(x)-criterion. Independently re-proved Φ ≤ 0 on [0.08, 6]: exact rationals, 600 uniform
-boxes, worst upper bound −2.18e-3. A 2-D float grid on R_CF − m x₁ − x₂/20 gives max ≤ 0
+q(x)-criterion. Independently re-proved Φ ≤ 0 on [0.08, 6] (`code/review/exact_checks.py`): exact rationals, 600 uniform
+boxes, worst upper bound −2.18e-3. A 2-D float grid (`code/review/numeric_checks.py`) on R_CF − m x₁ − x₂/20 gives max ≤ 0
 (→ 0⁻ only as x₁ → 0).
 
 Certificate-code audit: `mpmath.iv` comparisons return `None` when ambiguous, so `report()`
@@ -437,7 +437,7 @@ sliver is trivially covered because q(0.08) ≈ 0.0049.
 
 *Problem-file edit.* Checked against EMZ:
 - "not tight for any a, b > 0" (Sec. 2) supports the block-Markov sentence.
-- At EMZ Fig. 3 parameters, my computation gives Ex. 1 > eq. (8) for P ≤ 0.3 and < eq. (7)
+- At EMZ Fig. 3 parameters, my computation (`code/review/numeric_checks.py`) gives Ex. 1 > eq. (8) for P ≤ 0.3 and < eq. (7)
   for P ≥ 0.4, which supports "notably at low SNR".
 - The g₁₃ = 0 capacity formula is correct.
 
