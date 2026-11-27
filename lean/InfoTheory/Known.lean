@@ -3,6 +3,8 @@ import InfoTheory.Known.EntropyRegion
 import InfoTheory.Known.Channels
 import InfoTheory.Known.Coding
 import InfoTheory.Known.ZeroError
+import InfoTheory.Known.Operational
+import InfoTheory.Known.GaussianChannel
 
 /-!
 # Known Results

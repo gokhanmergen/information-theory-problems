@@ -6,6 +6,7 @@
     "lean/InfoTheory/Core/Channels.lean": "4106ce855779023bc63b2a0d389e2419ee972a8ff21c8851387630333f7a9a1b",
     "lean/InfoTheory/Core/Coding.lean": "acda48c01f94c919f62367bb04b5ee49d2724ad06bccb6b834bdd7402f883671",
     "lean/InfoTheory/Core/Entropy.lean": "63d1f48d15e43753753c13b6053b9cb77c8a000e6af365eb9ebd5af433eb8f65",
+    "lean/InfoTheory/Core/GaussianOperational.lean": "2828fa03dd6e65c0f67075b619f8879bec64ace0791e3461644bbb758da75b1c",
     "lean/InfoTheory/Core/Metadata.lean": "86f302f873d6e1526e231fb89ce98b829d3c93ae108eafb0476a95e592c8d9e9",
     "lean/InfoTheory/Core/Quantum.lean": "d0200a3a990794de40f9deedd0eb6ac1477622a473604767fa5ff1441f0d7b96",
     "lean/InfoTheory/Core/Sanity.lean": "cd8e0dd2764bfb91fc9a43ff7683239c98a87465a05d550cedd6be796a277ecf",
