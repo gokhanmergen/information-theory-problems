@@ -4,7 +4,7 @@ date: 2026-11-26
 attempter: claude
 model: claude-opus-5-5
 type: new-bound
-status: unverified
+status: verified
 ---
 
 ## Summary
@@ -67,6 +67,9 @@ $\mathcal C[\cdot]$ denotes the upper concave envelope on $[0,1]$.
    fixed $J$, by Gohari–Nair Theorem 7. GLN then improved this to $\approx 0.369296340638082$.
    GLN call the improvement "small". It is larger for other skew-symmetric channels: see their
    Sec. IV-A (crossover 0.9) and Fig. 3.
+   (Reviewer: neither the author nor the reviewer accessed Geng's ISIT 2025 paper. Its value,
+   and the word "first", rest on GLN's account, which is written by two of the Gohari–Nair
+   authors. GLN is cited as ISIT 2026 in arXiv:2610.12034, ref. [27].)
 2. **[proved]** (Lemma A, the J-bound sum rate.) For every auxiliary channel $T_{J|X}$, every
    achievable private-message pair satisfies
    $R_1+R_2\le \max_t F_J(t)$, where
@@ -91,6 +94,10 @@ $\mathcal C[\cdot]$ denotes the upper concave envelope on $[0,1]$.
 
    With Claims 2–4: **$C_{\mathrm{sum}}(W_{\mathrm{BSSC}})\le 0.369297201$ bits.** Also, by (c), the
    catalog's UV number $0.37256$ is now a certified upper bound rather than a numerical estimate.
+   (Reviewer, 2026-11-27: the UV value was not merely a numerical estimate. Jog–Nair,
+   arXiv:0901.1492v3 Sec. 3.2.1, derive it analytically: the envelope is a chord to a tangent
+   point at input probability exactly $4/5$, giving $0.37255624891826\ldots$. So (c) is an interval
+   re-check of a known value, not a new result.)
 6. **[proved]** (computer-assisted) The Lean-region point with $W\sim$ Unif$\{0,1\}$ is explicit:
    - given $W{=}0$: $X\sim\mathrm{Bern}(a)$, $U=X$, $V=0$;
    - given $W{=}1$: $X\sim\mathrm{Bern}(1-a)$, $U=0$, $V=X$;
@@ -248,11 +255,85 @@ Consistency checks:
   $\sin^2$ grid) reproduces the earlier UV value $0.3725562$ of
   `attempts/broadcast-channel/2026-07-18-claude-fable-5-bssc-bounds.md`. It also reproduces the
   Marton RTD value $0.3616428844$ through GLN's envelope form (17), i.e. with the $\mathcal C$
-  restored, which the PDF text extraction drops.
+  restored, which the PDF text extraction drops. (Reviewer: the typeset PDF itself has no
+  $\mathcal C$ in (17), checked on a rendered page 10. As printed, (17) gives $0.311278$ at uniform
+  input, so this is a typo in GLN, not an extraction artifact.)
 - **Sanity.** All certified quantities obey Marton $<$ GK $<$ J $<$ UV $<$ $\log_2$-trivial bounds.
 - **Status.** Not independently reviewed yet. Promotion to `verified` needs an independent re-run
   of `code/bssc_certify.py`, and ideally an independent re-implementation of the majorant
   construction.
+
+### Reviewer note (claude-opus-5-5, independent review, 2026-11-27)
+
+**Status set to `verified`.** Every `[proved]` claim was checked independently: proofs by hand,
+the certificate code by audit plus a re-run, and the numbers by a separate float evaluator.
+The certified window $[0.361642884,\ 0.369297201]$ stands.
+
+- **Re-run.** I re-ran the headline command (`K=8000`, same env vars). All six output lines match
+  the block above digit for digit; the run took 44 s.
+- **Lemma A (Claim 2).** I checked every step: Fano, $I(M_1;J^n)+I(M_2;J^n)\le I(X^n;J^n)$, the
+  Csiszár telescoping, $-\Sigma_J\le\sum_i[I(\hat W_i;Y_i)-I(\hat W_i;J_i)]$, the time-sharing
+  leftovers ($-I(Q;J)$ cancels and $-I(Q;Y)\le0$), and the envelope step. The result agrees with
+  GLN (8c)/(8d) and with Geng Thm 1 (GLN Thm 5) at $\mu=\sigma=1$, $\gamma=\tfrac12$. GLN eq. (15)
+  is the same formula; I checked it on a rendered page.
+- **Lemma B (Claim 3).** Checked term by term against GLN (19m)/(19o) at $R_0=0$. The leftover
+  chain terms sum to $-\Sigma_Y$ and $-\Sigma_Z$; I used GLN Lemma 1, which I re-derived. The
+  time-sharing leftovers are $-I(Q;Y)$ and $-I(Q;Z)$. The averaged envelope form equals GLN (16).
+- **Lemma C (Claim 4).** Correct. $I_Y(1-t)=I_Z(t)$, $I_K(t)=I_G(1-t)$ for the mirror, and $\mathcal C$
+  commutes with $t\mapsto1-t$.
+- **Code audit (`bssc_certify.py`).** I found no soundness bug.
+  - Floats are used only to choose the grid and the parameters, and both are then fixed as exact
+    rationals. Any grid and any parameters give a valid bound.
+  - `h_range`, `hpp_range` and `d2on` are correct enclosures. The cell bound
+    $f-L\le\tfrac{w^2}{8}\max(0,-\inf f'')$ is correct. The crude cell sup is used where $f''$ is
+    unbounded.
+  - Node raising and the exact-rational upper hull are correct, and the nested stage only needs
+    $P\ge\mathcal C[f]$ with $P$ linear on cells.
+  - Docstring nit: after `roundup` the hull node values are *not* exactly concave (160 violations
+    at the $2^{-140}$ level at $K=400$). Concavity is not needed for soundness.
+  - `lower_env` (Claim 7) is a valid minorant. `iv.mpf` of integers up to 500 bits and `iv.log`
+    enclosed the true values in 22,000 random spot checks. The rigor still rests on mpmath's
+    interval library.
+- **Black-box majorant test.** At $K=400$ I sampled 3,120 random points per function and
+  evaluated at 60 digits. The PL majorants of $\mathcal C[G-Y]$, $\mathcal C[\mathcal C[G-Y]+\tfrac12(Y-G)]$,
+  $\mathcal C[G-K]$ and $\mathcal C[Y-Z]$ dominate their targets everywhere, with a minimum margin
+  of $+4\times10^{-30}$.
+- **Independent numbers** (my own numpy hull evaluator, $2\times10^5$–$10^6$ nodes; lower estimates).
+  - UV: the exact value is $0.37255624891826573$, from an mpmath tangent at $t=4/5$. This is
+    Jog–Nair's closed form (arXiv:0901.1492v3 Sec. 3.2.1). Claim 5(c) is therefore a re-check of
+    a known value; see the note at Claim 5.
+  - $F_J(\tfrac12)=0.369317306037$ and $F_{GK}(\tfrac12)=0.369297196677$. Both lie below the
+    certified upper values.
+  - At the published parameters, evaluated in GLN's *own* convention: $F_J=0.36931732823$ (the
+    published value is $0.36931656880$) and $F_{GK}=0.36929725610$ (published $0.36929634064$).
+    So Claim 7 is confirmed. Its rigorous lower bounds are taken at 64-bit dyadic roundings of the
+    decimal parameters; this is immaterial.
+  - Uniform-grid values of 0.3693145 (201 points) and 0.3693169 (501 points) reproduce Claim 7's
+    heuristic.
+- **Claim 6.** At 50 digits, the four Lean `martonInnerBound` constraints hold for the RTD point,
+  with sum $=0.36164288442149865$. The maximum over $a$ is $0.36164288442195$ at
+  $a^*=0.15843497$. This value is classical (Hajek–Pursley; Nair–Wang 2008; Jog–Nair 2009), so
+  Claim 6 adds only interval certification.
+- **Claim 8 (heuristic).** Reproduced with an independent Nelder–Mead at $N=2\times10^4$.
+  - General binary $J$ with free $\gamma$ gives $\min F_J(\tfrac12)=0.3693173057$ at $J\approx\mathrm{BSC}(0.18995)$, $\gamma\approx0.50$.
+  - The skew-mirror $(G,K)$ optimum is $0.3692971963$ at $G\approx(0.1731146, 0.7931094)$.
+  - Ternary auxiliary receivers were not checked.
+- **Literature (Claim 1).**
+  - I read the author-hosted Gohari–Nair PDF (44 pp., Jan 2022). It has no BSSC or "skew"
+    evaluation; its strict UV improvements are the erasure Blackwell channel (Sec. 4.2,
+    Remark 13) and product channels. The old catalog sentence was therefore wrong.
+  - GLN (PDF dated 14 Jan 2026; cited as ISIT 2026 in arXiv:2610.12034) attributes 0.369316568…
+    to Geng (ISIT 2025). I could not access Geng's paper.
+  - The UV value 0.3725562 comes from Jog–Nair (2009), which corrected Nair–Wang 2008's 0.3711.
+  - I found no erratum for GLN's numbers, so Claim 7's observation appears new.
+- **Problem-file edits.**
+  - "a concrete gap of under 0.01 bits" changed to "about 0.01": the Marton–UV gap is 0.0109.
+  - The UV bullet now credits Jog–Nair's analytic evaluation instead of saying the value is "now
+    certified".
+  - Geng's value is marked as quoted via GLN.
+  - Added the Jog–Nair reference.
+- **Not checked.** The ternary runs, the $K=400$ numbers, and the `[sketch]` dead end on (13d)/(13f):
+  only its final inequality was checked.
 
 ## Dead ends
 
