@@ -240,7 +240,7 @@ claim, label or status.
   quoted value 0.369316568803963. So $B_7(J)\le$ Geng$(J)<$ UV at that $J$, and Thm 7 does
   beat UV on the BSSC. This is consistent with Claim 2, since $B_7(J)\le$ UV for every $J$.
 - Float re-evaluation of GLN eq. (15) at $p_X=\tfrac12$, on a 200001-point grid for the
-  concave envelopes, in bits:
+  concave envelopes (`code/review/bssc_float.py`), in bits:
   - BSC(0.1): 0.531004;
   - BSC(0.189987): 0.369317;
   - BSC(0.3): 0.503847;

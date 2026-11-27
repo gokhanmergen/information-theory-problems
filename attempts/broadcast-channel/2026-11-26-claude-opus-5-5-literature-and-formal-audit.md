@@ -146,7 +146,7 @@ Verification section.
 - The resulting function is concave, and symmetric under the BSSC relabelling, so its maximum is
   at $p_X=\tfrac12$.
 - The Core `uvOuterBound` has exactly these two sum constraints, with no $W$.
-- Float check on a 200001-point envelope grid: $0.372556249$ bits, consistent with $\le0.372556252$.
+- Float check on a 200001-point envelope grid (`code/review/bssc_float.py`): $0.372556249$ bits, consistent with $\le0.372556252$.
   The interval certificate itself was not re-run.
 
 **Claim 4: confirmed.** I checked lines 221–246 of `Core/Channels.lean`.
@@ -162,8 +162,8 @@ Verification section.
 
 **Claim 2: not independently checked.** It belongs to the binary-skew-symmetric-bc review. A
 float sanity check of Geng's functional (GLN eq. (15)) at the stated $J$, with $p=\tfrac12$,
-gives $0.369317328$. This agrees with the claim that the formula at the stated parameters
-exceeds the published $0.3693165688$. Over a coarse $(\sigma,\gamma)$ grid, $\sigma=1,\gamma=\tfrac12$
+gives $0.369317328$ (`code/review/bssc_float.py`). This agrees with the claim that the formula at the stated parameters
+exceeds the published $0.3693165688$. Over a coarse $(\sigma,\gamma)$ grid (`code/review/geng_sigma.py`), $\sigma=1,\gamma=\tfrac12$
 was the minimiser of $\max_p$.
 
 **Other checks.**
