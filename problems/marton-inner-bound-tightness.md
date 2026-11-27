@@ -85,7 +85,7 @@ coding beats it — is one of the central unresolved questions of multiuser info
 - **Consequence for this entry.** If the claim is correct, the answer to the question above
   is **no**, and the frozen Lean `Statement` is false. The binary-input case remains open:
   Huang–Liu–Liu note that counterexamples appear to require non-binary inputs.
-- Before this, the only known suboptimality of this kind was for three receivers: Nair and
+- Before this, the classical suboptimality example was for three receivers: Nair and
   El Gamal (2009) proved that naive superposition is suboptimal even with degraded message
   sets.
 
