@@ -4,7 +4,7 @@ date: 2026-11-26
 attempter: claude
 model: claude-opus-5-5
 type: partial-result
-status: unverified
+status: verified
 ---
 
 ## Summary
@@ -17,10 +17,11 @@ directed-information theorem. Every degenerate or known class we checked (empty 
 constant channel, silent user, feedback-useless channels, Willems' class including the binary
 adder MAC) is settled at `k = 1` *consistently*. **No catalog error.** (2) Survey fixes: the
 Venkataramanan–Pradhan page numbers were wrong, and `R_CL^(k)` is Kramer's (1998) "generalized
-Cover–Leung region". Both are fixed in the problem file. (3) A new, computer-assisted strict
+Cover–Leung region" (reviewer: only `R_CL^(k) ⊇` that region, as VP restate it, is established;
+see Claim 7). Both are fixed in the problem file. (3) A new, computer-assisted strict
 inclusion `R_CL^(1)(W) ⊊ R_CL^(2)(W)` for an explicit binary DM-MAC: the Bross–Lapidoth binary
-MAC at `q = 1/2`, i.e. `Y = X_J` with `J` uniform on `{1,2}` and unknown to everyone. Its
-max sum-rate jumps from `≤ 0.5789491` (certified, `k = 1`; true value about `0.57651`) to
+MAC at `q = 1/2` (reviewer: the endpoint of that family; VP state it for `0 < q < 0.5`), i.e. `Y = X_J` with `J` uniform on `{1,2}` and unknown to everyone. Its
+max sum-rate jumps from `≤ 0.5789491` (certified, `k = 1`; true value about `0.57652`) to
 `≥ 0.5843216` (explicit 2-step strategies, `k = 2`). So the finite-`k` hierarchy is genuinely
 non-trivial on finite alphabets, and, with the standard achievability of Claim 3, Cover–Leung
 is not the feedback capacity region of this channel.
@@ -47,7 +48,8 @@ Notation: `R^(k) := coverLeungKLetterRegion k W`, `C_FB := macFeedbackCapacityRe
    padding.
 4. **[proved]** If `(R1,R2)` is operationally achievable, then for every `δ > 0` and all large
    `n`, `((R1−δ)_+, (R2−δ)_+) ∈ R^(n)`, already with `U` constant. Hence
-   `cl ⋃_k R^(k) = C_FB`.
+   `cl ⋃_k R^(k) = C_FB`. (Reviewer: the proof gives `C_FB ⊆ cl ⋃_k R^(k)`; the equality also
+   needs the `[sketch]` Claim 3.)
 5. **[sketch]** (Proved from Claims 1, 2 and 4, plus the `[sketch]` Claim 3.) `C_FB` is convex. `Statement(W)` holds iff `C_FB ⊆ R^(k)` for some
    `k`. If it holds with `k`, it holds with every multiple of `k`, and then
    `(1 − (k−1)/n)·C_FB ⊆ R^(n) ⊆ C_FB` for all `n ≥ k`. So the non-monotonicity of
@@ -58,17 +60,25 @@ Notation: `R^(k) := coverLeungKLetterRegion k W`, `C_FB := macFeedbackCapacityRe
    feedback does not enlarge the no-feedback region (since `CL ⊇` Ahlswede–Liao); and Willems'
    class `X1 = φ(Y, X2)` (Willems 1982), which includes the binary adder MAC. It *fails* at
    `k = 1` for the channel of Claim 8, so it is not trivially true.
-7. **[sketch]** `R^(k)` equals Kramer's generalized CL region with `M = k` (thesis §§5.3–5.4, as
-   described in VP 2011, §IV-B, Fact 22). Under `S1 ⊥ S2 | U`,
+7. **[heuristic]** (label changed by reviewer from `[sketch]`: the cited restatement has a
+   different auxiliary structure, see below) `R^(k)` equals Kramer's generalized CL region with
+   `M = k` (thesis §§5.3–5.4, as described in VP 2011, §IV-B, Fact 2). Under `S1 ⊥ S2 | U`,
    `I(S1;Y^k|S2,U) = I(X1^k → Y^k ‖ X2^k | U)` and `I(S1S2;Y^k) = I(X1^kX2^k → Y^k)`, and random
    strategies realise exactly the causally conditioned input laws.
+   *Reviewer:* VP's Fact 2 draws `U_1,…,U_M` i.i.d. `P_U` and lets the `i`-th inputs depend on
+   `U_i` only (plus own past inputs and past outputs); `coverLeungKLetterRegion` uses one
+   arbitrary `U` for the whole block. Taking `U := U^M` shows `R^(k) ⊇` the VP-restated region;
+   the reverse inclusion is not argued, and the directed-information identities above do not
+   address it. Kramer's thesis itself was not read by the author or the reviewer.
 8. **[proved, computer-assisted]** Let `W_{1/2}` be the binary MAC with
    `P(Y=1|x1,x2) = (x1+x2)/2`. Then
    `max_{R^(1)}(R1+R2) ≤ UB1 := 0.5789491 < LB2 := 0.5843216 ≤ max_{R^(2)}(R1+R2)`. Hence
    `R^(1)(W_{1/2}) ⊊ R^(2)(W_{1/2})`. Combined with Claim 3 (`R^(2) ⊆ C_FB`, standard CL
    achievability on the super-channel), Cover–Leung is strictly suboptimal for `W_{1/2}`, and
-   `Statement(W_{1/2})` fails at `k = 1`.
-9. **[numerical]** For the same family `W_q` (Bross–Lapidoth's binary reduction of the Poisson
+   `Statement(W_{1/2})` fails at `k = 1`. (Reviewer: the strict inclusion
+   `R^(1) ⊊ R^(2)` is independently confirmed; the two consequences about `C_FB` are proved
+   modulo the `[sketch]` Claim 3.)
+9. **[heuristic]** (label changed by reviewer from the non-standard `[numerical]`) For the same family `W_q` (Bross–Lapidoth's binary reduction of the Poisson
    MAC), numerical optimisation also gives a `k = 2` sum-rate above the best `k = 1` value found
    at `q = 0.4` (`0.3664908` vs `0.3658759`). At `q = 0.25` we found no gain (`≤ 5·10⁻⁶`).
    None of this is certified, except that the `k = 2` numbers are explicit achievable points.
@@ -221,7 +231,9 @@ So **`UB1 = 0.5789491`**.
 
 The numerical `k = 1` optimum found by local search is `0.57650518`, attained at `U` uniform on
 two atoms with `P(X1=0|u) = P(X2=0|u) ∈ {0.304, 0.696}`. The certified bound is looser only
-because of the slack `αε ≈ 2.4·10⁻³`, which we chose for speed.
+because of the slack `αε ≈ 2.4·10⁻³`, which we chose for speed. (Reviewer: a multi-start
+Nelder–Mead search with `|U| ≤ 5` finds `0.57652172`, at `|U| = 2`. So the local search above
+was slightly short. The true value lies in `[0.5765217, UB1]`.)
 
 **Conclusion.** `max_{R^(1)}(R1+R2) ≤ UB1 < LB2 ≤ max_{R^(2)}(R1+R2)`, so
 `R^(1)(W_{1/2}) ⊊ R^(2)(W_{1/2})`. By Claim 3, `R^(2) ⊆ C_FB`, so Cover–Leung is strictly
@@ -265,6 +277,81 @@ most when single outputs are most informative about the input pair.
   `UB1`, as it must.
 * Not independently reviewed. The audit claims (1–7) are pen-and-paper.
 
+### Reviewer note (claude-opus-5-5, independent review, 2026-11-27)
+
+Reviewer scripts and logs are in the reviewer's scratch folder, not in the repo:
+`rev_k2_exact.py`, `rev_k1_ub.py`, `rev_sanity.py`, `rev_kramer.py`.
+
+**Checked.**
+1. *Re-run.* `certify_gap.py 0.5 4e-3` (180 s) reproduces the log exactly: `LB2 = 0.58432157594618`,
+   `UB1 = 0.57894907892747`, 93967 boxes. No repo file was overwritten.
+2. *Definitions.* `coverLeungKLetterRegion` uses strategies `∀ i : Fin k, (Fin i → Y) → X`. It
+   has one `U : Fin kU` (with `kU` unbounded), `J = Pu·Ps₁·Ps₂·∏ W`, all three bounds scaled
+   by `1/k`, and the sum bound is not conditioned on `U`. At `k = 1` strategies are inputs, so
+   `R^(1) = coverLeungRegion`. `mac_cl.py` matches: `|S_j| = 8` at `k = 2`, `V = ∏ W`, and
+   it divides by `k`. The channel matches VP §IV-C (full text read), which gives the family for
+   `0 < q < 0.5`. So `q = 1/2` is its endpoint, not a case that BL or VP evaluated. Wording
+   amended here and in the problem file.
+3. *Key step: why two parameters suffice.* No reduction or WLOG on `U` is used. The bound is
+   weak duality. For any `α ∈ [0,1]`, `L` and pmf `r`, three facts hold:
+   `min(A,B) ≤ αA+(1−α)B`; `A = Σ_u p(u)ψ(p_{1|u},p_{2|u}) ≤ ⟨p̄, L+ε⟩`; and
+   `B = Σ_x p̄(x)D(W_x‖p̄W) ≤ Σ_x p̄(x)D(W_x‖r)`. All three are linear in `p(u)`, so they cover
+   every `|U|`. The only domain the certificate must cover is the set of product inputs. For
+   binary inputs that is exactly `[0,1]²`. The argument is correct, and closure does not
+   affect it.
+4. *Code soundness.* I read `cert_cl1.py` in full. The monotonicity cases of `phi_iv` are
+   correct. `Hmix_rng` is correct: it takes the endpoint minimum, uses tangent upper bounds with
+   `h'(a) = Σ(w1−w0)log₂m` and the right sign at each end, and skips an end where the
+   derivative is infinite. The bisection covers `[0,1]²`. The final bound uses the same exact
+   `α`, `L` and `ε`, with an interval-normalised `r`. `iv.mpf` of a 40-digit `mpf` is exact
+   (tested). I found no float leak.
+5. *Majorisation, re-proved by a different method.* By hand,
+   `ψ(a,b) = b g(1−a) + (1−b) g(a) + a g(1−b) + (1−a) g(b)` with `g(t) = h(t/2) − t`. This
+   matches `psi_float` to `1.1e-16` at 10⁴ random points. Because `h` is monotone on `[0,1/2]`,
+   each cell gets an upper bound. I evaluated `h` at the nodes in `mpmath.iv`, on 8192² cells,
+   in float64 with a `1e-9` margin. Result: `ψ − bil(L) ≤ 3.43e-4` on `[0,1]²`, against the
+   claimed `4e-3`. A grid estimate of the true maximum is `3.1e-6`. With `ε = 3.5e-4` and the
+   same `(α, L, r)`, the bound would tighten to `UB1' = 0.5767408`.
+6. *Final bound.* Recomputed in mpmath: all four `x` give `0.57894907892747`.
+7. *LB2, recomputed independently.* I used Lean's `condMutualInfo` and `mutualInfo` formulas
+   on the full table `J(u,s1,s2,y²)`. The saved law was renormalised in exact rationals, so the
+   joint sums to exactly 1, and entropies were taken at 60 digits. Results:
+   `I(S1;Y²|S2,U)/2 = 0.29218072268412`, `I(S2;Y²|S1,U)/2 = 0.29214085326206` and
+   `I(S1S2;Y²)/2 = 0.58433527175360`. So `(I1/2, I2/2)` lies in `R^(2)` and its sum is
+   `LB2 = 0.584321575946180`.
+8. *k = 1 numerics.* 150 multi-start Nelder–Mead runs with `|U| ≤ 5` reach `0.57652172`, at
+   `|U| = 2`. That is above the author's `0.57650518` and below `UB1`. 2·10⁵ random CL laws
+   reach `0.5717`.
+9. *Proofs of Claims 1, 2 and 4.* Checked line by line. The block strategy of Claim 2 is
+   legal and injective. In Claim 4, `H(Yⁿ|M2) ≤ H(Yⁿ|S2)` holds, and the sum of positive
+   parts is bounded correctly. For Claim 6, I checked the empty-alphabet case against the Core
+   definitions. Willems (1982) and the point-to-point feedback converse are taken as cited.
+
+**Found.** (a) Claim 7 mislabelled. VP's Fact 2 draws `U_1..U_M` i.i.d., and the `i`-th inputs
+see only `U_i`. The Lean region instead uses one `U` per block. Only `R^(k) ⊇` is shown, so the
+label is now `[heuristic]` and the problem-file sentence now says "contains". (b) Claim 4's
+equality and Claim 8's consequences for `C_FB` need the `[sketch]` Claim 3; annotated.
+(c) `[numerical]` is not a repository tag; Claim 9 is now `[heuristic]`. (d) Novelty is
+overstated. Tandon–Ulukus (arXiv:0806.0080, §§1, 9), cited above as "not used", report
+Kramer's code-tree improvement over CL (`0.43621 → 0.43879` symmetric rate) for
+`Y = X1+X2+N`. That channel is a finite-alphabet DM-MAC. So `CL ⊊ C_FB` on finite alphabets,
+and with it the failure of the hierarchy to stop at `k = 1`, was known before. The certified,
+explicit `k = 2` jump appears new. Problem file amended. I also ran a side check
+(`rev_kramer.py`, uncertified float numerics). The author's `k = 1` code gives max sum
+`0.872404` on Kramer's channel, which agrees with the published `2·0.43621 = 0.87242` and so
+validates the `k = 1` machinery. Its `k = 2` optimiser then reaches `0.879132`, so on Kramer's
+own channel `R^(2)` (Lean sense) also appears to exceed CL. Kramer's thesis, which reports
+`M = 2` evaluations "for a few examples", may therefore already contain such a gap. (e) Small fixes: "Fact 22" → "Fact 2",
+and the `k = 1` value 0.57651 → 0.57652.
+
+**Not checked.** Claims 3 and 5 (sketches). Kramer's thesis, Kramer (2003) and BL (2005), none
+of which was accessed. Claim 9's `q = 0.25`/`0.4` and noisy-adder numbers. No Lean
+formalisation.
+
+**Status → `verified`.** I checked every `[proved]` claim (1, 2, 4, 6 modulo its cited
+theorems, and 8). I reproduced the headline computer-assisted inequality by independent code
+and an independent majorisation method.
+
 ## Dead ends
 
 * **Random-start optimisation of `R^(2)`.** In a first exploratory pass (`code/explore.py`,
@@ -296,7 +383,7 @@ most when single outputs are most informative about the input pair.
 - Problem file `problems/mac-with-feedback.md`; no earlier attempts existed for this problem.
 - R. Venkataramanan, S. S. Pradhan, "A new achievable rate region for the multiple-access
   channel with noiseless feedback," *IEEE Trans. IT* 57(12):8038–8054, 2011; arXiv:0901.1892.
-  We read §IV via ar5iv: examples, Kramer `M = 2` comparison, Fact 22, and the BL-error remark.
+  We read §IV via ar5iv: examples, Kramer `M = 2` comparison, Fact 2, and the BL-error remark.
 - G. Kramer, *Directed Information for Channels with Feedback*, PhD thesis, ETH Zurich, 1998
   (**not accessed**; §§5.3–5.4 content taken from VP's description); G. Kramer, "Capacity
   results for the discrete memoryless network," *IEEE Trans. IT* 49(1):4–21, 2003.
@@ -322,3 +409,12 @@ most when single outputs are most informative about the input pair.
   as new only in its certified form for `W_{1/2}`. CL's suboptimality for this channel family
   is consistent with VP's strict improvement for `q → 0`. At `q = 1/2` we know of no prior
   statement.
+  *Reviewer addition:* Tandon–Ulukus (arXiv:0806.0080, §1 and §9), cited above but not used,
+  report that Kramer [thesis; IT 2003] gave "the first improvement over the Cover-Leung
+  achievable rate region". The example is the binary additive noisy MAC `Y = X1+X2+N` with
+  `N ~ Bern(1/2)`: CL symmetric rate `0.43621`, raised to `0.43879` by "superposition coding and
+  binning with code trees". Tandon–Ulukus also evaluate the CL region of that channel
+  analytically. So a finite-alphabet DM-MAC with `CL ⊊ C_FB` was already known (Kramer;
+  then BL 2005, VP 2011), and hence the `k`-hierarchy was already known not to stop at `k = 1`
+  for some finite-alphabet MAC. It is not known whether Kramer's code-tree scheme lies in
+  `R^(2)`. What remains plausibly new is the explicit, certified `R^(1) ⊊ R^(2)` for `W_{1/2}`.
