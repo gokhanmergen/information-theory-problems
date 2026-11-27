@@ -5,9 +5,17 @@ import InfoTheory.Bridge.Gaussian
 /-!
 # Certificate for `InfoTheory.Problems.GaussianRelayChannelCapacity`
 
-The statement (statement-fixed 2026-11-27) asks whether, for unit gains and equal powers
-`P₁ = P₂ = P`, `gaussianRelayCapacity 1 1 1 P P / P → 1 / ln 2` as `P → 0⁺` (the cutset slope,
-in bits per unit power).
+The statement (statement fix 2, 2026-11-27) asks whether, at unit gains, the minimum energy
+per bit over all codes equals the minimum energy per bit over linear-relaying codes:
+`gaussianRelayMinEnergyPerBit false 1 1 1 = gaussianRelayMinEnergyPerBit true 1 1 1`.
+
+**History.** This module was added in 49c683f for the previous statement (the low-SNR cutset
+slope, now `LowSnrCutsetSlopeStatement`). For statement fix 2:
+* the operational lemmas were kept, with a `linearOnly : Bool` argument added because
+  `IsGaussianRelayAchievable` gained that flag; the silent relay is linear, so every
+  silent-relay code works for both values (`isLinearRelay_zero`);
+* the ratio facts about the retired statement were kept unchanged;
+* the energy-per-bit section at the end is new.
 
 ## Certified (about exactly these objects)
 * `pi_gaussian_eq_withDensity` — the noise model of `IsGaussianRelayAchievable` (Lebesgue
@@ -18,24 +26,25 @@ in bits per unit power).
 * `isGaussianRelayAchievable_of_awgn`, `isGaussianRelayAchievable_direct`,
   `direct_le_gaussianRelayCapacity` — **direct-link lower bound**: for `g₁₃ ≠ 0`, `P₁ ≥ 0` and
   any `g₁₂, g₂₃, P₂`, a point-to-point AWGN code used with a silent relay is a relay code with
-  the same error probability, so
-  `ofReal (½ log₂(1 + g₁₃² P₁)) ≤ gaussianRelayCapacity g₁₂ g₁₃ g₂₃ P₁ P₂`
-  (using the operational AWGN coding theorem
-  `Known.GaussianAchievability.isAwgnAchievable_of_lt_capacity`).
-* `direct_slope_le_ratio` — hence for every `P > 0`,
-  `ofReal (log₂(1 + P) / (2P)) ≤ gaussianRelayCapacity 1 1 1 P P / ofReal P`; the left side
-  tends to `1 / (2 ln 2)`, which is `< 1 / ln 2` (`direct_slope_lt_target`), so the direct
-  link alone does not decide the statement. `target_pos`, `target_ne_top`: the target
-  `ofReal (1 / ln 2)` is a finite positive number.
+  the same error probability. Hence
+  `ofReal (½ log₂(1 + g₁₃² P₁)) ≤ gaussianRelayCapacity g₁₂ g₁₃ g₂₃ P₁ P₂`, using the operational
+  AWGN coding theorem `Known.GaussianAchievability.isAwgnAchievable_of_lt_capacity`.
+* `direct_slope_le_ratio`, `target_pos`, `target_ne_top`, `direct_slope_lt_target` — facts
+  about the ratio in the retired `LowSnrCutsetSlopeStatement`. They do not decide it.
+* `achievable_of_linear`, `minEnergyPerBit_le_linear` — `E*(g) ≤ E*_lin(g)` for all gains.
+* `statement_iff` — `Statement ↔ E*_lin(1,1,1) ≤ E*(1,1,1)`. This neither proves nor disproves
+  `Statement`.
+* `minEnergyPerBit_linear_le`, `minEnergyPerBit_le`, `minEnergyPerBit_linear_ne_top` —
+  **direct transmission**: `E*(1,1,1) ≤ E*_lin(1,1,1) ≤ 2 ln 2`. In particular neither side is
+  the junk value `⊤`.
 
 ## Not certified
-* The cutset upper bound `gaussianRelayCapacity 1 1 1 P P ≤ ½ log₂(1 + 2P)` (in particular
-  finiteness of the capacity): this needs a converse for Gaussian relay codes, which the
-  library does not provide. (If the capacity were `⊤`, the ratio would be `⊤` and the
-  statement false, so no junk value can make it true.)
-* The El Gamal–Mohseni–Zahedi bursty linear-relaying lower bound `C ≥ 0.88283 P` for
-  `P ∈ (0, 1/10]` (on paper in
-  `attempts/gaussian-relay-channel-capacity/2026-11-26-claude-opus-5-5-time-sharing-catalog-error.md`).
+* `E*(1,1,1) ≥ (3/4) · 2 ln 2` (cutset bound, El Gamal–Mohseni–Zahedi 2006, Table II), and in
+  particular `E* > 0`: this needs a Fano/cutset converse for Gaussian relay codes, which the
+  library does not provide. (If both sides collapsed to the junk value `0`, `Statement` would
+  hold vacuously; the cutset bound rules this out on paper.)
+* The cutset upper bound `gaussianRelayCapacity 1 1 1 P P ≤ ½ log₂(1 + 2P)`.
+* Any bound on `E*_lin` below `2 ln 2`: none is published at unit gains.
 -/
 
 open MeasureTheory ProbabilityTheory
@@ -163,12 +172,18 @@ theorem errProb_silent {g₁₃ g₂₃ : ℝ} (hg : g₁₃ ≠ 0) {n M : ℕ} 
   rw [awgnErrorProb, awgnNoise_one]
   exact prob_le_one
 
+/-- The silent relay (`x_{r,i} = 0`, all coefficients `d_{ij} = 0`) is linear. -/
+theorem isLinearRelay_zero (n : ℕ) :
+    IsLinearRelay (fun (_ : Fin n) (_ : Fin _ → ℝ) => (0 : ℝ)) :=
+  ⟨fun _ _ => 0, fun _ _ => by simp⟩
+
 /-- **Silent-relay transfer**: every rate achievable on the AWGN channel with power `g₁₃² P₁`
     and noise variance `1` is achievable on the Gaussian relay channel (`g₁₃ ≠ 0`; any
-    `g₁₂, g₂₃, P₂`): the source sends `x(m) / g₁₃`, the relay stays silent. -/
-theorem isGaussianRelayAchievable_of_awgn {g₁₂ g₁₃ g₂₃ P₁ P₂ R : ℝ} (hg : g₁₃ ≠ 0)
+    `g₁₂, g₂₃, P₂`): the source sends `x(m) / g₁₃`, the relay stays silent. The silent relay
+    is linear, so this holds for both values of `linearOnly`. -/
+theorem isGaussianRelayAchievable_of_awgn (lo : Bool) {g₁₂ g₁₃ g₂₃ P₁ P₂ R : ℝ} (hg : g₁₃ ≠ 0)
     (h : IsAwgnAchievable (g₁₃ ^ 2 * P₁) 1 R) :
-    IsGaussianRelayAchievable g₁₂ g₁₃ g₂₃ P₁ P₂ R := by
+    IsGaussianRelayAchievable lo g₁₂ g₁₃ g₂₃ P₁ P₂ R := by
   obtain ⟨hR, h⟩ := h
   refine ⟨hR, fun ε hε => ?_⟩
   obtain ⟨n₀, hn₀⟩ := h ε hε
@@ -176,7 +191,8 @@ theorem isGaussianRelayAchievable_of_awgn {g₁₂ g₁₃ g₂₃ P₁ P₂ R :
   obtain ⟨C, hpow, herr⟩ := hn₀ n (le_trans (le_max_left _ _) hn)
   have hg2 : 0 < g₁₃ ^ 2 := by positivity
   refine ⟨fun m i => C.encoder m i / g₁₃, fun _ _ => 0, C.decoder,
-    fun _ => measurable_const, C.measurable_decoder, fun m => ?_, fun m => ?_, ?_⟩
+    fun _ => isLinearRelay_zero n, fun _ => measurable_const, C.measurable_decoder,
+    fun m => ?_, fun m => ?_, ?_⟩
   · have h1 := hpow m
     have h2 : ∑ i, (C.encoder m i / g₁₃) ^ 2 = (∑ i, (C.encoder m i) ^ 2) / g₁₃ ^ 2 := by
       rw [Finset.sum_div]
@@ -192,14 +208,14 @@ theorem isGaussianRelayAchievable_of_awgn {g₁₂ g₁₃ g₂₃ P₁ P₂ R :
 
 /-- Rate `0` is achievable (single message, silent nodes): `gaussianRelayCapacity` is the
     supremum of a nonempty set. -/
-theorem isGaussianRelayAchievable_zero (g₁₂ g₁₃ g₂₃ P₁ P₂ : ℝ) (hP₁ : 0 ≤ P₁) :
-    IsGaussianRelayAchievable g₁₂ g₁₃ g₂₃ P₁ P₂ 0 := by
+theorem isGaussianRelayAchievable_zero (lo : Bool) (g₁₂ g₁₃ g₂₃ P₁ P₂ : ℝ) (hP₁ : 0 ≤ P₁) :
+    IsGaussianRelayAchievable lo g₁₂ g₁₃ g₂₃ P₁ P₂ 0 := by
   refine ⟨le_rfl, fun ε hε => ⟨1, Nat.zero_lt_one, fun n _ => ?_⟩⟩
   have hM : Nat.max 1 (Nat.floor ((2 : ℝ) ^ ((n : ℝ) * 0))) = 1 := by simp
   dsimp only
   rw [hM]
-  refine ⟨fun _ _ => 0, fun _ _ => 0, fun _ => 0, fun _ => measurable_const, measurable_const,
-    fun m => ?_, fun m => ?_, ?_⟩
+  refine ⟨fun _ _ => 0, fun _ _ => 0, fun _ => 0, fun _ => isLinearRelay_zero n,
+    fun _ => measurable_const, measurable_const, fun m => ?_, fun m => ?_, ?_⟩
   · simp only [ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow, Finset.sum_const_zero]
     positivity
   · simp
@@ -207,10 +223,10 @@ theorem isGaussianRelayAchievable_zero (g₁₂ g₁₃ g₂₃ P₁ P₂ : ℝ)
 
 /-- **Direct-link lower bound**: for `g₁₃ ≠ 0` and `P₁ ≥ 0`, every
     `0 ≤ R < ½ log₂(1 + g₁₃² P₁)` is achievable on the Gaussian relay channel. -/
-theorem isGaussianRelayAchievable_direct {g₁₂ g₁₃ g₂₃ P₁ P₂ R : ℝ} (hg : g₁₃ ≠ 0)
+theorem isGaussianRelayAchievable_direct (lo : Bool) {g₁₂ g₁₃ g₂₃ P₁ P₂ R : ℝ} (hg : g₁₃ ≠ 0)
     (hP₁ : 0 ≤ P₁) (hR0 : 0 ≤ R) (hR : R < (1 / 2 : ℝ) * log2 (1 + g₁₃ ^ 2 * P₁)) :
-    IsGaussianRelayAchievable g₁₂ g₁₃ g₂₃ P₁ P₂ R := by
-  refine isGaussianRelayAchievable_of_awgn hg
+    IsGaussianRelayAchievable lo g₁₂ g₁₃ g₂₃ P₁ P₂ R := by
+  refine isGaussianRelayAchievable_of_awgn lo hg
     (GaussianAchievability.isAwgnAchievable_of_lt_capacity one_pos (by positivity) hR0 ?_)
   simpa [awgnCapacityFormula] using hR
 
@@ -231,7 +247,7 @@ theorem direct_le_gaussianRelayCapacity {g₁₂ g₁₃ g₂₃ P₁ P₂ : ℝ
   · -- approach `c` from below by achievable rates
     refine ENNReal.le_of_forall_pos_le_add fun δ hδ _ => ?_
     by_cases hδc : (δ : ℝ) < c
-    · have hach := isGaussianRelayAchievable_direct (g₁₂ := g₁₂) (g₂₃ := g₂₃) (P₂ := P₂) hg hP₁
+    · have hach := isGaussianRelayAchievable_direct false (g₁₂ := g₁₂) (g₂₃ := g₂₃) (P₂ := P₂) hg hP₁
         (sub_nonneg.mpr hδc.le) (by linarith [(NNReal.coe_pos.mpr hδ)] : c - δ < c)
       have hle : ENNReal.ofReal (c - δ) ≤ gaussianRelayCapacity g₁₂ g₁₃ g₂₃ P₁ P₂ :=
         le_sSup ⟨c - δ, hach, rfl⟩
@@ -247,10 +263,11 @@ theorem direct_le_gaussianRelayCapacity {g₁₂ g₁₃ g₂₃ P₁ P₂ : ℝ
   · rw [← hceq, ENNReal.ofReal_zero]
     exact zero_le
 
-/-! ### Consequences for the statement's ratio -/
+/-! ### Facts about the retired `LowSnrCutsetSlopeStatement` ratio (kept from 49c683f) -/
 
 /-- For every `P > 0`: `ofReal (log₂(1 + P) / (2P)) ≤ gaussianRelayCapacity 1 1 1 P P / ofReal P`.
-    The left side tends to `1 / (2 ln 2)` as `P → 0⁺`. -/
+    The left side tends to `1 / (2 ln 2)` as `P → 0⁺`. (About the ratio in the retired
+    `LowSnrCutsetSlopeStatement`; it does not decide that statement.) -/
 theorem direct_slope_le_ratio {P : ℝ} (hP : 0 < P) :
     ENNReal.ofReal (log2 (1 + P) / (2 * P)) ≤
       gaussianRelayCapacity 1 1 1 P P / ENNReal.ofReal P := by
@@ -278,5 +295,99 @@ theorem direct_slope_lt_target : 1 / (2 * Real.log 2) < 1 / Real.log 2 := by
   have h := Real.log_pos one_lt_two
   rw [div_lt_div_iff₀ (by positivity) h]
   linarith
+
+/-! ### Linear relaying and the minimum energy per bit (the current `Statement`) -/
+
+/-- Linear relaying is a special case of relaying: a rate achievable with linear relays is
+    achievable with arbitrary relays (same code). -/
+theorem achievable_of_linear {g₁₂ g₁₃ g₂₃ P₁ P₂ R : ℝ}
+    (h : IsGaussianRelayAchievable true g₁₂ g₁₃ g₂₃ P₁ P₂ R) :
+    IsGaussianRelayAchievable false g₁₂ g₁₃ g₂₃ P₁ P₂ R := by
+  obtain ⟨hR, h⟩ := h
+  refine ⟨hR, fun ε hε => ?_⟩
+  obtain ⟨N, hN, h⟩ := h ε hε
+  refine ⟨N, hN, fun n hn => ?_⟩
+  obtain ⟨enc, relay, dec, -, rest⟩ := h n hn
+  exact ⟨enc, relay, dec, fun hf => absurd hf (by decide), rest⟩
+
+/-- `E*(g) ≤ E*_lin(g)` for all gains. -/
+theorem minEnergyPerBit_le_linear (g₁₂ g₁₃ g₂₃ : ℝ) :
+    gaussianRelayMinEnergyPerBit false g₁₂ g₁₃ g₂₃ ≤
+      gaussianRelayMinEnergyPerBit true g₁₂ g₁₃ g₂₃ := by
+  unfold gaussianRelayMinEnergyPerBit
+  refine sInf_le_sInf ?_
+  rintro e ⟨P₁, P₂, R, h₁, h₂, hR, hach, rfl⟩
+  exact ⟨P₁, P₂, R, h₁, h₂, hR, achievable_of_linear hach, rfl⟩
+
+/-- The open content of `Statement` is exactly `E*_lin(1,1,1) ≤ E*(1,1,1)`. -/
+theorem statement_iff :
+    Statement ↔
+      gaussianRelayMinEnergyPerBit true 1 1 1 ≤ gaussianRelayMinEnergyPerBit false 1 1 1 := by
+  unfold Statement
+  exact ⟨fun h => h.symm.le, fun h => le_antisymm (minEnergyPerBit_le_linear 1 1 1) h⟩
+
+/-- Rate used for the direct-transmission energy bound: `R(x) = x / (2 ln 2 (1 + x)²)` bits. -/
+private lemma direct_rate_lt {x : ℝ} (hx : 0 < x) :
+    x / (2 * Real.log 2 * (1 + x) ^ 2) < (1 / 2 : ℝ) * log2 (1 + 1 ^ 2 * x) := by
+  have hl2 : 0 < Real.log 2 := Real.log_pos one_lt_two
+  have h1x : 0 < 1 + x := by linarith
+  -- `log (1 + x) ≥ 1 - (1 + x)⁻¹ = x / (1 + x)`
+  have hlog : x / (1 + x) ≤ Real.log (1 + x) := by
+    have := Real.one_sub_inv_le_log_of_pos h1x
+    have he : 1 - (1 + x)⁻¹ = x / (1 + x) := by field_simp; ring
+    linarith
+  have hlt : x / (1 + x) ^ 2 < x / (1 + x) := by
+    apply div_lt_div_of_pos_left hx h1x
+    nlinarith
+  unfold log2
+  rw [one_pow, one_mul]
+  calc x / (2 * Real.log 2 * (1 + x) ^ 2) = (x / (1 + x) ^ 2) / (2 * Real.log 2) := by
+        field_simp
+    _ < (x / (1 + x)) / (2 * Real.log 2) := by gcongr
+    _ ≤ Real.log (1 + x) / (2 * Real.log 2) := by gcongr
+    _ = (1 / 2 : ℝ) * (Real.log (1 + x) / Real.log 2) := by field_simp
+
+/-- **Direct transmission**: `E*_lin(1,1,1) ≤ 2 ln 2` (so `E*_lin` is not the junk value `⊤`).
+    For every `x > 0` the operating point `P₁ = x`, `P₂ = x²`, `R = x / (2 ln 2 (1 + x)²)` is
+    achievable with a silent (hence linear) relay and has energy per bit `2 ln 2 (1 + x)³`;
+    let `x → 0⁺`. -/
+theorem minEnergyPerBit_linear_le :
+    gaussianRelayMinEnergyPerBit true 1 1 1 ≤ ENNReal.ofReal (2 * Real.log 2) := by
+  have hl2 : 0 < Real.log 2 := Real.log_pos one_lt_two
+  set f : ℝ → ℝ≥0∞ := fun x => ENNReal.ofReal (2 * Real.log 2 * (1 + x) ^ 3) with hf
+  have hlim : Filter.Tendsto f (nhdsWithin 0 (Set.Ioi 0))
+      (nhds (ENNReal.ofReal (2 * Real.log 2))) := by
+    have hc : Continuous f :=
+      ENNReal.continuous_ofReal.comp (continuous_const.mul
+        ((continuous_const.add continuous_id).pow 3))
+    have h0 : Filter.Tendsto f (nhdsWithin 0 (Set.Ioi 0)) (nhds (f 0)) :=
+      (hc.tendsto 0).mono_left nhdsWithin_le_nhds
+    have hf0 : f 0 = ENNReal.ofReal (2 * Real.log 2) := by simp [hf]
+    rwa [hf0] at h0
+  refine ge_of_tendsto hlim (eventually_nhdsWithin_of_forall fun x hx => ?_)
+  have hx : (0 : ℝ) < x := hx
+  have h1x : 0 < 1 + x := by linarith
+  set R : ℝ := x / (2 * Real.log 2 * (1 + x) ^ 2) with hR
+  have hRpos : 0 < R := by positivity
+  have hach : IsGaussianRelayAchievable true 1 1 1 x (x ^ 2) R :=
+    isGaussianRelayAchievable_direct true one_ne_zero hx.le hRpos.le (direct_rate_lt hx)
+  have hmem : ENNReal.ofReal ((x + x ^ 2) / R) ∈
+      { e : ℝ≥0∞ | ∃ P₁ P₂ R : ℝ, 0 < P₁ ∧ 0 < P₂ ∧ 0 < R ∧
+        IsGaussianRelayAchievable true 1 1 1 P₁ P₂ R ∧
+        e = ENNReal.ofReal ((P₁ + P₂) / R) } :=
+    ⟨x, x ^ 2, R, hx, by positivity, hRpos, hach, rfl⟩
+  have heq : (x + x ^ 2) / R = 2 * Real.log 2 * (1 + x) ^ 3 := by
+    rw [hR]
+    field_simp
+  calc gaussianRelayMinEnergyPerBit true 1 1 1 ≤ ENNReal.ofReal ((x + x ^ 2) / R) := sInf_le hmem
+    _ = f x := by rw [heq]
+
+/-- Consequently `E*(1,1,1) ≤ E*_lin(1,1,1) ≤ 2 ln 2 < ⊤`. -/
+theorem minEnergyPerBit_le :
+    gaussianRelayMinEnergyPerBit false 1 1 1 ≤ ENNReal.ofReal (2 * Real.log 2) :=
+  (minEnergyPerBit_le_linear 1 1 1).trans minEnergyPerBit_linear_le
+
+theorem minEnergyPerBit_linear_ne_top : gaussianRelayMinEnergyPerBit true 1 1 1 ≠ ⊤ :=
+  ne_top_of_le_ne_top ENNReal.ofReal_ne_top minEnergyPerBit_linear_le
 
 end InfoTheory.Known.Certificates.GaussianRelayChannelCapacity
