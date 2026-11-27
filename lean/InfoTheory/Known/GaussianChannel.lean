@@ -34,7 +34,10 @@ Validates `InfoTheory.Core.GaussianOperational` (Cover–Thomas Ch. 9; El Gamal�
   (`InfoTheory.Known.bsc_capacity`): `isAwgnAchievable_of_lt_bsc`,
   `bsc_rate_le_awgnOperationalCapacity`, and `awgnOperationalCapacity_pos` (`P, N > 0`).
 
-Not proved here: the matching achievability `C_op ≥ ½ log₂(1 + P/N)` (continuous random coding).
+The matching achievability `C_op ≥ ½ log₂(1 + P/N)`, and hence the exact operational capacity
+`awgnOperationalCapacity P N = ½ log₂(1 + P/N)`, is proved in
+`InfoTheory.Known.GaussianAchievability.awgnOperationalCapacity_eq` (via discretization and
+cost-constrained DMC coding).
 -/
 
 open MeasureTheory ProbabilityTheory Filter Topology

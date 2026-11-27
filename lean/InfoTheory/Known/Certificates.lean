@@ -1,3 +1,14 @@
+import InfoTheory.Known.Certificates.AwgnFeedbackErrorExponent
+import InfoTheory.Known.Certificates.BinaryMultiplierTwoWayChannel
+import InfoTheory.Known.Certificates.BinarySkewSymmetricBc
+import InfoTheory.Known.Certificates.BinarySymmetricZInterferenceChannel
+import InfoTheory.Known.Certificates.BroadcastChannel
+import InfoTheory.Known.Certificates.BroadcastChannelThreeReceivers
+import InfoTheory.Known.Certificates.BscReliabilityFunction
+import InfoTheory.Known.Certificates.CascadeRateDistortionSideInfo
+import InfoTheory.Known.Certificates.CeoProblemGeneral
+import InfoTheory.Known.Certificates.CognitiveInterferenceChannel
+import InfoTheory.Known.Certificates.CommonInformationExactVsWyner
 import InfoTheory.Known.Certificates.CorrelatedSourcesOverMac
 import InfoTheory.Known.Certificates.CourtadeKumar
 import InfoTheory.Known.Certificates.DegradedMessageSetsBcThreeReceivers
@@ -5,20 +16,38 @@ import InfoTheory.Known.Certificates.DeletionChannel
 import InfoTheory.Known.Certificates.DeletionChannelHighDLimit
 import InfoTheory.Known.Certificates.DeletionChannelSmallDAsymptotics
 import InfoTheory.Known.Certificates.DiscreteEntropyPowerInequality
+import InfoTheory.Known.Certificates.DmInterferenceChannelCapacity
+import InfoTheory.Known.Certificates.DmcZeroRateErrorExponent
 import InfoTheory.Known.Certificates.EditDistanceCodeCapacity
 import InfoTheory.Known.Certificates.EntropicDoublingConstant
 import InfoTheory.Known.Certificates.EntropyRegion
+import InfoTheory.Known.Certificates.GaussianMultipleDescriptions3
 import InfoTheory.Known.Certificates.GilbertVarshamovBinary
+import InfoTheory.Known.Certificates.GrayWynerLossy
+import InfoTheory.Known.Certificates.IntrinsicVsSecretKeyGap
 import InfoTheory.Known.Certificates.KissingNumberHighDim
 import InfoTheory.Known.Certificates.LinearRankEntropyRegionN6
 import InfoTheory.Known.Certificates.ListDecodingCapacityBinaryLinear
 import InfoTheory.Known.Certificates.ListDecodingZeroErrorCapacity
+import InfoTheory.Known.Certificates.MacWithFeedback
+import InfoTheory.Known.Certificates.MartonInnerBoundTightness
 import InfoTheory.Known.Certificates.MdsConjecture
+import InfoTheory.Known.Certificates.MultipleDescriptionsGeneral
+import InfoTheory.Known.Certificates.MultiterminalSourceCoding
+import InfoTheory.Known.Certificates.NonAsymptoticLossyDispersion
+import InfoTheory.Known.Certificates.PrimitiveRelayChannelBsc
+import InfoTheory.Known.Certificates.RelayChannel
+import InfoTheory.Known.Certificates.SecretKeyCapacityPublicDiscussion
 import InfoTheory.Known.Certificates.ShannonCapacityC7
 import InfoTheory.Known.Certificates.ShannonCapacityComplementProduct
 import InfoTheory.Known.Certificates.ShannonCapacityUnionProduct
 import InfoTheory.Known.Certificates.SpernerCapacityDirectedGraphs
+import InfoTheory.Known.Certificates.TwoWayChannelCapacity
+import InfoTheory.Known.Certificates.UniversalLossyRedundancy
+import InfoTheory.Known.Certificates.WiretapChannelCompoundSecrecy
+import InfoTheory.Known.Certificates.WiretapWithFeedbackCapacity
 import InfoTheory.Known.Certificates.ZeroErrorMacAdder
+import InfoTheory.Known.Certificates.ZeroErrorSourceCodingSideInfo
 
 /-!
 # Problem-statement certificates

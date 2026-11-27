@@ -6,6 +6,8 @@ import InfoTheory.Known.ZeroError
 import InfoTheory.Known.Operational
 import InfoTheory.Known.GaussianChannel
 import InfoTheory.Known.MarkovSource
+import InfoTheory.Known.CostConstrainedCoding
+import InfoTheory.Known.GaussianAchievability
 
 /-!
 # Known Results
