@@ -607,6 +607,8 @@ SOLVED_THEOREMS = [
         ],
         "analogous_open": [
             "timing-channel-general-queue",
+            "gaussian-bc-feedback-sum-capacity",
+            "gaussian-mac-feedback-linear-optimality",
         ],
     },
 
@@ -692,36 +694,43 @@ SOLVED_THEOREMS = [
     },
     {
         "id": "awgn-operational-converse",
-        "title": "AWGN Channel Operational Converse and BPSK Positive-Rate Achievability",
+        "title": "Shannon's AWGN Channel Coding Theorem (Operational Capacity = ½ log₂(1 + P/N))",
         "category": "ch8-9-gaussian",
         "authors": "Claude E. Shannon",
         "year": "1948",
-        "reference": "Cover & Thomas, §9.1; El Gamal & Kim, §3.3",
-        "tags": ["awgn", "operational-capacity", "measurable-codes", "ch9"],
+        "reference": "Cover & Thomas, Theorem 9.1.1; El Gamal & Kim, Theorem 3.2 & §3.3",
+        "tags": ["awgn", "operational-capacity", "measurable-codes", "flagship", "ch9"],
         "statement": (
             "Over the memoryless AWGN channel $Y_i = X_i + Z_i$ ($Z_i \\sim \\mathcal{N}(0, N)$ i.i.d., "
             "$P \\ge 0$, $N > 0$) with measurable decoders, per-codeword power constraint "
-            "$\\sum_{i=1}^n x_i(m)^2 \\le n P$, and `ENNReal`-valued measure error probabilities:\n"
-            "$$C_{\\mathrm{BSC}}(Q(\\sqrt{P/N})) \\le C_{\\mathrm{op}}^{\\mathrm{AWGN}}(P, N) \\le \\frac{1}{2}\\log_2\\left(1 + \\frac{P}{N}\\right),$$\n"
-            "with $0 < C_{\\mathrm{op}}^{\\mathrm{AWGN}}(P, N)$ strictly for $P > 0, N > 0$."
+            "$\\sum_{i=1}^n x_i(m)^2 \\le n P$, and `ENNReal`-valued average error probabilities:\n"
+            "$$C_{\\mathrm{op}}^{\\mathrm{AWGN}}(P, N) = \\frac{1}{2}\\log_2\\left(1 + \\frac{P}{N}\\right).$$\n"
+            "Every rate $0 \\le R < \\frac{1}{2}\\log_2(1 + P/N)$ is operationally achievable, and no rate "
+            "$R > \\frac{1}{2}\\log_2(1 + P/N)$ is achievable (note: average-message error here matches "
+            "the maximal-error capacity of Cover & Thomas Thm. 9.1.1)."
         ),
         "proof_notes": (
-            "Proved in `Known/GaussianChannel.lean` against the junk-proof measurable-code definitions in "
-            "`Core/GaussianOperational.lean`: proves non-measurable decoders are excluded, verifies the "
-            "achievable-rate set is nonempty and bounded above, proves the operational converse via exact "
-            "Gaussian likelihood-ratio change of measure against $\\mathcal{N}(0, (P+N)I_n)$, and proves "
-            "positive operational capacity via BPSK + hard decisions reducing to `bsc_capacity` and "
-            "`shannon_channel_coding_achievability`."
+            "Proved end-to-end against `Core/GaussianOperational.lean`: `Known/GaussianChannel.lean` "
+            "excludes non-measurable decoders, proves the operational converse via exact Gaussian "
+            "likelihood-ratio change of measure against $\\mathcal{N}(0, (P+N)I_n)$, and proves the "
+            "BPSK lower bound; `Known/GaussianAchievability.lean` proves full achievability "
+            "(`isAwgnAchievable_of_lt_capacity`) by fine quantization of truncated Gaussian inputs and "
+            "outputs into finite DMCs and invoking `Bridge.shannon_channel_coding_achievability`, "
+            "yielding exact operational equality `awgnOperationalCapacity_eq`."
         ),
         "lean_decls": [
             ("lean/InfoTheory/Known/GaussianChannel.lean", "awgn_code_converse"),
             ("lean/InfoTheory/Known/GaussianChannel.lean", "awgnOperationalCapacity_le"),
-            ("lean/InfoTheory/Known/GaussianChannel.lean", "bsc_rate_le_awgnOperationalCapacity"),
-            ("lean/InfoTheory/Known/GaussianChannel.lean", "awgnOperationalCapacity_pos"),
+            ("lean/InfoTheory/Known/GaussianAchievability.lean", "isAwgnAchievable_of_lt_capacity"),
+            ("lean/InfoTheory/Known/GaussianAchievability.lean", "awgnOperationalCapacity_eq"),
+            ("lean/InfoTheory/Known/GaussianAchievability.lean", "isAwgnAchievable_iff_of_ne"),
         ],
         "related_open": [
+            "amplitude-constrained-awgn-support",
             "gaussian-interference-channel",
             "gaussian-relay-channel-capacity",
+            "gaussian-bc-feedback-sum-capacity",
+            "gaussian-mac-feedback-linear-optimality",
             "awgn-feedback-error-exponent",
         ],
     },
