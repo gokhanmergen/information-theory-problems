@@ -85,7 +85,10 @@ necessary. A single-letter characterization has been open since then.
   degenerate cases. That is hard even for point-to-point channels, for arithmetic reasons that
   have nothing to do with the MAC. Approximating the real number $\rho^*$ with a promise gap
   avoids this. Transmissibility at $\rho = 1$ is recovered from $\rho^*$ except when
-  $\rho^* = 1$.
+  $\rho^* = 1$. That exception includes CES's own motivating example. There the uncoded
+  code is error-free, so $\rho^* \ge 1$, and the cooperative cut-set bound gives
+  $\rho^* \le \log_2 3 / H(U,V) = 1$. So $\rho^* = 1$ exactly (attempt
+  `2026-11-26-claude-opus-5-5-lower-semicomputability.md`, Claim 8).
 - **Instances** are given by integer weights: $P(u,v) = w(u,v)/\sum w$ and
   $W(y \mid x_1,x_2) = v(x_1,x_2,y)/\sum_{y'} v(x_1,x_2,y')$. Every rational instance arises
   this way. The hypothesis $w(u,t) < \sum w$ for all $(u,t)$ is equivalent to $H(U,V) > 0$. The
@@ -93,9 +96,17 @@ necessary. A single-letter characterization has been open since then.
   $0 \le \rho^* \le (\log_2|\mathcal{Y}| + 1 + L)/L$ with $L = \log_2(1/p_{\max})$, proved by an
   elementary counting converse.
 - **Monotonicity.** Transmissibility at $\rho$ implies it at all $\rho' < \rho$, by padding with
-  a fixed, well-chosen tail of source symbols (an averaging argument). This is only asserted
-  here, not certified. It is needed only to relate $\rho^*$ to $\rho = 1$, not for the frozen
-  statement itself.
+  a fixed, well-chosen tail of source symbols (an averaging argument). A written proof is in
+  the attempt cited above (Claim 2); it is not yet certified in Lean. It is needed only to
+  relate $\rho^*$ to $\rho = 1$, not for the frozen statement itself.
+- **Lower semi-computability (attempt, unverified).** The same attempt proves that $\rho^*$
+  is lower semi-computable, uniformly in the instance: $\{r \in \mathbb{Q} : r < \rho^*\}$
+  is recursively enumerable. The tool is a bootstrap theorem: one finite code with exact
+  rational error $\varepsilon$ certifies every ratio below
+  $k/(n + \varphi(\varepsilon)(1/C_1 + 1/C_2))$. Consequently the frozen Statement is
+  equivalent to uniform *upper* semi-computability of $\rho^*$, exactly as for
+  `shannon-capacity-computability`. On instances where one encoder's input does not
+  affect the output, $\rho^*$ has a closed form and is computable.
 
 ## References
 
