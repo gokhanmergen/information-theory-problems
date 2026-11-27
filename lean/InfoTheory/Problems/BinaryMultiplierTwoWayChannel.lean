@@ -35,7 +35,9 @@ noncomputable def bmcSymmetricCapacity : ℝ :=
   sSup { R : ℝ | (R, R) ∈ twcCapacityRegion binaryMultiplyingChannel }
 
 /-- Crossover probability of the Hekstra–Willems adaptive parallel channel for the BMC
-    (Bloemen 1996, Table 6.2 / eq. (6.58)), as a function of `α = P(X₁ = 1 | U = u)` and
+    (Bloemen 1996, Table 6.2; it agrees with eq. (6.58) only up to the `B`-label convention:
+    the printed (6.58) reads `1 - p` and must not be used, since with it the bound rises to
+    at least 0.6607, above the Zhang–Berger–Schalkwijk upper bound 0.64891), as a function of `α = P(X₁ = 1 | U = u)` and
     `β = P(X₂ = 1 | U = u)`: on input `(0, 0)` the auxiliary output is `B = 0` with this
     probability. (Lean's `x / 0 = 0` fires only at `α = β ∈ {0, 1}`, where the rate terms below
     do not depend on the crossover.) -/

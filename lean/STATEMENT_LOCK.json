@@ -18,7 +18,7 @@
     "lean/InfoTheory/Problems/AwgnFeedbackErrorExponent.lean": "1425d4ca3bc86a156ca6bb2082ad1b49d890113b4ba4365950c0c851f231359e",
     "lean/InfoTheory/Problems/BatchCodesOptimalRedundancy.lean": "1e35d835efed5e9a0c3e01c51e698c21918dd1329284d9a6393554172c0c8eef",
     "lean/InfoTheory/Problems/BinaryDuplicationChannel.lean": "780c4bcc93527253d10914f235bf0b278f2dfd137d0887d625c33856a1e732e1",
-    "lean/InfoTheory/Problems/BinaryMultiplierTwoWayChannel.lean": "015cd08429e5e3bf3c956606c0edbc03eed05aa786a77fcd909d6227a94b1808",
+    "lean/InfoTheory/Problems/BinaryMultiplierTwoWayChannel.lean": "82b115629f4d5d0482365e9a29cb35985e83e43cb5fc25aa78a1ae6bc969ddff",
     "lean/InfoTheory/Problems/BinarySkewSymmetricBc.lean": "0b60a1c611394582d024f42b49efca5917592c75709068ad835777ea7d347af1",
     "lean/InfoTheory/Problems/BinarySymmetricZInterferenceChannel.lean": "cd1a7b4a0f6b0d302419ba218cc2ce75c1e46432114b5af1b706ba1d6c22bb25",
     "lean/InfoTheory/Problems/BroadcastChannel.lean": "4cce74fb0862373e5a2e7a5b93d8c6d2907ce1cca1fcb825b1bfd4865b55cf39",
