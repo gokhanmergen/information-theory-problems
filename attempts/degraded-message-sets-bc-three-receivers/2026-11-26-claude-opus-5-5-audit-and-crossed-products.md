@@ -241,8 +241,8 @@ plus the FM step), the NE Thm. 1 converse, and Körner–Marton.
   The message structure is M₀ to all three receivers and M₁ to Y₁ only, with joint average
   error. The V₂ = (U₁,U₂), V₃ = (U₁,U₃) substitution argument is correct in both directions.
   If kX = 0, both sides are empty. If some kY = 0 and kX ≥ 1, no channel exists. Confirmed.
-* **Claim 2.** I ran an independent exact Fourier–Motzkin elimination in Fractions (scratch
-  `fm_exact.py`): code system (15)–(22), S ≤ T, R₁ = ΣS, everything ≥ 0, with T₂, T₃, S₁, S₂, S₃
+* **Claim 2.** I ran an independent exact Fourier–Motzkin elimination in Fractions
+  (`code/review/fm_exact.py`): code system (15)–(22), S ≤ T, R₁ = ΣS, everything ≥ 0, with T₂, T₃, S₁, S₂, S₃
   eliminated, giving 44 inequalities. I then checked both inclusions by LP. With nonnegativity
   plus L₂₃ ≤ L₂ and L₂₃ ≤ L₃, the projection equals (14) exactly. With nonnegativity alone, two
   FM inequalities (2R₀+R₁ ≤ I₂+I₃−I₂₃+L₂ and the same with L₃) are not implied, as the claim
@@ -270,9 +270,10 @@ plus the FM step), the NE Thm. 1 converse, and Körner–Marton.
   R₁ ≤ I(X;Y₁|U) ≤ I(A;Y₁ᴬ|U) + I(B;Y₁ᴮ|U) ≤ η[I(A;Y₂|U) + I(B;Y₃|U)] ≤ 2η(c_s − R₀), where
   η = (1−2c)² = 0.7511 is the SDPI constant of BSC_c, a∗c = b, c = 1/15. Also
   R₀ + R₁ ≤ I(X;Y₁) ≤ 2c_w. P* violates the first bound: 0.5731 > 0.4305. An LP over these two
-  bounds gives max 1.5R₀+R₁ ≤ 1.071673 over BZT (scratch `bzt_sdpi_bound.py`), close to the
+  bounds gives max 1.5R₀+R₁ ≤ 1.071673 over BZT (`code/review/bzt_sdpi_bound.py`), close to the
   value 1.070405 found by the author.
-* **Code.** I re-ran `ne_region_check.py` (ALL OK, 12 000 samples, 0 mismatches) and
+* **Code.** I re-ran `ne_region_check.py` (ALL OK, 12 000 samples, 0 mismatches; log
+  `code/review/ne_region_check.out`) and
   `crossed_product.part1` (P* inside). The scripts are transcription tests, not proofs, and the
   attempt presents them that way. In part 2, |U| = 5 is not a justified support-lemma bound
   (|X|+2 = 6 is), but the SDPI bound above makes this moot.

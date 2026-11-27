@@ -1,0 +1,23 @@
+NE Fig. 2 channel, U1=X2, U2=X1, U3=const, X uniform:
+   IV2Y2     = 1.000000000000
+   IV3Y3     = 0.500000000000
+   IV2V3gU1  = 0.000000000000
+   IXY1gV2   = 0.000000000000
+   IXY1gV3   = 0.500000000000
+   IXY1gU1   = 0.500000000000
+   IXY1gV23  = 0.000000000000
+   IXY1      = 1.500000000000
+   1R0+0R1 = 0.500 <= 1.000000000000  ok
+   1R0+0R1 = 0.500 <= 0.500000000000  ok
+   2R0+0R1 = 1.000 <= 1.500000000000  ok
+   0R0+1R1 = 0.500 <= 0.500000000000  ok
+   0R0+1R1 = 0.500 <= 0.500000000000  ok
+   1R0+1R1 = 1.000 <= 1.500000000000  ok
+   1R0+1R1 = 1.000 <= 1.000000000000  ok
+   1R0+1R1 = 1.000 <= 1.000000000000  ok
+   2R0+1R1 = 1.500 <= 1.500000000000  ok
+   2R0+2R1 = 2.000 <= 2.000000000000  ok
+   (1/2, 1/2) in Lean region: True  (BZT allows at most R1 = 5/12 at R0 = 1/2)
+random check of L23<=L2, L23<=L3, L2<=L1, L3<=L1 on 300 random (P,W): max violation 0.00e+00 (should be <= ~1e-12)
+Fourier-Motzkin LP check: 12000 (P, W, R0, R1) samples (5387 inside the Lean region, 6613 outside), 0 mismatches
+ALL OK
