@@ -290,7 +290,7 @@ a rigorous lower bound.
 
 ### Reviewer note (claude-opus-5-5, independent review, 2026-11-27)
 
-Scripts are in the reviewer's scratch folder, not the repo. Each was written from scratch and imports
+Scripts are in `code/review/`. Each was written from scratch and imports
 none of the author's code.
 
 * **Primary source.** I read arXiv:1502.02589v1 in full (pdftotext).
@@ -302,7 +302,7 @@ none of the author's code.
     all of them correctly.
   - NXY leave two steps unproved. Lemma 2's "one can verify `q̂ = 1−2p`" and the "tedious
     exercise" that the envelope of `F` is supported at `(p0,q0)`. The attempt's B&B needs neither.
-* **Claim 6** (sympy, `sym_check.py`, `tangency_table.py`).
+* **Claim 6** (sympy, `code/review/sym_check.py`, `code/review/tangency_table.py`).
   - `f` and `g` derived symbolically from the channel equal the closed forms exactly.
   - `f_qq` minus the claimed formula simplifies to 0.
   - The tangency residual reduces to 0 by hand after `log((1−p)²) = 2log(1−p)`. It is `≤ 1e-50`
@@ -315,20 +315,21 @@ none of the author's code.
   in `J`. The chain rule gives `g + Σ p(u2|q) f`, and concavity of `E` finishes. No cardinality
   bound is needed (any finite `kU2`, `kQ`), and the closure is harmless.
 * **Interval code in Claim 7.**
-  - I read `certify_hk1_bound.py` and probed the `mpmath.iv` semantics (`iv_semantics.py`).
+  - I read `certify_hk1_bound.py` and probed the `mpmath.iv` semantics (`code/review/iv_semantics.py`).
   - `.a`/`.b` return degenerate intervals, and `iv.mpf([A.a,B.b])` encloses correctly.
   - An undecidable comparison returns `None`, which falls through to the conservative branch.
   - `1−x` is exact for the dyadic box ends and an outward interval otherwise.
   - The monotone pieces are right: `h` on `[0,½]`, and `φ` with `0.3678 < 1/e < 0.3679`.
   - The boxes cover `[0,1]²`, and the stop rule (max upper bound `< TARGET`) is correct. No float leak found.
-* **Independent B&B** (`indep_bnb.py`, `mpmath.iv` at 20 digits). It uses the exact piecewise `g+E`
+* **Independent B&B** (`code/review/indep_bnb.py`, `mpmath.iv` at 20 digits; logs
+  `code/review/bnb_110803.log`, `code/review/bnb_11078.log`). It uses the exact piecewise `g+E`
   instead of the tangent line on all of `p ≤ ½`.
   - `python indep_bnb.py 1.10803`: `CERTIFIED ... <= 1.10802997885819218768 < 1.10803; splits
     54945`. This is the same bound as the author's, as expected: the binding boxes have `p > ½`,
     where both codes use the same formula and the same bisection.
   - `python indep_bnb.py 1.1078`: `CERTIFIED ... <= 1.10779999832167 < 1.1078; splits 98434`.
     So `max_{HK^(1)}(2R1+R2) ≤ 1.1078` holds, which is stronger than Claim 7.
-* **Claim 10, and NXY's two-letter point** (`indep_eval.py`, 60 digits).
+* **Claim 10, and NXY's two-letter point** (`code/review/indep_eval.py`, 60 digits).
   - The evaluator builds `W^{⊗k}` with `Y2 = X2` and evaluates all eight Lean quantities `a1…d2`
     for `kQ = kU1 = kU2 = 1`. All 7 constraints hold at `k·(R1,R2)`.
   - 3-letter scheme: `R1 = 0.0878251069048244`, `R2 = 0.934554368130239`,
@@ -336,11 +337,11 @@ none of the author's code.
   - NXY two-letter point: `1.10803563221621534`.
   - Bit-flipped convention check: `1.0286`. So the "never `000`" orientation matters and is the
     right one.
-  - Interval enclosure (`iv_k3_and_outer.py`, 40 digits):
+  - Interval enclosure (`code/review/iv_k3_and_outer.py`, 40 digits):
     an interval of width `1.4·10⁻³⁹` about `1.11020458193988723482`. Claim 10 is therefore rigorous.
   - Under the Lean definition the point lies in `{r : 3r ∈ R_HK(icPower W 3)} ⊆ HK^(3)`.
     `HK^(1) ⊆ HK^(3)` is Claim 2.
-* **Claim 8.** The derivation checks. I reproduced the value `1.2290392` at `(0.42983, 0.41146)`
+* **Claim 8.** The derivation checks. I reproduced (`code/review/iv_k3_and_outer.py`) the value `1.2290392` at `(0.42983, 0.41146)`
   numerically (not certified, as the claim says).
 * **Claims 1, 2 and 4** (read and re-derived against `Core/Channels.lean: icCapacityRegion`). The
   convexity argument also needs a common `kU_j = max`, which is a trivial embedding. The Fano step
