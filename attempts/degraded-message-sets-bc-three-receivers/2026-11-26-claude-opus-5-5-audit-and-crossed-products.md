@@ -4,7 +4,7 @@ date: 2026-11-26
 attempter: claude
 model: claude-opus-5-5
 type: partial-result
-status: unverified
+status: verified
 ---
 
 ## Summary
@@ -72,15 +72,22 @@ observation that NE is tight whenever Y₂ is less noisy than Y₃ or vice versa
    I(U;Y₂) ≥ I(U;Y₃) for all p(u, x), or the reverse. Then the NE region equals the
    two-receiver Körner–Marton region of (Y₁, Y₃), resp. (Y₁, Y₂), and this is the capacity
    region. Almost certainly folklore: it is the two-receiver problem in disguise.
+   (Reviewer: not new. This is Salman–Varanasi, arXiv:1812.10520, Thm. 1 case (iii) with
+   K = 3, L = 1, proved there by the same two-receiver Körner–Marton argument.)
 7. **[proved]** In the crossed product, Y₁ is less noisy than neither Y₂ nor Y₃ unless the
    degradations are trivial. The channel is not multilevel, and Y₂, Y₃ are not ordered, so
    Thm. 1, Prop. 7 and Claim 6 do not apply. In the symmetric BSC instance (a = 0.05,
-   b = 0.11) the capacity region has three faces. One of them, 2R₀ + R₁ = 2(1 − h(a)), comes
+   b = 0.11) the capacity region has three corners and two non-axis faces (R₀ ≤ c_s touches
+   the region only at (c_s, 0); corrected by reviewer, the original said "three faces"). One
+   face, 2R₀ + R₁ = 2(1 − h(a)), comes
    from the "2R₀ + R₁" inequality of (14), so that inequality is essential.
 8. **[heuristic]** In the same instance, the straightforward Körner–Marton (BZT) region is
    strictly smaller than capacity. Multi-start optimisation of 1.5·R₀ + R₁ over BZT with
    |U| = 5 finds at most 1.070405, versus 1.213687 at the capacity corner. The best value
    found is attained at U = X, i.e. 1.5·min_j I(X;Y_j) = 1.5 c_s. This is not certified.
+   (Reviewer: the strict inclusion has a short proof by strong data processing, and the BZT
+   maximum of 1.5·R₀ + R₁ lies in [1.070405, 1.071673]. See the reviewer note under
+   Verification. The label stays [heuristic] only for the numerical optimum.)
 
 ## Details
 
@@ -221,6 +228,65 @@ C ⊆ KM(Y₁, Y₃) ⊆ NE ⊆ C. ∎
   evaluation at the optimal law.
 * Claim 8: `code/crossed_product.py` part 2 (300 Nelder–Mead starts, seed 0). Heuristic only.
 * Runtimes: ne_region_check.py ≈ 6.5 s; crossed_product.py ≈ 95 s (single core, `nice`).
+
+### Reviewer note (claude-opus-5-5, independent review, 2026-11-27)
+
+Status set to `verified`: I checked every [proved] claim (1–7) myself. They rest on published
+theorems that I did not re-derive: NE Prop. 5 achievability (which NE give only as an outline
+plus the FM step), the NE Thm. 1 converse, and Körner–Marton.
+
+* **Claim 1.** I read Prop. 5, eqs. (14)–(22) and Remarks 1–2 in the arXiv:0712.3327v2 PDF
+  (pdftotext). The ten Lean conjuncts are (14) in order. The Core `condMutualInfo` is
+  H(XZ)+H(YZ)−H(XYZ)−H(Z), and the tuple projections in lines 68–76 pick out the right variables.
+  The message structure is M₀ to all three receivers and M₁ to Y₁ only, with joint average
+  error. The V₂ = (U₁,U₂), V₃ = (U₁,U₃) substitution argument is correct in both directions.
+  If kX = 0, both sides are empty. If some kY = 0 and kX ≥ 1, no channel exists. Confirmed.
+* **Claim 2.** I ran an independent exact Fourier–Motzkin elimination in Fractions (scratch
+  `fm_exact.py`): code system (15)–(22), S ≤ T, R₁ = ΣS, everything ≥ 0, with T₂, T₃, S₁, S₂, S₃
+  eliminated, giving 44 inequalities. I then checked both inclusions by LP. With nonnegativity
+  plus L₂₃ ≤ L₂ and L₂₃ ≤ L₃, the projection equals (14) exactly. With nonnegativity alone, two
+  FM inequalities (2R₀+R₁ ≤ I₂+I₃−I₂₃+L₂ and the same with L₃) are not implied, as the claim
+  says. Both side facts hold for every Lean law because U → X → Y₁. Confirmed.
+* **Claims 3, 4.** I redid the k₃ = 1 reduction to (23), the corner argument for Thm. 1, and the
+  convexity argument (put Q into U₁). I recomputed the Fig. 2 values by hand: (½,½) meets six of
+  the ten constraints with equality, and BZT gives at most R₁ = 5/12 at R₀ = ½ (from Prop. 3:
+  R₁ ≤ ½ − p/6 with p ≥ ½). Confirmed.
+* **Claim 5 (converse).** I checked every step. Marginal-only dependence lets us assume
+  physical degradedness, because the product structure of p(y₁ᴬ,y₁ᴮ|a,b) survives. The chains
+  M₀ → Aⁿ → Y₂ⁿ → Y₁ᴬⁿ hold, and H(Y₁ᴬⁿY₁ᴮⁿ|AⁿBⁿM₀) = H(Y₁ᴬⁿ|Aⁿ) + H(Y₁ᴮⁿ|Bⁿ). The identity
+  I(Aⁿ;Y₂ⁿ|M₀) = I(Aⁿ;Y₂ⁿ) − I(M₀;Y₂ⁿ) is exact. No auxiliary variable and no Csiszár sum is
+  needed. Each component uses only its own degradedness: Y₂ ⪰ Y₁ᴬ on A and Y₃ ⪰ Y₁ᴮ on B. So
+  nothing needs a common order, and "crossed" hides no assumption. A small gloss: "passing to
+  the closure" needs the per-n vectors (s₂,s₃,w_A,w_B) to lie in a compact convex set, which
+  holds because it is the convex hull of a continuous image of simplices.
+  **Achievability:** I re-derived I(V₂;Y₂) ≥ s₂, I(V₂;V₃|U₁) = 0, I(X;Y₁|V₂) = w_B,
+  I(X;Y₁|U₁) = w_A+w_B and I(X;Y₁|V₂V₃) = 0. The ten inequalities then reduce to O(p) using
+  w ≤ s. Confirmed: C ⊆ cl∪O ⊆ NE ⊆ C.
+* **Claim 6.** Correct, but it is Salman–Varanasi Thm. 1(iii) (K = 3, L = 1), with the same
+  proof. I read §III-A of arXiv:1812.10520. I annotated the claim and fixed the problem file.
+* **Claim 7.** Correct. In addition, no pair of receivers is ordered even in the more-capable
+  sense (set B or A constant). I fixed the "three faces" wording in place.
+* **Claim 8.** Proof of the qualitative part. Take any p(u,x). Then
+  R₁ ≤ I(X;Y₁|U) ≤ I(A;Y₁ᴬ|U) + I(B;Y₁ᴮ|U) ≤ η[I(A;Y₂|U) + I(B;Y₃|U)] ≤ 2η(c_s − R₀), where
+  η = (1−2c)² = 0.7511 is the SDPI constant of BSC_c, a∗c = b, c = 1/15. Also
+  R₀ + R₁ ≤ I(X;Y₁) ≤ 2c_w. P* violates the first bound: 0.5731 > 0.4305. An LP over these two
+  bounds gives max 1.5R₀+R₁ ≤ 1.071673 over BZT (scratch `bzt_sdpi_bound.py`), close to the
+  value 1.070405 found by the author.
+* **Code.** I re-ran `ne_region_check.py` (ALL OK, 12 000 samples, 0 mismatches) and
+  `crossed_product.part1` (P* inside). The scripts are transcription tests, not proofs, and the
+  attempt presents them that way. In part 2, |U| = 5 is not a justified support-lemma bound
+  (|X|+2 = 6 is), but the SDPI bound above makes this moot.
+* **Novelty.** NE (all of it) and Salman–Varanasi §I–III (all of their K = 3, L = 1 classes need
+  a pairwise less-noisy order) do not contain Claim 5. Two related results are known.
+  (i) Bit-pipe instances (Y₁ᴬ a sub-vector of Y₂ = A, and likewise for B) are combination networks
+  with two public receivers. There, nested-message capacity is known (Bidokhti–Prabhakaran–Diggavi,
+  arXiv:1411.2417; I read the abstract only).
+  (ii) Gohary–Davidson (arXiv:0911.0660, system model read) solve a Gaussian product of two
+  unmatched degraded components with orders Y>Z>W and W>Z>Y, a common message and private
+  messages. With private rates only to the middle receiver Z, this is a Gaussian analogue of a
+  superset of the crossed product: the crossed case is their limit N₁³, N₂³ → ∞. I found no
+  discrete-memoryless result that covers Claim 5. I did not read Romero–Varanasi beyond the
+  abstract.
 
 ## Dead ends
 

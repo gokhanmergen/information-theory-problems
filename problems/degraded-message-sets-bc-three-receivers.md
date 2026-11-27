@@ -73,11 +73,12 @@ common and private messages, which is itself open.
     match in general.
   - Further tight cases are recorded in
     `attempts/degraded-message-sets-bc-three-receivers/2026-11-26-claude-opus-5-5-audit-and-crossed-products.md`
-    (unverified). The first is *crossed degraded products*: X = (A, B), receiver 2 sees only
-    A, receiver 3 sees only B, and receiver 1 sees degraded versions of both. There none of
-    the orderings above hold, and the inequality 2R₀ + R₁ ≤ … of the inner bound is a
-    capacity face. The second, probably folklore, is the case where Y₂ is less noisy than Y₃
-    or vice versa, which reduces to Körner–Marton. The same attempt re-derives Prop. 5 from the
+    (verified by independent review, 2026-11-27). The first is *crossed degraded products*:
+    X = (A, B), receiver 2 sees only A, receiver 3 sees only B, and receiver 1 sees degraded
+    versions of both. There none of the orderings above hold, and the inequality 2R₀ + R₁ ≤ …
+    of the inner bound is a capacity face. The second is the case where Y₂ is less noisy than
+    Y₃ or vice versa. It reduces to Körner–Marton and is already Salman–Varanasi
+    (arXiv:1812.10520) Thm. 1(iii) with K = 3, L = 1. The same attempt re-derives Prop. 5 from the
     code constraints by Fourier–Motzkin elimination and finds no transcription error.
   - Salman–Varanasi (arXiv:1812.10520) extend capacity results to further classes defined by
     pairwise less-noisy and more-capable orderings, for $K$ receivers with two nested
