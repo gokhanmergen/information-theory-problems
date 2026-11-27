@@ -43,25 +43,50 @@ noisy, nor more capable, nor semi-deterministic), the BSSC has become the benchm
 for the entire broadcast channel problem. Remarkably, the BSSC is the canonical example on
 which the best known general inner bound (Marton 1979) and the classical Nair–El Gamal
 (2007) UV outer bound strictly separate, concentrating the 50-year broadcast channel
-capacity problem into a concrete $0.01$-bit gap on a binary-input, binary-output channel.
+capacity problem into a concrete gap of under $0.01$ bits on a binary-input, binary-output
+channel. Since Marton's inner bound is now claimed to be strictly suboptimal for some
+non-binary-input channel (Huang–Liu–Liu 2026, below), the binary-input case, and the BSSC
+in particular, is where the optimality question remains genuinely open.
 
 ## What is known
 
 - The single-user capacity of each marginal Z-channel is
   $C_Z = \max_{p \in [0, 1]} (h(p/2) - p) = \log_2(5/4) \approx 0.321928$ bits.
-- Nair, Wang, and Geng (2010) proved an information inequality establishing that for
-  *every* binary-input broadcast channel, the sum-rate of Marton's inner bound is achieved
-  by randomized time division (binary auxiliary variables). For the BSSC, this evaluates
-  precisely to $R_{\mathrm{M,sum}}(W_{\mathrm{BSSC}}) \approx 0.3616428$ bits, strictly
-  beating time sharing ($0.321928$ bits).
-- The Nair–El Gamal (2007) UV outer bound evaluates on the BSSC to
-  $\approx 0.37256$ bits, leaving a gap of roughly $0.0109$ bits above Marton's sum-rate.
-- Gohari and Nair (2022) developed the auxiliary-receiver converse framework and proved a
-  strictly tighter upper bound on the BSSC sum-rate than the UV outer bound, narrowing
-  the gap but not closing it.
-- Multi-letter (2-letter and higher) evaluations of Marton's inner bound on the BSSC have
-  not yielded any improvement over single-letter Marton's bound, lending support to — but
-  not proving — the conjecture that $R_{\mathrm{M,sum}}(W_{\mathrm{BSSC}})$ is exact.
+- Nair, Wang, and Geng (2010; journal version Geng–Jog–Nair–Wang 2013) proved an
+  information inequality establishing that for *every* binary-input broadcast channel, the
+  sum-rate of Marton's inner bound is achieved by randomized time division (binary auxiliary
+  variables). For the BSSC, this evaluates precisely to
+  $R_{\mathrm{M,sum}}(W_{\mathrm{BSSC}}) \approx 0.3616428$ bits, strictly beating time
+  sharing ($0.321928$ bits). An explicit randomized-time-division distribution certifies
+  $R_{\mathrm{M,sum}} \ge 0.361642884$ with interval arithmetic (attempt log).
+- The Nair–El Gamal (2007) UV outer bound evaluates on the BSSC to $\approx 0.37256$ bits.
+  This is now certified as an upper bound, $\le 0.372556252$, in the attempt log; it leaves
+  a gap of roughly $0.0109$ bits above Marton's sum-rate.
+- Gohari and Nair (2022) introduced the auxiliary-receiver framework. Their paper's strict
+  improvements over UV are for other channels (the erasure Blackwell corner point and product
+  channels); it contains no BSSC evaluation.
+- The first improvement on the BSSC came from Geng (ISIT 2025), using a one-auxiliary-receiver
+  concave-envelope bound that, for each fixed auxiliary receiver $J$, is implied by
+  Gohari–Nair's Theorem 7. Geng reported $\approx 0.369316568803963$ at
+  $J = \mathrm{BSC}(0.18999)$.
+- Gohari, Liu, and Nair (manuscript, 2025 or later) gave a two-auxiliary-receiver bound with a
+  reported value of $\approx 0.369296340638082$.
+- A rigorous re-evaluation (attempt log) shows that both reported values are about $10^{-6}$
+  below their own formulas at the stated parameters. It also certifies
+  $C_{\mathrm{sum}}(W_{\mathrm{BSSC}}) \le 0.369297201$ bits.
+- The best certified window is therefore $[0.361642884,\ 0.369297201]$, a gap of about
+  $0.0077$ bits.
+- Huang, Liu, and Liu (arXiv:2608.19869, 2026; not yet peer reviewed) claim that Marton's
+  inner bound is strictly suboptimal for some finite two-receiver DMBC. Their construction
+  starts from a ternary-input base channel. They note that counterexamples appear to require
+  a non-binary input, and they leave the binary-input case, including the BSSC, open.
+- Their paper also recounts the following history. Numerical comparisons of two-letter and
+  one-letter Marton bounds for binary-input broadcast channels, following Geng, Gohari, Nair,
+  and Yu (ITA 2011) and run in 2011–2012, found no strict two-letter improvement. Nair (ITA
+  2020) proved *local* tensorization at the product optimizer for product channels with a
+  binary component.
+- No published global multi-letter result for the BSSC is known to us. The exactness of
+  $R_{\mathrm{M,sum}}(W_{\mathrm{BSSC}})$ is supported by this evidence but remains unproven.
 
 ## References
 
@@ -70,9 +95,21 @@ capacity problem into a concrete $0.01$-bit gap on a binary-input, binary-output
 - K. Marton, "A coding theorem for the discrete memoryless broadcast channel," *IEEE Trans.
   Inf. Theory*, vol. 25, no. 3, pp. 306–311, 1979.
 - C. Nair and A. El Gamal, "An outer bound to the capacity region of the broadcast channel,"
-  *IEEE Trans. Inf. Theory*, vol. 53, no. 1, pp. 401–405, 2007.
+  *IEEE Trans. Inf. Theory*, vol. 53, no. 1, pp. 350–355, 2007.
 - C. Nair, Z. V. Wang, and Y. Geng, "An information inequality and evaluation of Marton's
   inner bound for binary input broadcast channels," *IEEE Int. Symp. Inf. Theory (ISIT)*,
   2010; arXiv:1001.1468.
+- Y. Geng, V. Jog, C. Nair, and Z. V. Wang, "An information inequality and evaluation of
+  Marton's inner bound for binary input broadcast channels," *IEEE Trans. Inf. Theory*,
+  vol. 59, no. 7, pp. 4095–4105, 2013.
 - A. Gohari and C. Nair, "Outer bounds for multiuser settings: the auxiliary receiver
   approach," *IEEE Trans. Inf. Theory*, vol. 68, no. 2, pp. 701–736, 2022.
+- Y. Geng, "A simple auxiliary receiver outer bound for broadcast channels," *IEEE Int. Symp.
+  Inf. Theory (ISIT)*, 2025.
+- A. Gohari, Y. Liu, and C. Nair, "A two auxiliary receiver outer bound to the capacity
+  region of a two-receiver discrete memoryless broadcast channel," manuscript
+  (chandra.ie.cuhk.edu.hk/pub/papers/BC/GK-outer.pdf).
+- M. Huang, Y. Liu, and Y. Liu, "Sub-optimality of Marton's inner bound for the two-receiver
+  broadcast channel," arXiv:2608.19869, 2026.
+- C. Nair, "On Marton's achievable region: local tensorization for product channels with a
+  binary component," *Information Theory and Applications Workshop (ITA)*, 2020.
