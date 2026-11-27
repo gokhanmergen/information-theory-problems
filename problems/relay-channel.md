@@ -63,6 +63,30 @@ information theory is.
   compress-forward; noisy network coding (Lim–Kim–El Gamal–Chung 2011) recovers and
   extends compress-forward to networks. None matches the best known converses in
   general.
+  - Cover–El Gamal Theorem 7 is stated in its three-constraint form by Chong–Motani
+    (IEEE Trans. Inf. Theory 57(3), 2011, Lemma 2). Their Theorem 2 is at least as large,
+    and they conjectured it can be strictly larger. El Gamal–Gohari–Nair ("Achievable rates
+    for the relay channel with orthogonal receiver components") showed the two coincide
+    for orthogonal receiver components, simplified the expression, and showed the
+    Mondelli–Hassani–Urbanke (2019) scheme is subsumed by it. They also showed that
+    time-sharing strictly improves pure compress-forward, which disproves an Ahlswede–Han
+    conjecture.
+  - No standard DM relay channel is known on which a scheme provably beats Theorem 7. Wu
+    (arXiv:1504.04515) beats it only with relay-to-source feedback, or when the source
+    observes the relay's signal.
+  - Ponniah (arXiv:2609.15709, 2026, unrefereed) claims $C=\max\{R_{\rm DF},R_{\rm U\text{-}CF},R_{\rm C\text{-}CF}\}$.
+    This is refuted by the primitive-BSC time-sharing example, viewed as a DM relay channel
+    with an orthogonal BSC link of capacity $0.3$: capacity is at least $0.5396$, while all
+    three of Ponniah's rates are at most $0.5310$ (see attempt log).
+- Formalization note (2026-11). The frozen Lean functional `coverElGamalTheorem7Rate`
+  keeps two of Theorem 7's three constraints and allows an arbitrary joint law
+  $P(u,x,x_r)$. That permits compress-forward with coherent source and relay inputs. On a
+  4×2→6×2 channel where the relay observes the destination's noise and the destination
+  sees a binary adder $X_2+X_r$, capacity is exactly $3/2$ but the Lean functional equals
+  $\log_2 3$. So the Lean statement is false as written. A faithful three-constraint
+  Theorem 7 statement is proposed in
+  `attempts/relay-channel/2026-11-26-claude-opus-5-5-thm7-transcription-catalog-error.md`.
+  The mathematical problem remains open.
 - Approximate capacity: for Gaussian relay networks, capacity is known within a
   constant gap (Avestimehr–Diggavi–Tse deterministic-model program).
 
@@ -81,3 +105,14 @@ information theory is.
 - A. El Gamal, A. Gohari, and C. Nair, "A strengthened cutset upper bound on the
   capacity of the relay channel and applications," IEEE Trans. Inf. Theory, 2022;
   arXiv:2101.11139.
+- H.-F. Chong and M. Motani, "On achievable rates for the general relay channel," IEEE
+  Trans. Inf. Theory 57(3):1249–1266, 2011.
+- A. El Gamal, A. Gohari, and C. Nair, "Achievable rates for the relay channel with
+  orthogonal receiver components," manuscript,
+  http://chandra.ie.cuhk.edu.hk/pub/papers/NIT/Prim-Rel-LB.pdf.
+- J. Liu and A. Özgür, "Capacity upper bounds for the relay channel via reverse
+  hypercontractivity," IEEE Trans. Inf. Theory 66(9):5448–5455, 2020.
+- X. Wu, A. Özgür, and L.-L. Xie, "Improving on the cut-set bound via geometric analysis
+  of typical sets," IEEE Trans. Inf. Theory 63(4):2254–2277, 2017.
+- M. Aleksic, P. Razaghi, and W. Yu, "Capacity of a class of modulo-sum relay channels,"
+  IEEE Trans. Inf. Theory 55(3):921–930, 2009.
