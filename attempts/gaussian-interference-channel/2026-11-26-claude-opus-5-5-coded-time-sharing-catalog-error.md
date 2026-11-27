@@ -389,8 +389,9 @@ is committed as `code/reviewer_bnb_rigorous.py` (run `python reviewer_bnb_rigoro
 88,659,404 boxes, about 17 s, prints "Lean-region sum rate <= C(200) + DELTA <= 3.82852584559").
 The coordinator re-ran it and re-read its soundness argument (weak-duality forms, disjoint
 numerator/denominator coordinates, `nextafter` rounding, the e^t lower bound by squarings, and
-the tail s ≥ SMAX ≥ 401, where L − 2C(s/2) is nondecreasing). My other scripts stayed outside
-the repo (scratch); the method is described below so it can be redone.
+the tail s ≥ SMAX ≥ 401, where L − 2C(s/2) is nondecreasing). My other scripts and logs are
+in `code/review/` (except the 3000-start Nelder–Mead run, which was not kept); the method is
+described below so it can be redone.
 
 - **Lean reading (Claim 3).**
   - `Statement`: for all a, b and all P₁, P₂ > 0, the closure of `InGaussianICAchievable`
@@ -404,7 +405,7 @@ the repo (scratch); the method is described below so it can be redone.
 - **Claim 1.** I re-derived all 7 right-hand sides from conditional variances; they match
   El Gamal–Kim Thm 6.4 term by term. The argument for the two dropped inequalities is
   sound: d₂ = I(U₂;Y₂)+c₂ since U₂–(X₂,U₁)–Y₂, and both cannot fail at once since S₃ = c₁+c₂.
-- **Claim 4(i).** My own mpmath code computed the MIs from variance ratios.
+- **Claim 4(i).** My own mpmath code (`code/review/coded_point.py`) computed the MIs from variance ratios.
   - Averaged (A₁,A₂,S₁,S₂,S₃,D₁,D₂) = (2.798911, 2.798911, 3.922881, 3.922881, 3.926221,
     5.885992, 5.885992).
   - Exact vertex enumeration gives max R₁+R₂ = 3.92288136.
@@ -413,7 +414,7 @@ the repo (scratch); the method is described below so it can be redone.
   - Both users use power 100 in both phases, so there is no power control; the
     per-codeword constraint holds after the usual ε back-off.
   - Gaussian HK-with-Q achievability (El Gamal–Kim Thm 6.4 plus discretization) is cited,
-    not re-proved. A finer split (0, 14.13) gives 3.9234.
+    not re-proved. A finer split (0, 14.13) gives 3.9234 (`code/review/swap_scan.py`).
 - **Claim 4(ii), the key step.** This bound is neither a grid search nor a Lipschitz bound.
   It is a Lagrangian bound:
   - R₁+R₂ ≤ Σwᵢg(xᵢ) ≤ ΣwᵢL(xᵢ) ≤ L(P,P), with L affine and increasing. This holds for any
@@ -431,7 +432,7 @@ the repo (scratch); the method is described below so it can be redone.
   - e^t is bounded below by (1+t/2²⁴)^{2²⁴}, computed with 24 downward-rounded squarings.
   - The constants and the tail come from `mpmath.iv`. No libm call enters a box test.
 
-  Results:
+  Results (δ = 0.09, 0.05, 0.01 logged in `code/review/rigorous_runs.txt`):
 
   | δ | outcome | boxes |
   |---|---|---|
@@ -454,7 +455,7 @@ the repo (scratch); the method is described below so it can be redone.
   - Thm 7 follows from Thm 1 plus the unique-minimizer property. I checked
     σ_{G₀}(1,1) = ψ₃ for weak interference (A₁+A₂ ≥ S₃ and A₁+D₂ ≥ S₂+S₃).
   - Equation numbers are corrected in place.
-- **Claim 6 (heuristic).** My own 801² coded-swap grid gives:
+- **Claim 6 (heuristic).** My own 801² coded-swap grid (`code/review/swap_scan.py`) gives:
   - P=1000, a=0.5: 5.6379, against TDM 5.4833 (+0.155);
   - P=1000, a=0.4: 5.7286, against the best single split 5.6253 (+0.103).
 

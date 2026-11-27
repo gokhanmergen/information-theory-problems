@@ -1,0 +1,9 @@
+DELTA=0.09 K=24 SMAX=1857.0 rigorous tail margin >= 0.00184584
+CERTIFIED g <= L on {x>=0, sum x <= 1857.0}: 4920050 boxes, 1.2s
+=> Lean-region sum rate <= C(200) + DELTA <= 3.91552584559
+DELTA=0.05 K=24 SMAX=1871.0 rigorous tail margin >= 0.00126482
+CERTIFIED g <= L on {x>=0, sum x <= 1871.0}: 11310476 boxes, 2.7s
+=> Lean-region sum rate <= C(200) + DELTA <= 3.87552584559
+DELTA=0.01 K=24 SMAX=1885.0 rigorous tail margin >= 0.000764411
+CERTIFIED g <= L on {x>=0, sum x <= 1885.0}: 54515594 boxes, 12.5s
+=> Lean-region sum rate <= C(200) + DELTA <= 3.83552584559
