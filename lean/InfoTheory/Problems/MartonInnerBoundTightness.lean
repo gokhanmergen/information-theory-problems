@@ -28,7 +28,7 @@ def bcCommonCapacityRegion {X Y₁ Y₂ : Type*} [Fintype X] [Fintype Y₁] [Fin
   closure { r | IsBCCommonAchievable W r.1 r.2.1 r.2.2 }
 
 /-- Marton's inner bound (closed) with a common message (Marton 1979; Liang–Kramer 2007;
-    El Gamal–Kim 2011, Theorem 8.3). -/
+    El Gamal–Kim 2011, Theorem 8.4). -/
 def martonCommonInnerBound {X Y₁ Y₂ : Type*} [Fintype X] [Fintype Y₁] [Fintype Y₂]
     (W : BroadcastChannel X Y₁ Y₂) : Set (ℝ × ℝ × ℝ) :=
   closure { r | 0 ≤ r.1 ∧ 0 ≤ r.2.1 ∧ 0 ≤ r.2.2 ∧

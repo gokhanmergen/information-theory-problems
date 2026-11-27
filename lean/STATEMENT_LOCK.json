@@ -77,7 +77,7 @@
     "lean/InfoTheory/Problems/LocallyDecodableCodes3Query.lean": "b7d2f8865721dc25a786a2d734badf18c8c84f504e41ca007aec8c4da592f3f6",
     "lean/InfoTheory/Problems/LogSobolevHypercubeSharp.lean": "3095c55f07786f3760ec3318324b665347f36da18aebb8bc8008acb005c4f63d",
     "lean/InfoTheory/Problems/MacWithFeedback.lean": "1beb83bd3f1500d5ada9873319e07bf53bc7bdba744b50e80f003f30a0ac8cc8",
-    "lean/InfoTheory/Problems/MartonInnerBoundTightness.lean": "8ea6468a29027db5591dfa8516e1786ba7f6dc46f003f9944d3dac6975a6932b",
+    "lean/InfoTheory/Problems/MartonInnerBoundTightness.lean": "cef246278c3e26f128d134741c2f5493d3af251c4a54fa056a48bee5917eee82",
     "lean/InfoTheory/Problems/MdsConjecture.lean": "5d399164563b6976aa9dee807c878d66f3e6a41dbf7c510f39cbfb0a14ccec03",
     "lean/InfoTheory/Problems/MinimaxKlLargeAlphabet.lean": "75d83ba74b4ea6a01a20c1065e4aca4e2f73341a7d45e7064b6dc4e5b3e8ba33",
     "lean/InfoTheory/Problems/MmseDimensionSingleCrossing.lean": "943fa755245f3795746e1a52ed1340b013930f042be0f374aa777b074f830905",

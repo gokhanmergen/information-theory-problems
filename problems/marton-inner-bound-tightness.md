@@ -19,7 +19,7 @@ private messages $M_1 \in \{1, \dots, 2^{n R_1}\}$ and $M_2 \in \{1, \dots, 2^{n
 intended for receivers $1$ and $2$, respectively.
 
 Marton's inner bound with a common message (Marton 1979; Liang–Kramer 2007; El Gamal–Kim
-2011, Theorem 8.3) is the set $\mathcal{R}_{\mathrm{M}}(W)$ of nonnegative rate triples
+2011, Theorem 8.4) is the set $\mathcal{R}_{\mathrm{M}}(W)$ of nonnegative rate triples
 $(R_0, R_1, R_2)$ for which there exist finite-alphabet auxiliary random variables
 $(U_0, U_1, U_2)$ jointly distributed with $X$ such that $(U_0, U_1, U_2) - X - (Y_1, Y_2)$
 and:
@@ -106,7 +106,8 @@ coding beats it — is one of the central unresolved questions of multiuser info
 - A. Gohari and C. Nair, "Outer bounds for multiuser settings: the auxiliary receiver
   approach," *IEEE Trans. Inf. Theory*, vol. 68, no. 2, pp. 701–736, 2022.
 - A. El Gamal and Y.-H. Kim, *Network Information Theory*, Cambridge Univ. Press, 2011,
-  Theorem 8.3.
+  Theorem 8.4 (Marton's inner bound with a common message; Theorem 8.3 is the private-message
+  version).
 - Y. Liang, G. Kramer, and H. V. Poor, "On the equivalence of two achievable regions for the
   broadcast channel," *IEEE Trans. Inf. Theory*, vol. 57, no. 1, pp. 95–100, 2011.
 - Y. Geng, "A simple auxiliary receiver outer bound for broadcast channels," *IEEE Int. Symp.
