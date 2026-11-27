@@ -31,8 +31,11 @@ $$
 R_1 \le \frac{1}{k} I(S_1; Y_2^k \mid S_2, Q),\;
 R_2 \le \frac{1}{k} I(S_2; Y_1^k \mid S_1, Q) \right\}.
 $$
-Shannon proved that $\mathcal{G}_1(W) \subseteq \mathcal{G}_2(W) \subseteq \dots \subseteq \mathcal{C}_{\mathrm{TWC}}(W)$
-and $\mathcal{C}_{\mathrm{TWC}}(W) = \overline{\bigcup_{k=1}^\infty \mathcal{G}_k(W)}$.
+Shannon proved that $\mathcal{G}_k(W) \subseteq \mathcal{C}_{\mathrm{TWC}}(W)$ for every $k$ and
+$\mathcal{C}_{\mathrm{TWC}}(W) = \overline{\bigcup_{k=1}^\infty \mathcal{G}_k(W)}$. Concatenating
+independent $k$-blocks gives the nesting $\mathcal{G}_k(W) \subseteq \mathcal{G}_{mk}(W)$. The
+step-by-step chain $\mathcal{G}_k \subseteq \mathcal{G}_{k+1}$ is not automatic, and for
+Blackwell's BMC the equal-rate point does not grow from $k=1$ to $k=2$ (see "What is known").
 
 **Does every finite-alphabet discrete memoryless two-way channel $W$ achieve its exact
 capacity region at some finite strategy horizon $k \ge 1$, i.e., does there exist $k \ge 1$
@@ -58,18 +61,36 @@ is known.
   two-way channels, Gaussian two-way channels).
 - **Suboptimality of $\mathcal{G}_1$**: Schalkwijk (1982, 1983) proved that $\mathcal{G}_1(W)$
   is strictly smaller than $\mathcal{C}_{\mathrm{TWC}}(W)$ for Blackwell's binary multiplying
-  channel (BMC), achieving $0.61914$ bits at $k = 2$ and $0.63056$ bits via progressive
-  adaptive subdivision, versus $\approx 0.61695$ bits for $\mathcal{G}_1$.
+  channel (BMC). His unit-square coding schemes achieve the equal rates $0.61914$ (1982) and
+  $0.63056$ (1983, bootstrapping), versus $\approx 0.61695$ bits for $\mathcal{G}_1$. These
+  schemes use recursive subdivision with unbounded depth; they are not fixed-$k$ Shannon
+  strategies. The best known equal rate is $0.63072$ (Schalkwijk–Meeuwissen–Bloemen 1995).
+- **Equal-rate point of $\mathcal{G}_k$ for the BMC** (attempt
+  `attempts/two-way-channel-capacity/2026-11-26-claude-opus-5-5-gk-audit-bmc-numerics.md`):
+  $0.61695$ for $k=1$, and also $0.61695$ for $k=2$. For $k=2$ the reduction to a 4-variable
+  inequality is proved and the inequality is checked numerically. For $k=3$ the value is
+  $0.61964$, which beats both $\mathcal{G}_1$ and Schalkwijk's 1982 rate; the inclusion
+  $\mathcal{G}_1 \subsetneq \mathcal{G}_3$ is certified in interval arithmetic. The $k=4$
+  search was inconclusive. All these values are still about $0.011$ below the best known
+  achievable rate.
 - **Suboptimality of $\mathcal{G}_{\mathrm{out}}$**: Zhang, Berger, and Schalkwijk (1986)
-  and Hekstra and Willems (1989) proved via dependence-balance outer bounds that
-  $\mathcal{G}_{\mathrm{out}}(W)$ is strictly larger than $\mathcal{C}_{\mathrm{TWC}}(W)$
-  on Blackwell's BMC ($\le 0.64628$ vs. $\approx 0.69424$ bits).
+  showed that $\mathcal{G}_{\mathrm{out}}(W)$ is strictly larger than
+  $\mathcal{C}_{\mathrm{TWC}}(W)$ on Blackwell's BMC (equal rate $\le 0.64891$ vs.
+  $\approx 0.69424$). Hekstra and Willems (1989) sharpened this to $\le 0.64628$ using the
+  dependence-balance bound **with an adaptive parallel channel**. The plain dependence-balance
+  bound coincides with Shannon's outer bound on the BMC.
 - **Directed information**: Kramer (1998) reformulated the capacity region of general TWCs
   as a multi-letter limit of normalized directed information
   $\frac{1}{n} I(X_1^n \to Y_2^n \| X_2^n)$ and $\frac{1}{n} I(X_2^n \to Y_1^n \| X_1^n)$.
 - **Single-letter extensions**: Han (1984) introduced a general single-letter coding scheme
-  with auxiliary variables, and Sabag–Permuter–Kashyap studied dynamic programming /
-  Q-graph characterizations, yet no general finite-letter converse is known.
+  with auxiliary variables. Sabag and Permuter (Allerton 2018) gave a single-letter
+  achievable region for common-output TWCs built on two auxiliary directed graphs. It reduces
+  to Shannon's inner bound for single-node graphs and beats it on the BMC. No general
+  finite-letter converse is known.
+- **When adaptation is useless**: Weng, Song, Alajaji and Linder (2019) gave symmetry
+  conditions under which Shannon's inner and outer bounds coincide, so $k=1$ suffices. Weng,
+  Alajaji and Linder (arXiv:2004.03954) gave a simple outer bound that yields
+  $\varepsilon$-approximations of the capacity region from the $\mathcal{G}_1$ computation.
 
 ## References
 
@@ -86,3 +107,15 @@ is known.
   Zurich, 1998.
 - A. El Gamal and Y.-H. Kim, *Network Information Theory*, Cambridge Univ. Press, 2011,
   Ch. 17.
+- J. P. M. Schalkwijk, "On an extension of an achievable rate region for the binary
+  multiplying channel," *IEEE Trans. Inf. Theory*, vol. 29, no. 3, pp. 445–448, 1983.
+- Z. Zhang, T. Berger, and J. P. M. Schalkwijk, "New outer bounds to capacity regions of
+  two-way channels," *IEEE Trans. Inf. Theory*, vol. 32, no. 3, pp. 383–386, 1986.
+- A. H. A. Bloemen, *Discrete Coding Strategies for Two-Way Channels*, Ph.D. dissertation,
+  Eindhoven University of Technology, 1996, doi:10.6100/IR463500.
+- O. Sabag and H. H. Permuter, "An achievable rate region for the two-way channel with common
+  output," *Proc. 56th Allerton Conf.*, pp. 527–531, 2018, doi:10.1109/ALLERTON.2018.8635930.
+- J.-J. Weng, L. Song, F. Alajaji, and T. Linder, "Capacity of two-way channels with symmetry
+  properties," *IEEE Trans. Inf. Theory*, vol. 65, no. 10, Oct. 2019.
+- J.-J. Weng, F. Alajaji, and T. Linder, "A simple capacity outer bound for two-way channels
+  and capacity approximation results," arXiv:2004.03954.

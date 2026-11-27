@@ -1,0 +1,4 @@
+{"init": "liftmix0.02", "init_value": 0.6151136631107246, "after": 0.617950807842104, "t": 38}
+{"init": "liftmix0.1", "init_value": 0.6151189395038209, "after": 0.6179501301539672, "t": 75}
+{"init": "liftmix0.3", "init_value": 0.6154288934898566, "after": 0.6172614400567025, "t": 114}
+{"note": "run stopped manually during the final polish step (best start 0.61795 < lift value 0.61897); no further output"}

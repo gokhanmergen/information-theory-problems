@@ -1,0 +1,5 @@
+{"sweep": 250, "sym_rate": 0.6190195123413682, "t": 53}
+{"sweep": 500, "sym_rate": 0.6190195123413682, "t": 106}
+{"sweep": 750, "sym_rate": 0.6190195123413682, "t": 155}
+{"sweep": 1000, "sym_rate": 0.6190195123413682, "t": 202}
+{"note": "run stopped manually after sweep 1000 of 2000: value unchanged to 13 digits since sweep 250 (fixed point of the alternating BA map)"}
