@@ -4,7 +4,7 @@ date: 2026-11-26
 attempter: claude
 model: claude-opus-5-5
 type: partial-result
-status: unverified
+status: verified
 ---
 
 ## Summary
@@ -86,7 +86,13 @@ Theorem 7. Two follow-ups from the coordinator are resolved:
    eqs. (80)–(98). The bound on $R_{\rm C\text{-}CF}$ uses only the feasibility
    inequality (93) and the form of the joint law (85). It does not use the
    "circuit-consistency" condition (88), so typesetting ambiguities in (82)/(88) do not
-   matter.
+   matter. *(Reviewer qualification, 2026-11-27: this argument covers the reading in
+   which each rate is evaluated under the same joint law as its own feasibility
+   constraint, as the subscripts in (92), (93), (96), (97) indicate. The sentence after
+   (97) of arXiv:2609.15709v2 pairs (96)/(97) with (85)/(86) the other way round; the
+   argument above does not cover that pairing. Under it, with the natural normalisation
+   of (82), Theorem 4 still fails on this channel, now from above. See the reviewer
+   note in Verification.)*
 7. **[proved]** On the channel of Claim 6, $L\ge 0.5396$ and $R_{\rm Thm7}\ge0.5396$. Both
    formulas carry time-sharing ($U\ni$ coin in $L$; an explicit $Q$ in Theorem 7). So the
    primitive-BSC time-sharing counterexample does **not** refute "$C=L$" or "$C=R_{\rm Thm7}$".
@@ -192,6 +198,10 @@ Upper bound: $R_{\rm Thm7}\le C=3/2$. Lower bound: take $Q,W,U$ constant, $V=Y_r
 $X_1,X_2,X_r$ i.i.d. uniform. The three constraints evaluate to $1.5$, $2$ and
 $2+I(X_r;Y)-H(Z|X_r,Y)=2+0.5-1=1.5$. A random search over $|W|=2,|U|=3,|V|=2$
 (3000 draws) never exceeds $1.5$, which checks the implementation.
+(Reviewer: this point is feasible for the three-constraint CM11 Lemma 2 form only. In CEG79's
+original form (83a–c) it violates (83c): $H(Z|Y,X_r)=1\le I(X_r;Y)=0.5$ fails. The original
+form still reaches $3/2$ with $\hat Y=Y_r\oplus{\rm Bern}(\delta)$, $h(\delta)=1/2$; see
+the reviewer note.)
 
 ### 4. Classical capacity classes
 
@@ -362,6 +372,89 @@ capacity of every finite DM relay channel?". Three remarks:
 - Not done: no Lean proof of `disproof : ¬ Statement` (editing `lean/` was out of scope).
   A formal disproof needs Fano in the relay setting, which `InfoTheory.Bridge` provides
   for point-to-point codes, plus the explicit evaluation in (A).
+
+### Reviewer note (claude-opus-5-5, independent review, 2026-11-27)
+
+**Verdict: the headline holds. `InfoTheory.Problems.RelayChannel.Statement` is false as
+written.** Status changed to `verified`: I independently checked every `[proved]` claim
+(1–4, 6, 7); the scope of each check is below. My scripts are in the reviewer scratch space
+(`review_check.py`, `ccf_opt.py`), not in the repo.
+
+- **Primary source.** I read CEG79 Theorem 7 from the scan
+  (isl.stanford.edu/groups/elgamal/abbas_publications/J003.pdf, p. 582, (83a–c)). In Lean
+  names ($X_1\to X$, $X_2\to X_r$, $Y_1\to Y_r$, $\hat Y_1\to\hat Y$) it reads
+  $R^*=\sup\min\{I(X;Y,\hat Y|X_r,U)+I(U;Y_r|X_r,V),\ I(X,X_r;Y)-I(\hat Y;Y_r|X_r,X,U,Y)\}$
+  over $p(v)p(u|v)p(x|u)p(x_r|v)\,p(y,y_r|x,x_r)\,p(\hat y|x_r,y_r,u)$, subject to
+  (83c) $I(\hat Y;Y_r|Y,X_r,U)\le I(X_r;Y|V)$. I re-read every `J.map` tuple and confirm
+  the Lean $r_1,r_2$ of Claim 1. Relative to the primary source, Lean (i) drops $V$, (ii)
+  replaces (83b) by an arbitrary $P(u,x,x_r)$, and (iii) drops (83c). Omission (iii) alone is
+  fatal. Keep (83b) with $V=U$ a uniform bit, $X_r=V$, $X_2|V\sim$ Bern(1/3)/Bern(2/3), $X_1$
+  uniform and $\hat Y=Y_r$: the two terms of (83a) give $\log_2 3$ on $W_\star$, while (83c)
+  reads $1\le0$. EGN's manuscript (eqs. (1)–(3), (7), Remark 1) matches the transcription in
+  Details §1.
+- **Direction.** The Statement is an equality for every finite channel, so one channel with
+  capacity $\ne$ functional refutes it.
+- **Lean value, by hand and exactly.** At the Details §2 point, $r_1=H(X|X_r)=1+h(1/3)$, since
+  $(Y,Z,X_r)$ determines $X$. Also $r_2=(1+\log_2 3)-1-0$: $Y_1$ is uniform and independent of
+  $(X,X_r)$, $X_2+X_r$ is uniform on $\{0,1,2\}$, and $Z=Y_1\oplus X_1$. A sympy evaluation in
+  rationals gives $r_2-\log_2 3=0$. The `sSup` set is bounded above by $\log_2 6$
+  ($r_2\le H(Y)$), so the functional is $\ge\log_2 3$; it is also $\le\log_2 3$, because
+  $H(Y|X,X_r)=1$ for every input.
+- **Converse.** I re-derived it against `IsRelayAchievable` and `relayCapacity`
+  (Core/Channels.lean, l. 291–311):
+  - $X_r^n=\phi(Z^n)$ is independent of $M$, and $H(Y^n|M)=n$ because the map from $Z^n$ is
+    injective;
+  - $H(Y^n)\le n+\sum_i H(X_{2,i}+X_{r,i})$, with independent binary summands;
+  - Fano with $M=\max(1,\lfloor2^{nR}\rfloor)$ excludes every $R>3/2$, and $R=0$ makes the
+    set nonempty.
+
+  For the constant 3/2 I give my own reduction. Put $p=\tfrac12+\alpha$, $q=\tfrac12+\beta$,
+  $t=2\alpha\beta$. Then $H(S)=h(\tfrac12-t)+(\tfrac12+t)\,h(\tfrac12+\tfrac{\alpha+\beta}{1+2t})$.
+  The case $t\le0$ is immediate. For $t>0$ the bound reduces to a 1-D function whose maximum
+  on a $2\cdot10^6$ grid is $1.4999999981$, approached as $t\to0$. A multistart optimisation
+  gives 1.5. Exact $I(M;Y^3)$ over 1200 random codes with strictly causal relays is
+  $\le3.89<4.5$. Typing: $W_\star$ is a `DMC (Fin 4 × Fin 2) (Fin 6 × Fin 2)` with entries in
+  $\{0,\tfrac12\}$ and rows summing to 1. Edge cases with empty alphabets give $0=0$.
+- **Claim 3 caveat.** The Details §3 point ($V=Y_r$ exactly) is feasible for the CM11 form, but
+  it **violates** the original (83c) ($1\le0.5$). The original form still reaches 3/2 with
+  $\hat Y=Y_r\oplus{\rm Bern}(\delta)$, $h(\delta)=\tfrac12$: both terms are 1.5 and (83c)
+  holds with equality. So Claim 3 stands in either form. I also checked the
+  block-Markov scheme.
+- **Code.** It runs in float64 and is sound for what it claims. (A) matches the closed forms;
+  (B), (C) and (D) are sanity checks, not proofs. (D)'s random C-CF search reaches only about
+  0.41, so it barely tests the 0.518 bound. My SLSQP run (180 starts, $|\hat Y|\le4$,
+  correlated inputs, constraint (93) in the same law) peaks at 0.431412, below 0.518072.
+- **Ponniah.** arXiv:2609.15709 exists: v1 is dated 14 Sep 2026, v2 20 Sep 2026; I read v2
+  through pdftotext. Theorem 4 says, verbatim, "The capacity of the relay channel is
+  max{RDF, RU-CF, RC-CF}." It covers the general DM relay channel and has no further
+  hypotheses. Equations (80), (85), (92), (93), (98) and the WU-3 sentence are as quoted.
+  - I re-derived the three bounds by hand. The Dobrushin coefficient of the reverse BSC(0.1)
+    channel is $s(a^2-b^2)/(ab+s(a-b)^2)\le0.8$, with $s=\pi(1-\pi)$. The split of (93) uses
+    $Y_2\perp(X,Y_1,Y_r,\hat Y)\mid X_r$.
+  - Theorem 7 time-sharing gives $\lambda=0.082026$ and rate 0.539602. The quoted 0.539568 is
+    the primitive-BSC agent's slightly weaker pipe-rate scheme; both are valid.
+  - Theorem 7 yields average-error codes, while Ponniah's (79) uses maximal error. Standard
+    expurgation closes this gap.
+  - Reading caveat (added in Claim 6). The sentence after (97) evaluates (96)/(97) under
+    (85)/(86), the opposite of the subscripts. Read literally, (82) is not normalised. With
+    the natural $p_{\rm for}(y_r|\hat y_r,x_r)=p(y_r|x_r)$, the $(85)$-law makes
+    $\hat Y\perp Y_r\mid X_r$. Under that pairing, $R_{\rm C\text{-}CF}$ is then
+    unconstrained and reaches $I(X;Y_1,Y_r)=0.6358$, above the cutset bound
+    $0.5781\ge C$. I found no reading under which Theorem 4 holds on this channel.
+- **Corrected statement.** Either the §7 sketch (the CM11 Lemma 2 / EGN Theorem 1 form; I
+  checked the indices but did not typecheck it) or a direct transcription of (83a–c) works.
+  The direct one adds one kernel $p(v)$, the factorisation (83b) and the constraint (83c);
+  $\hat Y$ = const is always feasible. Neither is known to be false. The
+  Aleksic–Razaghi–Yu modulo-sum capacity (arXiv:0704.3591 abstract) is achieved by
+  quantize-forward, which lies inside Theorem 7. The stated risk is CM11's conjecture.
+- **Problem file.** Two minimal hedges: "We know of no…", and the reading condition on the
+  Ponniah refutation.
+- **Not checked:**
+  - the El Gamal–Kim book text, including the "Sec. 16.7" attribution in the Lean docstring;
+  - CM11 itself (I relied on EGN's restatement of Lemma 2);
+  - the capacity proofs behind Claim 4 (I checked only that each capacity-achieving scheme is
+    a special case of Theorem 7);
+  - no Lean `disproof` was written.
 
 ## Dead ends
 
