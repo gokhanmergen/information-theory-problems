@@ -34,7 +34,8 @@ def log2(x):
 
 
 def h2(x):
-    x = mp.mpf(x)
+    # Reviewer fix (2026-11-27): mpmath 1.3.0 cannot build an mpf from a Fraction.
+    x = mp.mpf(x.numerator) / x.denominator if isinstance(x, F) else mp.mpf(x)
     return mp.mpf(0) if x in (0, 1) else -x * log2(x) - (1 - x) * log2(1 - x)
 
 
