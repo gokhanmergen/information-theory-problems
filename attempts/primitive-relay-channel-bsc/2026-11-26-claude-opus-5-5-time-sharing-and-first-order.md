@@ -377,7 +377,7 @@ gives $s_\rho I(U;Y_r^n|Y^n)$.
 
 ### Reviewer note (claude-opus-5-5, independent review, 2026-11-27)
 
-Own scripts (not the author's), run outside the repo; every [proved] claim checked.
+Own scripts (not the author's), now in `code/review/`; every [proved] claim checked.
 - **Model.** Old Markdown ("an index in $\{1,\dots,\lfloor 2^{nR_0}\rfloor\}$ as a function
   of $Y_r^n$") and Lean `IsPrimitiveBscAchievable` (`relay : (Fin n → Bool) → Fin M₀`,
   $M_0=\max(1,\lfloor2^{nR_0}\rfloor)$) both impose one per-block index budget, so
@@ -387,18 +387,18 @@ Own scripts (not the author's), run outside the repo; every [proved] claim check
 - **Claims 2–3.** SDPI step re-derived (TV of the rows of $X|(Y_r,Y{=}y)$ is
   $\sigma(\ell+c)-\sigma(\ell-c)\le1-2p_2$; the $E$-coupling is exact because
   $U\perp X\mid(Y_r,Y)$), as was the PDF bound via $\mathrm{BSC}(p_1)=\mathrm{BSC}(p_2)\circ\mathrm{BSC}(q)$.
-  `mpmath.iv` interval arithmetic gives the time-shared rate $\in[0.5395688266540,\,0.5395688266541]$,
+  `mpmath.iv` interval arithmetic (`code/review/partA.py`) gives the time-shared rate $\in[0.5395688266540,\,0.5395688266541]$,
   $\max$ of the upper bounds $=0.5310044064107\ldots$, so the gap is $\ge0.0085644$. The DF corner
   0.2530 exceeds $\Delta=0.2529325$, and at pipe 0.8270 the NNC second term 0.636076 exceeds
   $I(X;Y,Y_r)=0.635823$. The certified range $(0.252933,\,0.334876)$ is confirmed. No float leaks.
-- **Claim 4 / correction of the fable baseline.** An independent direct optimizer (Nelder–Mead
+- **Claim 4 / correction of the fable baseline.** An independent direct optimizer (`code/review/cf_direct.py`; Nelder–Mead
   over $\pi$ and $|U|=4$ test channels on the min-form, with no dual and no $\theta$-grid)
   reproduces the CF column to $10^{-6}$ (0.431412, 0.478817, 0.523558, 0.564838, 0.601394,
   0.630554) with $\pi^*=1/2$. The DF-corner tangent slope is 0.182962, giving an envelope
   of 0.557912 at $R_0=0.4$. Partial-decode-compress-forward (superposition $U$, compression
-  conditioned on $U$, NNC-style decoding; $|U|\le4$, $|\hat Y|=3$, 40 random restarts)
-  does not exceed 0.5579124, so it adds nothing beyond time-sharing here.
-- **Claim 5.** The $a(\theta),b(\theta)$ closed forms match direct joint enumeration (15,000
+  conditioned on $U$, NNC-style decoding; $|U|\le4$, $|\hat Y|=3$, 40 random restarts;
+  `code/review/combined4.py`) does not exceed 0.5579124, so it adds nothing beyond time-sharing here.
+- **Claim 5** (`code/review/claim5_6.py`, which also covers Claims 6 and 8). The $a(\theta),b(\theta)$ closed forms match direct joint enumeration (15,000
   random $U$, $|U|\le5$, five values of $\rho$). The maximum of $(a/b)/s_\rho$ is
   $0.99999999$. sympy confirms $k^{4m}+k^2-(1+k^2)k^{2m}=(k^{2m}-k^2)(k^{2m}-1)$.
   The value of $\mathrm{corr}^2$ was re-derived by hand.
@@ -407,7 +407,7 @@ Own scripts (not the author's), run outside the repo; every [proved] claim check
   $R\le1-2H_2(\rho)+\lambda C_0+\mathfrak C[g_\lambda](\rho)$ is exact. The proof
   (tangent-line contradiction, convexity and monotonicity of $e$) was re-derived; the
   witness $\Phi=4.6746\times10^{-6}$ was recomputed.
-- **Claim 7.** Independent pieces from two-point mixtures of *arbitrary* cube points
+- **Claim 7** (`code/review/egn_check.py`). Independent pieces from two-point mixtures of *arbitrary* cube points
   (differential evolution, 35 pieces, evaluated in 50 digits) give $B\ge$ 0.5359255,
   0.5406862, 0.5740505, 0.6492764 at $R_0=$ 0.005, 0.01, 0.05, 0.2. Each is at least
   the stated value, so the claim holds.
@@ -420,7 +420,7 @@ Own scripts (not the author's), run outside the repo; every [proved] claim check
   The closing sentence goes beyond what is proved; see the bracket under Claim 9.
 - **Dead ends.** `egn_prop1_perturbation.py` gives $a_1>0$, $a_1=\Theta(\varepsilon)$,
   $b_1=\Theta(\varepsilon^2)$. The $a_1,b_1$ formulas match EGN Prop. 1, eqs. (26)–(27),
-  for product-form channels. A grid scan of the certified gap gives a maximum of 0.0122
+  for product-form channels. A grid scan of the certified gap (`code/review/gap_scan.py`) gives a maximum of 0.0122
   near $(0.242,0.133,0.318)$, consistent with "about 0.012".
 - **Novelty.** Mondelli–Hassani–Urbanke (arXiv:1801.03153, Thm. 1, eq. (33)) give a rate that
   is algebraically the chord $\frac{(C-D)\,r_{\rm CF}+r_{\rm DF}(b-C)}{b-D}$ from the DF corner
