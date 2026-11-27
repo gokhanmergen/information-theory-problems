@@ -99,11 +99,15 @@ necessary. A single-letter characterization has been open since then.
   a fixed, well-chosen tail of source symbols (an averaging argument). A written proof is in
   the attempt cited above (Claim 2); it is not yet certified in Lean. It is needed only to
   relate $\rho^*$ to $\rho = 1$, not for the frozen statement itself.
-- **Lower semi-computability (attempt, unverified).** The same attempt proves that $\rho^*$
-  is lower semi-computable, uniformly in the instance: $\{r \in \mathbb{Q} : r < \rho^*\}$
-  is recursively enumerable. The tool is a bootstrap theorem: one finite code with exact
-  rational error $\varepsilon$ certifies every ratio below
-  $k/(n + \varphi(\varepsilon)(1/C_1 + 1/C_2))$. Consequently the frozen Statement is
+- **Lower semi-computability (attempt, reviewer-verified 2026-11-27).** The same attempt
+  proves that $\rho^*$ is lower semi-computable, uniformly in the instance:
+  $\{r \in \mathbb{Q} : r < \rho^*\}$ is recursively enumerable. The tool is a bootstrap
+  theorem. When both single-user capacities $C_1, C_2$ are positive, one finite code with
+  exact rational error $\varepsilon$ certifies every ratio below
+  $k/(n + \varphi(\varepsilon)(1/C_1 + 1/C_2))$. This is essentially implicit in CES
+  (1980, §IV). Their Theorems 2 and 4 characterize transmissibility by an increasing union
+  of $n$-letter regions $C_n$. Their Remark 2 notes that these inner approximations
+  converge but that no outer approximations are known. Consequently the frozen Statement is
   equivalent to uniform *upper* semi-computability of $\rho^*$, exactly as for
   `shannon-capacity-computability`. On instances where one encoder's input does not
   affect the output, $\rho^*$ has a closed form and is computable.

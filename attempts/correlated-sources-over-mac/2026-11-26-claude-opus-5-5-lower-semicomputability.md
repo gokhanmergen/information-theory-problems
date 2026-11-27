@@ -4,7 +4,7 @@ date: 2026-11-26
 attempter: claude
 model: claude-opus-5-5
 type: partial-result
-status: unverified
+status: verified
 ---
 
 ## Summary
@@ -61,6 +61,8 @@ function.
    - By Claim 3, $\rho^*$ does not change if "for all $n\ge N$" in
      `IsTransmissibleAtRatio` is weakened to "for infinitely many $n$". So the
      $\lfloor\rho n\rfloor$ convention and the all-$n$ quantifier are harmless.
+     (Reviewer: Claim 3 assumes $C_1,C_2>0$. When $C_1C_2=0$, use instead the per-code
+     Fano converses of Claim 6, which hold code by code; the conclusion is unchanged.)
 2. **[proved]** *Monotonicity.* If $\rho\in S$ and $0\le\rho'<\rho$, then $\rho'\in S$.
 3. **[proved]** *Bootstrap theorem.* Suppose $C_1,C_2>0$, and some $(k,n)$ code
    ($k,n\ge1$) has `jsccError` $=\varepsilon$. Then every $0\le\rho<k/(n+\varphi(\varepsilon)(1/C_1+1/C_2))$
@@ -285,11 +287,21 @@ Boche–Schaefer–Poor 2020. No such negative result is known for memoryless mu
 problems, and the present problem has no "memory" from which to encode an undecidable
 problem. I would not bet either way.
 
+(Reviewer: the sentence "no such negative result is known for memoryless multi-terminal
+problems" is too broad. Boche–Schaefer–Poor, ISIT 2019, "Identification capacity of
+correlation-assisted discrete memoryless channels: analytical properties and
+representations", pp. 470–474, show that a capacity for a DMC assisted by a correlated
+source is not Banach–Mazur computable. Only the abstract was read. Banach–Mazur
+non-computability concerns the capacity as a function of computable inputs, typically
+because of discontinuities. It does not directly bear on a uniform algorithm on exact
+rational instances such as the frozen Statement.)
+
 ## Verification
 
 - `code/certificate_demo.py` uses exact rational arithmetic (`fractions`) for all code
   error probabilities, and mpmath at 50 digits for the logarithmic quantities. It runs in
-  under 1 s:
+  under 1 s. (Reviewer: as committed in 9212b28 it raised `TypeError` in `h2` under mpmath 1.3.0;
+  fixed by a one-line patch in the review commit, see the reviewer note.)
   ```
   CES example: exact error of uncoded code = 0 ; A1 = 1.0 A2 = 1.0
     certificate: every rho < 1.0 is transmissible  =>  rho* >= 1
@@ -306,6 +318,82 @@ problem. I would not bet either way.
   already proves $0\in S$ and boundedness, which Claims 1 and 4 use. Claim 2 (monotonicity)
   and the Lemma in Claim 3(iii) are elementary enough to formalize. They would be natural
   next certificates.
+
+### Reviewer note (claude-opus-5-5, independent review, 2026-11-27)
+
+**Scope.** I re-derived every [proved] claim (1–6, 8) by hand from the frozen Lean
+definitions. The relevant definitions are `jsccError`, `IsTransmissibleAtRatio` (with
+$0\le\rho$, $\forall\delta\,\exists N\,\forall n\ge N$, $k=\lfloor\rho n\rfloor$),
+`optimalTransmissionRatio` $=$ `sSup` of that set, and `Statement`. I also checked the
+certificate lemmas `isTransmissibleAtRatio_zero` and `transmissibleSet_bddAbove`.
+
+**(a) Direction.** $\rho^*$ is a supremum of achievable ratios. Achievability has finite
+witnesses, so lower semi-computability ($\{r<\rho^*\}$ r.e.) is the natural direction, and
+the attempt proves that direction. The Statement's promise-gap form needs no
+strict/non-strict care beyond what Claim 5 handles.
+
+**(b) Bootstrap, Claim 3.** I checked each step.
+- Super-letters $(U^k,V^k,g(Y^n))$ are i.i.d.
+- Fano holds for any $\varepsilon$, including $\varepsilon>1/2$.
+- Lemma (iii): for $a'\ne a$ the collision probability is $1/M_1$, otherwise $1/M_2$,
+  hence at most $2^{-N(H+2\gamma)}$ over at most $2^{N(H+\gamma)}$ candidates. The WLLN
+  summands are bounded.
+- Maximal-error channel codes are needed because the bin indices are not uniform.
+  $\log\lceil 2^{NR_i}\rceil\le m_iA_i'$.
+- Each encoder bins only its own super-letter sequence, so the code stays distributed.
+  The crude rate $H(\tilde U\tilde V|Z)$ per encoder is wasteful but valid.
+- (vi) handles every length $n'$ through Claim 2 padding plus ignored filler uses.
+  $L_{N+1}-L_N$ is bounded.
+
+Two other things check out:
+- The certificate is semi-decidable: $\varepsilon$ is an exact rational, and the test is
+  a strict inequality between computable reals.
+- Completeness (Claim 4) is correct. For $r<\rho'\in S$, the codes witnessing $\rho'$
+  have $\varphi(\varepsilon)/n\le h(\delta)/n+\delta\rho'\log_2(ab)$, so their certificate
+  value tends to $\rho'/(1+\delta\rho'\log_2(ab)(1/A_1+1/A_2))>r$.
+
+**Other claims.**
+- Claim 2: the averaging over tails is correct.
+- Claim 5: both directions are correct. It assumes, as stated, that the binary-tape Lean
+  `TuringMachine` is Turing-complete; I did not formalize that.
+- Claim 6: the converse uses the Markov chain $(U^kV^k)-X_2^n-Y^n$ and Fano.
+  Achievability is separation for $V$ plus $U=g(V)$.
+- Claim 1, last bullet: misattributed to Claim 3 only. Fixed in place above; the
+  conclusion is unaffected.
+
+**(c) Code.** `code/certificate_demo.py` **crashes as committed** under mpmath 1.3.0
+(Python 3.14), with `TypeError: cannot create mpf from Fraction(0, 1)` in `h2`. With a
+one-line patch (`x = mp.mpf(x.numerator)/x.denominator if isinstance(x, F) else mp.mpf(x)`),
+its output matches the Verification block above. The coordinator applied this patch to
+`code/certificate_demo.py` in the review commit and re-ran it (output: certificate
+rho* > 0.8248915, cut-set rho* <= 0.94271591).
+
+I also wrote an independent script that does not reuse the author's code. It computes the
+exact MAP error by hand and capacities by Blahut–Arimoto upper/lower bounds:
+- MAP error $=0.01$.
+- $A_1=A_2=C_1=C_2=0.949621556437883$.
+- Certificate value $0.824891503646$.
+- Cooperative capacity $1.49416936482525$, giving $\rho^*\le0.942715909143$.
+
+So Claim 8 is confirmed, and $\rho^*=1$ on the CES example is immediate.
+
+**(d) Novelty: the main correction.** Claim 4 is essentially in CES 1980 §IV:
+- Theorem 2 / Theorem 4 give an $n$-letter iff characterization by increasing inner sets
+  $C_k$.
+- Remark 2 says these inner approximations converge but no outer bounds are known.
+
+Details are in the corrected Novelty check. Other searches (Boche–Schaefer–Poor
+computability papers; Agarwal 1804.05977; Yang–Chen–Qiu cs/0611146; Ponniah 2025 thesis
+record) found nothing more specific. Claim 9's remark on memoryless negative results is
+qualified above.
+
+**Not checked.** I did not check:
+- Claim 7 (labelled [sketch]) beyond a plausibility read.
+- The Lean build or audit of the certificate file.
+- CES's own proof of their Theorem 2 / Theorem 4.
+
+**Status: `verified`.** Every [proved] claim is mathematically correct, with the minor
+fixes noted. This status does not endorse novelty; see (d).
 
 ## Dead ends
 
@@ -328,7 +416,9 @@ problem. I would not bet either way.
 ## References
 
 - T. M. Cover, A. El Gamal, M. Salehi, IEEE Trans. IT 26(6):648–657, 1980 (the example and
-  the $n$-letter converse).
+  the $n$-letter converse). [Reviewer: also §IV, Theorems 2 and 4, the $n$-letter
+  necessary-and-sufficient characterization, and Remarks 1–2 on inner approximation; see the
+  Novelty check.]
 - W. Kang, S. Ulukus, IEEE Trans. IT 57(1):56–69, 2011.
 - D. Slepian, J. K. Wolf, IEEE Trans. IT 19(4), 1973. Claim 3(iii) is a self-contained
   crude variant and does not rely on their theorem.
@@ -358,3 +448,19 @@ problem. I would not bet either way.
   errors" pattern. I expect experts would call the r.e. conclusion folklore for memoryless
   networks, but I did not find it written down for this problem. Treat Claim 4 as a
   careful write-up, not a discovery.
+- (Reviewer correction.) CES 1980 itself contains the structure. Section IV, "An
+  uncomputable expression for the capacity region", gives an $n$-letter characterization
+  with both achievability and converse, not only a converse. Theorem 2 says $(U,V)$ is
+  transmissible iff $(H(U|V),H(V|U),H(U,V))\in\bigcup_k C_k$, where $C_k$ is a region of
+  strict $k$-letter mutual-information inequalities over
+  $p(x_1^k|u^k)p(x_2^k|v^k)$. Theorem 4 is the version for $R$ source symbols per
+  channel use. Remark 1 notes $C_k\subseteq C_{2k}\subseteq\cdots$. Remark 2 says that
+  $C=\lim C_k$ is approximated from inside, but "we do not have an upper bound
+  $\bar C_k$, $C\subseteq\bar C_k$". That is the lower/upper semi-computability split of
+  Claims 4, 5 and 9, stated informally. Kang–Ulukus (cs/0511096, Introduction) also say
+  CES gave "a capacity result with both achievability and converse" in $n$-letter form.
+  - Lower semi-computability follows from CES Theorem 4 with the same slack argument as
+    Claim 3: append $s_i>\varphi(\varepsilon)/A_i$ channel uses carrying independent inputs.
+  - So Claim 4 is a rigorous version of CES's Remark 2 for the $\rho^*$ proxy, not a new
+    result. Claim 3's Slepian–Wolf outer code is a self-contained alternative to invoking
+    CES Theorem 1 on super-letters.
