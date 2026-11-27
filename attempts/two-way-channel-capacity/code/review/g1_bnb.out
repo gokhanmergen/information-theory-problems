@@ -1,0 +1,4 @@
+certified: sym(G1) <= 0.61696; boxes visited 600185, min width 1/131072
+$S/venv/bin/python g1_bnb.py 0.61696  12.09s user 0.02s system 99% cpu 12.148 total
+max x h(x) = 0.6169486434131743 at 0.7035060764653147
+multistart max [y h(x)+x h(y)]/2 = 0.6169486434131745

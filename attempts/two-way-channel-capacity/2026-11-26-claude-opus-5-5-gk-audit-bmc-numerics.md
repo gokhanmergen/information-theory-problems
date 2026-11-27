@@ -239,7 +239,7 @@ numerically checked inequality Φ ≤ 4g*.
 
 ### Reviewer note (claude-opus-5-5, independent review, 2026-11-27)
 
-The scripts are in the reviewer's scratch folder and are not committed. I wrote them from the
+The scripts, data and logs are in `code/review/`. I wrote them from the
 Lean definitions and did not call `bmc_gk.py` / `certify_g3_gt_g1.py`, except to read which
 rational distribution is meant: the seed-2 npz rounded by the stated floor/argmax rule.
 
@@ -249,14 +249,14 @@ rational distribution is meant: the seed-2 npz rounded by the stated floor/argma
   The code's quantity H(Y^k|S₂)/k (+ swap) is exactly this for the BMC (Claim 4 re-derived).
 - **Claim 7 (b), confirmed.** Each reduced tree becomes a full element of `CausalStrat 3 Bool
   Bool`, with 0 on histories inconsistent with its own inputs; these are legitimate strategies.
-  A subclass is fine for a lower bound. My evaluator builds the Lean J(q,s₁,s₂,y) over all
+  A subclass is fine for a lower bound. My evaluator (`code/review/lean_eval_g3.py`) builds the Lean J(q,s₁,s₂,y) over all
   64 y with exact Fractions and Q uniform on {(p₁,p₂),(p₂,p₁)}, then applies the 4-entropy
   formula in mpmath iv. Result: rate₁, rate₂ ∈ [0.6196448091917556352334261772190, …],
   per-q 0.61964480934857 / 0.61964480903494, as claimed. My simulated outcome table equals the
   author's T with 0 mismatches, and the 42 rows are distinct. An independent L-BFGS search
-  (softmax logits, 42 classes from all 128 full strategies, 400 + 2000 restarts) also tops out
+  (`code/review/indep_opt.py`; softmax logits, 42 classes from all 128 full strategies, 400 + 2000 restarts) also tops out
   at 0.6196448092.
-- **Claim 5 (c), confirmed.** Adaptive branch-and-bound over rational boxes, using
+- **Claim 5 (c), confirmed.** Adaptive branch-and-bound over rational boxes (`code/review/g1_bnb.py`), using
   y₁·max h + x₁·max h with iv upper endpoints, certifies sym(G₁) ≤ 0.61700 (124k boxes) and
   ≤ 0.61696 (600k boxes). This is stronger than 0.617168. The author's grid is sound: h is
   unimodal, 1/2 is a grid point, rounding is outward and a final relative margin is applied.
@@ -265,7 +265,7 @@ rational distribution is meant: the seed-2 npz rounded by the stated floor/argma
   encoders, read off the Lean. Claim 4: min ≤ average plus user swap; the counts 6 and 42 come
   out of my full enumeration (8 and 128 strategies), 1806 from my own tree enumeration, and
   Bloemen eq. 2.72 lists the same sequence. Claim 6: the closed form F matches my behavioural
-  evaluator to 9e-16 at 2000 random points and is Kort 1997 eqs. (3.15)–(3.16). I re-derived
+  evaluator (`code/review/check_k2_closed_form.py`) to 9e-16 at 2000 random points and is Kort 1997 eqs. (3.15)–(3.16). I re-derived
   F ≤ Φ by hand, and it holds at 2000 random points. max Φ = 4g* stays numerical, as labelled.
 - **Novelty (d): the values are prior art.** Kort 1997 (MSc, TU/e) computes G_n for the BMC
   and quotes van Dorsselaer 1982 / Smeets 1983: k = 2: 0.61695, k = 3: 0.61964 (NEOS
@@ -279,12 +279,13 @@ rational distribution is meant: the seed-2 npz rounded by the stated floor/argma
   that the plain dependence-balance (DB) bound does not improve on Shannon's outer bound for
   the BMC. The Sabag–Permuter 2018 abstract matches the problem-file wording.
 - **Claim 8 is wrong in spirit (no headline claim).** I parsed Kort's App. A.4/A.6 K₄
-  parameters. Kort's index order is depth, then (y-history, own history), which I verified
+  parameters (`code/review/kort_k4.py`). Kort's index order is depth, then (y-history, own history), which I verified
   against A.2 and the k = 3 optimum. Under my evaluator they give 0.6208791030 and
   0.6214031128. Interval-certified after rounding to 10⁻⁶, as a product distribution on the
-  1806 reduced 4-trees: **sym(G₄) ≥ 0.6214031128**. My own 80-parameter behavioural
-  multistart reached 0.62086. The behavioural reduction is exact for the BMC (Kuhn); at k = 3
-  the behavioural projection of the author's optimum reproduces 0.6196448091917556.
+  1806 reduced 4-trees (`code/review/certify_k4.py`): **sym(G₄) ≥ 0.6214031128**. My own 80-parameter behavioural
+  multistart reached 0.62086 (`code/review/opt_k4_behav.py`, log `k4_asym.out`). The behavioural reduction is exact for the BMC (Kuhn); at k = 3
+  the behavioural projection of the author's optimum reproduces 0.6196448091917556
+  (`code/review/test_behav.py`).
 - **Labels.** Claim 7's last sentence and Claim 6's "Together these give sym(G₂) = sym(G₁)" are
   marked numerical. Inline reviewer notes add novelty and k ≥ 4 corrections. Problem file: the
   G_k bullet now credits van Dorsselaer/Smeets/Kort, drops "the k = 4 search was

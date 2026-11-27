@@ -1,0 +1,3 @@
+k=3: full strategies 128, outcome classes 42
+best sym rate 0.6196448092; top5 [0.61957939 0.61957939 0.61957939 0.61961149 0.61964481]; fraction within 1e-7 of best 0.003
+$S/venv/bin/python indep_opt.py 3 400 12  30.91s user 0.20s system 99% cpu 31.407 total

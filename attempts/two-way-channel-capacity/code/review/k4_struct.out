@@ -1,0 +1,3 @@
+k=4 structured starts N=30: best half-sum 0.61993474; top: [0.619935 0.619935 0.619935 0.619935 0.619935 0.619935]
+R1-ish split: H(Y|S2)/4, H(Y|S1)/4 not separated here
+../venv/bin/python opt_k4_struct.py 30 7  84.10s user 0.31s system 99% cpu 1:25.20 total

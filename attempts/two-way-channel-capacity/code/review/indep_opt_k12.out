@@ -1,0 +1,6 @@
+k=2: full strategies 8, outcome classes 6
+best sym rate 0.6169486434; top5 [0.61694864 0.61694864 0.61694864 0.61694864 0.61694864]; fraction within 1e-7 of best 0.920
+$S/venv/bin/python indep_opt.py 2 300 11  0.96s user 0.03s system 99% cpu 0.996 total
+k=1: full strategies 2, outcome classes 2
+best sym rate 0.6169486434; top5 [0.61694864 0.61694864 0.61694864 0.61694864 0.61694864]; fraction within 1e-7 of best 1.000
+$S/venv/bin/python indep_opt.py 1 50 11  0.25s user 0.03s system 99% cpu 0.282 total
