@@ -32,9 +32,11 @@ $$
 For $k = 1$, $\mathcal{R}_{\mathrm{CL}}^{(1)}(W)$ is precisely the Cover–Leung region, and
 $\overline{\bigcup_{k=1}^\infty \mathcal{R}_{\mathrm{CL}}^{(k)}(W)} = \mathcal{C}_{\mathrm{MAC-FB}}(W)$
 (Kramer 1998; the inclusion "$\supseteq$" also follows directly from Fano's inequality with
-$U$ constant). $\mathcal{R}_{\mathrm{CL}}^{(k)}$ is Kramer's *generalized Cover–Leung region*
-with $M = k$ (Kramer 1998, §§5.3–5.4, written there with directed information; see
-Venkataramanan–Pradhan 2011, §IV-B). The regions are nested along divisibility,
+$U$ constant). $\mathcal{R}_{\mathrm{CL}}^{(k)}$ contains Kramer's *generalized Cover–Leung
+region* with $M = k$ (Kramer 1998, §§5.3–5.4, written there with directed information; see
+Venkataramanan–Pradhan 2011, §IV-B, Fact 2). In that restatement $U_1, \dots, U_M$ are i.i.d.
+and the $i$-th inputs see $U_i$ but no other $U_j$, whereas here one $U$ serves the whole block, so
+equality of the two regions has not been checked. The regions are nested along divisibility,
 $\mathcal{R}_{\mathrm{CL}}^{(k)} \subseteq \mathcal{R}_{\mathrm{CL}}^{(mk)}$, so the
 non-monotonicity in $k$ is harmless for the question below.
 
@@ -70,18 +72,25 @@ open after half a century.
   $P(Y{=}1|11)=2q$). Venkataramanan and Pradhan (2011) gave a single-letter region strictly
   containing Cover–Leung. Their numerical comparisons are on the AWGN MAC and on the same
   binary MAC as $q \to 0$ ($0.4994q$ vs $0.5132q$ nats symmetric sum-rate), and they report a
-  likely calculation error in Bross–Lapidoth's number for that example (VP §IV-C).
+  likely calculation error in Bross–Lapidoth's number for that example (VP §IV-C). Earlier,
+  Kramer (1998; 2003) gave the first improvement over Cover–Leung for a DM-MAC, using code trees
+  on the binary additive noisy MAC $Y = X_1 + X_2 + N$, $N \sim \mathrm{Bern}(1/2)$: symmetric
+  rate $0.43879$ vs Cover–Leung's $0.43621$ (as reported by Tandon–Ulukus 2009, who also
+  evaluate that channel's Cover–Leung region analytically).
 - **Finite-$k$ hierarchy**: Kramer's thesis evaluated the generalized CL region for $M = 2$ on
   a few examples. For the AWGN MAC at SNR 10 the equal-rate point is $1.2566$ (vs CL
   $1.2470$, VP $1.2709$, Ozarow capacity $1.2847$, as reported in VP §IV). That channel is not
   finite-alphabet. We know of no published result settling whether
   $\mathcal{R}_{\mathrm{CL}}^{(k)}$ stabilises for every finite-alphabet DM-MAC. A
   computer-assisted strict inclusion $\mathcal{R}_{\mathrm{CL}}^{(1)} \subsetneq
-  \mathcal{R}_{\mathrm{CL}}^{(2)}$ for the binary MAC above at $q = 1/2$ (i.e. $Y = X_J$,
+  \mathcal{R}_{\mathrm{CL}}^{(2)}$ for the binary MAC above at $q = 1/2$ (the endpoint of the
+  family, which VP state for $0 < q < 1/2$; i.e. $Y = X_J$,
   $J \sim \mathrm{Unif}\{1,2\}$) is in `attempts/mac-with-feedback/`. The max sum-rate is
   $\le 0.57895$ at $k = 1$ (duality certificate) and $\ge 0.58432$ at $k = 2$ (explicit
-  strategies). So the hierarchy does not stop at $k = 1$ on finite alphabets, and Cover–Leung is
-  strictly suboptimal there.
+  strategies). So for this channel the hierarchy does not stop at $k = 1$, and Cover–Leung is
+  strictly suboptimal there. That some finite-alphabet MAC has
+  $\mathcal{R}_{\mathrm{CL}}^{(1)} \neq \mathcal{C}_{\mathrm{MAC-FB}}$ already followed from
+  Kramer's example above. What is new is an explicit, certified jump at $k = 2$.
 - **Consistency of the frozen statement**: it holds with $k = 1$ for Willems' class, for
   channels where feedback does not enlarge the region, and in degenerate cases (silent user,
   empty alphabets). These are consistent with the catalog; no catalog error was found (see the
