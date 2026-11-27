@@ -1,4 +1,17 @@
+import InfoTheory.Known.Certificates.CourtadeKumar
+import InfoTheory.Known.Certificates.DeletionChannel
+import InfoTheory.Known.Certificates.DeletionChannelHighDLimit
+import InfoTheory.Known.Certificates.DeletionChannelSmallDAsymptotics
+import InfoTheory.Known.Certificates.DiscreteEntropyPowerInequality
+import InfoTheory.Known.Certificates.EditDistanceCodeCapacity
+import InfoTheory.Known.Certificates.EntropicDoublingConstant
+import InfoTheory.Known.Certificates.EntropyRegion
+import InfoTheory.Known.Certificates.GilbertVarshamovBinary
+import InfoTheory.Known.Certificates.KissingNumberHighDim
+import InfoTheory.Known.Certificates.LinearRankEntropyRegionN6
+import InfoTheory.Known.Certificates.ListDecodingCapacityBinaryLinear
 import InfoTheory.Known.Certificates.ListDecodingZeroErrorCapacity
+import InfoTheory.Known.Certificates.MdsConjecture
 import InfoTheory.Known.Certificates.ShannonCapacityC7
 import InfoTheory.Known.Certificates.ShannonCapacityComplementProduct
 import InfoTheory.Known.Certificates.ShannonCapacityUnionProduct
