@@ -43,7 +43,7 @@ noisy, nor more capable, nor semi-deterministic), the BSSC has become the benchm
 for the entire broadcast channel problem. Remarkably, the BSSC is the canonical example on
 which the best known general inner bound (Marton 1979) and the classical Nair–El Gamal
 (2007) UV outer bound strictly separate, concentrating the 50-year broadcast channel
-capacity problem into a concrete gap of under $0.01$ bits on a binary-input, binary-output
+capacity problem into a concrete gap of about $0.01$ bits on a binary-input, binary-output
 channel. Since Marton's inner bound is now claimed to be strictly suboptimal for some
 non-binary-input channel (Huang–Liu–Liu 2026, below), the binary-input case, and the BSSC
 in particular, is where the optimality question remains genuinely open.
@@ -59,15 +59,16 @@ in particular, is where the optimality question remains genuinely open.
   $R_{\mathrm{M,sum}}(W_{\mathrm{BSSC}}) \approx 0.3616428$ bits, strictly beating time
   sharing ($0.321928$ bits). An explicit randomized-time-division distribution certifies
   $R_{\mathrm{M,sum}} \ge 0.361642884$ with interval arithmetic (attempt log).
-- The Nair–El Gamal (2007) UV outer bound evaluates on the BSSC to $\approx 0.37256$ bits.
-  This is now certified as an upper bound, $\le 0.372556252$, in the attempt log; it leaves
-  a gap of roughly $0.0109$ bits above Marton's sum-rate.
+- The Nair–El Gamal (2007) UV outer bound evaluates on the BSSC to $\approx 0.3725562$ bits.
+  Jog and Nair (2009) derived this value analytically, correcting an earlier $0.3711$; the
+  attempt log re-checks it with interval arithmetic ($\le 0.372556252$). It leaves a gap of
+  roughly $0.0109$ bits above Marton's sum-rate.
 - Gohari and Nair (2022) introduced the auxiliary-receiver framework. Their paper's strict
   improvements over UV are for other channels (the erasure Blackwell corner point and product
   channels); it contains no BSSC evaluation.
 - The first improvement on the BSSC came from Geng (ISIT 2025), using a one-auxiliary-receiver
   concave-envelope bound that, for each fixed auxiliary receiver $J$, is implied by
-  Gohari–Nair's Theorem 7. Geng reported $\approx 0.369316568803963$ at
+  Gohari–Nair's Theorem 7. As quoted by Gohari–Liu–Nair, Geng reported $\approx 0.369316568803963$ at
   $J = \mathrm{BSC}(0.18999)$.
 - Gohari, Liu, and Nair (manuscript, 2025 or later) gave a two-auxiliary-receiver bound with a
   reported value of $\approx 0.369296340638082$.
@@ -99,6 +100,8 @@ in particular, is where the optimality question remains genuinely open.
 - C. Nair, Z. V. Wang, and Y. Geng, "An information inequality and evaluation of Marton's
   inner bound for binary input broadcast channels," *IEEE Int. Symp. Inf. Theory (ISIT)*,
   2010; arXiv:1001.1468.
+- V. Jog and C. Nair, "An information inequality for the BSSC channel," *Information Theory
+  and Applications Workshop (ITA)*, 2010; arXiv:0901.1492 (Sec. 3.2.1 evaluates the UV sum-rate).
 - Y. Geng, V. Jog, C. Nair, and Z. V. Wang, "An information inequality and evaluation of
   Marton's inner bound for binary input broadcast channels," *IEEE Trans. Inf. Theory*,
   vol. 59, no. 7, pp. 4095–4105, 2013.
