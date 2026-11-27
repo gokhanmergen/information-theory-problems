@@ -4,7 +4,7 @@ date: 2026-11-26
 attempter: claude
 model: claude-opus-5-5
 type: partial-result
-status: unverified
+status: verified
 ---
 
 ## Summary
@@ -16,7 +16,8 @@ constraint and a per-message *expected* relay constraint), so any rate of the fo
 λ·R(P₁/λ, P₂/λ) is achievable. Lemma 1 below shows that when g₁₂² ≤ g₁₃² the formal hybrid
 rate is *exactly* the closed-form Gaussian compress-forward (CF) rate. El Gamal–Mohseni–Zahedi
 (EMZ 2006, eq. (8)) noted that this rate is not concave in P and improved it by bursting.
-Exact integer arithmetic certifies, at unit gains with P₁ = 10⁻³ and P₂ = 10⁻¹:
+Exact integer arithmetic certifies, at unit gains with P₁ = 10⁻³ and P₂ = 10⁻¹ (the first
+inequality is modulo the Gaussian CF achievability theorem, see Claim 3):
 
   C_Gauss ≥ (1/200)·log₂(333/280) = 0.0012505 > 0.0007864 = ½·log₂(551601/551000) = R_hyb  (ratio 1.59).
 
@@ -25,8 +26,11 @@ theorem. At unit gains with P₁ = P₂ = 1/10, EMZ's block-length-2 linear rela
 (their Example 1) achieves 0.088283 > 0.073779 = R_hyb. The same scheme also beats the obvious
 repair: we prove that the **upper concave envelope** of R_hyb over power allocations is at most
 0.77135·t along P₁ = P₂ = t, while bursty linear relaying achieves 0.88283·t for every
-t ∈ (0, 1/10]. Any repair of the form "capacity = (Gaussian hybrid, possibly time-shared)" is
-therefore known to be false. We propose how to re-pose the entry below.
+t ∈ (0, 1/10]. The repair "capacity = concave envelope of the Gaussian hybrid" is therefore
+false (modulo the AWGN coding theorem). A repair with a *coded* time-sharing variable Q inside
+the rate constraints is very likely false too, but that is only heuristic (Claim 8). (Reviewer:
+the original sentence said every "possibly time-shared" repair is "known to be false", which
+overstated Claim 8.) We propose how to re-pose the entry below.
 
 ## Approach
 
@@ -52,6 +56,10 @@ R_CF := C(s₁₃ + s₁₂s₂₃/(1+s₁₂+s₁₃+s₂₃)). C_Gauss is `gau
    (P₁, P₂). EMZ 2006 (Sec. 2, code definition "as in" Cover–El Gamal 1979) use a stricter
    model: the source constraint per codeword and relay power bounded for *every* y₁ⁿ. Their
    codes are therefore admissible here, and their achievability results carry over.
+   (Reviewer caveat: this applies to codes that meet EMZ's Sec. 2 definition, e.g. CF. EMZ's
+   own linear-relaying rates, eqs. (13)–(15), are evaluated under an *expected* relay-power
+   constraint, tr(a²DΣDᵀ + NDDᵀ) ≤ kγP, not the "for every y₁ⁿ" one. This does not affect
+   Claim 5, which checks Example 1 directly against the Lean per-message expected constraint.)
 2. **[proved]** *(Lemma 1.)* If g₁₂² ≤ g₁₃² and P₁, P₂ ≥ 0, then
    `gaussianHybridDFCFRate g₁₂ g₁₃ g₂₃ P₁ P₂ = ENNReal.ofReal R_CF`.
 3. **[proved]**, modulo the Gaussian CF achievability theorem (EMZ eq. (7); Cover–El Gamal 1979
@@ -362,6 +370,90 @@ def Statement : Prop :=
 * The analytic parts (burst lemma, Lemma 1, Claim 4, the reduction in §6) are proved in this
   file and have not been independently reviewed. No Lean was written, per coordinator
   instructions.
+
+### Reviewer note (claude-opus-5-5, independent review, 2026-11-27)
+
+**Verdict: the headline holds. The frozen `Statement` is false at (1,1,1,1/10,1/10), modulo
+only the point-to-point AWGN coding theorem. Status set to `verified`:** I checked every
+`[proved]` claim (1–7) myself. Their stated external dependencies (the AWGN coding theorem; the
+Gaussian CF achievability theorem for Claims 3–4) were not re-proved.
+
+*Lean model (read `Problems/GaussianRelayChannelCapacity.lean`, `Core/Entropy.lean`).*
+`gaussianRelayCapacity` is an `sSup` of `ofReal R` over operationally achievable R. The model
+uses:
+- codes for **every** n ≥ N, with M = max(1, ⌊2^{nR}⌋) and average error;
+- a per-codeword source constraint;
+- a per-message *expected* relay energy (lintegral against ∏ φ(zrᵢ));
+- strictly causal, measurable `relay i : (Fin i → ℝ) → ℝ`, and a measurable decoder.
+
+`Statement` is equality for all real gains and all P₁, P₂ > 0. `gaussianHybridDFCFRate` takes
+the sup over (α, β, γ, θ, c ≥ 0) at a single power level. It has no time-sharing or burst
+variable. The audit in §1 is accurate.
+
+*Claim 1 (burst lemma).* Checked step by step: choice of k = ⌊λn⌋, the inner code with
+M′ ≥ M, expurgating to the best M messages, silent tail, Tonelli for both integrals, and
+measurability. Correct. One caveat on the EMZ remark was added in place (EMZ's own
+linear-relaying rates use an expected relay constraint). It does not affect any proof.
+
+*Claim 2 (Lemma 1).* Re-derived each step: A ≤ C(s₁₂) − C(γs₁₂); max over c of min(B₁, B₂) at
+c* = d/(1+a+b); both log-summands nondecreasing in γ when s₁₂ ≤ s₁₃; attainment at
+α = β = θ = 0, γ = 1 (C4 holds with equality, like C3). Correct. Cross-check by
+`scipy.differential_evolution` on the raw Lean formula at 9 points with g₁₂² ≤ g₁₃² (including
+all three certificate points): |hyb − R_CF| ≤ 2e-15. At 3 points with g₁₂² > g₁₃², hyb > R_CF
+by 0.13–0.34.
+
+*Claims 3, 5, 7 numbers.* Own script, exact `Fraction` arithmetic only. ln 2 and ln(·) use
+artanh series with a rigorous tail bound; √ uses integer isqrt. Results:
+- A1: 333/280 > (551601/551000)¹⁰⁰.
+- A2: (64/51)³ > (33/31)¹⁰.
+- B1: SNR ∈ [0.277330032922414, …] > (72/65)² − 1, giving r_L = 0.0882828331677 > 0.0737785942.
+- B3: 10·r_L ≥ 0.88282833 > m + 1/20 ≤ 0.77134752.
+
+All margins are large.
+
+*Claim 5 (EMZ Ex. 1 in the Lean model).* Re-derived power, causality and the MRC SNR. Checked
+against EMZ eq. (14): the log-det value 0.0882828331677 matches. The expected relay energy is
+exactly 2P₂ per super-symbol. Primary source: EMZ preprint (`isl.stanford.edu/.../relay_7.pdf`)
+read via pdftotext; eqs. (7), (8), (13)–(15) and Example 1 are as quoted. Example 1 is for the
+same full-duplex, strictly causal model as the Lean one (EMZ normalise g₁₃ = 1).
+
+*Claim 4.* The Taylor argument (φ(0) = φ′(0) = 0, φ″(0) = (1/λ − 1)m(2bd − a²)) is correct.
+The tangency point is P* = 0.11040 (own computation).
+
+*Claim 6.* Re-derived the reduction, including the sup formula (√K − √(μD))₊² and the
+q(x)-criterion. Independently re-proved Φ ≤ 0 on [0.08, 6]: exact rationals, 600 uniform
+boxes, worst upper bound −2.18e-3. A 2-D float grid on R_CF − m x₁ − x₂/20 gives max ≤ 0
+(→ 0⁻ only as x₁ → 0).
+
+Certificate-code audit: `mpmath.iv` comparisons return `None` when ambiguous, so `report()`
+fails closed. Cosmetic nit: the B&B starts at the 50-digit float of 0.08 = 0.08 + 5e-53. That
+sliver is trivially covered because q(0.08) ≈ 0.0049.
+
+*Corrections made.*
+- The Summary claimed that every "possibly time-shared" repair is "known to be false". This
+  overstated the heuristic Claim 8. Narrowed it to the concave envelope.
+- Marked the first Summary certificate as modulo CF achievability.
+- No label changes were needed.
+
+*Problem-file edit.* Checked against EMZ:
+- "not tight for any a, b > 0" (Sec. 2) supports the block-Markov sentence.
+- At EMZ Fig. 3 parameters, my computation gives Ex. 1 > eq. (8) for P ≤ 0.3 and < eq. (7)
+  for P ≥ 0.4, which supports "notably at low SNR".
+- The g₁₃ = 0 capacity formula is correct.
+
+No edit needed.
+
+*Novelty.* The phenomena are in EMZ 2006 (eq. (8), Ex. 1, Sec. 5.1 "usually lower") and
+Zhang–Jiang–Cui 2010 (abstract read: silent/active time-sharing CF at low SNR). The attempt
+says so.
+
+*Not checked.*
+- Claim 8 and the slope table (numerics N3/N4 not re-run).
+- Whether EGN 2022 implies a converse slope below 1/ln 2. Only its abstract was read. Kosut–
+  Effros–Langberg 2024 (full text read) cite only the cutset bound (their eq. (9)) as a lower
+  bound on E*.
+- The CF and AWGN achievability theorems as transferred to the exact Lean code definition
+  (every n ≥ N, measurability): checked only as an argument, not formally.
 
 ## Dead ends
 
