@@ -4,7 +4,7 @@ date: 2026-11-26
 attempter: claude
 model: claude-opus-5-5
 type: reduction
-status: unverified
+status: verified
 ---
 
 ## Summary
@@ -127,6 +127,11 @@ Here $\pi := I(X_1,U_{1p};U_{2c}\mid U_0)$ (Lean `pen1`). This table is what
      and hence the deterministic one.
 
    With Claim 6, the Statement therefore holds on every class listed in the problem file.
+   (Corrected by reviewer: this holds for the finite-alphabet classes (a) and (b) only. The
+   problem file also lists Gaussian results, including the Gaussian-only "primary decodes
+   cognitive" regime, which this attempt does not treat. Also, Claim 6 is not needed here:
+   on (a) and (b) capacity equals the one-auxiliary outer bound, so Claim 5 already gives
+   frozen region ⊆ capacity.)
 8. **[proved]** Audit (textual comparison). The frozen region differs from RTD Theorem 7
    in the ways D1–D7 below. **[open]** Whether `rtdInnerBound` contains the faithful
    Theorem 7 region for every channel is not established. If some channel had a point
@@ -354,6 +359,82 @@ runs in about 30 s and reports ALL PASS:
 The LP transcribes the Lean constraint list projection by projection. So these tests also
 check the index decoding in the Notation section. They are evidence for the algebra, not
 proofs. The proofs are in Details.
+
+### Reviewer note (claude-opus-5-5, independent review, 2026-11-27)
+
+**Scope.** I re-derived every `[proved]` claim by hand, checked the code, and checked the
+problem-file edit. Independent script (not in repo): `review_checks.py` in the reviewer
+scratch folder, seed 271127. It reports ALL PASS.
+
+- **Lean statements, quantifier by quantifier.**
+  - Cognitive: `∀ kX₁ kX₂ kY₁ kY₂ W, cognitiveICCapacityRegion W = rtdInnerBound W`.
+  - BC: `∀ kX kY₁ kY₂ W', bcCapacityRegion W' = martonInnerBound W'`.
+  - `kX₁` ranges over all of ℕ, so `kX₁ = 1` is a legal instance.
+  - All four regions are closures. Auxiliary alphabets are `∃ k : ℕ` on both sides, with no
+    cardinality bounds. Neither region has a separate convex hull: Q, and Marton's W, play
+    that role.
+- **Index decoding.** My hand decoding of the right-nested projections matches table
+  (1)–(11). Check R1 applies the Lean paths (`z.2.1.2.2.1`, …) literally to nested tuples,
+  using Lean's `condMutualInfo` formula. On 40 random full instances it agrees with the
+  author's `lean_terms` to 2.4e-15.
+- **Claim 1: confirmed.** With `X₁ = Fin 1`, `enc₁` is forced, and
+  ∏ᵢ W((enc₁ m₁ i, enc₂ m₁ m₂ i), yᵢ) = `(W'.power n).trans (enc₂ m₁ m₂) y`. So the sets
+  inside the two closures are identical.
+- **Claim 2: confirmed. Both inclusions hold already before closure.**
+  - (⊆) Constraint (8)+(3) gives R1 ≤ J1, and (11) gives R2 ≤ J2. The two sum bounds come
+    from (8)+(9)+(5) and from (6)+(11)+(5), using rhs(5) = π + K at |X₁| = 1.
+  - (⊇) I redid the Fourier–Motzkin step and got the same box/slab system. All 16
+    conditions follow from Marton's four inequalities, except K ≤ I1 + I2.
+  - When K > I1 + I2, the alternative embedding works: R1 + R2 ≤ J1 + I2 − K < I(W;Y1),
+    and symmetrically for Y2.
+  - Numerics, 0 failures in both:
+    - R2: 400 instances with K > I1 + I2, the branch the author's T2 skips.
+    - R3: 84 instances. Marton's vertices are feasible both in my own reduced (x, y, a, b)
+      LP and in the author's Lean LP.
+- **Claim 3: confirmed.**
+  - Instantiate `kX₁ = 1`, `kX₂ = kX` and W((x₁, x₂)) := W'(x₂). Every `kX₁ = 1` channel
+    arises this way, so the restricted Statement is equivalent to the BC Statement.
+  - The Marton-tightness ⇒ BC side remark also holds. For the capacity side, fix the best
+    common message. The fifth inequality is redundant at R0 = 0. Slicing commutes with
+    closure, because both inner sets are downward closed in R0.
+- **Claim 4: logic confirmed.**
+  - I checked GEA only against the arXiv:1006.5166 abstract, not §II-A.
+  - Sub-claim on the faithful RTD region: in arXiv v1 (12a)–(12k), set X2 = U2c = const,
+    R2pa = 0 and W := U1c. This gives the same four-line Marton system.
+- **Claim 5: confirmed.** I re-derived every step, including
+  π − rhs(5) = −I(U2p; X1, U1p | U0, U2c, Q). The validity of the outer bound itself is
+  taken from RTD Thm III.1.
+- **Claim 6: the `[sketch]` label is right.**
+  - The five covering conditions are the correct ones for index sets closed under
+    superposition. Constraints (2) and (4) are extra and only shrink the region.
+  - The decoding exponents are right, including the bonus π.
+  - The sketch omits a standard bookkeeping point. A non-selected codeword in the correct
+    bin is not independent of the channel output; this arises for U2c with m2c right and
+    l2c wrong, in events (7) and (10).
+- **Claim 7: confirmed, given RTD Thms VII.1 and VIII.1.**
+  - I re-derived Configs A, B and A0 and the t-family. I read the theorem statements in
+    arXiv v1, not their proofs.
+  - R4 tests the attempt's own 7b configuration on 60 random semi-deterministic channels,
+    with 0 failures. T3 uses a different configuration (U1p = Y1, U2p = Y2).
+  - Its last sentence overstated the scope; I corrected it in place (see the bracket at
+    Claim 7).
+- **Claim 8: D1–D7 confirmed** against arXiv v1: Thm V.1, Remark V.2, Fig. 2, and (11),
+  (12a)–(12k).
+  - With (12a) at equality, (12b) and (12c) become Lean (2) and (4).
+  - (12i)–(12k) are exactly Lean (11), (10), (9).
+  - I did not check the IEEE version's numbering.
+- **Code.** `lean_region_checks.py` reproduces ALL PASS in about 4 s. Its LP is a faithful
+  transcription. It fixes one p at a time, so it tests the algebra for each distribution,
+  not unions over distributions.
+- **Problem file.** The sentence "it contains every capacity region listed below" was
+  narrowed to the two finite-alphabet classes that were actually checked.
+- **Novelty.** The observation that the BC is the degenerate cognitive IC is folklore: it
+  appears in RTD and in the original problem file. The K ≤ I1 + I2 Fourier–Motzkin subtlety
+  is standard (El Gamal–Kim Ch. 8; RTD §VIII via Chong et al.). What is new is specific to
+  the catalog: the exact identity between the frozen region and the Core Marton region, and
+  the fidelity audit.
+- **Status: unverified → verified.** Every `[proved]` claim was checked. Parts that depend
+  on citations are checked as labelled.
 
 ## Dead ends
 
