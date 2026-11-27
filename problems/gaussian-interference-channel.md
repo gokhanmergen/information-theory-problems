@@ -18,7 +18,7 @@ with $Z_i \sim \mathcal{N}(0,1)$, average power constraints $P_1, P_2$, receiver
 decoding only sender $i$'s message.
 
 **Determine the exact capacity region for all coupling coefficients $(a, b)$ and powers
-$(P_1, P_2)$.**
+$(P_1, P_2)$.** (The formal version takes $a, b \ge 0$; see "Formal question" below.)
 
 ## Background
 

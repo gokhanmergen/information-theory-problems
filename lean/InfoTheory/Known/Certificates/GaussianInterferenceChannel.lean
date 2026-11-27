@@ -3,7 +3,7 @@ import InfoTheory.Problems.GaussianInterferenceChannel
 /-!
 # Certificate for `InfoTheory.Problems.GaussianInterferenceChannel`
 
-The statement asks whether, for every `(a, b)` and `P₁, P₂ > 0`, the closure of the operational
+The statement asks whether, for every `a, b ≥ 0` and `P₁, P₂ > 0`, the closure of the operational
 capacity region of the Gaussian interference channel equals the closure of
 `InGaussianHKRegion a b P₁ P₂`, the Gaussian Han–Kobayashi region with a coded time-sharing
 variable and power control.
@@ -24,8 +24,9 @@ variable and power control.
 * Achievability of the region (Han–Kobayashi 1981 with `Q`; Gaussian inputs) and any converse
   (Sato 1981 strong interference; Etkin–Tse–Wang 2008 one-bit gap).
 * The catalog-error separation (coded time-sharing beats the convex hull at
-  `a = b = 1/2, P = 100`); the convex-hull upper bound there is a floating-point
-  branch-and-bound computation, see the attempt file.
+  `a = b = 1/2, P = 100`); the convex-hull upper bound there (≤ 3.828526) is an outward-rounded
+  interval branch-and-bound outside Lean
+  (`attempts/gaussian-interference-channel/code/reviewer_bnb_rigorous.py`).
 -/
 
 open scoped BigOperators
