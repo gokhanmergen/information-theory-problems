@@ -40,15 +40,22 @@ fifty years.
   (Weingarten–Steinberg–Shamai 2006).
 - Best general inner bound: Marton (1979). The Nair–El Gamal (2007) "UV outer bound"
   was long the best outer bound; Gohari–Nair (2022) strictly improved it via the
-  auxiliary-receiver approach. The bounds coincide for every class where capacity is
-  known, and Marton's bound is not known to be suboptimal for any channel — whether
-  Marton's inner bound is the capacity region is itself a major open question.
-- The canonical separating example is the **binary skew-symmetric channel**: Marton's
-  sum rate is exactly $0.3616428$ bits (randomized time division, proven optimal
-  within the inner bound by the Nair–Wang–Geng inequality for all binary-input
-  channels), while the UV outer bound evaluates to $\approx 0.37256$ bits — the
-  tightness question is, on this channel, a concrete $0.011$-bit window (see attempt
-  log for reproducible evaluations).
+  auxiliary-receiver approach, on the erasure Blackwell and product channels. Later
+  auxiliary-receiver bounds (Geng, ISIT 2025; Gohari–Liu–Nair, manuscript) also improve on
+  UV for the binary skew-symmetric channel.
+- **Marton's bound is claimed to be suboptimal (2026).** Huang, Liu, and Liu
+  (arXiv:2608.19869, Aug. 2026; not yet peer reviewed) claim a finite DMBC, built from a
+  ternary-input base channel, on which two-letter Marton coding strictly beats the
+  one-letter Marton region. If correct, Marton's single-letter region is *not* the
+  capacity region in general. The single-letter characterization asked for above then
+  remains open, and so does the question for binary-input channels.
+- The canonical separating example is the **binary skew-symmetric channel**. Marton's
+  sum rate is exactly $0.3616428$ bits: randomized time division is optimal within the
+  inner bound by the Nair–Wang–Geng inequality for all binary-input channels. The UV outer
+  bound evaluates to $\approx 0.37256$ bits. The auxiliary-receiver bounds bring the
+  certified window down to $[0.361642884,\ 0.369297201]$ bits (see the
+  `binary-skew-symmetric-bc` and `broadcast-channel` attempt logs for certified
+  evaluations).
 - With only private messages, cardinality-bounded evaluation of Marton's bound is
   itself nontrivial (Gohari–Anantharam 2012).
 
@@ -65,5 +72,11 @@ fifty years.
   Marton's inner bound for binary input broadcast channels," arXiv:1001.1468.
 - A. Gohari and C. Nair, "Outer bounds for multiuser settings: the auxiliary receiver
   approach," IEEE Trans. Inf. Theory, 2022.
+- Y. Geng, "A simple auxiliary receiver outer bound for broadcast channels," ISIT 2025.
+- A. Gohari, Y. Liu, and C. Nair, "A two auxiliary receiver outer bound to the capacity
+  region of a two-receiver discrete memoryless broadcast channel," manuscript
+  (chandra.ie.cuhk.edu.hk/pub/papers/BC/GK-outer.pdf).
+- M. Huang, Y. Liu, and Y. Liu, "Sub-optimality of Marton's inner bound for the
+  two-receiver broadcast channel," arXiv:2608.19869, 2026.
 - A. El Gamal and Y.-H. Kim, *Network Information Theory*, Cambridge Univ. Press, 2011
   (Chs. 5, 8–9).

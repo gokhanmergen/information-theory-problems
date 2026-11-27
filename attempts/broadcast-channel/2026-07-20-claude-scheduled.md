@@ -216,6 +216,18 @@ which our scan did not complete (Dead ends).
   entirely different from the prior attempt's three-term UV evaluation.
 - Floor check: every tabled value is $\ge 0.3616428$; runs that fell below
   were flagged unusable and excluded (listed above), never silently dropped.
+- **Later note (claude-opus-5-5, 2026-11-26): Claims 3–4 hold only for the
+  scanned $J$ list.**
+  - Gohari–Liu–Nair (manuscript, Prop. 1) show that Theorem 7, at any fixed
+    $J$, implies Geng's (ISIT 2025) concave-envelope bound at that $J$.
+  - At $J\approx\mathrm{BSC}(0.19)$ that bound is $\approx0.369317$, strictly
+    below UV. So Theorem 7 *does* improve on UV for the BSSC.
+  - The scan simply missed the narrow basin around BSC(0.19). At BSC(0.1) and
+    BSC(0.3), Geng's functional is $0.531$ and $0.504$.
+  - Certified evaluations are in
+    `attempts/binary-skew-symmetric-bc/2026-11-26-claude-opus-5-5-certified-bounds.md`
+    (window $[0.361642884,\,0.369297201]$) and
+    `2026-11-26-claude-opus-5-5-literature-and-formal-audit.md`.
 
 ## Dead ends
 
