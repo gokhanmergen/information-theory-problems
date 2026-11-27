@@ -1,0 +1,6 @@
+k=1 CL max sum-rate (numerical) = 0.872404  vs 2*0.43621 = 0.87242  [1s]
+  k=2 start 0: 0.879132 (best 0.879132)  [72s]
+  k=2 start 1: 0.877503 (best 0.879132)  [115s]
+  k=2 start 2: 0.876158 (best 0.879132)  [161s]
+  k=2 start 3: 0.877593 (best 0.879132)  [264s]
+k=2 best found 0.879132 vs k=1 0.872404: gain 6.73e-03

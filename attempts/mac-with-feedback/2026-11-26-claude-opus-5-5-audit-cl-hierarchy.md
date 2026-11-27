@@ -279,11 +279,11 @@ most when single outputs are most informative about the input pair.
 
 ### Reviewer note (claude-opus-5-5, independent review, 2026-11-27)
 
-Reviewer scripts and logs are in the reviewer's scratch folder, not in the repo:
-`rev_k2_exact.py`, `rev_k1_ub.py`, `rev_sanity.py`, `rev_kramer.py`.
+Reviewer scripts and logs are in `code/review/`:
+`rev_k2_exact.py`, `rev_k1_ub.py`, `rev_sanity.py`, `rev_kramer.py` (each with its `.log`).
 
 **Checked.**
-1. *Re-run.* `certify_gap.py 0.5 4e-3` (180 s) reproduces the log exactly: `LB2 = 0.58432157594618`,
+1. *Re-run.* `certify_gap.py 0.5 4e-3` (180 s; log `code/review/certify_gap_run.log`) reproduces the log exactly: `LB2 = 0.58432157594618`,
    `UB1 = 0.57894907892747`, 93967 boxes. No repo file was overwritten.
 2. *Definitions.* `coverLeungKLetterRegion` uses strategies `∀ i : Fin k, (Fin i → Y) → X`. It
    has one `U : Fin kU` (with `kU` unbounded), `J = Pu·Ps₁·Ps₂·∏ W`, all three bounds scaled
@@ -305,21 +305,22 @@ Reviewer scripts and logs are in the reviewer's scratch folder, not in the repo:
    derivative is infinite. The bisection covers `[0,1]²`. The final bound uses the same exact
    `α`, `L` and `ε`, with an interval-normalised `r`. `iv.mpf` of a 40-digit `mpf` is exact
    (tested). I found no float leak.
-5. *Majorisation, re-proved by a different method.* By hand,
+5. *Majorisation, re-proved by a different method* (`code/review/rev_k1_ub.py`; the `psi_float`
+   comparison is in `rev_sanity.py`). By hand,
    `ψ(a,b) = b g(1−a) + (1−b) g(a) + a g(1−b) + (1−a) g(b)` with `g(t) = h(t/2) − t`. This
    matches `psi_float` to `1.1e-16` at 10⁴ random points. Because `h` is monotone on `[0,1/2]`,
    each cell gets an upper bound. I evaluated `h` at the nodes in `mpmath.iv`, on 8192² cells,
    in float64 with a `1e-9` margin. Result: `ψ − bil(L) ≤ 3.43e-4` on `[0,1]²`, against the
    claimed `4e-3`. A grid estimate of the true maximum is `3.1e-6`. With `ε = 3.5e-4` and the
    same `(α, L, r)`, the bound would tighten to `UB1' = 0.5767408`.
-6. *Final bound.* Recomputed in mpmath: all four `x` give `0.57894907892747`.
-7. *LB2, recomputed independently.* I used Lean's `condMutualInfo` and `mutualInfo` formulas
+6. *Final bound.* Recomputed in mpmath (`code/review/rev_k1_ub.py`): all four `x` give `0.57894907892747`.
+7. *LB2, recomputed independently* (`code/review/rev_k2_exact.py`). I used Lean's `condMutualInfo` and `mutualInfo` formulas
    on the full table `J(u,s1,s2,y²)`. The saved law was renormalised in exact rationals, so the
    joint sums to exactly 1, and entropies were taken at 60 digits. Results:
    `I(S1;Y²|S2,U)/2 = 0.29218072268412`, `I(S2;Y²|S1,U)/2 = 0.29214085326206` and
    `I(S1S2;Y²)/2 = 0.58433527175360`. So `(I1/2, I2/2)` lies in `R^(2)` and its sum is
    `LB2 = 0.584321575946180`.
-8. *k = 1 numerics.* 150 multi-start Nelder–Mead runs with `|U| ≤ 5` reach `0.57652172`, at
+8. *k = 1 numerics* (`code/review/rev_sanity.py`). 150 multi-start Nelder–Mead runs with `|U| ≤ 5` reach `0.57652172`, at
    `|U| = 2`. That is above the author's `0.57650518` and below `UB1`. 2·10⁵ random CL laws
    reach `0.5717`.
 9. *Proofs of Claims 1, 2 and 4.* Checked line by line. The block strategy of Claim 2 is
@@ -337,7 +338,7 @@ Kramer's code-tree improvement over CL (`0.43621 → 0.43879` symmetric rate) fo
 `Y = X1+X2+N`. That channel is a finite-alphabet DM-MAC. So `CL ⊊ C_FB` on finite alphabets,
 and with it the failure of the hierarchy to stop at `k = 1`, was known before. The certified,
 explicit `k = 2` jump appears new. Problem file amended. I also ran a side check
-(`rev_kramer.py`, uncertified float numerics). The author's `k = 1` code gives max sum
+(`code/review/rev_kramer.py`, uncertified float numerics). The author's `k = 1` code gives max sum
 `0.872404` on Kramer's channel, which agrees with the published `2·0.43621 = 0.87242` and so
 validates the `k = 1` machinery. Its `k = 2` optimiser then reaches `0.879132`, so on Kramer's
 own channel `R^(2)` (Lean sense) also appears to exceed CL. Kramer's thesis, which reports

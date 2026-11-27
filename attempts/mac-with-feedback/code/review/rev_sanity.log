@@ -1,0 +1,7 @@
+max |closed form - psi_float| = 1.1102230246251565e-16
+|U|<=1: best k=1 sum-rate found so far 0.50000000
+|U|<=2: best k=1 sum-rate found so far 0.57652172
+|U|<=3: best k=1 sum-rate found so far 0.57652172
+|U|<=4: best k=1 sum-rate found so far 0.57652172
+|U|<=5: best k=1 sum-rate found so far 0.57652172
+random CL distributions: max min(A,B) = 0.571704 (UB1 = 0.578949078927)

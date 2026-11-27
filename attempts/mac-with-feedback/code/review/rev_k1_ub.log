@@ -1,0 +1,8 @@
+N=8192: max over cells of (rigorous-ish) upper bound of psi - bil(L) = 3.434228e-04
+majorisation psi <= L + 4e-3 on [0,1]^2: VERIFIED
+grid-2001 estimate of max(psi - bil(L)) = 3.058e-06 at a=0.6900, b=0.6900
+  x = (0, 0)  alpha(L+eps)+(1-alpha)D = 0.57894907892747
+  x = (0, 1)  alpha(L+eps)+(1-alpha)D = 0.57894907892747
+  x = (1, 0)  alpha(L+eps)+(1-alpha)D = 0.57894907892747
+  x = (1, 1)  alpha(L+eps)+(1-alpha)D = 0.57894907892747
+UB1 = 0.57894907892747
