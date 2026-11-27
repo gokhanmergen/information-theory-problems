@@ -35,7 +35,7 @@ Shannon proved that $\mathcal{G}_k(W) \subseteq \mathcal{C}_{\mathrm{TWC}}(W)$ f
 $\mathcal{C}_{\mathrm{TWC}}(W) = \overline{\bigcup_{k=1}^\infty \mathcal{G}_k(W)}$. Concatenating
 independent $k$-blocks gives the nesting $\mathcal{G}_k(W) \subseteq \mathcal{G}_{mk}(W)$. The
 step-by-step chain $\mathcal{G}_k \subseteq \mathcal{G}_{k+1}$ is not automatic, and for
-Blackwell's BMC the equal-rate point does not grow from $k=1$ to $k=2$ (see "What is known").
+Blackwell's BMC the equal-rate point does not grow from $k=1$ to $k=2$ (numerically; see "What is known").
 
 **Does every finite-alphabet discrete memoryless two-way channel $W$ achieve its exact
 capacity region at some finite strategy horizon $k \ge 1$, i.e., does there exist $k \ge 1$
@@ -65,14 +65,19 @@ is known.
   $0.63056$ (1983, bootstrapping), versus $\approx 0.61695$ bits for $\mathcal{G}_1$. These
   schemes use recursive subdivision with unbounded depth; they are not fixed-$k$ Shannon
   strategies. The best known equal rate is $0.63072$ (Schalkwijk–Meeuwissen–Bloemen 1995).
-- **Equal-rate point of $\mathcal{G}_k$ for the BMC** (attempt
-  `attempts/two-way-channel-capacity/2026-11-26-claude-opus-5-5-gk-audit-bmc-numerics.md`):
-  $0.61695$ for $k=1$, and also $0.61695$ for $k=2$. For $k=2$ the reduction to a 4-variable
-  inequality is proved and the inequality is checked numerically. For $k=3$ the value is
-  $0.61964$, which beats both $\mathcal{G}_1$ and Schalkwijk's 1982 rate; the inclusion
-  $\mathcal{G}_1 \subsetneq \mathcal{G}_3$ is certified in interval arithmetic. The $k=4$
-  search was inconclusive. All these values are still about $0.011$ below the best known
-  achievable rate.
+- **Equal-rate point of $\mathcal{G}_k$ for the BMC**: numerical optimisations over $k$-letter
+  Shannon strategies were done by van Dorsselaer (1982) and Smeets (1983), both TU Eindhoven
+  MSc theses, and are summarised in Kort (1997). They give $0.61695$ for $k=1$ and $k=2$
+  (no gain at $k=2$) and $0.61964$ for $k=3$, already above Schalkwijk's 1982 rate. For
+  $k=4$ they give $0.62088$ with a symmetric strategy and $0.62140$ with an asymmetric one
+  plus time sharing (Kort). Smeets gives $0.62333$, $0.62405$ and $0.62496$ for $k=5,6,7$.
+  These are local optima, i.e. lower bounds, and $k=7$ is still about $0.006$ below the best
+  known achievable rate. Bloemen (1996, Thm. 1.28) proves the $k=1$ value
+  $\max_x x\,h(x)$ analytically. The attempt
+  `attempts/two-way-channel-capacity/2026-11-26-claude-opus-5-5-gk-audit-bmc-numerics.md`
+  makes some of this rigorous: $\mathcal{G}_1 \subsetneq \mathcal{G}_3$ in interval
+  arithmetic, and $k=2$ reduced to a 4-variable inequality that is checked numerically. Its
+  reviewer note interval-checks Kort's $k=4$ strategy, $\mathrm{sym}(\mathcal{G}_4) \ge 0.62140$.
 - **Suboptimality of $\mathcal{G}_{\mathrm{out}}$**: Zhang, Berger, and Schalkwijk (1986)
   showed that $\mathcal{G}_{\mathrm{out}}(W)$ is strictly larger than
   $\mathcal{C}_{\mathrm{TWC}}(W)$ on Blackwell's BMC (equal rate $\le 0.64891$ vs.
@@ -113,6 +118,9 @@ is known.
   two-way channels," *IEEE Trans. Inf. Theory*, vol. 32, no. 3, pp. 383–386, 1986.
 - A. H. A. Bloemen, *Discrete Coding Strategies for Two-Way Channels*, Ph.D. dissertation,
   Eindhoven University of Technology, 1996, doi:10.6100/IR463500.
+- D. A. Kort, *Shannon Strategies for the Binary Multiplying Channel*, M.Sc. thesis, Eindhoven
+  University of Technology, 1997 (Tables 1.2–1.3 report E. van Dorsselaer, M.Sc. thesis, 1982,
+  and B. Smeets, M.Sc. thesis, 1983).
 - O. Sabag and H. H. Permuter, "An achievable rate region for the two-way channel with common
   output," *Proc. 56th Allerton Conf.*, pp. 527–531, 2018, doi:10.1109/ALLERTON.2018.8635930.
 - J.-J. Weng, L. Song, F. Alajaji, and T. Linder, "Capacity of two-way channels with symmetry

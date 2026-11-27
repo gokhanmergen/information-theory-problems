@@ -4,7 +4,7 @@ date: 2026-11-26
 attempter: claude
 model: claude-opus-5-5
 type: numerical-evidence
-status: unverified
+status: verified
 ---
 
 ## Summary
@@ -25,12 +25,16 @@ reduced to strategy trees (2, 6, 42, 1806 strategies per user for k = 1..4):
 | 1 | 0.6169486 |
 | 2 | 0.6169486 (no gain) |
 | 3 | **0.6196448** |
-| 4 | ≥ 0.6190195 (search inconclusive) |
+| 4 | ≥ 0.6190195 (search inconclusive); reviewer: ≥ 0.6214031, Kort 1997 strategy, interval-checked |
 
 Two-letter strategies give no gain at the equal-rate point. The reduction to a 4-variable
 inequality is proved and the inequality is checked numerically. Three-letter strategies beat
 both Shannon's inner bound and Schalkwijk's 1982 rate 0.61914. G₁ ⊊ G₃ is certified with
 interval arithmetic.
+
+(Reviewer: the k = 1, 2, 3 values in this table are not new. They were found numerically by
+van Dorsselaer 1982 and Smeets 1983 and are reported in Kort 1997, which also gives values for
+k = 4..7; see the Novelty check. New here are the interval certificates and the Lean audit.)
 
 ## Approach
 
@@ -67,11 +71,16 @@ interval arithmetic.
    Y = 0. There are N(k) = N(k−1) + N(k−1)² of them: 2, 6, 42, 1806, 3 263 442.
 5. **[proved]** sym(G₁(BMC)) ≤ 0.617168 (computer-assisted interval grid).
    The classical value is max_x x·h(x) = 0.6169486 (Shannon 1961), reproduced numerically.
+   (Reviewer: equality sym(G₁) = max_x x h(x) is already proved analytically in Bloemen 1996,
+   Thm. 1.28: a h(b) + b h(a) ≤ (a+b) h((a+b)/2). The grid bound is correct but not needed.)
 6. **[proved]** *k = 2 reduction.* H(Y²|S₂) + H(Y²|S₁) depends only on 8 marginal parameters,
    through the closed form F in Details §6. Moreover F ≤ Φ(a,b,γ₁,γ₂), an explicit
    4-variable majorant.
    **[heuristic, numerical]** max Φ = 4g* with g* = max_x x h(x): a 61⁴ grid plus 3000
-   multistarts give 2.4677945737 = 4g*. Together these give **sym(G₂(BMC)) = sym(G₁(BMC))**.
+   multistarts give 2.4677945737 = 4g*. Together these give **sym(G₂(BMC)) = sym(G₁(BMC))**
+   (numerically, not proved; reviewer). (Reviewer: not new. The value 0.61695 for k = 2 was
+   found numerically by van Dorsselaer 1982 and Smeets 1983, as reported in Kort 1997, Table 1.2
+   and §3.3. Kort's eqs. (3.15)–(3.16) are the closed form F below.)
    Multistart maximisation of F directly gives the same value. A support-function comparison
    in all directions λ indicates that the whole region G₂ equals G₁ (`code/bmc_g2_region_check.py`, log `code/g2_region_check.log`: over 21 directions λ ∈ {0, 0.05, …, 1}, s₂(λ) − s₁(λ) ∈ [−7.4·10⁻¹¹, 0], i.e. equal to optimiser precision).
 7. **[proved]** *k = 3.* An explicit rational product distribution on reduced 3-strategies
@@ -79,6 +88,13 @@ interval arithmetic.
    **G₁(BMC) ⊊ G₃(BMC)**. Also R > 0.61914, Schalkwijk's 1982 rate, so a fixed three-letter
    Shannon strategy already beats Schalkwijk's 1982 scheme at the equal-rate point. Numerically
    sym(G₃) = 0.6196448092: two seeds with 200 and 1500 restarts converge to the same value.
+   (Reviewer: this last sentence is [heuristic, numerical]; only the lower bound is [proved].
+   The lower bound and "G₁ ⊊ G₃" are confirmed independently. G₁ ⊆ G₃ is the routine
+   nesting of Claim 2. The result is **not new**: 0.61964 is the k = 3 value of van
+   Dorsselaer 1982 and Smeets 1983, reported in Kort 1997, Table 1.2 and App. A.2. Kort's
+   NEOS run ends at 0.6196448104, and its root parameter α₁ = 0.67235 equals this optimiser's.
+   It was therefore already known that a fixed 3-letter Shannon strategy beats Schalkwijk's
+   1982 rate. What is new here is only the interval-arithmetic certificate.)
 8. **[heuristic, numerical]** *k = 4.* The best value found is 0.6190195 < sym(G₃). It is reached by
    ascent from a perturbation of "k = 3 optimum + one i.i.d. letter" (value 0.6189708) and is a
    fixed point of the alternating BA map. It is a lower bound from explicit distributions. The
@@ -86,6 +102,14 @@ interval arithmetic.
    about sym(G₄) vs sym(G₃). If
    sym(G₄) < sym(G₃) held, the chain G_k ⊆ G_{k+1} would fail. sym(G₄) ≥ sym(G₂) holds because
    G₂ ⊆ G₄.
+   (Reviewer: this search was far from the optimum. Kort 1997, App. A.6, lists an explicit
+   behavioural K₄ strategy pair. Re-evaluated here in mpmath interval arithmetic after
+   rounding to 10⁻⁶ and expanding it to a product distribution on the 1806 reduced trees,
+   it gives R₁ = 0.6185422, R₂ = 0.6242641 and time-shared
+   **sym(G₄) ≥ 0.6214031128** (Kort reports 0.6214031155). Kort's symmetric App. A.4
+   strategy gives 0.6208791030. My own 80-parameter multistart reached 0.62086. So
+   sym(G₄) > 0.61965 ≈ sym(G₃), and the scenario sym(G₄) < sym(G₃) is excluded,
+   at least numerically.)
 9. **[heuristic]** *What this says about the finite-k question.* For the BMC, capacity at
    horizon k would need sym(G_k) ≥ 0.63072 (best known achievable rate). The data are
    sym(G₁) = sym(G₂) = 0.61695 < sym(G₃) = 0.61964, about 0.011 below 0.63072. This is
@@ -95,6 +119,10 @@ interval arithmetic.
    If Claim 6's numerically checked inequality holds, then "G_k = G_{k+1}" cannot serve as a
    stopping criterion certifying capacity, since sym(G₂) = sym(G₁) < C_sym. Numerically, the
    region G₂ itself equals G₁.
+   (Reviewer: the published data go further. Smeets 1983, as reported in Kort 1997, Table 1.3,
+   gives numerical values for k = 4..7: 0.62135, 0.62333, 0.62405 and 0.62496, with time
+   sharing. So sym(G_k) keeps growing up to k = 7 and stays about 0.006 below 0.63072. These
+   are local optima, i.e. lower bounds.)
 
 ## Details
 
@@ -151,6 +179,8 @@ After a 1% perturbation towards the i.i.d. strategy, 250 sweeps return to 0.6189
 whether the search is under-explored or whether in fact sym(G₄) < sym(G₃). The latter would
 mean G₃ ⊄ G₄, so the k ↦ G_k chain is not monotone. This is an attractive open numerical
 question. Note that G₁, G₂ ⊆ G₄ by nesting, but nothing proved here implies G₃ ⊆ G₄.
+(Reviewer: it is the former, the search is under-explored. sym(G₄) ≥ 0.6214031 > sym(G₃);
+see Claim 8. This is not an open question.)
 
 ### 6. The k = 2 closed form and majorant (Claim 6)
 A reduced 2-strategy of user 1 is either "send 0, then g" or "send 1, then f_{Y₁}". Only the
@@ -207,6 +237,66 @@ sym(G_k), exact up to float rounding, and is interval-certified for k = 3. None 
 to be the global maximum, except k = 1 (Claim 5). For k = 2 the max is proved modulo the
 numerically checked inequality Φ ≤ 4g*.
 
+### Reviewer note (claude-opus-5-5, independent review, 2026-11-27)
+
+The scripts are in the reviewer's scratch folder and are not committed. I wrote them from the
+Lean definitions and did not call `bmc_gk.py` / `certify_g3_gt_g1.py`, except to read which
+rational distribution is meant: the seed-2 npz rounded by the stated floor/argmax rule.
+
+- **Definition (a).** `twcKLetterInnerBound` takes strategies `∀ i : Fin k, (Fin i → Yⱼ) → Xⱼ`
+  that read only their own outputs. Given Q they are independent, and
+  r₁ ≤ (1/k)·I(S₁; Y₂^k | S₂, Q) by `condMutualInfo` = H(A,C)+H(B,C)−H(A,B,C)−H(C).
+  The code's quantity H(Y^k|S₂)/k (+ swap) is exactly this for the BMC (Claim 4 re-derived).
+- **Claim 7 (b), confirmed.** Each reduced tree becomes a full element of `CausalStrat 3 Bool
+  Bool`, with 0 on histories inconsistent with its own inputs; these are legitimate strategies.
+  A subclass is fine for a lower bound. My evaluator builds the Lean J(q,s₁,s₂,y) over all
+  64 y with exact Fractions and Q uniform on {(p₁,p₂),(p₂,p₁)}, then applies the 4-entropy
+  formula in mpmath iv. Result: rate₁, rate₂ ∈ [0.6196448091917556352334261772190, …],
+  per-q 0.61964480934857 / 0.61964480903494, as claimed. My simulated outcome table equals the
+  author's T with 0 mismatches, and the 42 rows are distinct. An independent L-BFGS search
+  (softmax logits, 42 classes from all 128 full strategies, 400 + 2000 restarts) also tops out
+  at 0.6196448092.
+- **Claim 5 (c), confirmed.** Adaptive branch-and-bound over rational boxes, using
+  y₁·max h + x₁·max h with iv upper endpoints, certifies sym(G₁) ≤ 0.61700 (124k boxes) and
+  ≤ 0.61696 (600k boxes). This is stronger than 0.617168. The author's grid is sound: h is
+  unimodal, 1/2 is a grid point, rounding is outward and a final relative margin is applied.
+  Bloemen 1996 Thm. 1.28 already proves sym(G₁) = max x h(x) = 0.6169486 analytically.
+- **Claims 1, 3, 4, 6, checked.** Claim 1: empty `CausalStrat`/`ProbDist` types and `Fin 0`
+  encoders, read off the Lean. Claim 4: min ≤ average plus user swap; the counts 6 and 42 come
+  out of my full enumeration (8 and 128 strategies), 1806 from my own tree enumeration, and
+  Bloemen eq. 2.72 lists the same sequence. Claim 6: the closed form F matches my behavioural
+  evaluator to 9e-16 at 2000 random points and is Kort 1997 eqs. (3.15)–(3.16). I re-derived
+  F ≤ Φ by hand, and it holds at 2000 random points. max Φ = 4g* stays numerical, as labelled.
+- **Novelty (d): the values are prior art.** Kort 1997 (MSc, TU/e) computes G_n for the BMC
+  and quotes van Dorsselaer 1982 / Smeets 1983: k = 2: 0.61695, k = 3: 0.61964 (NEOS
+  0.6196448104, same root parameter 0.67235), k = 4: 0.62088 sym / 0.62140 asym,
+  k = 5..7 up to 0.62496. So "a fixed 3-letter strategy beats Schalkwijk 1982" has been known
+  since 1982/83. The certificates are new; the numbers are not. Literature values checked:
+  Shannon 1961 inner and outer bounds (0.61695 / 0.69424), Schalkwijk 1982 (0.61914; a Markov
+  strategy with cycles of length ≤ 3 repeated indefinitely, Bloemen §2.5), Schalkwijk 1983
+  (0.63056), Meeuwissen–Schalkwijk–Bloemen (ISIT 1995, 0.63072), ZBS 1986 (0.64891),
+  Hekstra–Willems 1989 (0.64628 with the adaptive parallel channel). Bloemen §6.4.2 confirms
+  that the plain dependence-balance (DB) bound does not improve on Shannon's outer bound for
+  the BMC. The Sabag–Permuter 2018 abstract matches the problem-file wording.
+- **Claim 8 is wrong in spirit (no headline claim).** I parsed Kort's App. A.4/A.6 K₄
+  parameters. Kort's index order is depth, then (y-history, own history), which I verified
+  against A.2 and the k = 3 optimum. Under my evaluator they give 0.6208791030 and
+  0.6214031128. Interval-certified after rounding to 10⁻⁶, as a product distribution on the
+  1806 reduced 4-trees: **sym(G₄) ≥ 0.6214031128**. My own 80-parameter behavioural
+  multistart reached 0.62086. The behavioural reduction is exact for the BMC (Kuhn); at k = 3
+  the behavioural projection of the author's optimum reproduces 0.6196448091917556.
+- **Labels.** Claim 7's last sentence and Claim 6's "Together these give sym(G₂) = sym(G₁)" are
+  marked numerical. Inline reviewer notes add novelty and k ≥ 4 corrections. Problem file: the
+  G_k bullet now credits van Dorsselaer/Smeets/Kort, drops "the k = 4 search was
+  inconclusive", and replaces "0.011 below" by the k = 7 gap of about 0.006. The k = 2
+  sentence there now says "numerically".
+- **Status → `verified`.** I checked every [proved] claim (1, 3, 4, 5, 6-reduction, 7)
+  independently and found them correct. The attempt's novelty assessment is wrong, as stated above.
+- **Not checked.** The G₂ support-function region check; the k = 4 logs and `bmc_g4_*.py`;
+  van Dorsselaer's and Smeets' theses (not online; known only through Kort); Hekstra–Willems
+  and Sabag–Permuter full texts (abstracts and Bloemen's account only). Claims 2 and 9 are a
+  sketch and heuristic, and I left them alone.
+
 ## Dead ends
 
 - *Random restarts at k = 4.* Dirichlet(0.3) starts on the 1806-simplex reach only
@@ -216,6 +306,10 @@ numerically checked inequality Φ ≤ 4g*.
   cannot revive zero weights. The ε-perturbed lift climbs to 0.6190195 and then sits at a fixed
   point of the alternating map, still below sym(G₃). A proper k = 4 study needs a second-order or interior-point method on the
   biconcave problem, or a symmetry reduction of the 1806 strategies.
+  (Reviewer: the right reduction is behavioural. Both H(Y^k|S₂) and H(Y^k|S₁) depend on pᵢ
+  only through P(x = 1 | own (x,y)-history), by Kuhn's theorem / sequence form under perfect
+  recall. That leaves (3^k − 1)/2 parameters per user, 40 at k = 4. This is Kort's 1997
+  parametrisation, and the k = 4 values are well above 0.6190195; see Claim 8.)
 - *Rigorous sym(G₂) bound by plain interval boxes.* As described in §6, the interior
   maximiser with a ≈0.009 margin makes naive 4-D boxes infeasible (≈10⁹ cells). A
   centred-form or Hessian-certified local concavity argument is needed.
@@ -232,6 +326,19 @@ general web searches on "two-way channel k-letter strategy binary multiplying". 
 the values sym(G₂) = sym(G₁) or sym(G₃) ≈ 0.61964 reported. Meeuwissen's and Bloemen's TU/e
 theses may contain related fixed-length strategy computations that I could not fully read, so
 novelty is plausible but not certain.
+
+*Reviewer correction (2026-11-27): the numerical values are prior art.* D. A. Kort, *Shannon
+Strategies for the Binary Multiplying Channel*, MSc thesis, TU Eindhoven, Dec. 1997
+(supervisor Schalkwijk; https://research.tue.nl/en/studentTheses/shannon-strategies-for-the-binary-multiplying-channel/)
+computes the normalised Shannon inner bounds B_n of the derived channels K_n. These are
+exactly G_n here. Kort's Table 1.2 quotes E. van Dorsselaer, "Shannon strategieën voor het
+AND-channel", MSc thesis, TU/e 1982: K₂ 0.61695, K₃ 0.61964, K₄ 0.62088. Table 1.3 quotes
+B. Smeets, MSc thesis, TU/e 1983, with symmetric and asymmetric values: K₄ 0.62088/0.62135,
+K₅ 0.62315/0.62333, K₆ 0.62398/0.62405, K₇ 0.62494/0.62496. W. van Overveld (PhD thesis,
+TU/e 1991) improved K₄ to 0.62138, and Kort reached 0.62140 (§3.6, R₁ = 0.61854,
+R₂ = 0.62426). Bloemen 1996 §2.8 itself cites van Dorsselaer [Dor82] for the count
+2, 6, 42, 1806, …. The new contributions here are the interval certificates of Claims 5
+and 7, the majorant Φ of Claim 6, and the Lean audit.
 
 ## References
 
@@ -253,3 +360,8 @@ novelty is plausible but not certain.
   `attempts/binary-multiplier-two-way-channel/2026-11-26-claude-opus-5-5-db-catalog-error-survey.md`
   (catalog error in the BMC statement; HW parallel-channel bound reproduced).
 - Prior attempts in `attempts/two-way-channel-capacity/`: none existed.
+- (Added by reviewer.) D. A. Kort, *Shannon Strategies for the Binary Multiplying Channel*,
+  MSc thesis, TU Eindhoven, Dec. 1997 (coach H. B. Meeuwissen, supervisor J. P. M.
+  Schalkwijk), https://research.tue.nl/p/file/document/46861324/506730-1.pdf. Tables 1.2–1.3
+  quote E. van Dorsselaer (MSc thesis, TU/e 1982) and B. Smeets (MSc thesis, TU/e 1983).
+  App. A.2, A.4 and A.6 give the K₃ and K₄ strategies.
