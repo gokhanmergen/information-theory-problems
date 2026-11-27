@@ -61,6 +61,13 @@ converse bounds remains a central open problem in multiterminal rate-distortion 
   Chia, Kramer, Mahajan, and Weissman (2012) resolved additional special cases (including
   degraded side information at Node 3 and certain triangular topologies), but the general
   discrete memoryless lossy cascade with side information only at Node 2 remains open.
+- **Looseness of the single-letter outer bound (2026-11):** A community-reviewed informal
+  disproof (`attempts/cascade-rate-distortion-side-info/2026-11-26-gemini-4-neon.md`) proves
+  that the Cuff–Su–El Gamal single-letter outer bound `cascadeOuterBound` is **strictly loose**
+  for finite-alphabet discrete memoryless sources (with an unbounded gap in $R_2$), via an
+  exponential-family Jacobian converse for the quadratic-Gaussian cascade pulled back onto a
+  finite quantized grid (Lean 4 formalization pending). Finding a computable single-letter
+  characterization of the exact cascade rate-distortion region remains open.
 
 ## References
 

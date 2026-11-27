@@ -58,20 +58,37 @@ source coding.
 - **No side information ($Z_1 = Z_2 = \emptyset$)**: completely solved by Gray and Wyner
   (1974, Theorem 8); the inner bound above reduces identically to Gray–Wyner's exact region
   $R_0 \ge I(X_1, X_2; U_0)$, $R_1 \ge R_{X_1 \mid U_0}(D_1)$, $R_2 \ge R_{X_2 \mid U_0}(D_2)$.
-- **Stochastically degraded side information** ($X - Z_1 - Z_2$): the Heegard–Berger
-  (1985) and Gray–Wyner with degraded side information (Watanabe 2013) regions are
-  completely solved and coincide with the inner bound above.
+- **Stochastically degraded / conditionally less noisy side information**: the two-decoder
+  Heegard–Berger (1985) region is tight for stochastically degraded side information and
+  more generally for conditionally less noisy side information (Timo–Oechtering–Wigger 2014).
+  For the Gray–Wyner network with side information, Benammar and Zaidi (2017/2018) solved the
+  case where both decoders reconstruct a common source component losslessly and Decoder 1
+  additionally reconstructs a second component lossily; Watanabe (2013) characterized the
+  rate-distortion function for a product of two sources with decoder side information.
 - **Lossless reconstruction ($D_1 = D_2 = 0$)**: solved for complementary side information
   and for the lossless Heegard–Berger / Gray–Wyner network with side information via
-  Slepian–Wolf binning (Watanabe 2013; Timo–Grant–Kramer 2011).
+  Slepian–Wolf split binning (Timo–Grant–Kramer 2013; Benammar–Zaidi 2017/2018).
 - **Quadratic Gaussian Heegard–Berger / Gray–Wyner**: solved in the scalar Gaussian case
   (where side information is always stochastically degraded) and in certain vector Gaussian
   settings (Tian–Diggavi 2007; Watanabe 2013; Xu–Liu–Chen 2016).
 - **General non-degraded lossy case**: for general discrete memoryless sources with
   non-degraded $(Z_1, Z_2)$ — even in the pure broadcast specialization $R_1 = R_2 = 0$
   (Heegard–Berger 1985) or complementary side information $Z_1 = X_2, Z_2 = X_1$
-  (Timo–Grant–Kramer 2011) — whether the single-letter inner bound above is universally
-  tight remains open.
+  (Timo–Grant–Kramer 2013) — whether the single-letter inner bound is universally
+  tight remains open. (For three or more decoders, Timo–Chan–Grant 2011 disproved Heegard–Berger's
+  Theorem 2.)
+- **Formalization note (2026-11):** The frozen Lean predicate `lossyGWSIInner` in
+  `lean/InfoTheory/Problems/GrayWynerLossy.lean` imposes
+  $r_{00} \ge \max(I(X_1, X_2; U_0 \mid Z_1), I(X_1, X_2; U_0 \mid Z_2))$ on the common link
+  alone, forbidding the private links $M_1, M_2$ from supplying incremental bin bits for $U_0$.
+  As a result, `GrayWynerLossy.Statement` is **false even on a degraded, lossless instance**:
+  for $X_1 = X_2 \sim \mathrm{Bern}(1/2)$, $Z_1 = \mathrm{BEC}(1/2)(X)$, $Z_2 = 0$, the point
+  $(R_0, R_1, R_2, D_1, D_2) = (1/2, 0, 1/2, 0, 0)$ is operationally achievable while
+  `InLossyGWSIClosure` forces $\frac{3}{2} R_0 + R_1 + R_2 \ge \frac{3}{2}$ (a $1/4$-bit gap;
+  see `attempts/gray-wyner-lossy/2026-11-26-gemini-4-neon.md`). A statement-fix PR is needed
+  to replace `lossyGWSIInner` by the split-binning polytope ($R_0 + R_1 \ge a_1 + b_1$,
+  $R_0 + R_2 \ge a_2 + b_2$, $R_0 + R_1 + R_2 \ge \max(a_1, a_2) + b_1 + b_2$) or specialize to
+  $R_1 = R_2 = 0$. The underlying non-degraded lossy problem remains open.
 
 ## References
 
@@ -81,10 +98,17 @@ source coding.
   Trans. Inf. Theory*, vol. 31, no. 6, pp. 727–734, 1985.
 - A. H. Kaspi, "Rate-distortion function when side-information may be present at the
   decoder," *IEEE Trans. Inf. Theory*, vol. 40, no. 6, pp. 2031–2034, 1994.
+- R. Timo, T. Chan, and A. Grant, "Rate distortion with side-information at many decoders,"
+  *IEEE Trans. Inf. Theory*, vol. 57, no. 8, pp. 5240–5257, Aug. 2011 (arXiv:0901.1705).
 - R. Timo, A. Grant, and G. Kramer, "Lossy broadcasting with complementary side
-  information," *IEEE Trans. Inf. Theory*, vol. 57, no. 1, pp. 104–131, 2011.
-- S. Watanabe, "The rate-distortion region of the Gray–Wyner system with side
-  information," *IEEE Trans. Inf. Theory*, vol. 59, no. 4, pp. 2106–2119, 2013.
+  information," *IEEE Trans. Inf. Theory*, vol. 59, no. 1, pp. 104–131, Jan. 2013.
+- S. Watanabe, "The rate-distortion function for product of two sources with side-information
+  at decoders," *IEEE Trans. Inf. Theory*, vol. 59, no. 9, pp. 5678–5691, Sept. 2013
+  (arXiv:1105.2864).
+- R. Timo, T. J. Oechtering, and M. Wigger, "Source coding problems with conditionally less
+  noisy side information," *IEEE Trans. Inf. Theory*, vol. 60, no. 9, pp. 5516–5532, Sept. 2014.
+- M. Benammar and A. Zaidi, "Rate-distortion region of a Gray–Wyner model with side
+  information," arXiv:1701.03612, 2017 (*Entropy*, vol. 20, no. 1, 2018).
 - K. B. Viswanatha, E. Akyol, and K. Rose, "The lossy common information of correlated
   sources," *IEEE Trans. Inf. Theory*, vol. 60, no. 6, pp. 3238–3253, 2014.
 - A. El Gamal and Y.-H. Kim, *Network Information Theory*, Cambridge Univ. Press, 2011,

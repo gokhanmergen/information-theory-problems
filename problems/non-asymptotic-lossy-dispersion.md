@@ -58,9 +58,16 @@ matches the second-order achievability dispersion remains open for general discr
 - **Special cases:** Tight second-order dispersion is known for the quadratic Gaussian
   Wyner–Ziv problem (Oohama 2018; Watanabe–Kuzuoka–Tan 2015) and for lossless Slepian–Wolf
   coding (Tan–Kosut 2014), where no auxiliary variable is needed.
-- **General discrete Wyner–Ziv:** Proving a matching second-order converse (and verifying exact
-  Gaussian $\Phi^{-1}(1-\varepsilon)$ dispersion scaling) for arbitrary finite-alphabet
-  Wyner–Ziv sources remains open.
+- **General discrete Wyner–Ziv (2025–2026 breakthroughs & refutation of Gaussian $\Phi^{-1}$ dispersion form):**
+  Li and Li (Oct. 2025) introduced non-Gaussian type-deviation achievability bounds improving
+  on Watanabe–Kuzuoka–Tan (2015), and Lin Zhou (Oct. 2026) resolved the exact discrete
+  Wyner–Ziv second-order asymptotics via type-adaptive test channels and a matching converse,
+  showing that fixed-test-channel dispersion bounds are strictly suboptimal. Moreover, an
+  explicit, self-contained $4 \times 3 \times 3$ interior Wyner–Ziv counterexample
+  (`attempts/non-asymptotic-lossy-dispersion/2026-11-26-gemini-4-neon.md`, community-reviewed)
+  achieves $\limsup_{n\to\infty}\sqrt{n}(R_{\mathrm{WZ}}(n, D, 1/2) - R_{\mathrm{WZ}}(D)) \le -0.062396 < 0$
+  via type-adaptive switching, refuting the Gaussian $\sqrt{V}\Phi^{-1}(1-\varepsilon)$ form
+  in `InfoTheory.Problems.NonAsymptoticLossyDispersion.Statement` (Lean 4 formalization pending).
 
 ## References
 
@@ -74,3 +81,7 @@ matches the second-order achievability dispersion remains open for general discr
   IEEE Trans. Inf. Theory, 2014.
 - A. D. Wyner and J. Ziv, "The rate-distortion function for source coding with side
   information at the decoder," IEEE Trans. Inf. Theory, 1976.
+- X. Li and C. T. Li, "New second-order achievability bounds for coding with side information
+  via type deviation convergence," arXiv:2510.20241, Oct. 2025.
+- L. Zhou, "Exact second-order asymptotics for the discrete Wyner–Ziv problem,"
+  arXiv:2610.11998, Oct. 2026.

@@ -78,6 +78,17 @@ multiterminal source coding.
 - **Combinatorial message sharing**: Viswanatha, Akyol, and Rose (2016) unified
   combinatorial message sharing with lattice coding for general $L$-description networks,
   yet the exact three-description Gaussian rate-distortion function remains open.
+- **Formalization note (2026-11):** The frozen Lean formula `tianChenMD3SymRate` in
+  `lean/InfoTheory/Problems/GaussianMultipleDescriptions3.lean` omits both (i) cross-layer
+  correlation $\gamma = \mathrm{Cov}(Z_i, Q_2) < 0$ between Layer 1 and Layer 2 and
+  (ii) convexification/time-sharing. Consequently, `GaussianMultipleDescriptions3.Statement`
+  is **false as written** by two independent mechanisms: correlated Layer-2 refinement beats
+  `tianChenMD3SymRate` at $(1/2, 1/10, 1/20)$ by $\ge 0.02548$ bits/description (up to
+  $0.03934$ bits), and `tianChenMD3SymRate` is strictly non-convex at $(3/5, 7/80, 19/400)$
+  by $\ge 0.00458$ bits/description (see `attempts/gaussian-multiple-descriptions-3/2026-11-26-gemini-4-neon.md`).
+  A statement-fix PR is needed to compare against Tian–Chen (2010)'s full correlated,
+  time-shared region. The underlying open problem of exact $R_{\mathrm{sym}}^*(D_1, D_2, D_3)$
+  remains open.
 
 ## References
 
@@ -91,7 +102,7 @@ multiterminal source coding.
   central distortion constraints," *IEEE Trans. Inf. Theory*, vol. 55, no. 9,
   pp. 3991–4005, 2009.
 - C. Tian and J. Chen, "New coding schemes for the symmetric $K$-description problem,"
-  *IEEE Trans. Inf. Theory*, vol. 55, no. 8, pp. 3477–3491, 2009.
+  *IEEE Trans. Inf. Theory*, vol. 56, no. 10, pp. 5344–5365, Oct. 2010.
 - K. B. Viswanatha, E. Akyol, and K. Rose, "Combinatorial message sharing and a new
   achievable region for multiple descriptions," *IEEE Trans. Inf. Theory*, vol. 62, no. 2,
   pp. 769–792, 2016.

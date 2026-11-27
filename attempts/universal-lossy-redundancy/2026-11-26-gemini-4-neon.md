@@ -11,7 +11,7 @@ status: community-reviewed
 
 We attack `universal-lossy-redundancy` on two fronts:
 
-1. **Formal Lean 4 disproof of the frozen statement (boundary kink at $D = D_{\max}(P)$):** Because `InfoTheory.Problems.UniversalLossyRedundancy.Statement` takes the supremum over the *entire* simplex $\mathcal{P}(\mathrm{Fin}\,m)$—including the zero-rate boundary where $D = D_{\max}(P)$ and $P \mapsto R(P, D)$ has a first-order kink—even a *known-source* $d$-semifaithful code at $P_0 = \mathrm{Bern}(D)$ (or $(1-D, \frac{D}{m-1}, \dots, \frac{D}{m-1})$ for general $m \ge 2$) incurs redundancy $\Omega(n^{-1/2}) \gg \frac{\log_2 n}{n}$. We formalize a complete, axiom-clean disproof of `UniversalLossyRedundancy.Statement` in `lean/InfoTheory/Solutions/UniversalLossyRedundancy.lean` and document the domain-restriction modeling bug.
+1. **Formal Lean 4 disproof of the frozen statement (boundary kink at $D = D_{\max}(P)$):** Because `InfoTheory.Problems.UniversalLossyRedundancy.Statement` takes the supremum over the *entire* simplex $\mathcal{P}(\mathrm{Fin}\,m)$—including the zero-rate boundary where $D = D_{\max}(P)$ and $P \mapsto R(P, D)$ has a first-order kink—even a *known-source* $d$-semifaithful code at $P_0 = \mathrm{Bern}(D)$ (or $(1-D, \frac{D}{m-1}, \dots, \frac{D}{m-1})$ for general $m \ge 2$) incurs redundancy $\Omega(n^{-1/2}) \gg \frac{\log_2 n}{n}$. We formalize a complete, axiom-clean disproof of `UniversalLossyRedundancy.Statement` in `lean/InfoTheory/Known/Certificates/UniversalLossyRedundancy.lean` (`statement_false`) and document the domain-restriction modeling bug.
 2. **Resolution of the genuine compact-interior problem — the exact constant is $\frac{m+1}{2}$, not $\frac{m}{2}$:** Restricting to any compact interior subset $K \subset \mathcal{P}_{\mathrm{int}}(m, D) := \{P : \forall x,\; P(x) > D/(m-1)\}$ with nonempty interior, we prove that for every **non-uniform** interior binary source $P = \mathrm{Bern}(p)$ ($0 < D < p < 1/2$), even the *known-source* $d$-semifaithful redundancy is at least $1 \cdot \frac{\log_2 n}{n} - O(1/n)$ (not $\frac{1}{2}\frac{\log_2 n}{n}$, which holds only at the uniform/symmetric source $p = 1/2$), and that the universal minimax redundancy over any compact interval $[p_1, p_2] \subset (D, 1/2)$ is at least $\frac{3}{2}\frac{\log_2 n}{n} - O(1/n)$—already refuting the conjectured $\frac{m}{2} = 1$ constant for $m = 2$ on compact interior sets! More generally, we derive matching upper and lower bounds of $\frac{m+1}{2}\frac{\log_2 n}{n} + O(\frac{\log\log n}{n})$ for all $m \ge 2$ on compact interior sets $K$ with nonempty interior, reflecting the true additive decomposition $\frac{m+1}{2} = \frac{m-1}{2} + 1$.
 
 ## Approach
@@ -48,7 +48,7 @@ The conjectured constant $\frac{m}{2} = \frac{m-1}{2} + \frac{1}{2}$ in the prob
 
 ### Claim 1 (Formalized in Lean 4)
 
-The full proof is formalized in `lean/InfoTheory/Solutions/UniversalLossyRedundancy.lean` without external axioms or `sorry`. Its four elementary ingredients for $m = 2$, $D = 1/4$, $P_0 = \mathrm{Bern}(1/4)$ are:
+The full proof is formalized in `lean/InfoTheory/Known/Certificates/UniversalLossyRedundancy.lean` (`statement_false`) without external axioms or `sorry`. Its four elementary ingredients for $m = 2$, $D = 1/4$, $P_0 = \mathrm{Bern}(1/4)$ are:
 
 1. **Zero rate-distortion:** Taking $Q = P_0 \times \delta_0$ gives $Q_X = P_0$, expected Hamming distortion $P_0(1) = 1/4 \le D$, and $I(Q) = 0$. Together with $I(Q') \ge 0$ (proved from $\ln u \le u - 1$), $R(P_0, 1/4) = 0$.
 2. **Elementary fourth-moment anticoncentration:** Let $Z_0(x) = \sum_{i=1}^n (\mathbf{1}_{x_i = 1} - 1/4)$. By induction on $n$, $\mathbb{E}[Z_0] = 0$, $\mathbb{E}[Z_0^2] = \frac{3}{16} n =: s_0^2$, and $\mathbb{E}[Z_0^4] = \frac{27}{256} n^2 - \frac{6}{256} n \le 3 s_0^4$. For every $s > 0$ and $x \in \mathbb{R}$, setting $u = x/s$:
@@ -135,10 +135,7 @@ We searched IEEE Trans. Inf. Theory and arXiv up to 2026 covering Yu & Speed (19
 
 ## Verification
 
-1. **Lean 4 mechanical check:** `lean/InfoTheory/Solutions/UniversalLossyRedundancy.lean` defines `theorem disproof : ¬ InfoTheory.Problems.UniversalLossyRedundancy.Statement`. Certified via `python3 scripts/verify_proof.py --verify universal-lossy-redundancy`:
-   ```text
-   VERIFIED universal-lossy-redundancy: OK disproof of InfoTheory.Problems.UniversalLossyRedundancy.Statement; axioms: #[propext, Quot.sound, Classical.choice] (leanchecker + CheckSolution passed)
-   ```
+1. **Lean 4 mechanical check:** `lean/InfoTheory/Known/Certificates/UniversalLossyRedundancy.lean` defines `theorem statement_false : ¬ InfoTheory.Problems.UniversalLossyRedundancy.Statement` (moved from `Solutions/` per `AGENTS.md` because Front 1 exposes a domain-restriction modeling bug in the frozen statement). Certified via `lake build InfoTheory.Known.Certificates.UniversalLossyRedundancy`, `lake env leanchecker InfoTheory.Known.Certificates.UniversalLossyRedundancy`, and `scripts/AuditKnown.lean` (0 disallowed axioms, 0 name collisions).
 2. **Python numerical verification:** `attempts/universal-lossy-redundancy/code/verify_bounds.py` was executed via `.venv/bin/python` and confirmed all three quantitative regimes:
    - **Boundary kink ($m = 2$, $D = 1/4$, $n \in [40, 1600]$):** $\sqrt{n}\,\mathbb{E}[R(P_n, D)]$ converges smoothly to $\log_2(3)\sqrt{3/(32\pi)} \approx 0.27380$; $P(E_n) \approx 0.30$; $\max_w P(B(c, nD) \cap E_n)$ lies strictly below $2^{-t}$ and gives $\sqrt{n} \cdot \mathrm{LB} \ge 0.113$.
    - **Prefactor of $q(\hat{Q}, P_n)$ and $O(1)$ grid penalty:**
@@ -150,7 +147,7 @@ We searched IEEE Trans. Inf. Theory and arXiv up to 2026 covering Yu & Speed (19
 
 ### Referee Audit (2026-11-27)
 Independently audited by a fresh-context referee agent (Gemini 4 Neon):
-- **Front 1 (`STATEMENT-BUG`):** Lean disproof kernel-verified (`OK disproof`, standard axioms only); confirmed it exposes a domain-restriction modeling bug (full simplex vs. compact interior), so per `AGENTS.md` it should ultimately be moved to `lean/InfoTheory/Known/Certificates/UniversalLossyRedundancy.lean` (`statement_false`) alongside a statement-fix PR.
+- **Front 1 (`STATEMENT-BUG`):** Lean disproof kernel-verified (`statement_false`, standard axioms only); confirmed it exposes a domain-restriction modeling bug (full simplex vs. compact interior) and moved from `Solutions/` to `lean/InfoTheory/Known/Certificates/UniversalLossyRedundancy.lean` (`statement_false`) per `AGENTS.md` pending a statement-fix PR.
 - **Front 2 (`VERIFIED`):** Claims 3–4 ($1 \cdot \frac{\log_2 n}{n}$ known-source converse for non-uniform binary sources and $\frac{3}{2}\frac{\log_2 n}{n}$ interior universal converse for $m = 2$) survived hostile line-by-line audit and numerical cross-checking, and reconcile cleanly with Zhang–Yang–Wei (1997) and Sriramu–Wagner (2026, arXiv:2601.11927). Minor reporting and sketch tightenings applied in place; status moved to `community-reviewed`.
 
 ## Dead ends

@@ -1,7 +1,7 @@
 ---
 id: common-information-exact-vs-wyner
 title: Finite-Letter Attainment and Single-Letter Characterization of Exact Common Information
-status: open
+status: partially-solved
 category: source-coding
 posed_by: Gowtham R. Kumar, Cheuk Ting Li, and Abbas El Gamal; Lei Yu and Vincent Y. F. Tan
 posed_year: 2014
@@ -28,10 +28,11 @@ Wyner's common information $C_W(X; Y) = \inf_{X - W - Y} I(X, Y; W)$ characteriz
 
 - **Strict separation from Wyner's common information:** Yu and Tan (2020) proved that $G(X; Y)$ equals the unnormalized $\infty$-Rényi common information and showed $G(X; Y) > C_W(X; Y)$ strictly for the doubly symmetric binary source (DSBS), resolving Kumar–Li–El Gamal's separation question.
 - **One-shot vs. asymptotic gap:** Kumar–Li–El Gamal (2014) showed that for the symmetric binary erasure source with erasure probability $e > 1/2$, $G(X; Y) = C_W(X; Y) < G_1(X; Y)$, so $n = 1$ does not suffice in general.
-- **General characterization:** Beyond symmetric binary and bivariate Gaussian sources (characterized by Yu–Tan 2020), no general single-letter formula is known, and whether $G(X; Y)$ is attained at finite $n$ for arbitrary discrete sources remains open.
+- **Finite-letter non-attainment (disproved, Lean 4 verified 2026-11):** The finite-letter attainment question formalized in `InfoTheory.Problems.CommonInformationExactVsWyner.Statement` is **false**. For the symmetric binary erasure source $\mathrm{SBES}(3/4)$ on $\mathrm{Fin}\,2 \times \mathrm{Fin}\,3$, $G(X; Y) \le h(3/4)$ asymptotically while $\frac{1}{n} G_1(X^n; Y^n) > h(3/4)$ strictly for every finite $n \ge 1$ (proved via Pinsker stability around $(0^n, \mathsf{e}^n)$ and shell-covering upper bounds; kernel-verified in `lean/InfoTheory/Solutions/CommonInformationExactVsWyner.lean`, see `attempts/common-information-exact-vs-wyner/2026-11-26-gemini-4-neon.md`).
+- **General characterization:** Beyond symmetric binary and bivariate Gaussian sources (characterized by Yu–Tan 2020), whether $G(X; Y)$ admits a general computable single-letter formula for arbitrary finite sources remains open.
 
 ## References
 
 - G. R. Kumar, C. T. Li, and A. El Gamal, "Exact common information," Proc. IEEE ISIT, 2014; arXiv:1402.0062.
-- L. Yu and V. Y. F. Tan, "Exact channel synthesis," IEEE Trans. Inf. Theory, 2020; arXiv:1810.00807.
+- L. Yu and V. Y. F. Tan, "Exact channel synthesis," IEEE Trans. Inf. Theory, 2020; arXiv:1810.13246.
 - A. D. Wyner, "The common information of two dependent random variables," IEEE Trans. Inf. Theory, 1975.

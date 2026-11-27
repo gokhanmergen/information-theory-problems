@@ -51,19 +51,30 @@ leading constant for general $m \ge 2$ and general distortion measures remains o
 
 - **Known statistics ($d$-semifaithful):** Zhang, Yang, and Wei (1997) proved that for a known
   i.i.d. source $P$ at an interior distortion level $D$, the optimal $d$-semifaithful redundancy
-  is $\frac{1}{2}\frac{\log_2 n}{n} + O(\frac{\log \log n}{n})$ (with matching lower bound
-  resolving the Yu–Speed conjecture).
+  lies between $\frac{1}{2}\frac{\log_2 n}{n}$ and $\frac{\log_2 n}{n}$ (up to lower-order terms),
+  leaving a factor-of-2 gap. Sriramu and Wagner (2026) resolved this gap at
+  $\frac{1}{2}\frac{\log_2 n}{n}$ for uniform sources with symmetric distortion measures. By
+  contrast, for non-uniform interior binary sources $P = \mathrm{Bern}(p)$ ($0 < D < p < 1/2$),
+  every $d$-semifaithful code incurs redundancy at least $1 \cdot \frac{\log_2 n}{n} - O(1/n)$
+  (`attempts/universal-lossy-redundancy/2026-11-26-gemini-4-neon.md`).
 - **Universal upper bounds:** Yu and Speed (1993) constructed a two-stage universal
-  $d$-semifaithful code achieving $O(\frac{\log n}{n})$ redundancy. Yang and Zhang (1999)
-  refined the universal redundancy bounds for finite and abstract alphabets, showing
-  $R_n^{\mathrm{univ}}(m, D) = \Theta(\frac{\log n}{n})$ with upper constants exceeding
-  $\frac{m}{2}$ for general $m \ge 2$.
+  $d$-semifaithful code achieving $O(\frac{\log n}{n})$ redundancy on compact interior subsets.
+  Yang and Zhang (1999) refined the universal redundancy bounds for finite and abstract alphabets.
 - **Pointwise and fixed-slope theory:** Kontoyiannis (2000) established pointwise redundancy
   central limit theorems and laws of the iterated logarithm (order $O(n^{-1/2})$ pointwise,
   $\Theta(\frac{\log n}{n})$ in expectation) for both known-source and universal lossy codes.
-- **Exact universal constant:** Whether the minimax universal $d$-semifaithful redundancy over
-  all $m$-ary memoryless sources achieves the exact additive constant $\frac{m-1}{2} + \frac{1}{2} = \frac{m}{2}$
-  remains open.
+- **Exact universal constant & Formalization note (2026-11):**
+  1. *Frozen Lean statement (`statement_false`):* Both `problems/universal-lossy-redundancy.md`
+     and `lean/InfoTheory/Problems/UniversalLossyRedundancy.lean` take the supremum over the
+     *entire* simplex $\mathcal{P}(\mathrm{Fin}\,m)$, which includes the zero-rate boundary kink
+     $P_0 = \mathrm{Bern}(D)$ ($R(P_0, D) = 0$) where even a known-source $d$-semifaithful code
+     incurs $\Omega(n^{-1/2}) \gg \frac{\log_2 n}{n}$ redundancy. Thus the frozen Lean statement
+     is false as written (certified in `InfoTheory.Known.Certificates.UniversalLossyRedundancy.statement_false`)
+     and needs a statement-fix PR restricting $P$ to compact interior subsets $K \subset \mathcal{P}_{\mathrm{int}}(m, D)$.
+  2. *Compact-interior constant:* Even on compact interior intervals $[p_1, p_2] \subset (D, 1/2)$
+     for $m = 2$, the conjectured constant $\frac{m}{2} = 1$ is refuted by a proved minimax lower
+     bound of $\frac{3}{2}\frac{\log_2 n}{n} - O(1/n)$ (with matching $\frac{m+1}{2}\frac{\log_2 n}{n}$
+     upper/lower sketches for general $m \ge 2$; see `attempts/universal-lossy-redundancy/2026-11-26-gemini-4-neon.md`).
 
 ## References
 
@@ -77,3 +88,5 @@ leading constant for general $m \ge 2$ and general distortion measures remains o
   IEEE Trans. Inf. Theory, 1999.
 - I. Kontoyiannis, "Pointwise redundancy in lossy data compression and universal lossy data
   compression," IEEE Trans. Inf. Theory, 2000.
+- S. M. Sriramu and A. B. Wagner, "Exact Redundancy for Symmetric Rate-Distortion,"
+  arXiv:2601.11927, 2026.
