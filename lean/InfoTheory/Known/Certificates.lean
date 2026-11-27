@@ -1,3 +1,4 @@
+import InfoTheory.Known.Certificates.AmplitudeConstrainedAwgnSupport
 import InfoTheory.Known.Certificates.AwgnFeedbackErrorExponent
 import InfoTheory.Known.Certificates.BinaryMultiplierTwoWayChannel
 import InfoTheory.Known.Certificates.BinarySkewSymmetricBc
@@ -21,6 +22,8 @@ import InfoTheory.Known.Certificates.DmcZeroRateErrorExponent
 import InfoTheory.Known.Certificates.EditDistanceCodeCapacity
 import InfoTheory.Known.Certificates.EntropicDoublingConstant
 import InfoTheory.Known.Certificates.EntropyRegion
+import InfoTheory.Known.Certificates.GaussianBcFeedbackSumCapacity
+import InfoTheory.Known.Certificates.GaussianMacFeedbackLinearOptimality
 import InfoTheory.Known.Certificates.GaussianMultipleDescriptions3
 import InfoTheory.Known.Certificates.GilbertVarshamovBinary
 import InfoTheory.Known.Certificates.GrayWynerLossy

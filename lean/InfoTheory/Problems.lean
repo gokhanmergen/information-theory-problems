@@ -1,3 +1,4 @@
+import InfoTheory.Problems.AmplitudeConstrainedAwgnSupport
 import InfoTheory.Problems.AwgnFeedbackErrorExponent
 import InfoTheory.Problems.BatchCodesOptimalRedundancy
 import InfoTheory.Problems.BinaryDuplicationChannel
@@ -34,7 +35,9 @@ import InfoTheory.Problems.EntropyRegion
 import InfoTheory.Problems.EntropyRegionDecidability
 import InfoTheory.Problems.ExplicitListDecodableBinary
 import InfoTheory.Problems.FiniteStateChannelCapacity
+import InfoTheory.Problems.GaussianBcFeedbackSumCapacity
 import InfoTheory.Problems.GaussianInterferenceChannel
+import InfoTheory.Problems.GaussianMacFeedbackLinearOptimality
 import InfoTheory.Problems.GaussianMultipleDescriptions3
 import InfoTheory.Problems.GaussianOptimalityMutualInformation
 import InfoTheory.Problems.GaussianRelayChannelCapacity
