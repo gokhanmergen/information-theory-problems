@@ -71,13 +71,15 @@ information theory is.
     Mondelli–Hassani–Urbanke (2019) scheme is subsumed by it. They also showed that
     time-sharing strictly improves pure compress-forward, which disproves an Ahlswede–Han
     conjecture.
-  - No standard DM relay channel is known on which a scheme provably beats Theorem 7. Wu
+  - We know of no standard DM relay channel on which a scheme provably beats Theorem 7. Wu
     (arXiv:1504.04515) beats it only with relay-to-source feedback, or when the source
     observes the relay's signal.
   - Ponniah (arXiv:2609.15709, 2026, unrefereed) claims $C=\max\{R_{\rm DF},R_{\rm U\text{-}CF},R_{\rm C\text{-}CF}\}$.
     This is refuted by the primitive-BSC time-sharing example, viewed as a DM relay channel
     with an orthogonal BSC link of capacity $0.3$: capacity is at least $0.5396$, while all
-    three of Ponniah's rates are at most $0.5310$ (see attempt log).
+    three of Ponniah's rates are at most $0.5310$. The paper's definitions (82)–(97) are
+    partly inconsistent. This bound reads each rate under the same joint law as its own
+    feasibility constraint (see attempt log).
 - Formalization note (2026-11). The frozen Lean functional `coverElGamalTheorem7Rate`
   keeps two of Theorem 7's three constraints and allows an arbitrary joint law
   $P(u,x,x_r)$. That permits compress-forward with coherent source and relay inputs. On a
