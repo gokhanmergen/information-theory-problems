@@ -1,6 +1,6 @@
 import InfoTheory.Core
 
-open scoped BigOperators Classical
+open scoped BigOperators Classical ENNReal
 open MeasureTheory
 
 namespace InfoTheory.Problems.AwgnFeedbackErrorExponent
@@ -26,19 +26,19 @@ def awgnFeedbackPrefix (n M : ℕ)
       fun j => if h : j.1 < k then prev ⟨j.1, h⟩ else yk
 
 /-- Average error probability of a measurable blocklength-`n`, `M`-message causal feedback
-    code `(enc, dec)` over the unit-variance AWGN channel `Y_i = X_i + Z_i`, evaluated via
-    Lebesgue `lintegral` (preventing Bochner junk `0` on non-measurable integrands). -/
+    code `(enc, dec)` over the unit-variance AWGN channel `Y_i = X_i + Z_i`, evaluated directly
+    in `ℝ≥0∞` via Lebesgue `lintegral` (preventing Bochner/toReal junk `0`). -/
 noncomputable def awgnFeedbackAvgError (n M : ℕ)
     (enc : ∀ i : Fin n, Fin M → (Fin i.1 → ℝ) → ℝ)
-    (dec : (Fin n → ℝ) → Fin M) : ℝ :=
-  if M = 0 then 0 else
+    (dec : (Fin n → ℝ) → Fin M) : ℝ≥0∞ :=
+  if M = 0 then ⊤ else
     let gaussDensity (z : Fin n → ℝ) : ℝ :=
       ∏ i : Fin n, gaussianPdf1D 1 (z i)
-    ((1 : ℝ) / (M : ℝ)) *
+    (M : ℝ≥0∞)⁻¹ *
       ∑ m : Fin M,
-        (∫⁻ z : Fin n → ℝ,
+        ∫⁻ z : Fin n → ℝ,
           if dec (awgnFeedbackPrefix n M enc m z n (Nat.le_refl n)) ≠ m
-          then ENNReal.ofReal (gaussDensity z) else 0).toReal
+          then ENNReal.ofReal (gaussDensity z) else 0
 
 /-- Strict almost-sure codeword energy constraint `∑_{i=1}^n X_i(m, Y^{i-1})^2 ≤ n P` for all
     messages `m` and all channel output histories `y`. -/
@@ -48,19 +48,22 @@ def SatisfiesPeakEnergy (n M : ℕ) (P : ℝ)
     ∑ i : Fin n, (enc i m (fun j => y ⟨j.1, Nat.lt_trans j.2 i.2⟩)) ^ 2 ≤ (n : ℝ) * P
 
 /-- Optimal minimum average error probability `P_e*(n, M, P)` over all measurable,
-    peak-energy-constrained causal feedback codes on the AWGN channel. -/
-noncomputable def awgnFeedbackPeakMinError (n M : ℕ) (P : ℝ) : ℝ :=
-  sInf { e : ℝ | ∃ (enc : ∀ i : Fin n, Fin M → (Fin i.1 → ℝ) → ℝ)
+    peak-energy-constrained causal feedback codes on the AWGN channel, valued in `ℝ≥0∞`
+    so an empty feasible set evaluates to `⊤` rather than junk `0`. -/
+noncomputable def awgnFeedbackPeakMinError (n M : ℕ) (P : ℝ) : ℝ≥0∞ :=
+  sInf { e : ℝ≥0∞ | ∃ (enc : ∀ i : Fin n, Fin M → (Fin i.1 → ℝ) → ℝ)
     (dec : (Fin n → ℝ) → Fin M),
     (∀ i m, Measurable (enc i m)) ∧ Measurable dec ∧
     SatisfiesPeakEnergy n M P enc ∧ e = awgnFeedbackAvgError n M enc dec }
 
 /-- Reliability function `E_fb^peak(R, P)` (in nats) of the peak-energy-constrained AWGN
-    channel with noiseless causal feedback. -/
-noncomputable def awgnFeedbackPeakReliability (R P : ℝ) : ℝ :=
-  sSup { E : ℝ | ∀ ε : ℝ, 0 < ε → ∃ N : ℕ, ∀ n : ℕ, N ≤ n →
-    awgnFeedbackPeakMinError n (Nat.ceil (Real.exp ((n : ℝ) * R))) P ≤
-      Real.exp (-(n : ℝ) * (E - ε)) }
+    channel with noiseless causal feedback, valued in `ℝ≥0∞` so an unbounded exponent set
+    evaluates to `⊤` rather than junk `0`. -/
+noncomputable def awgnFeedbackPeakReliability (R P : ℝ) : ℝ≥0∞ :=
+  sSup { e : ℝ≥0∞ | ∃ E : ℝ, 0 ≤ E ∧ e = ENNReal.ofReal E ∧
+    ∀ ε : ℝ, 0 < ε → ∃ N : ℕ, 0 < N ∧ ∀ n : ℕ, N ≤ n →
+      awgnFeedbackPeakMinError n (Nat.ceil (Real.exp ((n : ℝ) * R))) P ≤
+        ENNReal.ofReal (Real.exp (-(n : ℝ) * (E - ε))) }
 
 /-- Peak-Energy AWGN Feedback Reliability Conjecture (Shannon 1959; Pinsker 1968):
     does the reliability function of the peak-energy-constrained AWGN channel with noiseless
@@ -69,7 +72,7 @@ noncomputable def awgnFeedbackPeakReliability (R P : ℝ) : ℝ :=
     `0 < R < R_crit`.) -/
 def Statement : Prop :=
   ∀ (P R : ℝ), 0 < P → 0 < R → R < (1 / 2 : ℝ) * Real.log (1 + P) →
-    awgnFeedbackPeakReliability R P = awgnSpherePacking R P
+    awgnFeedbackPeakReliability R P = ENNReal.ofReal (awgnSpherePacking R P)
 
 def problem : OpenProblem where
   id := "awgn-feedback-error-exponent"

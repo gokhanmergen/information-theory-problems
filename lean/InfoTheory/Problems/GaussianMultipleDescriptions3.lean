@@ -1,6 +1,6 @@
 import InfoTheory.Core
 
-open scoped BigOperators
+open scoped BigOperators ENNReal
 open MeasureTheory
 
 namespace InfoTheory.Problems.GaussianMultipleDescriptions3
@@ -10,7 +10,7 @@ namespace InfoTheory.Problems.GaussianMultipleDescriptions3
     encoders and MSE evaluated via Lebesgue `lintegral` (preventing non-measurable `0` junk). -/
 def IsGaussMD3SymAchievable (D₁ D₂ D₃ R : ℝ) : Prop :=
   0 ≤ R ∧
-  ∀ ε > 0, ∃ N : ℕ, ∀ n ≥ N,
+  ∀ ε > 0, ∃ N : ℕ, 0 < N ∧ ∀ n ≥ N,
     let M := Nat.max 1 (Nat.floor ((2 : ℝ) ^ ((n : ℝ) * (R + ε))))
     ∃ (enc₁ enc₂ enc₃ : (Fin n → ℝ) → Fin M)
       (dec₁ dec₂ dec₃ : Fin M → Fin n → ℝ)
@@ -30,14 +30,16 @@ def IsGaussMD3SymAchievable (D₁ D₂ D₃ R : ℝ) : Prop :=
       mse (fun x => dec₁₂₃ (enc₁ x, enc₂ x, enc₃ x)) ≤ ENNReal.ofReal (D₃ + ε)
 
 /-- Optimal symmetric per-description rate `R*_sym(D₁, D₂, D₃)` for 3-channel quadratic
-    Gaussian multiple descriptions. -/
-noncomputable def gaussMD3SymRate (D₁ D₂ D₃ : ℝ) : ℝ :=
-  sInf { R : ℝ | IsGaussMD3SymAchievable D₁ D₂ D₃ R }
+    Gaussian multiple descriptions, valued in `ℝ≥0∞` so an empty achievable set evaluates
+    to `⊤` rather than junk `0`. -/
+noncomputable def gaussMD3SymRate (D₁ D₂ D₃ : ℝ) : ℝ≥0∞ :=
+  sInf { r : ℝ≥0∞ | ∃ R : ℝ, IsGaussMD3SymAchievable D₁ D₂ D₃ R ∧ r = ENNReal.ofReal R }
 
 /-- Tian–Chen (2009) three-layer hybrid Gaussian + `(3, 2)` MDS lattice + `(3, 3)` MDS
-    central refinement achievable symmetric rate for 3-channel quadratic Gaussian MD. -/
-noncomputable def tianChenMD3SymRate (D₁ D₂ D₃ : ℝ) : ℝ :=
-  sInf { r : ℝ | ∃ (v₀ σsq ρ τ₂ : ℝ),
+    central refinement achievable symmetric rate for 3-channel quadratic Gaussian MD,
+    valued in `ℝ≥0∞` so an empty feasible set evaluates to `⊤` rather than junk `0`. -/
+noncomputable def tianChenMD3SymRate (D₁ D₂ D₃ : ℝ) : ℝ≥0∞ :=
+  sInf { r : ℝ≥0∞ | ∃ (v₀ σsq ρ τ₂ : ℝ),
     0 < v₀ ∧ v₀ ≤ 1 ∧ 0 < σsq ∧ -(1 / 2 : ℝ) < ρ ∧ ρ < 1 ∧ 0 < τ₂ ∧
     let d1 := (v₀ * σsq) / (v₀ + σsq)
     let d2Base := (v₀ * σsq * (1 + ρ)) / (2 * v₀ + σsq * (1 + ρ))
@@ -50,7 +52,7 @@ noncomputable def tianChenMD3SymRate (D₁ D₂ D₃ : ℝ) : ℝ :=
                  (1 / 6 : ℝ) * log2 (1 / ((1 + 2 * ρ) * (1 - ρ) ^ 2))
     let r2 := (1 / 4 : ℝ) * log2 (1 + d2Base / τ₂)
     let r3 := (1 / 6 : ℝ) * max 0 (log2 (d3' / D₃))
-    r = r0 + rBase + r2 + r3 }
+    r = ENNReal.ofReal (r0 + rBase + r2 + r3) }
 
 /-- Symmetric Rate-Distortion Function for Three-Channel Quadratic Gaussian Multiple
     Descriptions (Venkataramani–Kramer–Goyal 2003; Tian–Chen 2009):
