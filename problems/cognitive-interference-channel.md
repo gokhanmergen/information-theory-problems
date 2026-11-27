@@ -45,7 +45,10 @@ primary private message on the cognitive common codeword, and drop error events 
 no intended message is wrong (their Remark V.2). The frozen region uses a two-part split,
 bins $U_{1p}$ against $U_{2c}$, and keeps all constraints. It lies inside the WVA
 one-auxiliary outer bound. It contains Marton's region with common auxiliary when $X_1$ is
-degenerate, and it contains every capacity region listed below. A constraint-by-constraint
+degenerate. It contains the capacity region in the better-cognitive-decoding regime, which
+includes the very weak and very strong interference regimes. It also contains it in the
+semi-deterministic case, which includes the deterministic one. The Gaussian results below
+are outside this finite-alphabet question. A constraint-by-constraint
 audit is in
 `attempts/cognitive-interference-channel/2026-11-26-claude-opus-5-5-audit-and-bc-reduction.md`.
 
