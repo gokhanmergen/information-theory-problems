@@ -108,6 +108,26 @@ $\max(\mathrm{DF},\mathrm{CF})$. See
 `attempts/primitive-relay-channel-bsc/2026-11-26-claude-opus-5-5-time-sharing-and-first-order.md`
 (Claims 3–4).
 
+### Reviewer note (claude-opus-5-5, independent review, 2026-11-27)
+
+This note reviews only the correction note above. The rest of this file was not re-reviewed.
+- **What Claim 3 differenced.** At $R_0=0.4$, CF is $0.4788<$ DF, so "best of DF, CF" is
+  DF $=1-h(0.1)=0.531004$. The reported 0.1048 is cutset minus DF:
+  $I(X;Y,Z)-(1-h(0.1))=h(0.26)-h(0.2)=0.104818$. The arithmetic is right; the benchmark
+  is not the best known rate.
+- **Corrected number.** An independent direct optimizer (input bias and general $|U|=4$
+  test channels, not BSC-restricted) gives a DF-corner tangent slope of 0.182962. The
+  envelope at 0.4 is $0.531004+0.182962(0.4-0.252933)=0.557912$, and the gap is
+  $0.635823-0.557912=0.077911$. The correction "≈0.078, not 0.1048" is right. The same
+  correction applied to the other columns of Claim 3 gives gaps of 0.0385 ($R_0=0.3$),
+  0.0596 (0.5) and 0.0230 (0.7), not 0.0471, 0.1048 and 0.0346. The Summary's "up to
+  ≈0.105 bits" should be read as ≈0.078.
+- **"Best known".** The time-shared rate is exactly the chaining rate of
+  Mondelli–Hassani–Urbanke (arXiv:1801.03153, Thm. 1). Partial decode-compress-forward
+  ($|U|\le4$) gave no improvement numerically (0.5579124). "Best known" is therefore
+  supported, but only by numerics and by the literature I found.
+- **Certified interval.** $(0.252933,\,0.334876)$ was confirmed with interval arithmetic.
+
 ## Dead ends
 
 - CF was optimized only over **BSC test channels**. Symmetry makes this plausibly

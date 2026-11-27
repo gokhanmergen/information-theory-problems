@@ -4,7 +4,7 @@ date: 2026-11-26
 attempter: claude
 model: claude-opus-5-5
 type: partial-result
-status: unverified
+status: verified
 ---
 
 ## Summary
@@ -80,7 +80,10 @@ destination output (BSC$(p_1)$), $Y_r$ is the relay output (BSC$(p_2)$), and $\D
    $B(0.05)\ge0.574050$ against cutset $0.581004$. More values are in the table
    below. At $R_0=0.01$, EGN Theorem 6 can remove at most $3.9\times10^{-4}$ of a
    cutset-to-CF gap of $\approx6.1\times10^{-3}$ bits.
-8. **[sketch]** The Liu–Özgür reverse-hypercontractivity bound for discrete
+8. **[proved]** *(label changed by reviewer from [sketch]: the discrete bound is stated
+   verbatim as Corollary 9 of arXiv:1811.11303v1, directly after Lemma 8; the slope-1
+   consequence follows from $2\sqrt{(\alpha-1)h}\le c_\alpha(h)$, i.e.
+   $0\le c_\alpha^{-1}(R_0)\le R_0^2/(4(\alpha-1))$.)* The Liu–Özgür reverse-hypercontractivity bound for discrete
    symmetric primitive relay channels (their Lemma 8 with their Proposition 1)
    gives $C\le 1-h(\rho)+R_0-c_\alpha^{-1}(R_0)$, with
    $c_\alpha^{-1}(R_0)=O(R_0^2)$. It therefore also has slope 1 at $R_0=0$.
@@ -89,6 +92,9 @@ destination output (BSC$(p_1)$), $Y_r$ is the relay output (BSC$(p_2)$), and $\D
    $U-Y_r^n-(X^n,Y^n)$. Multi-letter CF with i.i.d. uniform inputs therefore has
    the same slope $s_\rho$. A scheme with slope $>s_\rho$ needs non-product
    (coded) input structure, and so does any converse that improves on slope 1.
+   *(Reviewer: only the inequality and the uniform-i.i.d. CF consequence are proved.
+   "Non-product" also excludes i.i.d. non-uniform inputs, which rests on the numerical
+   Claim 10(iii); the clause about converses is interpretation, not a theorem.)*
 10. **[heuristic]** Numerics for $\rho\in\{0.02,0.05,0.1,0.2,0.3,0.4,0.45\}$ give
     three findings. (i) Uniform input maximizes the CF rate at all 49 grid points
     tested. (ii) BSC test channels generate the uniform-input CF region: the curve
@@ -368,6 +374,63 @@ gives $s_\rho I(U;Y_r^n|Y^n)$.
   Proposition 1, Lemma 8, Corollaries 5 and 7, and Section VI were read from the arXiv
   PDF (v1).
 - Python environment: numpy, scipy, mpmath from the repository `.venv`.
+
+### Reviewer note (claude-opus-5-5, independent review, 2026-11-27)
+
+Own scripts (not the author's), run outside the repo; every [proved] claim checked.
+- **Model.** Old Markdown ("an index in $\{1,\dots,\lfloor 2^{nR_0}\rfloor\}$ as a function
+  of $Y_r^n$") and Lean `IsPrimitiveBscAchievable` (`relay : (Fin n → Bool) → Fin M₀`,
+  $M_0=\max(1,\lfloor2^{nR_0}\rfloor)$) both impose one per-block index budget, so
+  sub-block time-sharing across pipe rates is legal. Claim 1 re-derived, including
+  $n_aR_{0a}+n_bR_{0b}\le n(\lambda R_{0a}+(1-\lambda)R_{0b})+R_{0b}$ and the
+  smallest-error message selection. Correct.
+- **Claims 2–3.** SDPI step re-derived (TV of the rows of $X|(Y_r,Y{=}y)$ is
+  $\sigma(\ell+c)-\sigma(\ell-c)\le1-2p_2$; the $E$-coupling is exact because
+  $U\perp X\mid(Y_r,Y)$), as was the PDF bound via $\mathrm{BSC}(p_1)=\mathrm{BSC}(p_2)\circ\mathrm{BSC}(q)$.
+  `mpmath.iv` interval arithmetic gives the time-shared rate $\in[0.5395688266540,\,0.5395688266541]$,
+  $\max$ of the upper bounds $=0.5310044064107\ldots$, so the gap is $\ge0.0085644$. The DF corner
+  0.2530 exceeds $\Delta=0.2529325$, and at pipe 0.8270 the NNC second term 0.636076 exceeds
+  $I(X;Y,Y_r)=0.635823$. The certified range $(0.252933,\,0.334876)$ is confirmed. No float leaks.
+- **Claim 4 / correction of the fable baseline.** An independent direct optimizer (Nelder–Mead
+  over $\pi$ and $|U|=4$ test channels on the min-form, with no dual and no $\theta$-grid)
+  reproduces the CF column to $10^{-6}$ (0.431412, 0.478817, 0.523558, 0.564838, 0.601394,
+  0.630554) with $\pi^*=1/2$. The DF-corner tangent slope is 0.182962, giving an envelope
+  of 0.557912 at $R_0=0.4$. Partial-decode-compress-forward (superposition $U$, compression
+  conditioned on $U$, NNC-style decoding; $|U|\le4$, $|\hat Y|=3$, 40 random restarts)
+  does not exceed 0.5579124, so it adds nothing beyond time-sharing here.
+- **Claim 5.** The $a(\theta),b(\theta)$ closed forms match direct joint enumeration (15,000
+  random $U$, $|U|\le5$, five values of $\rho$). The maximum of $(a/b)/s_\rho$ is
+  $0.99999999$. sympy confirms $k^{4m}+k^2-(1+k^2)k^{2m}=(k^{2m}-k^2)(k^{2m}-1)$.
+  The value of $\mathrm{corr}^2$ was re-derived by hand.
+- **Claim 6.** EGN Theorem 6 read in the v3 PDF text, together with its proof in Sec. 3.7:
+  the transcription of $g_\lambda$, of the constraint $p_{01}+p_{10}=c$, and of
+  $R\le1-2H_2(\rho)+\lambda C_0+\mathfrak C[g_\lambda](\rho)$ is exact. The proof
+  (tangent-line contradiction, convexity and monotonicity of $e$) was re-derived; the
+  witness $\Phi=4.6746\times10^{-6}$ was recomputed.
+- **Claim 7.** Independent pieces from two-point mixtures of *arbitrary* cube points
+  (differential evolution, 35 pieces, evaluated in 50 digits) give $B\ge$ 0.5359255,
+  0.5406862, 0.5740505, 0.6492764 at $R_0=$ 0.005, 0.01, 0.05, 0.2. Each is at least
+  the stated value, so the claim holds.
+- **Claim 8** is relabelled [proved]. Liu–Özgür v1 Corollary 9 states
+  $C(C_0)\le\min\{I(X;Y,Z),I(X;Y)+C_0-c_\alpha^{-1}(C_0)\}$ for discrete channels,
+  directly after Lemma 8. The bound is in nats; converting to bits only rescales
+  $c_\alpha^{-1}$. Since $1-e^{-t}\le t$, $c_\alpha(h)\ge2\sqrt{(\alpha-1)h}$, and the
+  numerical ratio is $\to1$. With $\alpha=\sum_y\max_xW(y|x)=2(1-\rho)$, as stated.
+- **Claim 9.** Chain-rule steps re-derived (the factorization given $(Y^n,Y_r^{i-1})$ holds).
+  The closing sentence goes beyond what is proved; see the bracket under Claim 9.
+- **Dead ends.** `egn_prop1_perturbation.py` gives $a_1>0$, $a_1=\Theta(\varepsilon)$,
+  $b_1=\Theta(\varepsilon^2)$. The $a_1,b_1$ formulas match EGN Prop. 1, eqs. (26)–(27),
+  for product-form channels. A grid scan of the certified gap gives a maximum of 0.0122
+  near $(0.242,0.133,0.318)$, consistent with "about 0.012".
+- **Novelty.** Mondelli–Hassani–Urbanke (arXiv:1801.03153, Thm. 1, eq. (33)) give a rate that
+  is algebraically the chord $\frac{(C-D)\,r_{\rm CF}+r_{\rm DF}(b-C)}{b-D}$ from the DF corner
+  $(D,I(X;Y_r))$ to a CF point $(b,I(X;\hat Y,Y))$. Claim 3's lower bound and Claim 4's
+  envelope are therefore that rate evaluated at BSC components. What is new is the SDPI
+  upper bound that certifies the separation for BSC. The commit message says "refutes
+  Ponniah", but the file itself (correctly) only flags it; not checked here.
+- **Status → verified**: every [proved] claim (1–3, 5–9) was checked as above.
+  **Not checked:** Claim 10 numerics (heuristic), Ponniah's expressions,
+  Wu–Özgür–Xie and Barnes–Wu–Özgür full texts (paywalled/403).
 
 ## Novelty check
 
