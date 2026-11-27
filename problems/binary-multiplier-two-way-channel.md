@@ -71,7 +71,8 @@ remains unknown, pinned between $0.63072$ and $0.64628$ bits per channel use.
     enable an outer-bound transmission. It achieves $0.61914$ bits.
   - Schalkwijk (1983) added bootstrapping: the intermediate information is Slepian–Wolf
     compressed and sent by the scheme itself. This achieves $0.63056$ bits
-    ($0.6305552557$). Tolhuizen (1985) gave rigorous proofs for these schemes. Schalkwijk
+    ($0.6305552557$). Tolhuizen (1985) gave a fixed-length code construction for such
+    strategies, and van Overveld (1988) extended it to prove the bootstrapping rate. Schalkwijk
     (1990, 1991) found improvements only in the 8th and 10th decimal places
     ($0.6305552986$, $0.6305552995$), which showed that the 1983 strategy is not optimal.
   - Schalkwijk, Meeuwissen and Bloemen (1995; see Bloemen's 1996 TU/e thesis, Ch. 6)
@@ -113,6 +114,8 @@ remains unknown, pinned between $0.63072$ and $0.64628$ bits per channel use.
   dissertation, Eindhoven University of Technology, 1998.
 - L. Tolhuizen, "Discrete coding for the BMC, based on Schalkwijk's strategy," *Proc. 6th
   BeNeLux Symp. Inf. Theory*, pp. 207–212, 1985.
+- W. M. C. J. van Overveld, "Fixed length strategies for the BMC," *IEEE Trans. Inf.
+  Theory*, vol. 34, no. 2, pp. 314–318, 1988.
 - J. P. M. Schalkwijk, "Another 0.63056," *Proc. 11th BeNeLux Symp. Inf. Theory*,
   pp. 155–161, 1990; "Extending the achievable rate region of the binary multiplying
   channel," *Proc. IEEE ISIT*, p. 302, Budapest, 1991.
