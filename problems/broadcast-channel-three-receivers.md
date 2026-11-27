@@ -79,7 +79,11 @@ making the three-receiver broadcast channel substantially harder than the two-re
   That attempt proposes a corrected statement based on the Padakandla–Pradhan "UM region",
   which has public, semi-private and private layers. Padakandla–Pradhan (arXiv:1207.3146)
   prove that the UM region is itself strictly suboptimal (coset codes do better) for some
-  3-receiver BCs *with input cost constraints*.
+  3-receiver BCs *with input cost constraints*. Without costs, the proposed correction is probably
+  false as well. With a useless third receiver its slice contains two-receiver Marton with
+  W, but the reverse inclusion is not argued. If that inclusion holds and Huang–Liu–Liu
+  (arXiv:2608.19869, unrefereed) are right that two-receiver Marton is suboptimal, the
+  UM-based statement fails too (reviewer note, 2026-11-27).
 
 ## References
 
