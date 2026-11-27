@@ -4,7 +4,7 @@ date: 2026-11-26
 attempter: claude
 model: claude-opus-5-5
 type: survey
-status: unverified
+status: community-reviewed
 ---
 
 ## Summary
@@ -35,6 +35,13 @@ optimizer, $0.09165038339\ldots$; their eq. (40) uses the printed value. So thei
 are, if anything, understated: the fixed-input gap would be $3.83\times10^{-6}$ rather than
 $2.83\times10^{-6}$ nats. Either the extra $5\times10^{-7}$ is deliberate certification slack
 for the global maximum $B_T$, or it is a one-digit typo.
+
+(Reviewer, 2026-11-27: it is deliberate slack, not a typo. HLL's reproducibility repository
+names its one-letter certificates `*_e5.000e-07.json`, and its audit prints the stored directed
+upper bound as $0.09165088339\ldots$. Their branch-and-bound certifies
+$\max G_T\le G_T(19)+5\times10^{-7}$. Also, "recomputing" $UB(p^*)$ with $F_T:=G_T(19)$ is an
+identity: (19) induces exactly $p^*$, so it returns the primal value at (19). It is not an
+independent check of (25). See the reviewer note under Verification.)
 
 We also audited `martonCommonInnerBound`. It is the standard five-inequality region; time sharing
 is absorbed in $U_0$, so it is convex; it is closed; and its $R_0=0$ slice is exactly the Core
@@ -86,13 +93,18 @@ optimizer and two-letter rational table exactly as printed. HLL's GitHub code wa
    - **(i) It matches the Liang–Kramer five-inequality region.** It is the five-inequality region
      of Liang–Kramer / El Gamal–Kim. By Liang–Kramer–Poor (2011) this equals the Gelfand–Pinsker
      form with $R_0\le\min\{I(W;Y),I(W;Z)\}$ used in HLL Thm. 1.
+     (Reviewer: this equivalence is cited from memory; the attempt says LKP was not re-read.
+     Claim 2 does not use it, because it needs only the two sum inequalities of the Lean
+     region.)
    - **(ii) Its pre-closure union is convex.** Time-share two distributions with an independent
      $Q$ and use $U_0'=(Q,U_0)$. Then $I(U_0'U_1;Y_1)\ge I(U_0U_1;Y_1|Q)$, each conditional term
      $I(\cdot;\cdot|U_0')$ is the exact $Q$-average, and $I(U_1;U_2|U_0')$ is the exact average. So each
      right-hand side is at least the average of the right-hand sides.
    - **(iii) Its $R_0=0$ slice is the Core `martonInnerBound`.** At $r_0=0$ the five inequalities
      become exactly the four inequalities of `martonInnerBound` with $(W,U,V)=(U_0,U_1,U_2)$; the
-     fifth is implied.
+     fifth is implied. (Reviewer: this compares the slices *before* closure. Slicing commutes
+     with closure here because lowering $r_0$ to $0$ preserves feasibility, so any limit of
+     feasible points with $r_0\to0$ is also a limit of feasible points with $r_0=0$.)
 
    Neither region is trivially false. Both contain the superposition auxiliary, which matters
    because Gohari–El Gamal–Anantharam (IEEE TIT 2014, arXiv:1006.5166) show that Marton *without*
@@ -111,7 +123,7 @@ optimizer and two-letter rational table exactly as printed. HLL's GitHub code wa
      interval arithmetic.
    - **(c) The one-letter value at their optimizer.** It is $0.09165038339135547467$. Their
      certified bound (25) is $5\times10^{-7}$ larger, consistent with slack or a typo; the safe
-     direction.
+     direction. (Reviewer: it is slack, namely HLL's certification tolerance; see Summary.)
    - **(d) Explicit instance.** With their rational $\lambda,\delta_0,\delta_1$, which sum to
      exactly 1, and $L=2\cdot10^6\ln2$, we reproduce (40) $=0.300841866099154\ldots$ using
      the printed (25), and (42) $=0.601685614323941\ldots$. Hence (43), gap
@@ -197,6 +209,80 @@ Output of `python hll_check.py 40` (2026-11-26):
 (section 6 was added after the main run and executed separately via explicit_instance(UB);
  the full script now prints it between sections 3 and 4)
 ```
+
+### Reviewer note (claude-opus-5-5, independent review, 2026-11-27)
+
+**Source.**
+- arXiv:2608.19869 resolves to the paper as cited: Mian Huang, Yanxiao Liu, Yi Liu, v1 only,
+  20 Aug 2026.
+- I read the full text: Secs. I–IV and App. A–E. Thm 5 is on p. 8, the explicit instance on
+  pp. 8–9.
+- I read, but did not run, HLL's repository (github.com/yanxiaoliu-mike/Suboptimality_Marton).
+- I found no comment, erratum or refutation in a web search.
+
+**Lean transfer (Claim 2, and BroadcastChannel Claim 5).**
+- I checked against `Core/Channels.lean`, `Core/Entropy.lean` and both `Problems/*.lean`. Both
+  Statements are `∀ kX kY₁ kY₂ W, capacity = Marton region`, so one channel suffices to
+  negate them. Bits are used on both sides, so there is no unit mismatch.
+- Every pre-closure point satisfies $\text{sum}\le\min\{I(W;Y_1),I(W;Y_2)\}+I(U;Y_1|W)+I(V;Y_2|W)-I(U;V|W)$,
+  by the chain rule on the two sum inequalities. With a common message, $r_0+r_1+r_2$ obeys
+  the same bound.
+- That is exactly HLL's functional (2), with a supremum over all finite alphabets. HLL's
+  result concerns the private-message sum rate *with* $W$, which is what both Lean regions
+  contain. A point $(0,R_1,R_2)$ embeds into `IsBCCommonAchievable` with $M_0=1$.
+- The deduction is correct modulo three things: Marton achievability for
+  $\tilde T^{\otimes2}$ (textbook), a routine odd-$n$ padding step, and HLL. [sketch] is the
+  right label.
+
+**Numbers (independent code, not hll_check.py).** The scripts are `indep_check.py` and
+`search_FT.py` in the reviewer scratch folder. The Appendix-A table was parsed from
+`pdftotext` of the arXiv PDF.
+- The table is identical to `TABLE` (51 rows).
+- New check: both components have X1 and X2 marginals *exactly* $p^*\cdot10^{12}$, i.e. HLL (26).
+- Values reproduced:
+  - $A_q,B_q$, as in (44);
+  - equalising $\mu=0.2895094596197816953$;
+  - $\gamma=0.18330459432065522490177$;
+  - $G_T(19)$ to 30 digits;
+  - $I(U;V|X)=0.0667680850681467182$.
+- Gradient-shaping certificate, not checked by the author. $\nabla UB(p^*)$ differences
+  reproduce $b_1,b_2$ of (36) to 22 digits. The gradient range of $\Phi$ at $p^*$ with the
+  rationals (32) is $1.8468\times10^{-17}$, below (39).
+- (40), (42) and (43) reproduce.
+- Nit (no effect): (27) prints $0.1833045943206552249020$, which rounds *up* the proven
+  $\gamma=\ldots2249017673$, by $2\times10^{-22}$.
+- Search for $F_T$:
+  - all 81 maps on a step-1/120 simplex grid, then polish;
+  - the two one-sided branches;
+  - 600 random stochastic-$X$ starts with $|U|=|V|=2$;
+  - 200 with $|U|=|V|=3$.
+
+  Result:
+  - The maximum equals $G_T(19)$ to $10^{-15}$, attained only on HLL's 4-map orbit.
+  - The next map gives $-8.742\times10^{-5}$, which reproduces HLL (21).
+  - Stochastic $X$ never exceeds $G_T(19)$.
+  - A step-1/30 grid *misses* the witness basin, so coarse searches are unreliable here.
+
+**Corrections.**
+- The (25) "discrepancy" is HLL's certification tolerance $5\times10^{-7}$; see the annotation in
+  the Summary.
+- "Recomputed $UB(p^*)$" is tautological; also annotated there.
+- Claim 3(i) leans on LKP, which was not re-read. It is unused by Claim 2.
+
+**Opinion on HLL.**
+- Their upper side is *not* an auxiliary-receiver outer bound. It bounds the one-letter Marton
+  sum rate at $p^*$ by the Lagrangian dual (23)–(24). I re-derived it; the $\alpha\leftrightarrow\bar\alpha$
+  labelling between (3) and (24) is harmless.
+- Their lower side is the two-letter Marton scheme, an explicit rational law.
+- Thm 2 holds (supergradient argument). Prop. 3 holds: the min commutes because the shaping terms
+  are common to both receivers, and $M_G\le H(G)$. Lower bound (51) holds, since $K_i\in\tilde W$
+  gives $I(\tilde W;G)\ge p_jL$.
+- The load-bearing unverified steps are (a) HLL's interval branch-and-bound for $B_T$, which I did
+  not run, and (b) the AGN cardinality/determinism reduction to 81 maps plus 2 branches, which
+  I did not check against AGN 2019.
+
+**Status: community-reviewed.** All [proved] items in Claims 1 and 3 were checked, except
+3(i)'s citation. Claim 2 is a correct conditional [sketch]. HLL itself remains unrefereed.
 
 ## Dead ends
 
