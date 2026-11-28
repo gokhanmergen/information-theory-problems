@@ -14,6 +14,7 @@ import InfoTheory.Known.Certificates.ClassicalCapacityAdditivityThreshold
 import InfoTheory.Known.Certificates.CodedCachingExactTradeoff
 import InfoTheory.Known.Certificates.CognitiveInterferenceChannel
 import InfoTheory.Known.Certificates.CommonInformationExactVsWyner
+import InfoTheory.Known.Certificates.ConditionalEntropySharpContinuity
 import InfoTheory.Known.Certificates.CorrelatedSourcesOverMac
 import InfoTheory.Known.Certificates.CourtadeKumar
 import InfoTheory.Known.Certificates.CourtadeKumarQary
@@ -93,6 +94,7 @@ import InfoTheory.Known.Certificates.UndirectedNetworkCodingLiLi
 import InfoTheory.Known.Certificates.UniversalLossyRedundancy
 import InfoTheory.Known.Certificates.WiretapChannelCompoundSecrecy
 import InfoTheory.Known.Certificates.WiretapWithFeedbackCapacity
+import InfoTheory.Known.Certificates.ZeroErrorBroadcastChannel
 import InfoTheory.Known.Certificates.ZeroErrorFeedbackVariableLength
 import InfoTheory.Known.Certificates.ZeroErrorMacAdder
 import InfoTheory.Known.Certificates.ZeroErrorSourceCodingSideInfo

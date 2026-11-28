@@ -44,6 +44,33 @@ For *conditional* entropy, Alicki and Fannes (2004) and Winter (2016) establishe
   - Earlier milestones: Winter (2016) proved $|S(A \mid B)_\rho - S(A \mid B)_\sigma| \le 2\varepsilon \log_2 d_A + (1 + \varepsilon) h\!\left(\frac{\varepsilon}{1+\varepsilon}\right)$ for general bipartite quantum states (and $\varepsilon \log_2 d_A + (1 + \varepsilon) h\!\left(\frac{\varepsilon}{1+\varepsilon}\right)$ for classical-quantum states); Wilde (2020) and Shirokov (2023) refined bounds for quantum conditional entropy and conditional mutual information.
   - **Still open:** exact sharp uniform continuity bounds for classical and quantum mutual information $I(X; Y)$ and conditional mutual information $I(X; Y \mid Z)$ (subproblem 2 above).
 
+## Formal statement and certificate
+
+`InfoTheory.Problems.ConditionalEntropySharpContinuity.Statement` formalizes subproblem 1 only,
+the quantum conditional entropy bound. The Lean statement is unchanged.
+
+- **Quantifiers:** all `dA ≥ 2`, `dB ≥ 1` and `ρ σ : DensityMatrix (dA * dB)`.
+- **Conditional entropy:** `S(A|B)_ρ = vonNeumannEntropy ρ - matEntropy (partialTraceA ρ.mat)`.
+- **Distance:** `ε = traceDistance ρ σ`, restricted to `ε ≤ 1 - 1/dA²`.
+- **Claimed inequality:** `|S(A|B)_ρ - S(A|B)_σ| ≤ ε log₂(dA² - 1) + h(ε)`.
+
+The certificate `lean/InfoTheory/Known/Certificates/ConditionalEntropySharpContinuity.lean`
+checks that these objects are not junk. It does not prove the statement.
+
+- **Trace distance:** `ε ≥ 0`, and `ε(ρ, ρ) = 0`. `ρ - σ` is always Hermitian, so the
+  definition never falls into its junk branch.
+- **Entropy:** `vonNeumannEntropy = matEntropy` on states, and both are `≥ 0`.
+- **Bound function:** the right-hand side is `0` at `ε = 0` and `≥ 0` on `[0, 1]`. The
+  admissible range `0 < 1 - 1/dA² < 1` is nontrivial.
+- **Value at the threshold:** at `ε = 1 - 1/dA²` the bound equals `2 log₂ dA`, the trivial
+  maximal spread of `S(A|B)`.
+- **Regression, `dB = 1`:** `partialTraceA ρ` is the `1 × 1` identity, so
+  `S(A|B)_ρ = S(ρ)`, and pure states have `S(A|B) = 0`.
+
+The certificate does not cover `traceDistance ≤ 1`, the range
+`|S(A|B)| ≤ log₂ dA`, or the equality case (maximally entangled state versus its isotropic
+depolarization). The claimed resolution (arXiv:2607.24687) has not been formalized.
+
 ## References
 
 - M. Berta, P. Costa Rico, G. Kossmann, L. Lami, and J. A. Zeiss, "Sharp continuity of quantum conditional entropy," arXiv:2607.24687, July 2026 (rev. Sept. 2026).

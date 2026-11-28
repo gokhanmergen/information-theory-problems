@@ -124,7 +124,7 @@
     "lean/InfoTheory/Problems/UniversalLossyRedundancy.lean": "8d661379a8349700c1c246611890f81f4595ec6855b533edaf4f68820e3511bb",
     "lean/InfoTheory/Problems/WiretapChannelCompoundSecrecy.lean": "b016cab85483f5078a3b97474af5fb0ead8bb21d29a1133733d5e6e6102546f2",
     "lean/InfoTheory/Problems/WiretapWithFeedbackCapacity.lean": "b62f595c36b33803e44cd88e7ecffadcf0a321f692c3f53ac603a3f4d5484d18",
-    "lean/InfoTheory/Problems/ZeroErrorBroadcastChannel.lean": "d43e452dc558687e82d1c177f3624cdcb76a45435f22ac8e05bcead43b09a233",
+    "lean/InfoTheory/Problems/ZeroErrorBroadcastChannel.lean": "6e0627eba31e535518e94560feb0cca789f0482fb166f76d11ee46864bddce6c",
     "lean/InfoTheory/Problems/ZeroErrorFeedbackVariableLength.lean": "56760ce2019c5498266628b453cf4ea65037a3ed9cf0e16b8edc5cedc610998f",
     "lean/InfoTheory/Problems/ZeroErrorMacAdder.lean": "56c376a073da0c84a78608bccce33a61e5f978909c90f03552cfc8cd81f10135",
     "lean/InfoTheory/Problems/ZeroErrorSourceCodingSideInfo.lean": "7bcfb92bfe938f2727d42cf3ab7df3715ffccf8d81ab4b15bc4a39d94e1a659b",
