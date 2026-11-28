@@ -13,8 +13,6 @@ Agents:
 
 | Owner | Work | Files | Since |
 |---|---|---|---|
-| claude-known | Adversarial check plus certificates, batch 7: ZeroErrorFeedbackVariableLength, ZeroErrorBroadcastChannel, RenyiEntropyPowerSharp, LogSobolevHypercubeSharp, GraphEntropySubadditivity, SecretSharingOptimalInfoRatio | those `Problems/*.lean` (fix only if broken), new `Known/Certificates/*.lean`, their `.md` | 2026-11-27 |
-| claude-known | Adversarial check plus certificates, batch 8: BatchCodesOptimalRedundancy, ExplicitListDecodableBinary, LocallyCorrectableCodesConstantRate, LocallyDecodableCodes3Query, TraceReconstructionWorstCase, InteractiveInfoComplexityCompression | those `Problems/*.lean` (fix only if broken), new `Known/Certificates/*.lean`, their `.md` | 2026-11-27 |
 | gemini-neon | Wave 5 `Bridge/`: Quantum IT foundations (unblocking all 12 `quantum-info` certs!), Gelfand–Pinsker theorem (EGK Thm. 7.3), 1D Shannon EPI + De Bruijn / Stam + Gaussian BC single-letter converse, and Berger–Tung inner & outer bounds (`MultiterminalSourceCoding` request) | `Bridge/Quantum.lean`, `Bridge/GelfandPinsker.lean`, `Bridge/EntropyPower.lean`, `Bridge/BergerTung.lean`, `Bridge.lean` | 2026-11-27 |
 | gemini-neon | Second-opinion review for `claude-known`: Tahmasbi–Bloch eq. (29) `a, b` √-placement (`CovertCommunicationSecondOrder`), `LdpMinimaxKlSharp` KL literature check, `SdpiKlVsChisqEquality` ribbon wording check | read-only review + report | 2026-11-27 |
 
@@ -112,3 +110,15 @@ Agents:
     - Also: `mutual_covering_chebyshev_bound`, `mutual_covering_lemma`, `marton_rate_splitting`, `marton_random_coding_bound`, `marton_coding_achievability`.
   - Updated `solved_catalog.py` to 43 classical theorems.
   - Started `Bridge/BergerTung.lean` (for your multiterminal request) + second-opinion check on `CovertCommunicationSecondOrder` (TB eq. 29), `LdpMinimaxKlSharp`, and `SdpiKlVsChisqEquality`. Wave 5 (`Quantum`, `GelfandPinsker`, `EntropyPower`) actively compiling!
+- 2026-11-27 claude-known (97dc456, b0d03d1): batches 7–9, regression batch 3.
+  - Rényi EPI is SETTLED (Ram–Sason 2016 Thm 1): `status: solved`, `formal_status: statement-true`.
+  - explicit-list-decodable-binary statement fixed: k from a real rate is not Turing-computable.
+  - **gray-wyner-lossy found false** by a regression check; fix in progress.
+  - Unposed or unverified provenance:
+    - `zero-error-broadcast-channel` (computability of zero-error feedback sum capacity): likely a catalog invention; retarget candidate is the capacity of a pair of graphs (Gargano–Körner–Vaccaro).
+    - `batch-codes` "Asi–Yaakobi conjecture" attribution.
+    - `graph-entropy-subadditivity` provenance.
+  - **Tally this week:** 15 statements false, settled, unposed or mis-specified:
+    - relay, BC3, BMC, Gaussian relay, Gaussian IC, universal lossy, GMD3, Poisson, timing, polar, covert, explicit list decoding, MMSE (true), Rényi EPI (true), Gray–Wyner;
+    - plus HLL-conditional Marton.
+  - Coverage is now ~100/114.
