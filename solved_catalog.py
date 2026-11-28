@@ -1251,6 +1251,51 @@ SOLVED_THEOREMS = [
         ],
     },
     {
+        "id": "gelfand-pinsker-theorem",
+        "title": "Gelfand–Pinsker Theorem (Channel Coding with Noncausal Transmitter Side Information)",
+        "category": "ch15-network",
+        "authors": "Sergei I. Gelfand and Mark S. Pinsker",
+        "year": "1980",
+        "reference": "Gelfand & Pinsker (1980); El Gamal & Kim, Theorem 7.3; Cover & Thomas, §7.13",
+        "tags": ["gelfand-pinsker", "side-information", "binning", "csiszar-sum", "flagship", "ch15"],
+        "statement": (
+            "For a discrete memoryless state-dependent channel $W(y \\mid x, s)$ with i.i.d. state "
+            "$S^n \\sim P_S^n$ known noncausally at the encoder (but unknown at the decoder), the "
+            "operational capacity equals the single-letter Gelfand–Pinsker capacity:\n"
+            "$$C_{\\mathrm{op}}^{\\mathrm{GP}}(P_S, W) = C_{\\mathrm{GP}}(P_S, W) = "
+            "\\sup_{\\substack{P_{U \\mid S},\\; f : \\mathcal{U} \\times \\mathcal{S} \\to \\mathcal{X}}} "
+            "\\bigl(I(U; Y) - I(U; S)\\bigr).$$\n"
+            "Moreover, deterministic encoding maps $x = f(u, s)$ achieve the exact same supremum as "
+            "arbitrary stochastic channels $P_{X \\mid U, S}$, and when $W$ ignores $S$ the formula "
+            "collapses to Shannon's channel capacity $C(W_0)$."
+        ),
+        "proof_notes": (
+            "Proves equivalence of deterministic and stochastic encoders (`gelfandPinskerCapacity_eq_stochastic`) "
+            "via the functional representation lemma; proves `gelfand_pinsker_converse` via Fano's "
+            "inequality and `csiszar_sum_identity` with auxiliary $U_i = (M, Y^{<i}, S_{>i})$; and "
+            "proves `gelfand_pinsker_achievability` via strong-typicality covering "
+            "(`covering_lemma_subset`), the channel Markov lemma (`markov_lemma_of_channel`), and "
+            "pointwise slice packing (`jointTypicalSet_slice_indep_prob_le`)."
+        ),
+        "lean_decls": [
+            ("lean/InfoTheory/Bridge/GelfandPinsker.lean", "gelfandPinskerCapacity_eq_stochastic"),
+            ("lean/InfoTheory/Bridge/GelfandPinsker.lean", "gelfandPinskerCapacity_ignore_state"),
+            ("lean/InfoTheory/Bridge/GelfandPinsker.lean", "gpCode_rate_converse"),
+            ("lean/InfoTheory/Bridge/GelfandPinsker.lean", "gelfand_pinsker_converse"),
+            ("lean/InfoTheory/Bridge/GelfandPinsker.lean", "gelfand_pinsker_achievability"),
+            ("lean/InfoTheory/Bridge/GelfandPinsker.lean", "gelfand_pinsker_theorem"),
+        ],
+        "related_open": [
+            "cognitive-interference-channel",
+            "broadcast-channel",
+            "finite-state-channel-capacity",
+        ],
+        "analogous_open": [
+            "cascade-rate-distortion-side-info",
+            "non-asymptotic-lossy-dispersion",
+        ],
+    },
+    {
         "id": "markov-lemma-and-wyner-ziv",
         "title": "Strong Typicality, the Markov Lemma, and the Wyner–Ziv Theorem",
         "category": "ch15-network",

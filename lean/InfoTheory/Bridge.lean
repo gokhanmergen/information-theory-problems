@@ -19,6 +19,7 @@ import InfoTheory.Bridge.ContinuityAndShearer
 import InfoTheory.Bridge.WiretapCoding
 import InfoTheory.Bridge.GaussianConverse
 import InfoTheory.Bridge.MartonCoding
+import InfoTheory.Bridge.GelfandPinsker
 
 /-!
 # `InfoTheory.Bridge` — Non-Destructive Bridge to Mathlib & Cover & Thomas Foundations
@@ -81,4 +82,8 @@ Single convenience import re-exporting:
 - `InfoTheory.Bridge.MartonCoding`: **Mutual Covering Lemma** (El Gamal–Kim Lemma 8.1:
   `mutual_covering_lemma`) and **Marton's Inner Bound with Common Auxiliary `W`**
   (Marton 1979 / El Gamal–Kim Thm. 8.3: `martonInnerBound_subset_bcCapacityRegion`).
+- `InfoTheory.Bridge.GelfandPinsker`: **Gelfand–Pinsker Theorem** for discrete memoryless
+  channels with noncausal transmitter side information (El Gamal–Kim Thm. 7.3:
+  `gelfand_pinsker_theorem`, deterministic-vs-stochastic equivalence, Csiszár-sum converse,
+  and random-binning achievability).
 -/
