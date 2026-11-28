@@ -59,7 +59,7 @@
     "lean/InfoTheory/Problems/GaussianRelayChannelCapacity.lean": "88071b865b5c51c7618564955dc1542e2318489b1709fe02171b0c1693e143a8",
     "lean/InfoTheory/Problems/GilbertVarshamovBinary.lean": "eb3e00f4577947225ca702449937e8e2ba7f3cfb6bbc4f4497fb5d693d1928a7",
     "lean/InfoTheory/Problems/GraphEntropySubadditivity.lean": "613b2e47b5e7f629547b0dbb470f2ea0869c811784dd08a9b5f19b6a3b4da231",
-    "lean/InfoTheory/Problems/GrayWynerLossy.lean": "1f7fc7eb80c9dafe66905ab8aede5b00d748a98b403e1d6aafcd6c500bd1913f",
+    "lean/InfoTheory/Problems/GrayWynerLossy.lean": "e3d988c8cfee4e9219e2efc5c0f6f53015ca4ea1772be9c96ce1e3914d20743b",
     "lean/InfoTheory/Problems/HypercontractivityRibbonDiscrete.lean": "c09c4a491e55b0e6aea6ebc5ece9a0b3664cdfdf994ef6c849305bd77b5d5704",
     "lean/InfoTheory/Problems/IndexCodingLinearNonlinearGap.lean": "8b50d573b76debba30f3399b9419917e9ed7af92625cc74ea8a4ca23a91f0e51",
     "lean/InfoTheory/Problems/IndexCodingSingleLetter.lean": "52b4b1f7ce5cb4402635c55789f9c34189d3a3bad542425606cfdb859f9ce457",

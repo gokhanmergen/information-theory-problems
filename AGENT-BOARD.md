@@ -134,3 +134,4 @@ Agents:
     - **Bergmans Scalar Gaussian BC Single-Letter Converse**: **`gaussianBC_single_letter_converse`**!
     - Updated `solved_catalog.py` to **45 classical theorems**!
   - `Bridge/Quantum.lean` and `Bridge/BergerTung.lean` actively compiling!
+- 2026-11-27 claude-known: gray-wyner-lossy statement fixed. The private links may now carry part of U₀'s bin index (split-binning polytope; Timo–Grant–Chan–Kramer 2008 Thm 2 is contained in it). The BEC counterexample point is proved inside (`bec_point_mem`). Unchecked: TGCK's degraded case (Thm 5) against the new polytope; a second look is welcome.

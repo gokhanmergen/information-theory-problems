@@ -32,8 +32,28 @@ def IsLossyGWSIAchievable {X₁ X₂ Z₁ Z₂ Xh₁ Xh₂ : Type*}
           d₂.dist (w i).2.1 (dec₂ (enc₀ x, enc₂ x, fun j => (w j).2.2.2) i))
       avgD₁ ≤ D₁ + ε ∧ avgD₂ ≤ D₂ + ε
 
-/-- Single-letter Heegard–Berger / Kaspi / Gray–Wyner inner bound for the lossy Gray–Wyner
-    network with decoder side information `(Z₁, Z₂)`. -/
+/-- Single-letter **split-binning** Heegard–Berger / Gray–Wyner inner bound for the lossy
+    Gray–Wyner network with decoder side information `(Z₁, Z₂)`.
+
+    Auxiliaries `(U₀, U₁, U₂)` with `(U₀, U₁, U₂) - (X₁, X₂) - (Z₁, Z₂)`, reconstructions
+    `X̂ⱼ = gⱼ(U₀, Uⱼ, Zⱼ)` with `E dⱼ(Xⱼ, X̂ⱼ) ≤ Dⱼ`, and, writing `X = (X₁, X₂)`,
+    `aⱼ = I(X; U₀ | Zⱼ)`, `bⱼ = I(X; Uⱼ | U₀, Zⱼ)`:
+    `R₀, R₁, R₂ ≥ 0`, `R₀ + R₁ ≥ a₁ + b₁`, `R₀ + R₂ ≥ a₂ + b₂`,
+    `R₀ + R₁ + R₂ ≥ max(a₁, a₂) + b₁ + b₂` (the max written as two inequalities).
+
+    This is the Fourier–Motzkin projection of the scheme in which the Wyner–Ziv bin indices
+    of `U₀` are split over all three links (`r₀₀` on `M₀`, `r₁₀` on `M₁`, `r₂₀` on `M₂`) and
+    those of `Uⱼ` over `M₀` and `Mⱼ`; joint and sequential decoding give the same projection.
+
+    **Statement-fix (2026-11-27).** The previous version charged the bin index of `U₀` to the
+    common link only (`r₀₀ ≥ max(a₁, a₂)` with `R₀ = r₀₀ + r₀₁ + r₀₂`), so private links could
+    not carry bits of `U₀`. That made `Statement` false: for `X₁ = X₂ = X ~ Bern(1/2)`,
+    `Z₁ = BEC(e)(X)` on `Fin 3` (`0 < e < 1`), `Z₂` constant on `Fin 1`, Hamming distortions,
+    the tuple `(R₀, R₁, R₂, D₁, D₂) = (e, 0, 1 - e, 0, 0)` is achievable by Slepian–Wolf split
+    binning, but the old closure forces `(1 + e) R₀ + R₁ + R₂ ≥ 1 + e`, while the tuple gives
+    `1 + e²` (gap `e(1 - e)`; `attempts/gray-wyner-lossy/2026-11-26-gemini-4-neon.md`).
+    In the corrected region the tuple is a single-letter point at `(D₁, D₂) = (0, 0)`:
+    `U₀ = X`, `U₁, U₂` constant, `a₁ = H(X | Z₁) = e`, `a₂ = H(X) = 1`, `b₁ = b₂ = 0`. -/
 def lossyGWSIInner {X₁ X₂ Z₁ Z₂ Xh₁ Xh₂ : Type*}
     [Fintype X₁] [Fintype X₂] [Fintype Z₁] [Fintype Z₂] [Fintype Xh₁] [Fintype Xh₂]
     (P : ProbDist (X₁ × X₂ × Z₁ × Z₂))
@@ -43,10 +63,7 @@ def lossyGWSIInner {X₁ X₂ Z₁ Z₂ Xh₁ Xh₂ : Type*}
     ∃ (k₀ k₁ k₂ : ℕ)
       (Q : ProbDist (X₁ × X₂ × Z₁ × Z₂ × Fin k₀ × Fin k₁ × Fin k₂))
       (g₁ : Fin k₀ × Fin k₁ × Z₁ → Xh₁)
-      (g₂ : Fin k₀ × Fin k₂ × Z₂ → Xh₂)
-      (r₀₀ r₀₁ r₀₂ : ℝ),
-      0 ≤ r₀₀ ∧ 0 ≤ r₀₁ ∧ 0 ≤ r₀₂ ∧
-      r.1 = r₀₀ + r₀₁ + r₀₂ ∧
+      (g₂ : Fin k₀ × Fin k₂ × Z₂ → Xh₂),
       Q.map (fun t => (t.1, t.2.1, t.2.2.1, t.2.2.2.1)) = P ∧
       -- Markov chain (U₀, U₁, U₂) - (X₁, X₂) - (Z₁, Z₂)
       condMutualInfo (Q.map (fun t =>
@@ -55,12 +72,30 @@ def lossyGWSIInner {X₁ X₂ Z₁ Z₂ Xh₁ Xh₂ : Type*}
          (t.1, t.2.1)))) = 0 ∧
       (∑ t, Q.pmf t * d₁.dist t.1 (g₁ (t.2.2.2.2.1, t.2.2.2.2.2.1, t.2.2.1))) ≤ D₁ ∧
       (∑ t, Q.pmf t * d₂.dist t.2.1 (g₂ (t.2.2.2.2.1, t.2.2.2.2.2.2, t.2.2.2.1))) ≤ D₂ ∧
-      r₀₀ ≥ condMutualInfo (Q.map (fun t => ((t.1, t.2.1), t.2.2.2.2.1, t.2.2.1))) ∧
-      r₀₀ ≥ condMutualInfo (Q.map (fun t => ((t.1, t.2.1), t.2.2.2.2.1, t.2.2.2.1))) ∧
-      r₀₁ + r.2.1 ≥ condMutualInfo (Q.map (fun t =>
-        ((t.1, t.2.1), t.2.2.2.2.2.1, (t.2.2.2.2.1, t.2.2.1)))) ∧
-      r₀₂ + r.2.2 ≥ condMutualInfo (Q.map (fun t =>
-        ((t.1, t.2.1), t.2.2.2.2.2.2, (t.2.2.2.2.1, t.2.2.2.1)))) }
+      -- R₀ + R₁ ≥ I(X; U₀ | Z₁) + I(X; U₁ | U₀, Z₁)
+      r.1 + r.2.1 ≥
+        condMutualInfo (Q.map (fun t => ((t.1, t.2.1), t.2.2.2.2.1, t.2.2.1))) +
+        condMutualInfo (Q.map (fun t =>
+          ((t.1, t.2.1), t.2.2.2.2.2.1, (t.2.2.2.2.1, t.2.2.1)))) ∧
+      -- R₀ + R₂ ≥ I(X; U₀ | Z₂) + I(X; U₂ | U₀, Z₂)
+      r.1 + r.2.2 ≥
+        condMutualInfo (Q.map (fun t => ((t.1, t.2.1), t.2.2.2.2.1, t.2.2.2.1))) +
+        condMutualInfo (Q.map (fun t =>
+          ((t.1, t.2.1), t.2.2.2.2.2.2, (t.2.2.2.2.1, t.2.2.2.1)))) ∧
+      -- R₀ + R₁ + R₂ ≥ I(X; U₀ | Z₁) + I(X; U₁ | U₀, Z₁) + I(X; U₂ | U₀, Z₂)
+      r.1 + r.2.1 + r.2.2 ≥
+        condMutualInfo (Q.map (fun t => ((t.1, t.2.1), t.2.2.2.2.1, t.2.2.1))) +
+        condMutualInfo (Q.map (fun t =>
+          ((t.1, t.2.1), t.2.2.2.2.2.1, (t.2.2.2.2.1, t.2.2.1)))) +
+        condMutualInfo (Q.map (fun t =>
+          ((t.1, t.2.1), t.2.2.2.2.2.2, (t.2.2.2.2.1, t.2.2.2.1)))) ∧
+      -- R₀ + R₁ + R₂ ≥ I(X; U₀ | Z₂) + I(X; U₁ | U₀, Z₁) + I(X; U₂ | U₀, Z₂)
+      r.1 + r.2.1 + r.2.2 ≥
+        condMutualInfo (Q.map (fun t => ((t.1, t.2.1), t.2.2.2.2.1, t.2.2.2.1))) +
+        condMutualInfo (Q.map (fun t =>
+          ((t.1, t.2.1), t.2.2.2.2.2.1, (t.2.2.2.2.1, t.2.2.1)))) +
+        condMutualInfo (Q.map (fun t =>
+          ((t.1, t.2.1), t.2.2.2.2.2.2, (t.2.2.2.2.1, t.2.2.2.1)))) }
 
 /-- Closed convex hull (time-sharing closure) of the single-letter inner bound for the
     lossy Gray–Wyner network with decoder side information. -/
@@ -79,10 +114,13 @@ def InLossyGWSIClosure {X₁ X₂ Z₁ Z₂ Xh₁ Xh₂ : Type*}
     (∑ i : Fin m, w i * δ₂ i) ≤ D₂ + ε
 
 /-- Rate-Distortion Region of the Lossy Gray–Wyner Network with Decoder Side Information
-    (Gray–Wyner 1974; Heegard–Berger 1985; Kaspi 1994; Watanabe 2013):
-    Does the closed convex hull of the single-letter Heegard–Berger / Gray–Wyner inner bound
-    characterize the exact rate-distortion region for every finite-alphabet source with
-    correlated decoder side information? -/
+    (Gray–Wyner 1974; Heegard–Berger 1985; Kaspi 1994; Timo–Grant–Chan–Kramer 2008):
+    Does the closed convex hull of the single-letter split-binning Heegard–Berger / Gray–Wyner
+    inner bound characterize the exact rate-distortion region for every finite-alphabet source
+    with correlated decoder side information?
+
+    Statement-fix (2026-11-27): only `lossyGWSIInner` changed (see its docstring); the
+    operational definition, the closure and this question are unchanged. -/
 def Statement : Prop :=
   ∀ (kX₁ kX₂ kZ₁ kZ₂ kh₁ kh₂ : ℕ)
     (P : ProbDist (Fin kX₁ × Fin kX₂ × Fin kZ₁ × Fin kZ₂))
