@@ -1,5 +1,6 @@
 import InfoTheory.Problems.GaussianBcFeedbackSumCapacity
 import InfoTheory.Known.GaussianAchievability
+import InfoTheory.Bridge.GaussianConverse
 
 /-!
 # Certificate for `InfoTheory.Problems.GaussianBcFeedbackSumCapacity`
@@ -31,12 +32,20 @@ linear-feedback sum-capacity `linearFbSumRate h h P` of Belhadj Amor–Steinberg
   `½ log₂(1 + h²P) < linearFbSumRate h h P` strictly — feedback strictly enlarges the symmetric
   Gaussian BC sum-rate, as Ozarow–Leung (1984) showed.  A mis-transcribed `ρ`-term (e.g. a sign
   error or a missing `√(P₁P₂)`) would break the second check.
+* **Operational upper bound (feedback converse).**  `sum_le_of_isBcFbAchievable` : every
+  achievable pair has `R₁ + R₂ ≤ ½ log₂(1 + (h₁² + h₂²)P)` (cooperating-receivers / SIMO cut-set
+  bound), obtained by feeding the frozen `BcFeedbackCode`, `noise`, `SatisfiesPower` and
+  `avgErrorProb` verbatim into `Bridge.gaussian_bc_feedback_sum_rate_converse` with `N = 1`
+  (the frozen `output` is definitionally `Bridge.causalOutput2` of the drifts `h_k · enc`; same
+  expected-energy constraint and average error criterion).  Hence `bcFbSumCapacity_le`,
+  `bcFbSumCapacity_lt_top` (finite, not `⊤`) and, symmetrically,
+  `bcFbSumCapacity_symm_le` : `bcFbSumCapacity h h P ≤ ofReal(½ log₂(1 + 2h²P))`.
+* **Consistency check (passes).**  `linearFbSumRate_le_cutset` :
+  `linearFbSumRate h h P ≤ ½ log₂(1 + 2h²P)`, i.e. the formula side of `Statement` does not
+  exceed the certified operational upper bound (otherwise `Statement` would be trivially false).
 
 ## Not certified
-* Any upper bound on `bcFbSumCapacity` (a feedback converse, e.g. the cut-set bound
-  `R₁ + R₂ ≤ ½ log₂(1 + 2h²P)`); in particular we do not certify that it is finite.  This needs
-  a converse for codes with feedback (a change-of-measure through the causal output map), which
-  the current `Known` library does not provide.
+* Upper bounds sharper than the cut-set bound (e.g. dependence-balance bounds).
 * Achievability of the linear-feedback region (Ozarow–Leung, Elia, Ardestanizadeh–Minero–
   Franceschetti, Belhadj Amor–Steinberg–Wigger), i.e. `ofReal (linearFbSumRate h h P) ≤
   bcFbSumCapacity h h P`.
@@ -501,5 +510,70 @@ theorem single_lt_linearFbSumRate (hh : h ≠ 0) (hP : 0 < P) :
   linarith
 
 end Regression
+
+/-! ### Operational upper bound: the SIMO cut-set feedback converse -/
+
+section Converse
+
+variable {h₁ h₂ P R₁ R₂ : ℝ}
+
+/-- **Feedback converse on the exact frozen objects**: every achievable pair satisfies
+    `R₁ + R₂ ≤ ½ log₂(1 + (h₁² + h₂²) P)` (the cooperative-receivers / SIMO cut-set bound).
+    The frozen `BcFeedbackCode` (its `output` is definitionally `Bridge.causalOutput2` of the
+    drifts `h_k · enc`), `noise n = N(0,1)^{⊗n} ⊗ N(0,1)^{⊗n}`, `SatisfiesPower` and
+    `avgErrorProb` are fed verbatim into `Bridge.gaussian_bc_feedback_sum_rate_converse`
+    (with `N = 1`). -/
+theorem sum_le_of_isBcFbAchievable (hP : 0 ≤ P) (h : IsBcFbAchievable h₁ h₂ P R₁ R₂) :
+    R₁ + R₂ ≤ (1 / 2 : ℝ) * log2 (1 + (h₁ ^ 2 + h₂ ^ 2) * P) := by
+  obtain ⟨_, _, hach⟩ := h
+  have key := InfoTheory.Bridge.gaussian_bc_feedback_sum_rate_converse (h₁ := h₁) (h₂ := h₂)
+    (R₁ := R₁) (R₂ := R₂) one_pos hP (fun δ hδ => ?_)
+  · simpa only [div_one] using key
+  · obtain ⟨n₀, hn₀⟩ := hach δ hδ
+    refine ⟨n₀, fun n hn => ?_⟩
+    obtain ⟨C, hpow, herr⟩ := hn₀ n hn
+    exact ⟨C.enc, C.dec₁, C.dec₂, C.causal, C.measurable_enc, C.measurable_dec₁,
+      C.measurable_dec₂, hpow, herr⟩
+
+/-- **Operational upper bound**: `bcFbSumCapacity h₁ h₂ P ≤ ofReal(½ log₂(1 + (h₁² + h₂²) P))`. -/
+theorem bcFbSumCapacity_le (hP : 0 ≤ P) :
+    bcFbSumCapacity h₁ h₂ P ≤ ENNReal.ofReal ((1 / 2 : ℝ) * log2 (1 + (h₁ ^ 2 + h₂ ^ 2) * P)) :=
+  sSup_le fun _ ⟨_, _, h, hr⟩ => hr ▸ ENNReal.ofReal_le_ofReal (sum_le_of_isBcFbAchievable hP h)
+
+/-- The feedback sum-capacity is finite (not the junk value `⊤`). -/
+theorem bcFbSumCapacity_lt_top (hP : 0 ≤ P) : bcFbSumCapacity h₁ h₂ P < ⊤ :=
+  lt_of_le_of_lt (bcFbSumCapacity_le hP) ENNReal.ofReal_lt_top
+
+/-- Symmetric case: `bcFbSumCapacity h h P ≤ ofReal(½ log₂(1 + 2h²P))`. -/
+theorem bcFbSumCapacity_symm_le {h : ℝ} (hP : 0 ≤ P) :
+    bcFbSumCapacity h h P ≤ ENNReal.ofReal ((1 / 2 : ℝ) * log2 (1 + 2 * h ^ 2 * P)) := by
+  have := bcFbSumCapacity_le (h₁ := h) (h₂ := h) hP
+  rwa [show (h ^ 2 + h ^ 2) * P = 2 * h ^ 2 * P by ring] at this
+
+/-- **Consistency of the formula side with the converse** (necessary for `Statement` to be
+    satisfiable at all): `linearFbSumRate h h P ≤ ½ log₂(1 + 2h²P)`, since
+    `2|h·h|√(P₁P₂)ρ ≤ h²(P₁ + P₂)` for `ρ ∈ [0, 1]`. -/
+theorem linearFbSumRate_le_cutset {h : ℝ} (hP : 0 ≤ P) :
+    linearFbSumRate h h P ≤ (1 / 2 : ℝ) * log2 (1 + 2 * h ^ 2 * P) := by
+  refine csSup_le (linearFbSum_nonempty hP) fun s ⟨R₁, R₂, hR, hs⟩ => ?_
+  obtain ⟨_, _, P₁, P₂, ρ, hP₁, hP₂, hsum, hρ0, hρ1, _, _, hR12⟩ := hR
+  rw [hs]
+  refine le_trans hR12 (mul_le_mul_of_nonneg_left ?_ (by norm_num))
+  have habs : |h * h| = h ^ 2 := by rw [abs_mul_self, sq]
+  set q := Real.sqrt (P₁ * P₂) with hq
+  have hq0 : 0 ≤ q := Real.sqrt_nonneg _
+  have hq2 : q ^ 2 = P₁ * P₂ := Real.sq_sqrt (mul_nonneg hP₁ hP₂)
+  have h2q : 2 * q ≤ P₁ + P₂ := by nlinarith [sq_nonneg (P₁ - P₂)]
+  have hh2 : 0 ≤ h ^ 2 := sq_nonneg h
+  have hterm0 : 0 ≤ 2 * |h * h| * q * ρ := by positivity
+  have hterm : 2 * |h * h| * q * ρ ≤ h ^ 2 * (P₁ + P₂) := by
+    rw [habs]
+    have : q * ρ ≤ q := mul_le_of_le_one_right hq0 hρ1
+    nlinarith
+  apply log2_mono
+  · nlinarith
+  · rw [← hsum]; nlinarith
+
+end Converse
 
 end InfoTheory.Known.Certificates.GaussianBcFeedbackSumCapacity

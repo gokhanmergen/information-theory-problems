@@ -1,6 +1,7 @@
 import InfoTheory.Problems.GaussianRelayChannelCapacity
 import InfoTheory.Known.GaussianAchievability
 import InfoTheory.Bridge.Gaussian
+import InfoTheory.Bridge.GaussianConverse
 
 /-!
 # Certificate for `InfoTheory.Problems.GaussianRelayChannelCapacity`
@@ -47,12 +48,23 @@ slope, now `LowSnrCutsetSlopeStatement`). For statement fix 2:
   definition (`(P₁ + P₂)/R`, `P₂ > 0`, units, noise normalisation) reproduces the textbook value
   and is neither `0` nor `⊤` there.
 
+* **Cut-set converses on the frozen objects.**  `bridgeAch_of_achievable` : the second conjunct
+  of `IsGaussianRelayAchievable lo …` is exactly the `hach` hypothesis of the `Bridge` relay
+  converses (same codes, per-codeword source power, per-message expected relay power, same
+  `lintegral` error functional).  Hence `achievable_le_cutset_bc`
+  (`R ≤ ½ log₂(1 + (g₁₂² + g₁₃²)P₁)`), `achievable_le_cutset_mac`
+  (`R ≤ ½ log₂(1 + (|g₁₃|√P₁ + |g₂₃|√P₂)²)`), `gaussianRelayCapacity_le_bc`,
+  `gaussianRelayCapacity_le_mac`, `gaussianRelayCapacity_lt_top`, and
+  `gaussianRelayCapacity_unit_le` : `gaussianRelayCapacity 1 1 1 P P ≤ ofReal(½ log₂(1 + 2P))`.
+* **EMZ cut-set lower bound on the energy per bit.**  `le_minEnergyPerBit_unit lo` :
+  `ofReal((3/4) · 2 ln 2) ≤ gaussianRelayMinEnergyPerBit lo 1 1 1` for both `lo`
+  (`Bridge.gaussian_relay_unit_energy_per_bit_ge` at every operating point);
+  `minEnergyPerBit_unit_pos` : neither side of `Statement` is the junk value `0`;
+  `minEnergyPerBit_bracket` : the whole known bracket
+  `(3/4)·2 ln 2 ≤ E*(1,1,1) ≤ E*_lin(1,1,1) ≤ 2 ln 2`.
+
 ## Not certified
-* `E*(1,1,1) ≥ (3/4) · 2 ln 2` (cutset bound, El Gamal–Mohseni–Zahedi 2006, Table II), and in
-  particular `E* > 0`: this needs a Fano/cutset converse for Gaussian relay codes, which the
-  library does not provide. (If both sides collapsed to the junk value `0`, `Statement` would
-  hold vacuously; the cutset bound rules this out on paper.)
-* The cutset upper bound `gaussianRelayCapacity 1 1 1 P P ≤ ½ log₂(1 + 2P)`.
+* The El Gamal–Gohari–Nair (2022) bound or any lower bound on `E*` above `(3/4)·2 ln 2`.
 * Any bound on `E*_lin` below `2 ln 2`: none is published at unit gains.
 -/
 
@@ -554,5 +566,110 @@ theorem minEnergyPerBit_disconnected (g₁₂ : ℝ) :
   have hup := minEnergyPerBit_linear_le_gen g₁₂ 0
   exact ⟨le_antisymm ((minEnergyPerBit_le_linear g₁₂ 1 0).trans hup) (hlow false),
     le_antisymm hup (hlow true)⟩
+
+/-! ### Cut-set converses on the exact frozen objects -/
+
+section Cutset
+
+variable {g₁₂ g₁₃ g₂₃ P₁ P₂ R : ℝ}
+
+/-- The `hach` hypothesis of the `Bridge` relay cut-set converses is exactly the second conjunct
+    of the frozen `IsGaussianRelayAchievable` (same codes, same `lintegral` power and error
+    expressions), minus the `linearOnly` conjunct. -/
+theorem bridgeAch_of_achievable {lo : Bool}
+    (h : IsGaussianRelayAchievable lo g₁₂ g₁₃ g₂₃ P₁ P₂ R) :
+    ∀ ε > 0, ∃ N : ℕ, 0 < N ∧ ∀ n ≥ N,
+      let M := Nat.max 1 (Nat.floor ((2 : ℝ) ^ ((n : ℝ) * R)))
+      ∃ (enc : Fin M → Fin n → ℝ)
+        (relay : ∀ i : Fin n, (Fin i.1 → ℝ) → ℝ)
+        (dec : (Fin n → ℝ) → Fin M),
+        (∀ i : Fin n, Measurable (relay i)) ∧
+        Measurable dec ∧
+        (∀ m : Fin M, (∑ i : Fin n, (enc m i) ^ 2) ≤ (n : ℝ) * P₁) ∧
+        (∀ m : Fin M,
+          (∫⁻ zr : Fin n → ℝ,
+            ENNReal.ofReal ((∏ i : Fin n, gaussianPdf1D 1 (zr i)) *
+              ∑ i : Fin n, (relay i (fun j => g₁₂ * enc m ⟨j.1, Nat.lt_trans j.2 i.2⟩ +
+                zr ⟨j.1, Nat.lt_trans j.2 i.2⟩)) ^ 2)) ≤ ENNReal.ofReal ((n : ℝ) * P₂)) ∧
+        let errProb (m : Fin M) : ℝ≥0∞ :=
+          ∫⁻ zr : Fin n → ℝ, ∫⁻ z : Fin n → ℝ,
+            let gzr := ∏ i : Fin n, gaussianPdf1D 1 (zr i)
+            let gz := ∏ i : Fin n, gaussianPdf1D 1 (z i)
+            let yr (i : Fin n) : ℝ := g₁₂ * enc m i + zr i
+            let xr (i : Fin n) : ℝ := relay i (fun j => yr ⟨j.1, Nat.lt_trans j.2 i.2⟩)
+            let y (i : Fin n) : ℝ := g₁₃ * enc m i + g₂₃ * xr i + z i
+            if dec y ≠ m then ENNReal.ofReal (gzr * gz) else 0
+        (M : ℝ≥0∞)⁻¹ * ∑ m : Fin M, errProb m ≤ ENNReal.ofReal ε := by
+  obtain ⟨_, h⟩ := h
+  intro ε hε
+  obtain ⟨N, hN, h⟩ := h ε hε
+  refine ⟨N, hN, fun n hn => ?_⟩
+  obtain ⟨enc, relay, dec, -, rest⟩ := h n hn
+  exact ⟨enc, relay, dec, rest⟩
+
+/-- **Broadcast cut**: every achievable rate satisfies `R ≤ ½ log₂(1 + (g₁₂² + g₁₃²) P₁)`
+    (`Bridge.gaussian_relay_cutset_converse_bc`). -/
+theorem achievable_le_cutset_bc {lo : Bool} (hP₁ : 0 ≤ P₁) (hP₂ : 0 ≤ P₂)
+    (h : IsGaussianRelayAchievable lo g₁₂ g₁₃ g₂₃ P₁ P₂ R) :
+    R ≤ (1 / 2 : ℝ) * log2 (1 + (g₁₂ ^ 2 + g₁₃ ^ 2) * P₁) :=
+  gaussian_relay_cutset_converse_bc hP₁ hP₂ (bridgeAch_of_achievable h)
+
+/-- **Multiple-access cut**: `R ≤ ½ log₂(1 + (|g₁₃|√P₁ + |g₂₃|√P₂)²)`
+    (`Bridge.gaussian_relay_cutset_converse_mac`). -/
+theorem achievable_le_cutset_mac {lo : Bool} (hP₁ : 0 ≤ P₁) (hP₂ : 0 ≤ P₂)
+    (h : IsGaussianRelayAchievable lo g₁₂ g₁₃ g₂₃ P₁ P₂ R) :
+    R ≤ (1 / 2 : ℝ) * log2 (1 + (|g₁₃| * Real.sqrt P₁ + |g₂₃| * Real.sqrt P₂) ^ 2) :=
+  gaussian_relay_cutset_converse_mac hP₁ hP₂ (bridgeAch_of_achievable h)
+
+/-- **Cut-set upper bound on the capacity** (broadcast cut):
+    `gaussianRelayCapacity g₁₂ g₁₃ g₂₃ P₁ P₂ ≤ ofReal(½ log₂(1 + (g₁₂² + g₁₃²) P₁))`; in
+    particular the capacity is finite. -/
+theorem gaussianRelayCapacity_le_bc (hP₁ : 0 ≤ P₁) (hP₂ : 0 ≤ P₂) :
+    gaussianRelayCapacity g₁₂ g₁₃ g₂₃ P₁ P₂ ≤
+      ENNReal.ofReal ((1 / 2 : ℝ) * log2 (1 + (g₁₂ ^ 2 + g₁₃ ^ 2) * P₁)) :=
+  sSup_le fun _ ⟨_, h, hr⟩ => hr ▸ ENNReal.ofReal_le_ofReal (achievable_le_cutset_bc hP₁ hP₂ h)
+
+/-- Cut-set upper bound on the capacity (multiple-access cut). -/
+theorem gaussianRelayCapacity_le_mac (hP₁ : 0 ≤ P₁) (hP₂ : 0 ≤ P₂) :
+    gaussianRelayCapacity g₁₂ g₁₃ g₂₃ P₁ P₂ ≤
+      ENNReal.ofReal ((1 / 2 : ℝ) * log2 (1 + (|g₁₃| * Real.sqrt P₁ + |g₂₃| * Real.sqrt P₂) ^ 2)) :=
+  sSup_le fun _ ⟨_, h, hr⟩ => hr ▸ ENNReal.ofReal_le_ofReal (achievable_le_cutset_mac hP₁ hP₂ h)
+
+theorem gaussianRelayCapacity_lt_top (hP₁ : 0 ≤ P₁) (hP₂ : 0 ≤ P₂) :
+    gaussianRelayCapacity g₁₂ g₁₃ g₂₃ P₁ P₂ < ⊤ :=
+  lt_of_le_of_lt (gaussianRelayCapacity_le_bc hP₁ hP₂) ENNReal.ofReal_lt_top
+
+/-- Unit gains, equal powers: `gaussianRelayCapacity 1 1 1 P P ≤ ofReal(½ log₂(1 + 2P))`. -/
+theorem gaussianRelayCapacity_unit_le {P : ℝ} (hP : 0 ≤ P) :
+    gaussianRelayCapacity 1 1 1 P P ≤ ENNReal.ofReal ((1 / 2 : ℝ) * log2 (1 + 2 * P)) := by
+  have := gaussianRelayCapacity_le_bc (g₁₂ := 1) (g₁₃ := 1) (g₂₃ := 1) hP hP
+  rwa [show ((1 : ℝ) ^ 2 + 1 ^ 2) * P = 2 * P by ring] at this
+
+/-- **El Gamal–Mohseni–Zahedi (2006, Table II) cut-set lower bound on the minimum energy per
+    bit at unit gains**, on the exact frozen object, for both values of `linearOnly`:
+    `(3/4) · 2 ln 2 ≤ gaussianRelayMinEnergyPerBit lo 1 1 1`
+    (`Bridge.gaussian_relay_unit_energy_per_bit_ge` applied to every operating point). -/
+theorem le_minEnergyPerBit_unit (lo : Bool) :
+    ENNReal.ofReal ((3 / 4 : ℝ) * (2 * Real.log 2)) ≤ gaussianRelayMinEnergyPerBit lo 1 1 1 := by
+  unfold gaussianRelayMinEnergyPerBit
+  refine le_sInf ?_
+  rintro e ⟨P₁, P₂, R, hP₁, hP₂, hR, hach, rfl⟩
+  exact ENNReal.ofReal_le_ofReal
+    (gaussian_relay_unit_energy_per_bit_ge hP₁ hP₂ hR (bridgeAch_of_achievable hach))
+
+/-- Neither side of `Statement` is the junk value `0`. -/
+theorem minEnergyPerBit_unit_pos (lo : Bool) : 0 < gaussianRelayMinEnergyPerBit lo 1 1 1 :=
+  lt_of_lt_of_le (ENNReal.ofReal_pos.mpr (by positivity)) (le_minEnergyPerBit_unit lo)
+
+/-- **The full known bracket** `(3/4)·2 ln 2 ≤ E*(1,1,1) ≤ E*_lin(1,1,1) ≤ 2 ln 2`, every link
+    certified on the frozen objects.  (It does not decide `Statement`: the open question is
+    whether `E*_lin ≤ E*`.) -/
+theorem minEnergyPerBit_bracket :
+    ENNReal.ofReal ((3 / 4 : ℝ) * (2 * Real.log 2)) ≤ gaussianRelayMinEnergyPerBit false 1 1 1 ∧
+      gaussianRelayMinEnergyPerBit false 1 1 1 ≤ gaussianRelayMinEnergyPerBit true 1 1 1 ∧
+      gaussianRelayMinEnergyPerBit true 1 1 1 ≤ ENNReal.ofReal (2 * Real.log 2) :=
+  ⟨le_minEnergyPerBit_unit false, minEnergyPerBit_le_linear 1 1 1, minEnergyPerBit_linear_le⟩
+
+end Cutset
 
 end InfoTheory.Known.Certificates.GaussianRelayChannelCapacity

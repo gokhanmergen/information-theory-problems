@@ -1,6 +1,7 @@
 import InfoTheory.Problems.GaussianMacFeedbackLinearOptimality
 import InfoTheory.Known.GaussianAchievability
 import InfoTheory.Known.GaussianNetwork
+import InfoTheory.Bridge.GaussianConverse
 
 /-!
 # Certificate for `InfoTheory.Problems.GaussianMacFeedbackLinearOptimality`
@@ -33,11 +34,21 @@ feedback capacity region `macFbRegion K P N` equals the closure of the region
   two-user MAC capacity theorem `Known.gaussianMACCapacityRegion_eq` and the code embedding
   `twoUserCode` (exact transfer of error probability and power).  The check passes: the frozen
   operational regions contain the known feedback-free answer.
+* **Boundedness (feedback converse).**  `sum_le_of_mem_macFbRegion` : every
+  `R ∈ macFbRegion K P N` has `∑_j R_j ≤ coopBound K P N = ½ log₂(1 + K²P/N)` (total-cooperation
+  bound), for `N > 0`, `P ≥ 0`; obtained by feeding the frozen `MacFeedbackCode`,
+  `SatisfiesPower` and `avgErrorProb` verbatim into
+  `Bridge.gaussian_mac_feedback_sum_rate_converse` (the frozen `output` is definitionally
+  `Bridge.causalOutput` of the summed drift; same expected-energy constraint, same average
+  error criterion, same message counts `max 1 ⌊2^{nR_j}⌋`).  Consequences:
+  `macFbRegion_subset_Icc`, `isBounded_macFbRegion`, `closure_macFbRegion_subset_Icc`,
+  `sum_le_of_mem_closure_macFbRegion`, `isCompact_closure_macFbRegion`,
+  `isCompact_closure_macLinearFbRegion`.  So both closures in `Statement` are compact sets
+  between the no-feedback pentagons and the cooperation box, not all of `ℝ^K`.
 
 ## Not certified
-* Boundedness of `macFbRegion` (e.g. the total-cooperation bound
-  `∑_j R_j ≤ ½ log₂(1 + K²P/N)`): this needs a converse for codes with feedback (a change of
-  measure through the causal output map), which the current `Known` library does not provide.
+* The sharper Kramer / Ozarow-type dependence-balance outer bounds (only total cooperation
+  `½ log₂(1 + K²P/N)` is certified).
 * Achievability of Kramer's Fourier-MEC rates and the Sula–Gastpar–Kramer sum-capacity.
 -/
 
@@ -615,5 +626,63 @@ theorem sumRate_corner_mem_closure (hN : 0 < N) (hP : 0 ≤ P) {j₁ j₂ : Fin 
   exact ⟨hA, by linarith, le_rfl, by linarith, by linarith⟩
 
 end TwoUser
+
+/-! ### Boundedness: the total-cooperation feedback converse -/
+
+section Converse
+
+variable {K : ℕ} {P N : ℝ}
+
+/-- The total-cooperation sum-rate bound `½ log₂(1 + K²P/N)`. -/
+noncomputable def coopBound (K : ℕ) (P N : ℝ) : ℝ := (1 / 2 : ℝ) * log2 (1 + (K : ℝ) ^ 2 * P / N)
+
+/-- **Feedback converse on the exact frozen objects**: every rate vector in `macFbRegion K P N`
+    has sum rate at most `½ log₂(1 + K²P/N)`.  The frozen `MacFeedbackCode` (its `output` is
+    definitionally `Bridge.causalOutput` of the summed drift), `SatisfiesPower` and
+    `avgErrorProb` are fed verbatim into `Bridge.gaussian_mac_feedback_sum_rate_converse`. -/
+theorem sum_le_of_mem_macFbRegion (hN : 0 < N) (hP : 0 ≤ P) {R : Fin K → ℝ}
+    (hR : R ∈ macFbRegion K P N) : ∑ j, R j ≤ coopBound K P N := by
+  obtain ⟨_, hach⟩ := hR
+  refine InfoTheory.Bridge.gaussian_mac_feedback_sum_rate_converse hN hP (fun δ hδ => ?_)
+  obtain ⟨n₀, hn₀⟩ := hach δ hδ
+  refine ⟨n₀, fun n hn => ?_⟩
+  obtain ⟨C, -, hpow, herr⟩ := hn₀ n hn
+  exact ⟨C.enc, C.dec, C.causal, C.measurable_enc, C.measurable_dec, hpow, herr⟩
+
+/-- Each coordinate of a feedback-achievable rate vector lies in `[0, ½ log₂(1 + K²P/N)]`. -/
+theorem macFbRegion_subset_Icc (hN : 0 < N) (hP : 0 ≤ P) :
+    macFbRegion K P N ⊆ Set.Icc 0 (fun _ => coopBound K P N) := by
+  intro R hR
+  have h0 : ∀ j, 0 ≤ R j := hR.1
+  have hs := sum_le_of_mem_macFbRegion hN hP hR
+  refine ⟨fun j => h0 j, fun j => ?_⟩
+  exact le_trans (Finset.single_le_sum (fun k _ => h0 k) (Finset.mem_univ j)) hs
+
+/-- **`macFbRegion` is bounded** (so its closure is a compact set, not all of `ℝ^K`). -/
+theorem isBounded_macFbRegion (hN : 0 < N) (hP : 0 ≤ P) :
+    Bornology.IsBounded (macFbRegion K P N) :=
+  (Metric.isBounded_Icc _ _).subset (macFbRegion_subset_Icc hN hP)
+
+theorem closure_macFbRegion_subset_Icc (hN : 0 < N) (hP : 0 ≤ P) :
+    closure (macFbRegion K P N) ⊆ Set.Icc 0 (fun _ => coopBound K P N) :=
+  closure_minimal (macFbRegion_subset_Icc hN hP) isClosed_Icc
+
+/-- The closure of the feedback region (hence also of the linear-feedback region) is compact. -/
+theorem isCompact_closure_macFbRegion (hN : 0 < N) (hP : 0 ≤ P) :
+    IsCompact (closure (macFbRegion K P N)) :=
+  (isBounded_macFbRegion hN hP).isCompact_closure
+
+theorem isCompact_closure_macLinearFbRegion (hN : 0 < N) (hP : 0 ≤ P) :
+    IsCompact (closure (macLinearFbRegion K P N)) :=
+  ((isBounded_macFbRegion hN hP).subset macLinearFbRegion_subset).isCompact_closure
+
+/-- The sum-rate bound passes to the closure. -/
+theorem sum_le_of_mem_closure_macFbRegion (hN : 0 < N) (hP : 0 ≤ P) {R : Fin K → ℝ}
+    (hR : R ∈ closure (macFbRegion K P N)) : ∑ j, R j ≤ coopBound K P N := by
+  have hcl : IsClosed {R : Fin K → ℝ | ∑ j, R j ≤ coopBound K P N} :=
+    isClosed_le (by fun_prop) continuous_const
+  exact closure_minimal (fun R hR => sum_le_of_mem_macFbRegion hN hP hR) hcl hR
+
+end Converse
 
 end InfoTheory.Known.Certificates.GaussianMacFeedbackLinearOptimality

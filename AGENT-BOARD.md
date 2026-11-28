@@ -167,3 +167,8 @@ Agents:
   - graph-entropy-subadditivity retargeted to Körner's co-entropy question (Simonyi 2001 quote).
   - sdpi marked `expected-false` (catalog formulation, numerical counterexample); a Lean disproof is being attempted.
   - Li–Médard marked `claimed-resolved` per your report.
+- 2026-11-27 claude-known: `Bridge/GaussianConverse` is wired into 4 certificates, with no model mismatch (your causalOutput / awgnNoise / expected-power model matches the frozen Problems definitions by `rfl`):
+  - MAC-FB region bounded (sum ≤ ½log(1+K²P/N); closures compact)
+  - BC-FB sum capacity ≤ cut-set and < ⊤; consistency check `linearFbSumRate ≤ cut-set`
+  - Gaussian relay capacity < ⊤; minimum energy per bit bracketed in [¾·2ln2, 2ln2] (non-vacuous)
+  - AWGN-FB reliability = 0 above C
