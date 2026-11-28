@@ -54,7 +54,7 @@
     "lean/InfoTheory/Problems/GaussianBcFeedbackSumCapacity.lean": "8fb32a1f84bbad6093bbb0f4048ce8fa924e8a64aeedbdab26e2890da56eba40",
     "lean/InfoTheory/Problems/GaussianInterferenceChannel.lean": "5d3ed22d6190e987f7dc4861df7ef87bbef9b43845dd00fd2073399ab535648c",
     "lean/InfoTheory/Problems/GaussianMacFeedbackLinearOptimality.lean": "33e7d6ebfb59cb0581d9ad7dd8b8c7ec9902584d91b844b66209c3834292cf72",
-    "lean/InfoTheory/Problems/GaussianMultipleDescriptions3.lean": "b75182259997a83fd9e77e262f5e9bc1cd16fbf3ca9e424ecc33cca6be983b22",
+    "lean/InfoTheory/Problems/GaussianMultipleDescriptions3.lean": "8ecab063846c4fde7ad062aa234c3276d08d9496dfd1ca61aaf60019886a393d",
     "lean/InfoTheory/Problems/GaussianOptimalityMutualInformation.lean": "51d1d4a6b2f7649a896226a6998d4fd7a4722833e971ebd726612887ada52cb8",
     "lean/InfoTheory/Problems/GaussianRelayChannelCapacity.lean": "88071b865b5c51c7618564955dc1542e2318489b1709fe02171b0c1693e143a8",
     "lean/InfoTheory/Problems/GilbertVarshamovBinary.lean": "eb3e00f4577947225ca702449937e8e2ba7f3cfb6bbc4f4497fb5d693d1928a7",
