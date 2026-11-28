@@ -20,16 +20,20 @@ capacity region `dms3CapacityRegion W` equals the Nair–El Gamal inner bound
 * `mk_zero_mem_dms3CapacityRegion_iff` — the `R₀ = 0` edge of the operational region is
   exactly `[0, C(p(y₁|x))]`: with no common message the problem is the point-to-point channel
   `X → Y₁` (Shannon), so the operational definition reproduces the known single-user answer.
-* `nairElGamalInnerBound_subset` — the inner bound lies in the closed set
-  `{R₀, R₁ ≥ 0, R₀ + R₁ ≤ log₂ |Y₁|}`; in particular it is bounded.
+* `nairElGamal_sumRate_le`, `nairElGamal_snd_nonneg` — the inner bound lies in the closed set
+  `{R₁ ≥ 0, R₀ + R₁ ≤ C(p(y₁|x))}` (its constraint `R₀ + R₁ ≤ I(X; Y₁)` is identified with the
+  single-user mutual information `(marg1 W).mutualInfo P_X`); in particular it is bounded.
+* **Regression (no common message ⇒ Shannon's point-to-point capacity):**
+  `mk_zero_mem_nairElGamal_of_le` (all auxiliaries constant gives `(0, R₁)` for every
+  `R₁ ≤ I(X; Y₁)`), `mk_zero_mem_nairElGamalInnerBound_iff` — the `R₀ = 0` edge of the frozen
+  Nair–El Gamal region is exactly `[0, C(p(y₁|x))]`; and `edge_agree` — on the `R₀ = 0` edge,
+  both sides of `Statement` coincide (with `mk_zero_mem_dms3CapacityRegion_iff`).
 
 ## Not certified
 * Achievability of the Nair–El Gamal region (`nairElGamalInnerBound W ⊆ dms3CapacityRegion W`)
   and the converses for the known solved classes (multilevel channels; `Y₁` less noisy than
   `Y₂` or `Y₃`): these need joint-typicality machinery for superposition coding, indirect
   decoding and mutual covering that `Bridge` does not provide.
-* That the Nair–El Gamal region matches the operational `R₀ = 0` edge (it does: take all
-  auxiliaries constant; this would need a chain-rule computation of the mutual informations).
 -/
 
 open scoped BigOperators
@@ -355,5 +359,160 @@ theorem zero_mem_nairElGamalInnerBound [Nonempty X] (W : BroadcastChannel3 X Y�
   have a6 : 0 ≤ IXY1gV23 := condMutualInfo_nonneg _
   have a7 : 0 ≤ IXY1 := mutualInfo_nonneg _
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> linarith
+
+section Regression
+
+open InfoTheory.Known.Operational
+
+/-- `I(X; Y | W) = I(X; Y)` when `W` is constant. -/
+theorem condMutualInfo_map_const_cond {ι α β γ : Type*} [Fintype ι] [Fintype α] [Fintype β]
+    [Fintype γ] (R : ProbDist ι) (f : ι → α) (g : ι → β) (c : γ) :
+    condMutualInfo (R.map (fun i => (f i, g i, c))) = mutualInfo (R.map (fun i => (f i, g i))) := by
+  have e0 : R.map (fun i => (f i, g i, c)) =
+      (R.map (fun i => (f i, g i))).map (fun p => (p.1, p.2, c)) := by rw [map_comp_eq]; rfl
+  have e1 : (R.map (fun i => (f i, g i, c))).map (fun t => (t.1, t.2.2)) =
+      (R.map f).map (fun x => (x, c)) := by rw [map_comp_eq, map_comp_eq]; rfl
+  have e2 : (R.map (fun i => (f i, g i, c))).map (fun t => (t.2.1, t.2.2)) =
+      (R.map g).map (fun y => (y, c)) := by rw [map_comp_eq, map_comp_eq]; rfl
+  have e3 : (R.map (fun i => (f i, g i, c))).map (fun t => t.2.2) = R.map (fun _ => c) := by
+    rw [map_comp_eq]; rfl
+  have a1 : (R.map (fun i => (f i, g i))).fst = R.map f := by
+    rw [← map_fst_eq_fst, map_comp_eq]; rfl
+  have a2 : (R.map (fun i => (f i, g i))).snd = R.map g := by
+    rw [← map_snd_eq_snd, map_comp_eq]; rfl
+  have i0 : Function.Injective (fun p : α × β => (p.1, p.2, c)) := fun a b h => by
+    simp only [Prod.mk.injEq] at h; exact Prod.ext h.1 h.2.1
+  have i1 : Function.Injective (fun x : α => (x, c)) := fun a b h => (Prod.mk.inj h).1
+  have i2 : Function.Injective (fun y : β => (y, c)) := fun a b h => (Prod.mk.inj h).1
+  unfold condMutualInfo mutualInfo; dsimp only
+  rw [e1, e2, e3, e0, a1, a2, shannonEntropy_map_of_injective _ i0,
+    shannonEntropy_map_of_injective _ i1, shannonEntropy_map_of_injective _ i2,
+    shannonEntropy_map_const]
+  ring
+
+/-- Input law on `(U₁, U₂, U₃, X)` with all three auxiliaries constant. -/
+def constAux (p : ProbDist X) : ProbDist (Fin 1 × Fin 1 × Fin 1 × X) where
+  pmf t := p.pmf t.2.2.2
+  nonneg t := p.nonneg _
+  sum_one := by simp [Fintype.sum_prod_type, p.sum_one]
+
+/-- **All auxiliaries constant**: for every input law `p`, `(0, R₁)` lies in the frozen
+    Nair–El Gamal region whenever `0 ≤ R₁ ≤ I(X; Y₁)`. All conditional terms reduce to
+    `I(X; Y₁)` and all auxiliary terms vanish. -/
+theorem mk_zero_mem_nairElGamal_of_le (W : BroadcastChannel3 X Y₁ Y₂ Y₃) (p : ProbDist X)
+    {R₁ : ℝ} (h0 : 0 ≤ R₁) (h1 : R₁ ≤ (marg1 W).mutualInfo p) :
+    ((0 : ℝ), R₁) ∈ nairElGamalInnerBound W := by
+  classical
+  apply subset_closure
+  refine ⟨le_rfl, h0, 1, 1, 1, constAux p, ?_⟩
+  intro J IV2Y2 IV3Y3 IV2V3gU1 IXY1gV2 IXY1gV3 IXY1gU1 IXY1gV23 IXY1
+  have hJ : J.map (fun z => (z.1.2.2.2, z.2.1)) = (marg1 W).joint p := by
+    refine probDist_eq_of_pmf fun xa => ?_
+    obtain ⟨x, a⟩ := xa
+    simp only [ProbDist.map, DMC.joint, marg1, J, constAux, Fintype.sum_prod_type,
+      Finset.univ_unique, Finset.sum_singleton, Prod.mk.injEq]
+    rw [Finset.sum_eq_single x]
+    · simp [Finset.mul_sum]
+    · intro b _ hb; simp [hb]
+    · simp
+  have hI : IXY1 = (marg1 W).mutualInfo p := by
+    show mutualInfo _ = _
+    rw [hJ]; rfl
+  have hcond : ∀ {γ : Type} [Fintype γ] [Subsingleton γ] (c : γ)
+      (u : (Fin 1 × Fin 1 × Fin 1 × X) × (Y₁ × Y₂ × Y₃) → γ),
+      condMutualInfo (J.map (fun z => (z.1.2.2.2, z.2.1, u z))) = IXY1 := by
+    intro γ _ _ c u
+    have e : (fun z : (Fin 1 × Fin 1 × Fin 1 × X) × (Y₁ × Y₂ × Y₃) => (z.1.2.2.2, z.2.1, u z)) =
+        fun z => (z.1.2.2.2, z.2.1, c) := funext fun z => by rw [Subsingleton.elim (u z) c]
+    rw [e, condMutualInfo_map_const_cond J (fun z => z.1.2.2.2) (fun z => z.2.1) c]
+  have b2 : IXY1gV2 = IXY1 := hcond ((0 : Fin 1), (0 : Fin 1)) (fun z => (z.1.1, z.1.2.1))
+  have b3 : IXY1gV3 = IXY1 := hcond ((0 : Fin 1), (0 : Fin 1)) (fun z => (z.1.1, z.1.2.2.1))
+  have b4 : IXY1gU1 = IXY1 := hcond (0 : Fin 1) (fun z => z.1.1)
+  have b5 : IXY1gV23 = IXY1 :=
+    hcond ((0 : Fin 1), (0 : Fin 1), (0 : Fin 1)) (fun z => (z.1.1, z.1.2.1, z.1.2.2.1))
+  have hI0 : IV2V3gU1 = 0 := by
+    show condMutualInfo _ = 0
+    unfold condMutualInfo
+    simp only [shannonEntropy_subsingleton, sub_zero, add_zero]
+  have a1 : 0 ≤ IV2Y2 := mutualInfo_nonneg _
+  have a2 : 0 ≤ IV3Y3 := mutualInfo_nonneg _
+  rw [← hI] at h1
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> dsimp only <;> linarith
+
+/-- **Sum-rate bound of the inner bound**: every point has `R₀ + R₁ ≤ C(p(y₁|x))`
+    (its constraint `R₀ + R₁ ≤ I(X; Y₁)` is the single-user mutual information of the induced
+    input law). -/
+theorem nairElGamal_sumRate_le (W : BroadcastChannel3 X Y₁ Y₂ Y₃) {r : ℝ × ℝ}
+    (hr : r ∈ nairElGamalInnerBound W) : r.1 + r.2 ≤ (marg1 W).capacity := by
+  classical
+  have hcl : IsClosed { r : ℝ × ℝ | r.1 + r.2 ≤ (marg1 W).capacity } :=
+    isClosed_le (continuous_fst.add continuous_snd) continuous_const
+  refine closure_minimal ?_ hcl hr
+  rintro r ⟨-, -, k₁, k₂, k₃, P, hP⟩
+  have h6 := hP.2.2.2.2.2.1
+  refine le_trans h6 ?_
+  set A := Fin k₁ × Fin k₂ × Fin k₃ × X
+  have hJ : ∀ (J : ProbDist (A × (Y₁ × Y₂ × Y₃))),
+      (∀ z, J.pmf z = P.pmf z.1 * W.trans z.1.2.2.2 z.2) →
+      J.map (fun z => (z.1.2.2.2, z.2.1)) = (marg1 W).joint (P.map (fun t => t.2.2.2)) := by
+    intro J hJz
+    refine probDist_eq_of_pmf fun xa => ?_
+    obtain ⟨x, a⟩ := xa
+    simp only [ProbDist.map, DMC.joint, marg1, hJz]
+    rw [Fintype.sum_prod_type, Finset.sum_mul]
+    refine Finset.sum_congr rfl fun t _ => ?_
+    by_cases ht : t.2.2.2 = x
+    · subst ht
+      simp only [Prod.mk.injEq, true_and, ↓reduceIte, Finset.mul_sum]
+      simp only [Fintype.sum_prod_type]
+      rw [Finset.sum_eq_single a]
+      · simp
+      · intro b _ hb; simp [hb]
+      · simp
+    · simp [ht]
+  exact le_of_eq_of_le (congrArg mutualInfo (hJ _ fun _ => rfl)) (dmc_mutualInfo_le_capacity _ _)
+
+/-- Every point of the inner bound has `R₁ ≥ 0`. -/
+theorem nairElGamal_snd_nonneg (W : BroadcastChannel3 X Y₁ Y₂ Y₃) {r : ℝ × ℝ}
+    (hr : r ∈ nairElGamalInnerBound W) : 0 ≤ r.2 := by
+  have hcl : IsClosed { r : ℝ × ℝ | 0 ≤ r.2 } := isClosed_le continuous_const continuous_snd
+  refine closure_minimal ?_ hcl hr
+  rintro r ⟨-, h, -⟩
+  exact h
+
+/-- **Regression: the `R₀ = 0` edge of the frozen Nair–El Gamal region is exactly
+    `[0, C(p(y₁|x))]`** — with no common message, the inner bound reproduces Shannon's
+    point-to-point capacity of `X → Y₁`. -/
+theorem mk_zero_mem_nairElGamalInnerBound_iff [Nonempty X] (W : BroadcastChannel3 X Y₁ Y₂ Y₃)
+    (R₁ : ℝ) : ((0 : ℝ), R₁) ∈ nairElGamalInnerBound W ↔ 0 ≤ R₁ ∧ R₁ ≤ (marg1 W).capacity := by
+  constructor
+  · intro h
+    exact ⟨nairElGamal_snd_nonneg W h, by simpa using nairElGamal_sumRate_le W h⟩
+  · rintro ⟨h0, h1⟩
+    have hne : { r : ℝ | ∃ P : ProbDist X, r = (marg1 W).mutualInfo P }.Nonempty :=
+      ⟨_, ProbDist.uniform, rfl⟩
+    have hlt : ∀ r, 0 ≤ r → r < (marg1 W).capacity →
+        ((0 : ℝ), r) ∈ nairElGamalInnerBound W := by
+      intro r hr hrC
+      obtain ⟨_, ⟨p, rfl⟩, hp⟩ := exists_lt_of_lt_csSup hne hrC
+      exact mk_zero_mem_nairElGamal_of_le W p hr hp.le
+    rcases eq_or_lt_of_le (capacity_nonneg (marg1 W)) with hC | hC
+    · have : R₁ = 0 := le_antisymm (hC ▸ h1) h0
+      subst this; exact zero_mem_nairElGamalInnerBound W
+    · have hsub : ({(0 : ℝ)} ×ˢ Set.Ico 0 (marg1 W).capacity) ⊆ nairElGamalInnerBound W := by
+        rintro ⟨a, b⟩ ⟨ha, hb⟩
+        rw [Set.mem_singleton_iff] at ha
+        subst ha
+        exact hlt b hb.1 hb.2
+      have hcl := closure_minimal hsub isClosed_closure
+      rw [closure_prod_eq, closure_singleton, closure_Ico hC.ne] at hcl
+      exact hcl ⟨rfl, h0, h1⟩
+
+/-- **Both sides of `Statement` agree on the `R₀ = 0` edge.** -/
+theorem edge_agree [Nonempty X] (W : BroadcastChannel3 X Y₁ Y₂ Y₃) (R₁ : ℝ) :
+    ((0 : ℝ), R₁) ∈ dms3CapacityRegion W ↔ ((0 : ℝ), R₁) ∈ nairElGamalInnerBound W := by
+  rw [mk_zero_mem_dms3CapacityRegion_iff, mk_zero_mem_nairElGamalInnerBound_iff]
+
+end Regression
 
 end InfoTheory.Known.Certificates.DegradedMessageSetsBcThreeReceivers

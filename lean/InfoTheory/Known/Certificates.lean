@@ -9,6 +9,7 @@ import InfoTheory.Known.Certificates.BroadcastChannelThreeReceivers
 import InfoTheory.Known.Certificates.BscReliabilityFunction
 import InfoTheory.Known.Certificates.CascadeRateDistortionSideInfo
 import InfoTheory.Known.Certificates.CeoProblemGeneral
+import InfoTheory.Known.Certificates.ClassicalCapacityAdditivityThreshold
 import InfoTheory.Known.Certificates.CodedCachingExactTradeoff
 import InfoTheory.Known.Certificates.CognitiveInterferenceChannel
 import InfoTheory.Known.Certificates.CommonInformationExactVsWyner
@@ -28,6 +29,7 @@ import InfoTheory.Known.Certificates.DnaStorageUnorderedChannel
 import InfoTheory.Known.Certificates.EditDistanceCodeCapacity
 import InfoTheory.Known.Certificates.EntropicDoublingConstant
 import InfoTheory.Known.Certificates.EntropyRegion
+import InfoTheory.Known.Certificates.EntropyRegionDecidability
 import InfoTheory.Known.Certificates.FiniteStateChannelCapacity
 import InfoTheory.Known.Certificates.GaussianBcFeedbackSumCapacity
 import InfoTheory.Known.Certificates.GaussianInterferenceChannel
@@ -35,6 +37,7 @@ import InfoTheory.Known.Certificates.GaussianMacFeedbackLinearOptimality
 import InfoTheory.Known.Certificates.GaussianMultipleDescriptions3
 import InfoTheory.Known.Certificates.GaussianRelayChannelCapacity
 import InfoTheory.Known.Certificates.GilbertVarshamovBinary
+import InfoTheory.Known.Certificates.GraphEntropySubadditivity
 import InfoTheory.Known.Certificates.GrayWynerLossy
 import InfoTheory.Known.Certificates.HypercontractivityRibbonDiscrete
 import InfoTheory.Known.Certificates.IndexCodingLinearNonlinearGap
@@ -48,6 +51,7 @@ import InfoTheory.Known.Certificates.LinearNetworkCodingGap
 import InfoTheory.Known.Certificates.LinearRankEntropyRegionN6
 import InfoTheory.Known.Certificates.ListDecodingCapacityBinaryLinear
 import InfoTheory.Known.Certificates.ListDecodingZeroErrorCapacity
+import InfoTheory.Known.Certificates.LogSobolevHypercubeSharp
 import InfoTheory.Known.Certificates.MacWithFeedback
 import InfoTheory.Known.Certificates.MartonInnerBoundTightness
 import InfoTheory.Known.Certificates.MdsConjecture
@@ -56,6 +60,7 @@ import InfoTheory.Known.Certificates.MmseDimensionSingleCrossing
 import InfoTheory.Known.Certificates.MrsGerberGeneral
 import InfoTheory.Known.Certificates.MultipleDescriptionsGeneral
 import InfoTheory.Known.Certificates.MultiterminalSourceCoding
+import InfoTheory.Known.Certificates.NetworkCodingCapacityDecidability
 import InfoTheory.Known.Certificates.NoisyInteractiveCommunicationRate
 import InfoTheory.Known.Certificates.NonAsymptoticLossyDispersion
 import InfoTheory.Known.Certificates.PirCodedCollusionCapacity
@@ -65,11 +70,14 @@ import InfoTheory.Known.Certificates.PrimitiveRelayChannelBsc
 import InfoTheory.Known.Certificates.ReedMullerCapacityGeneralDmc
 import InfoTheory.Known.Certificates.RegeneratingCodesExactRepair
 import InfoTheory.Known.Certificates.RelayChannel
+import InfoTheory.Known.Certificates.RenyiEntropyPowerSharp
 import InfoTheory.Known.Certificates.SbmMultiCommunityThreshold
 import InfoTheory.Known.Certificates.SdpiKlVsChisqEquality
 import InfoTheory.Known.Certificates.SecretKeyCapacityPublicDiscussion
+import InfoTheory.Known.Certificates.SecretSharingOptimalInfoRatio
 import InfoTheory.Known.Certificates.ShannonCapacityC7
 import InfoTheory.Known.Certificates.ShannonCapacityComplementProduct
+import InfoTheory.Known.Certificates.ShannonCapacityComputability
 import InfoTheory.Known.Certificates.ShannonCapacityUnionProduct
 import InfoTheory.Known.Certificates.SpernerCapacityDirectedGraphs
 import InfoTheory.Known.Certificates.TimingChannelGeneralQueue
@@ -79,6 +87,7 @@ import InfoTheory.Known.Certificates.UndirectedNetworkCodingLiLi
 import InfoTheory.Known.Certificates.UniversalLossyRedundancy
 import InfoTheory.Known.Certificates.WiretapChannelCompoundSecrecy
 import InfoTheory.Known.Certificates.WiretapWithFeedbackCapacity
+import InfoTheory.Known.Certificates.ZeroErrorFeedbackVariableLength
 import InfoTheory.Known.Certificates.ZeroErrorMacAdder
 import InfoTheory.Known.Certificates.ZeroErrorSourceCodingSideInfo
 

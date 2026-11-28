@@ -29,6 +29,25 @@ Because $\overline{\Gamma^*_4}$ is non-polyhedral, the algorithmic question beco
 - **Semi-decidability / approximation:** One can enumerate finite distributions to approximate $\overline{\Gamma^*_4}$ from the inside, and enumerate Copy-Lemma / Ahlswede–Körner-type linear inequalities (Dougherty–Freiling–Zeger 2011; Gurpinar–Romashchenko 2019) to bound $\overline{\Gamma^*_4}$ from the outside, but neither procedure is known to yield a halting decision procedure for arbitrary rational points on or near the boundary.
 - **Undecidability for related problems at large $n$:** Recent breakthroughs (e.g., Li 2023 on conditional independence implication; Kühne–Yashfe 2022 on linear/entropic representability of matroids and network coding solvability) show undecidability for certain multi-variable information-theoretic problems when $n$ is unbounded, while the exact threshold in $n$ — and in particular the case $n = 4$ — remains open.
 
+## Formal statement and certificate
+
+Adversarial check (2026-11-27): **faithful and open**; the Lean `Statement` was not changed. It asks
+for one register machine that, given 16 nonnegative rationals (numerator, positive denominator per
+subset, loaded into registers `0..31`), halts and decides `InAlmostEntropicCone 4 h`. Li (2023) and
+Kühne–Yashfe prove undecidability only with an unbounded number of variables and for
+conditional/affine or linear-representability questions, so membership in the fixed cone
+$\overline{\Gamma^*_4}$ is still open.
+
+Certificate `lean/InfoTheory/Known/Certificates/EntropyRegionDecidability.lean`:
+- `subsetOfMask_surjective` / `subsetOfMask_injective`: the masks `0..15` enumerate all 16 subsets, so
+  every coordinate is loaded exactly once (`initRegs_num`, `initRegs_den`).
+- YES instances: the zero vector (`query_zero_mem`), and $h(S) = 1$ for $S \ne \emptyset$, the entropy
+  vector of four copies of a fair bit, computed from scratch (`query_diag_mem`).
+- NO instances: $h(\emptyset) = 1$ (`query_ones_not_mem`) and a monotonicity violator
+  (`query_nonmono_not_mem`).
+- `exists_yes_and_no_instances`: on encodable inputs the predicate takes both values, so no
+  constant machine satisfies the `Statement`.
+
 ## References
 
 - Z. Zhang and R. W. Yeung, "On characterization of entropy function via information inequalities," *IEEE Trans. Inf. Theory*, 44(4):1440–1452, 1998.

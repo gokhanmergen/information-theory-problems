@@ -54,6 +54,22 @@ the deepest foundational questions in zero-error information theory.
   can exhibit arbitrarily delayed jumps as $k$ grows, demonstrating that no simple function of
   $|V(G)|$ bounds the blocklength $k$ at which near-capacity behavior emerges.
 
+## Formal statement and certificate
+
+Adversarial check (2026-11-27): **faithful and open**; the Lean `Statement` was not changed. It asks
+for Borel–Turing computability of $\Theta(G)$ from a finite description of $G$. Boche and Deppe
+(arXiv:2010.06873; *Information* 16(7), 2025) record this as completely open. Their non-computability
+results concern zero-error capacity as a function of channels with computable *real* transition
+matrices, so they do not apply to finite-graph inputs.
+
+Certificate `lean/InfoTheory/Known/Certificates/ShannonCapacityComputability.lean`:
+- `shannonCapacity_graphOfCode_cycle5`: bitmask `codeC5` decodes to $C_5$
+  (`graphOfCode_cycle5`), and the target value is $\sqrt5$, which is irrational.
+- `shannonCapacity_graphOfCode_zero`: code `0` is the edgeless graph, with $\Theta = n$.
+- `shannonCapacity_graphOfCode_complete3`: code `511` is $K_3$, with $\Theta = 1$.
+- `shannonCapacity_graphOfCode_mem_Icc`: $1 \le \Theta \le n$ for every encodable input.
+- `initRegs_input`: the input registers hold $(n, \mathrm{code}, m)$.
+
 ## References
 
 - C. E. Shannon, "The zero error capacity of a noisy channel,"

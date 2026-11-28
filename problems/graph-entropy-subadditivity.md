@@ -81,3 +81,27 @@ graph union remains open.
   J. Combin. Theory Ser. B, 1993.
 - G. Simonyi, "Graph entropy: a survey,"
   DIMACS Series in Discrete Mathematics and Theoretical Computer Science, 1995.
+
+## Formal statement and certificate
+
+- **Adversarial check (2026-11-27): the mathematics of the Statement is sound; its provenance is
+  unverified.** `witsenhausenRate` is `inf_k (1/k) log₂ χ(G^{⊠k})`, the strong-product
+  (Witsenhausen 1976) rate. By Fekete this infimum equals the limit, and there are no junk
+  values: the set is nonempty and bounded below by `0`. `graphUnion` is the edge union. We
+  checked two cheap routes and neither settles the question. (i) The asymptotic-spectrum
+  duality (Zuiddam) controls `χ̄(G^{⊠k})`, which tends to the fractional clique-cover number, not
+  `χ(G^{⊠k})`, so it does not apply. (ii) Fractional chromatic number is **not** multiplicative
+  under the strong product (`χ_f(C₅ ⊠ C₅) = 5 < 25/4`), so `R₀ = log₂ χ_f` fails (`R₀(C₅) = log₂ √5`)
+  and the OR-product argument does not transfer. The question therefore looks genuinely
+  nontrivial. **Doubt:** we could not locate a sentence in Körner–Marton (1988), Simonyi
+  (1995) or Tuncel–Nayak–Koulgi–Rose (2009) that explicitly poses union-subadditivity of
+  `R₀` or of `H̄` as open. Charpenay–Le Treust–Roumy (arXiv:2305.01459) mention only that edge
+  union "is already studied in the literature". Treat the attribution as unconfirmed until a
+  quotation is found.
+- **Certificate** `lean/InfoTheory/Known/Certificates/GraphEntropySubadditivity.lean`:
+  Witsenhausen's bounds `log₂ ω ≤ R₀ ≤ log₂ χ` and the exact values for `K_n` and `\bar K_n`;
+  `graphUnion` sanity lemmas (`graphUnion_compl : F ∪ Fᶜ = K_n`, `rate_union_compl`); the
+  one-shot product-colouring bound `rate_union_le_log2_mul : R₀(F ∪ G) ≤ log₂ a + log₂ b`; and
+  the regression `subadditive_of_rate_eq_log2_coloring`: the inequality holds whenever
+  `R₀ = log₂ χ` for both graphs (perfect graphs). Concrete instances: `subadditive_top_top`,
+  `subadditive_bot_left`.

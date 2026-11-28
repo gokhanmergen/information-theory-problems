@@ -45,3 +45,19 @@ The FEI conjecture is one of the central open problems in the analysis of Boolea
 - R. O'Donnell, J. Wright, and Y. Zhou, "The Fourier entropy–influence conjecture for certain classes of Boolean functions," *Proc. ICALP*, pp. 330–341, 2011.
 - R. Hod, "Improved lower bounds for the Fourier entropy/influence conjecture via lexicographic functions," *J. Comb. Theory Ser. A*, 160:177–199, 2018.
 - R. O'Donnell, *Analysis of Boolean Functions*, Cambridge University Press, 2014.
+
+## Formal statement and certificate
+
+- **Adversarial check (2026-11-27): Statement is faithful and still open.** It is the FEI
+  conjecture word for word (`±1` encoded as `Bool`, entropy in bits, `I(f) = ∑ |S| f̂(S)²`);
+  no junk values (finite sums, `negPLogP 0 = 0`). The module name (`LogSobolevHypercubeSharp`)
+  is historical; the statement is FEI. No proof had appeared by November 2026: recent work is
+  partial, e.g. arXiv:2606.00246 ("Further evidence towards the Fourier Entropy-Influence
+  conjecture", June 2026) and X. Han's bound `H ≤ O(I(f) + ∑_k I_k(f) log(1/I_k(f)))`
+  (Combinatorica 2025).
+- **Certificate** `lean/InfoTheory/Known/Certificates/LogSobolevHypercubeSharp.lean`:
+  `abs_fourierCoeff_le_one`, `fourierEntropy_nonneg`, `totalInfluence_nonneg` (both sides are
+  genuine nonnegative reals); the regression for the 2-bit AND, `fourierCoeff_and2`
+  (`f̂(S)² = 1/4` for all four `S`), `fourierEntropy_and2 = 2` and `totalInfluence_and2 = 1`,
+  so any valid constant needs `C ≥ 2` (`two_le_of_FEI`); and the 1-bit dictator, with `H = 0`
+  and `I = 1`.

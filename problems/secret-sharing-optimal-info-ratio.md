@@ -52,3 +52,20 @@ A staggering exponential gap has persisted for nearly thirty years between the b
 - A. Beimel and I. Orlov, "Secret sharing and non-Shannon information inequalities," *IEEE Trans. Inf. Theory* **57**(9), 5634–5649 (2011).
 - T. Liu and V. Vaikuntanathan, "Breaking the circuit-size barrier in secret sharing," *Proc. 50th ACM STOC*, 699–708 (2018).
 - B. Applebaum, A. Beimel, O. Farràs, O. Nir, and N. Peter, "Secret-sharing schemes for general and uniform access structures," *EUROCRYPT 2019* / *STOC 2020* (2020).
+
+## Formal statement and certificate
+
+- **Adversarial check (2026-11-27): Statement is faithful and still open.** `optimalSecretSharingRatio Γ`
+  is the `sInf` of all `r` that bound `H(S_i)/H(S_0)` for every `i`, taken over perfect schemes
+  with a finite common share alphabet `Fin k` (no generality is lost: pad the alphabets). The
+  set is bounded below by `0`. If no scheme existed, the `sInf` would be the junk value `0`,
+  which can only make `Statement` harder, but schemes always exist (Ito–Saito–Nishizeki).
+  `Statement` (`∀ C, ∃ n Γ, σ(Γ) > C n`) is exactly "super-linear". The best lower bound for
+  general schemes is still Csirmaz's `Ω(n / log n)`.
+- **Certificate** `lean/InfoTheory/Known/Certificates/SecretSharingOptimalInfoRatio.lean`:
+  `exists_essential` (every access structure has an essential participant); `one_le_of_mem` /
+  `one_le_of_scheme`, the Karnin–Greene–Hellman bound that every admissible ratio is `≥ 1`
+  (some share is at least as large as the secret), proved from Shannon inequalities;
+  `one_le_optimalSecretSharingRatio` (`σ(Γ) ≥ 1` once any scheme exists, so not junk); and the
+  regression `optimalSecretSharingRatio_oneOfN : σ(1-out-of-(n+1)) = 1` (replicate a uniform
+  secret bit).

@@ -31,6 +31,23 @@ Because $\overline{\Gamma^*_n}$ is non-polyhedral for $n \ge 4$ (Matúš 2007), 
 - **Undecidability of exact zero-error solvability (settled 2022–2023):** Cheuk Ting Li (IEEE TIT 2023, arXiv:2205.11461) proved that deciding whether a given network admits an exact zero-error scalar/vector network code of rate $1$ is **undecidable** (along with conditional information inequalities and conditional independence implication).
 - **Asymptotic / vanishing-error capacity remains open:** As explicitly noted by Li (2023), the undecidability proof for exact zero-error solvability uses exact conditional independence / group-homomorphism constraints that break down under vanishing $\varepsilon$-error approximations; whether $C_{\mathrm{asymp}}(\mathcal{N})$ is computable (approximable to within any rational $\varepsilon > 0$) remains **open**.
 
+## Formal statement and certificate
+
+Adversarial check (2026-11-27): **faithful and open**; the Lean `Statement` was not changed. It is the
+weak comparison oracle for $C_{\mathrm{asymp}}$, which is the standard notion of computability of a
+real number, uniform over finitely encoded networks. The capacity is finite under the non-local-demand
+hypothesis by the cut bound. Li (2023) settles the undecidability of exact solvability, not the
+computability of the vanishing-error capacity.
+
+Certificate `lean/InfoTheory/Known/Certificates/NetworkCodingCapacityDecidability.lean`:
+- `tmOutputs_unique`: a machine outputs at most one bit, because halting is absorbing
+  (`tmRun_halted`). `constMachine_outputs` shows the machine model is not vacuous.
+- `encodeQuery_inj_VK` / `encodeQuery_inj_query`: the encoding determines $V$, $K$ and $(p, q,
+  \mathrm{prec})$.
+- Regression: for a single unit edge, `dagAsympCapacity_edgeNet : C_asymp = 1`. Achievability is
+  uncoded forwarding (`edgeNet_rate_one_achievable`). The converse (`edgeNet_converse`) holds because a
+  sink that sees $t$ bits decodes at most $2^t$ messages correctly.
+
 ## References
 
 - X. Yan, R. W. Yeung, and Z. Zhang, "The capacity region for multi-source multi-sink network coding," *Proc. IEEE ISIT*, pp. 116–120, 2007.

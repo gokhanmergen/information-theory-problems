@@ -41,6 +41,24 @@ Despite substantial simplifications of Hastings's construction via random subspa
   - Belinschi, Collins, and Nechita (2016) used free probability and random quantum channels to prove violations exist at output dimension $d \le 183$ (and with conjugate channels $\mathcal{N} \otimes \bar{\mathcal{N}}$).
 - **Qubit and qutrit output channels remain open:** For general (non-unital) qubit-output channels ($d = 2$) and qutrit-output channels ($d = 3$), it is unknown whether $S_{\min}(\mathcal{N}_1 \otimes \mathcal{N}_2) = S_{\min}(\mathcal{N}_1) + S_{\min}(\mathcal{N}_2)$ always holds.
 
+## Formal statement and certificate
+
+Adversarial check (2026-11-27): **faithful and open**; the Lean `Statement` was not changed. It asks
+the qubit-output ($d = 2$) case of the threshold question. By complementary channels
+(King–Matsumoto–Nathanson–Ruskai 2007), this is equivalent to the same question for channels with two
+Kraus operators. No resolution was found up to 2026.
+
+Certificate `lean/InfoTheory/Known/Certificates/ClassicalCapacityAdditivityThreshold.lean`:
+- `minOutputEntropy_nonneg`: channel outputs are states, and states have nonnegative `matEntropy`.
+- `matEntropy_eq_zero_of_idem`: pure states have entropy 0. `matEntropy_smul_one`:
+  $S(cI_d) = d\cdot(-c\log_2 c)$.
+- Regressions with qubit outputs:
+  - $S_{\min}(\mathrm{id}_2) = 0$ and $S_{\min}(\mathrm{id}_2 \otimes \mathrm{id}_2) = 0$
+    (`idQubit_additive`).
+  - The replacement channel $\rho \mapsto I/2$ has $S_{\min} = 1$, and its tensor square has
+    $S_{\min} = 2$ (`replQubit_additive`). Additivity holds here, as it must for
+    entanglement-breaking channels (Shor 2002).
+
 ## References
 
 - P. W. Shor, "Additivity of the classical capacity of entanglement-breaking quantum channels," *J. Math. Phys.* **43**, 4334–4340 (2002).

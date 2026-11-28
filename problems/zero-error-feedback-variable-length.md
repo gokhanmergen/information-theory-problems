@@ -80,3 +80,28 @@ overhead is universally achievable with strict zero error remains open.
   short blocklengths with decision feedback," IEEE Trans. Commun., 2015.
 - B. Nakiboğlu and L. Zheng, "Errors-and-erasures decoding for block codes with feedback,"
   IEEE Trans. Inf. Theory, 2012.
+
+## Formal statement and certificate
+
+- **Adversarial check (2026-11-27): Statement is faithful; we found it neither settled nor
+  explicitly posed.** The Lean definitions match the text: a.s. termination, finite `E[τ]`,
+  zero error on every reachable stopping path, and the hypothesis of a zero transition.
+  Stopping at `t = 0` is harmless (it forces `M = 1`). Settlement check: Burnashev (1976) and
+  Polyanskiy–Poor–Verdú (2011) give first-order zero-error VLF capacity `C` when a zero
+  transition exists. Naghshvar–Javidi–Wigger (2015) give `log M / C + log(1/ε)/C₁ + K`
+  achievability, and Yavas–Tan (2025) with Yavas (arXiv:2609.11368, Sept 2026) pin down the
+  coefficient of the `log N` second-order term of VLF codes at a fixed `ε` (for `C₁ < ∞`). All of these assume `C₁ < ∞` or
+  `ε > 0`, so none gives an additive `O(1)` bound for **zero** error with `C₁ = ∞`. The
+  nonzero `log N` term at fixed `ε` suggests that the `O(1)` question is substantive.
+  **Doubt:** we did not find a sentence in Burnashev (1976) or PPV (2011) posing the `O(1)`
+  question verbatim (PPV's PDF was not reachable from this environment), and the
+  `O(log log M)` "standard two-phase" claim above is our own reconstruction (`[heuristic]`).
+  A sequential NJW-type scheme with a zero-error confirmation step (`C₁ = ∞`) might already give
+  `O(1)`; we could not close this either way.
+- **Certificate** `lean/InfoTheory/Known/Certificates/ZeroErrorFeedbackVariableLength.lean`:
+  `pathProb_nonneg`; `isStopPath_fixed_iff` (fixed-length stopping rules have exactly the
+  intended first-stopping paths); and the regression on the binary noiseless channel. There,
+  `noiseless_isZeroErrorVLFCode` and `noiseless_expectedStopTime` show that one-shot
+  transmission is a zero-error VLF code with `E[τ] = 1 = log₂ 2 / C`. `noiseless_hyp` and
+  `noiseless_bound_M2` show that the channel meets the hypotheses of `Statement` and that the
+  bound holds at `M = 2` with `C₀ = 0`.

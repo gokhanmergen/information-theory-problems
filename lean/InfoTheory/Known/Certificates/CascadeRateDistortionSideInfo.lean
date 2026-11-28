@@ -18,6 +18,13 @@ three-node cascade with side information `Y` at the intermediate node.
 * `trivial_mem_both` — both sides of the implication are nonempty and agree in the trivial
   regime (constant reconstruction meeting `D`): every nonnegative rate pair is in the outer
   bound and achievable.
+* **Regression (no side information ⇒ Yamamoto 1981 / Shannon):**
+  `cascadeOuterBound_trivialY_rd_le` — when `Y` is a one-point type, every point of the frozen
+  outer bound satisfies `R_X(D) ≤ R₁` and `R_X(D) ≤ R₂`, i.e. the outer bound lies inside
+  Yamamoto's cascade region `{R₁ ≥ R(D), R₂ ≥ R(D)}`, which is known to be achievable
+  (describe `X̂ⁿ` at rate `R(D)` and forward it). So the implication in `Statement` is consistent
+  with the solved no-side-information case (`I(X; U | Y) = I(X; U) ≥ I(X; X̂)` via the chain
+  rule and the Markov chain `X - (U, Y) - X̂`).
 
 ## Not certified
 * That `cascadeOuterBound` is an outer bound (its converse needs the auxiliary
@@ -470,6 +477,39 @@ theorem trivial_mem_both (P : ProbDist (X × Y)) (d : Distortion X Xhat) {R₁ R
   · refine ⟨fun _ => ⟨0, by positivity⟩, fun _ _ => ⟨0, by positivity⟩, fun _ _ => c, ?_⟩
     exact le_trans (iid_avg_coord_le P n (fun xy => d.dist xy.1 c) (fun _ => d.nonneg _ _))
       (by linarith)
+
+/-- **Regression: trivial side information reduces to Yamamoto's cascade / Shannon `R(D)`.**
+    If `Y` is a one-point type, every `(R₁, R₂)` in the frozen outer bound has
+    `R_X(D) ≤ R₁` and `R_X(D) ≤ R₂`: `R₁ ≥ I(X; U | Y) = I(X; U, Y) = I(X; X̂, U, Y) ≥ I(X; X̂)`
+    (chain rule, `I(X; Y) = 0`, and the Markov chain `X - (U, Y) - X̂`), and
+    `R₂ ≥ I(X, Y; X̂) ≥ I(X; X̂)`; both `≥ R_X(D)` since `E d(X, X̂) ≤ D`. -/
+theorem cascadeOuterBound_trivialY_rd_le [Unique Y] (P : ProbDist (X × Y))
+    (d : Distortion X Xhat) {D : ℝ} {r : ℝ × ℝ} (hr : r ∈ cascadeOuterBound P d D) :
+    rateDistortion P.fst d D ≤ r.1 ∧ rateDistortion P.fst d D ≤ r.2 := by
+  refine ⟨?_, (cascadeOuterBound_rd_le P d hr).2⟩
+  obtain ⟨-, -, kU, Q, -, hQ, -, hM2, hd, h1, -⟩ := hr
+  set Q'' := Q.map (fun t => (t.1, t.2.2.2)) with hQ''
+  have hf : Q''.fst = P.fst := by
+    rw [← map_fst_eq_fst, hQ'', map_comp_eq, ← hQ, ← map_fst_eq_fst, map_comp_eq]; rfl
+  have hdist : expectedDist Q'' d ≤ D := by
+    unfold expectedDist
+    rw [hQ'', ← sum_pmf_mul_comp Q (fun t => (t.1, t.2.2.2))
+      (fun xy : X × Xhat => d.dist xy.1 xy.2)]; exact hd
+  have c1 := mutualInfo_add_condMutualInfo Q (fun t => t.1) (fun t => t.2.1) (fun t => t.2.2.1)
+  have c2 := mutualInfo_add_condMutualInfo Q (fun t => t.1) (fun t => (t.2.2.1, t.2.1))
+    (fun t => t.2.2.2)
+  have hY : mutualInfo (Q.map (fun t => (t.1, t.2.1))) = 0 := by
+    have e : (fun t : X × Y × Fin kU × Xhat => (t.1, t.2.1)) = fun t => (t.1, (default : Y)) :=
+      funext fun t => by rw [Subsingleton.elim t.2.1 default]
+    rw [e]; exact mutualInfo_map_const_snd Q (fun t => t.1) default
+  have hdp : mutualInfo Q'' ≤ mutualInfo (Q.map (fun t => (t.1, (t.2.2.2, (t.2.2.1, t.2.1))))) := by
+    have e : Q'' = (Q.map (fun t => (t.1, (t.2.2.2, (t.2.2.1, t.2.1))))).map
+        (Prod.map id Prod.fst) := by
+      rw [hQ'', map_comp_eq]; rfl
+    rw [e]; exact mutualInfo_map_prodMap_le _ _ _
+  have hrd := rateDistortion_le_mutualInfo hf hdist
+  have h1' : condMutualInfo (Q.map (fun t => (t.1, t.2.2.1, t.2.1))) ≤ r.1 := h1
+  linarith
 
 end Cascade
 

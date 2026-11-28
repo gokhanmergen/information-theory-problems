@@ -21,6 +21,17 @@ asymptotic exact common information at a finite blocklength:
   dominates the left, so `Statement` asks exactly whether the infimum is attained.
   `exactCommonInfo_le_entropy` — hence `G ≤ H(X)`.
 
+* **Regression (solved special cases; Wyner 1975, Kumar–Li–El Gamal 2014):**
+  - independent components `P = P_X ⊗ P_Y`: `exactCommonInfoSingle_prod`,
+    `wynerCommonInfo_prod`, `exactCommonInfo_prod` — `G₁ = C_W = G = 0` (constant `W`), and
+    `statement_instance_prod` — `Statement`'s equation holds at `n = 1` for such sources
+    (via `bipartitePower_prod : (P_X ⊗ P_Y)^{⊗n} = P_Xⁿ ⊗ P_Yⁿ`);
+  - identical components `X = Y` (law `P.map (x ↦ (x, x))`): `wynerCommonInfo_diag`,
+    `exactCommonInfoSingle_diag`, `exactCommonInfo_diag` — `C_W = G₁ = G = H(X)` (via
+    `I(X; X) = H(X)`, `bipartitePower_diag`, and `H(Pⁿ) = n H(P)`), and
+    `statement_instance_diag` — `Statement`'s equation holds at `n = 1`.
+  So all three frozen common-information functionals reproduce the textbook values.
+
 ## Not certified
 * `C_W(X; Y) ≤ G(X; Y)` for the asymptotic `G` (needs tensorization
   `C_W(Xⁿ; Yⁿ) = n C_W(X; Y)`); the strict separations of Yu–Tan (2020) and
@@ -655,6 +666,177 @@ theorem exactCommonInfo_le_entropy (P : ProbDist (X × Y)) :
   have := exactCommonInfo_le_single_power P one_pos
   rw [Nat.cast_one, div_one] at this
   exact le_trans this (exactCommonInfoSingle_le_entropy_fst _)
+
+/-! ### Regression: independent and identical components -/
+
+/-- `I(X; Y | W) = I(X; Y)` when `W` is constant. -/
+theorem condMutualInfo_map_const_cond {ι α β γ : Type*} [Fintype ι] [Fintype α] [Fintype β]
+    [Fintype γ] (R : ProbDist ι) (f : ι → α) (g : ι → β) (c : γ) :
+    condMutualInfo (R.map (fun i => (f i, g i, c))) = mutualInfo (R.map (fun i => (f i, g i))) := by
+  have e0 : R.map (fun i => (f i, g i, c)) =
+      (R.map (fun i => (f i, g i))).map (fun p => (p.1, p.2, c)) := by rw [map_comp_eq]; rfl
+  have e1 : (R.map (fun i => (f i, g i, c))).map (fun t => (t.1, t.2.2)) =
+      (R.map f).map (fun x => (x, c)) := by rw [map_comp_eq, map_comp_eq]; rfl
+  have e2 : (R.map (fun i => (f i, g i, c))).map (fun t => (t.2.1, t.2.2)) =
+      (R.map g).map (fun y => (y, c)) := by rw [map_comp_eq, map_comp_eq]; rfl
+  have e3 : (R.map (fun i => (f i, g i, c))).map (fun t => t.2.2) = R.map (fun _ => c) := by
+    rw [map_comp_eq]; rfl
+  have a1 : (R.map (fun i => (f i, g i))).fst = R.map f := by
+    rw [← map_fst_eq_fst, map_comp_eq]; rfl
+  have a2 : (R.map (fun i => (f i, g i))).snd = R.map g := by
+    rw [← map_snd_eq_snd, map_comp_eq]; rfl
+  have i0 : Function.Injective (fun p : α × β => (p.1, p.2, c)) := fun a b h => by
+    simp only [Prod.mk.injEq] at h; exact Prod.ext h.1 h.2.1
+  have i1 : Function.Injective (fun x : α => (x, c)) := fun a b h => (Prod.mk.inj h).1
+  have i2 : Function.Injective (fun y : β => (y, c)) := fun a b h => (Prod.mk.inj h).1
+  unfold condMutualInfo mutualInfo; dsimp only
+  rw [e1, e2, e3, e0, a1, a2, shannonEntropy_map_of_injective _ i0,
+    shannonEntropy_map_of_injective _ i1, shannonEntropy_map_of_injective _ i2,
+    shannonEntropy_map_const]
+  ring
+
+/-- **Independent components: `G₁(X; Y) = 0`** (constant `W` already makes `X ⊥ Y`). -/
+theorem exactCommonInfoSingle_prod (A : ProbDist X) (B : ProbDist Y) :
+    exactCommonInfoSingle (A.prod B) = 0 := by
+  refine le_antisymm ?_ (exactCommonInfoSingle_nonneg _)
+  have hmarg : ((A.prod B).map (fun xy => (xy.1, xy.2, (0 : Fin 1)))).map
+      (fun t => (t.1, t.2.1)) = A.prod B := by
+    rw [map_comp_eq]; exact map_id_eq _
+  have hM : condMutualInfo ((A.prod B).map (fun xy => (xy.1, xy.2, (0 : Fin 1)))) = 0 := by
+    rw [condMutualInfo_map_const_cond (A.prod B) Prod.fst Prod.snd (0 : Fin 1)]
+    exact (congrArg mutualInfo (map_id_eq (A.prod B))).trans (mutualInfo_prod A B)
+  have hH : shannonEntropy (((A.prod B).map (fun xy => (xy.1, xy.2, (0 : Fin 1)))).map
+      (fun t => t.2.2)) = 0 := by
+    rw [map_comp_eq]; exact shannonEntropy_map_const _ _
+  exact csInf_le (exact_bddBelow _) ⟨1, _, hmarg, hM, hH.symm⟩
+
+/-- **Independent components: `C_W(X; Y) = 0`** (Wyner 1975). -/
+theorem wynerCommonInfo_prod (A : ProbDist X) (B : ProbDist Y) :
+    wynerCommonInfo (A.prod B) = 0 :=
+  le_antisymm ((wynerCommonInfo_le_exactCommonInfoSingle _).trans_eq (exactCommonInfoSingle_prod A B))
+    (wynerCommonInfo_nonneg _)
+
+/-- The `n`-letter power of an independent source is independent: `(P_X ⊗ P_Y)^{⊗n} = P_Xⁿ ⊗ P_Yⁿ`. -/
+theorem bipartitePower_prod (A : ProbDist X) (B : ProbDist Y) (n : ℕ) :
+    bipartitePower (A.prod B) n = (iidDist A n).prod (iidDist B n) :=
+  probDist_eq_of_pmf fun xy => by
+    simp only [bipartitePower, ProbDist.prod, iidDist, Finset.prod_mul_distrib]
+
+/-- **Independent components: `G(X; Y) = 0`**. -/
+theorem exactCommonInfo_prod (A : ProbDist X) (B : ProbDist Y) :
+    exactCommonInfo (A.prod B) = 0 := by
+  refine le_antisymm ?_ (exactCommonInfo_nonneg _)
+  have h := exactCommonInfo_le_single_power (A.prod B) one_pos
+  rwa [bipartitePower_prod, exactCommonInfoSingle_prod, zero_div] at h
+
+/-- **`Statement` is consistent on independent sources**: its equation holds at `n = 1`. -/
+theorem statement_instance_prod (A : ProbDist X) (B : ProbDist Y) :
+    ∃ n : ℕ, 0 < n ∧ exactCommonInfo (A.prod B) =
+      exactCommonInfoSingle (bipartitePower (A.prod B) n) / (n : ℝ) :=
+  ⟨1, one_pos, by rw [exactCommonInfo_prod, bipartitePower_prod, exactCommonInfoSingle_prod,
+    zero_div]⟩
+
+/-- `I(X; X) = H(X)`. -/
+theorem mutualInfo_diag (P : ProbDist X) :
+    mutualInfo (P.map (fun x => (x, x))) = shannonEntropy P := by
+  have a1 : (P.map (fun x => (x, x))).fst = P := by
+    rw [← map_fst_eq_fst, map_comp_eq]; exact map_id_eq P
+  have a2 : (P.map (fun x => (x, x))).snd = P := by
+    rw [← map_snd_eq_snd, map_comp_eq]; exact map_id_eq P
+  have i : Function.Injective (fun x : X => (x, x)) := fun a b h => (Prod.mk.inj h).1
+  unfold mutualInfo
+  rw [a1, a2, shannonEntropy_map_of_injective _ i]; ring
+
+/-- **Identical components: `C_W(X; X) = H(X)`** (Wyner 1975). -/
+theorem wynerCommonInfo_diag (P : ProbDist X) :
+    wynerCommonInfo (P.map (fun x => (x, x))) = shannonEntropy P := by
+  have h := wyner_sandwich (P.map (fun x => (x, x)))
+  have a1 : (P.map (fun x => (x, x))).fst = P := by
+    rw [← map_fst_eq_fst, map_comp_eq]; exact map_id_eq P
+  rw [mutualInfo_diag, a1] at h
+  exact le_antisymm (h.2.1.trans (h.2.2.trans (min_le_left _ _))) h.1
+
+/-- **Identical components: `G₁(X; X) = H(X)`** (Kumar–Li–El Gamal 2014). -/
+theorem exactCommonInfoSingle_diag (P : ProbDist X) :
+    exactCommonInfoSingle (P.map (fun x => (x, x))) = shannonEntropy P := by
+  have h := wyner_sandwich (P.map (fun x => (x, x)))
+  have a1 : (P.map (fun x => (x, x))).fst = P := by
+    rw [← map_fst_eq_fst, map_comp_eq]; exact map_id_eq P
+  rw [mutualInfo_diag, a1] at h
+  exact le_antisymm (h.2.2.trans (min_le_left _ _)) (h.1.trans h.2.1)
+
+theorem map_pmf_of_injective {α β : Type*} [Fintype α] [Fintype β] (P : ProbDist α) {f : α → β} (hf : Function.Injective f) (a : α) :
+    (P.map f).pmf (f a) = P.pmf a := by
+  classical
+  simp only [ProbDist.map]
+  rw [Finset.sum_eq_single a]
+  · simp
+  · intro a' _ hne; simp [hf.ne hne]
+  · simp
+
+theorem map_diag_pmf_of_ne {α : Type*} [Fintype α] (P : ProbDist α) {a b : α} (h : a ≠ b) :
+    (P.map (fun x => (x, x))).pmf (a, b) = 0 := by
+  classical
+  simp only [ProbDist.map]
+  refine Finset.sum_eq_zero fun x _ => ?_
+  split_ifs with hx
+  · simp only [Prod.mk.injEq] at hx
+    exact absurd (hx.1.symm.trans hx.2) h
+  · rfl
+
+/-- The `n`-letter power of `X = Y` is `Xⁿ = Yⁿ`. -/
+theorem bipartitePower_diag (P : ProbDist X) (n : ℕ) :
+    bipartitePower (P.map (fun x => (x, x))) n = (iidDist P n).map (fun x => (x, x)) := by
+  have hi : Function.Injective (fun x : Fin n → X => (x, x)) := fun a b h => (Prod.mk.inj h).1
+  have hi1 : Function.Injective (fun x : X => (x, x)) := fun a b h => (Prod.mk.inj h).1
+  refine probDist_eq_of_pmf fun ab => ?_
+  obtain ⟨a, b⟩ := ab
+  by_cases hab : a = b
+  · subst hab
+    have h1 : ((iidDist P n).map (fun x => (x, x))).pmf (a, a) = (iidDist P n).pmf a :=
+      map_pmf_of_injective (iidDist P n) hi a
+    have h2 : ∀ i, (P.map (fun x => (x, x))).pmf (a i, a i) = P.pmf (a i) :=
+      fun i => map_pmf_of_injective P hi1 (a i)
+    rw [h1]
+    simp only [bipartitePower, iidDist, h2]
+  · obtain ⟨i, hi⟩ : ∃ i, a i ≠ b i := not_forall.mp fun h => hab (funext h)
+    have h0 : (bipartitePower (P.map (fun x => (x, x))) n).pmf (a, b) = 0 := by
+      simp only [bipartitePower]
+      exact Finset.prod_eq_zero (Finset.mem_univ i) (map_diag_pmf_of_ne P hi)
+    rw [h0, map_diag_pmf_of_ne _ hab]
+
+/-- `H(Pⁿ) = n H(P)`. -/
+theorem shannonEntropy_iidDist (P : ProbDist X) (n : ℕ) :
+    shannonEntropy (iidDist P n) = n * shannonEntropy P := by
+  have e : iidDist P n = piProdDist (fun _ : Fin n => P) := rfl
+  rw [e, shannonEntropy_piProdDist]
+  simp
+
+/-- `G₁(Xⁿ; Xⁿ) / n = H(X)` for every `n ≥ 1`. -/
+theorem exactCommonInfoSingle_power_diag (P : ProbDist X) {n : ℕ} (hn : 0 < n) :
+    exactCommonInfoSingle (bipartitePower (P.map (fun x => (x, x))) n) / (n : ℝ) =
+      shannonEntropy P := by
+  rw [bipartitePower_diag, exactCommonInfoSingle_diag, shannonEntropy_iidDist]
+  have : (n : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr hn.ne'
+  field_simp
+
+/-- **Identical components: `G(X; X) = H(X)`** (Kumar–Li–El Gamal 2014). -/
+theorem exactCommonInfo_diag (P : ProbDist X) :
+    exactCommonInfo (P.map (fun x => (x, x))) = shannonEntropy P := by
+  refine le_antisymm ?_ ?_
+  · have h := exactCommonInfo_le_single_power (P.map (fun x => (x, x))) one_pos
+    rwa [exactCommonInfoSingle_power_diag P one_pos] at h
+  · refine le_csInf ⟨_, 1, one_pos, rfl⟩ ?_
+    rintro r ⟨m, hm, hr⟩
+    have hr' : r = exactCommonInfoSingle (bipartitePower (P.map (fun x => (x, x))) m) / (m : ℝ) :=
+      hr
+    rw [hr', exactCommonInfoSingle_power_diag P hm]
+
+/-- **`Statement` is consistent on `X = Y`**: its equation holds at `n = 1`. -/
+theorem statement_instance_diag (P : ProbDist X) :
+    ∃ n : ℕ, 0 < n ∧ exactCommonInfo (P.map (fun x => (x, x))) =
+      exactCommonInfoSingle (bipartitePower (P.map (fun x => (x, x))) n) / (n : ℝ) :=
+  ⟨1, one_pos, by rw [exactCommonInfo_diag, exactCommonInfoSingle_power_diag P one_pos]⟩
 
 end CommonInfo
 
