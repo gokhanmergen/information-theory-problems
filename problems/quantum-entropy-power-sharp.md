@@ -29,6 +29,14 @@ The bosonic quantum entropy power inequality $2^{S(\sigma_C)} \ge \lambda 2^{S(\
 - **Gaussian and passive states:** Equality holds for all thermal Gaussian states. De Palma–Mari–Giovannetti–Holevo (2015) proved the EPnI when one input is Gaussian and established strong partial results for Fock-diagonal (passive) states.
 - **General non-Gaussian states:** Open in full generality even for single-mode finite-Fock-cutoff states.
 
+## Formal statement and certificate
+
+Adversarial re-check (2026-11-27): the Lean `Statement` restricts to inputs below a Fock cutoff `M`. This is a special case of the EPnI, and the general case follows by approximation. The beam-splitter isometry has output cutoff `2M`, so it is exact, with no truncation error. The EPnI is still open in general. The certificate `InfoTheory.Known.Certificates.QuantumEntropyPowerSharp` proves:
+- `bosonicG_zero`, `bosonicG_pos` and `log2_succ_le_bosonicG`;
+- `entropyPhotonNumber_zero` (`N(0) = 0`) and `entropyPhotonNumber_nonneg`;
+- the textbook beam-splitter amplitudes `bs_one_zero`, `bs_zero_one` and `bs_hom` (`⟨1,1|U|1,1⟩ = 2λ − 1`), including the Hong–Ou–Mandel dip `bs_hom_dip`;
+- the vacuum regression `epni_cutoff_one`: at `M = 1` both sides are `0`. This is only the trivial instance.
+
 ## References
 
 - S. Guha, B. I. Erkmen, and J. H. Shapiro, "The entropy photon-number inequality and its consequences," Proc. ITA Workshop, 2008; arXiv:0710.5666.

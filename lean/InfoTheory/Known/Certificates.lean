@@ -69,10 +69,15 @@ import InfoTheory.Known.Certificates.MultiterminalSourceCoding
 import InfoTheory.Known.Certificates.NetworkCodingCapacityDecidability
 import InfoTheory.Known.Certificates.NoisyInteractiveCommunicationRate
 import InfoTheory.Known.Certificates.NonAsymptoticLossyDispersion
+import InfoTheory.Known.Certificates.NptBoundEntanglement
 import InfoTheory.Known.Certificates.PirCodedCollusionCapacity
 import InfoTheory.Known.Certificates.PoissonChannelDiscreteCapacity
 import InfoTheory.Known.Certificates.PolarCodeScalingExponent
 import InfoTheory.Known.Certificates.PrimitiveRelayChannelBsc
+import InfoTheory.Known.Certificates.QuantumEntropyPowerSharp
+import InfoTheory.Known.Certificates.QuantumLdpcRateDistance
+import InfoTheory.Known.Certificates.QuantumReverseShannonNonCatalytic
+import InfoTheory.Known.Certificates.QuantumSquashedEntanglementFaithfulness
 import InfoTheory.Known.Certificates.ReedMullerCapacityGeneralDmc
 import InfoTheory.Known.Certificates.RegeneratingCodesExactRepair
 import InfoTheory.Known.Certificates.RelayChannel
@@ -85,6 +90,7 @@ import InfoTheory.Known.Certificates.ShannonCapacityC7
 import InfoTheory.Known.Certificates.ShannonCapacityComplementProduct
 import InfoTheory.Known.Certificates.ShannonCapacityComputability
 import InfoTheory.Known.Certificates.ShannonCapacityUnionProduct
+import InfoTheory.Known.Certificates.SicPovmZauner
 import InfoTheory.Known.Certificates.SpernerCapacityDirectedGraphs
 import InfoTheory.Known.Certificates.TimingChannelGeneralQueue
 import InfoTheory.Known.Certificates.TraceReconstructionAverageCase

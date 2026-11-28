@@ -34,6 +34,10 @@ Remarkably, the existence problem for SIC-POVMs has turned out to have deep, une
 - **Number-theoretic conditional constructions:** Appleby, Flammia, McConnell, and Yard (2017, 2020) and Kopp (2021) linked Weyl–Heisenberg SIC fiducials to Stark units in ray class fields of $\mathbb{Q}(\sqrt{(d-3)(d+1)})$, yielding explicit recipes for infinite families conditional on the Stark conjectures.
 - **No unconditional infinite family:** Despite overwhelming numerical and algebraic evidence, **not even a single infinite sequence of dimensions $d$** is unconditionally proved to admit SIC-POVMs.
 
+## Formal statement and certificate
+
+The Lean `Statement` (`InfoTheory.Problems.SicPovmZauner`) asks exactly for `d²` unit vectors in `ℂ^d` with pairwise `|⟨ψ_j|ψ_k⟩|² = 1/(d+1)` for every `d ≥ 2` (plain existence, not the Weyl–Heisenberg-covariant version). Adversarial re-check (2026-11-27): faithful, still open (exact SICs only in finitely many dimensions; infinite families only conditional on the Stark conjectures). The certificate `InfoTheory.Known.Certificates.SicPovmZauner` proves `sic_dim_two` (the tetrahedral qubit SIC satisfies `IsSICPOVM 2`), `sic_dim_one`, and `not_sic_two_real` (no real-amplitude family is a SIC in `ℂ²`), so `IsSICPOVM` is neither junk-true nor junk-false.
+
 ## References
 
 - G. Zauner, *Quantendesigns: Grundzüge einer nichtkommutativen Designtheorie*, Ph.D. thesis, University of Vienna (1999); English translation in *Int. J. Quantum Inf.* **9**(1), 445–507 (2011).

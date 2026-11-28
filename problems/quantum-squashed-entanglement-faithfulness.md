@@ -48,6 +48,10 @@ Brandão, Christandl, and Yard (2011) resolved faithfulness in the affirmative v
 - **No dimension-independent trace-distance bound ($\alpha \ge 1$ required):** Christandl, Schuch, and Winter (2012) showed that the $d \times d$ antisymmetric state $\alpha_d$ satisfies $E_{\mathrm{sq}}(\alpha_d) = O(1/d)$ while $\operatorname{dist}_1(\alpha_d, \mathrm{SEP}) \ge 1/2$, ruling out any universal bound with $\alpha < 1$.
 - **Open gap ($\alpha \in [1, 2]$):** Whether the true optimal trace-distance scaling is $\alpha = 1$ (matching the antisymmetric state, i.e. $E_{\mathrm{sq}}(\rho_{AB}) \ge \frac{c}{\min(d_A, d_B)} \operatorname{dist}_1(\rho_{AB}, \mathrm{SEP})^2$), or whether there exist states with $E_{\mathrm{sq}}(\rho_{AB}) = o(1/d)$ and constant trace distance to $\mathrm{SEP}$, remains open.
 
+## Formal statement and certificate
+
+The Lean `Statement` asks for the sharp exponent `α = 1` (a universal `c > 0` and, for each `ρ`, a separable `σ` with `(c / min(d_A, d_B)) · T(ρ, σ)² ≤ E_sq(ρ)`). It does **not** ask for qualitative faithfulness, which is the Brandão–Christandl–Yard theorem. Adversarial re-check (2026-11-27): the marginals inside `squashedEntanglement` were checked index by index; the existential `σ` matches `dist₁(ρ, SEP)` because SEP is compact; still open. The certificate `InfoTheory.Known.Certificates.QuantumSquashedEntanglementFaithfulness` proves `kron_isSeparable` (product states are separable), `traceDistance_self`, `traceDistance_nonneg`, `matEntropy_cast`, `cmi_dim_one`, and `squashedEntanglement_dim_one` (`E_sq = 0` on `ℂ¹ ⊗ ℂ¹`, which checks the index juggling and rules out `sInf` junk).
+
 ## References
 
 - M. Christandl and A. Winter, "'Squashed entanglement': An additive entanglement measure," *J. Math. Phys.* **45**, 829–840 (2004).

@@ -42,6 +42,10 @@ In 2021–2022, Panteleev and Kalachev (STOC 2022), followed closely by Leverrie
   - **2026 preprints claiming resolution:** T. Mittal, S. Srivastava, M. Tulsiani, and M. Wootters (`arXiv:2610.02648`, Oct. 2026) construct random constant-check-weight $p$-ary qLDPC ensembles (for every prime $p \ge 2$) approaching the quantum Gilbert–Varshamov bound via expander-based distance amplification and quantum Thommesen concatenation; K. Kasai (`arXiv:2603.24588`, Mar. 2026) also claims finite-degree nested CSS qLDPC codes reaching the CSS GV bound. Independent peer review and verification of the exact CSS $1 - 2h(\delta)$ statement remain pending.
 - **Upper bounds:** The quantum Singleton bound gives $R \le 1 - 2\delta$ (Rains 1999), and quantum LP bounds (Ashikhmin–Litsyn 1999) tighten this further for general (not necessarily LDPC) quantum codes.
 
+## Formal statement and certificate
+
+Adversarial re-check (2026-11-27): the Lean `Statement` faithfully encodes CSS codes (`H_X H_Z^T = 0`, logical operators `ker H_X / row H_Z` and `ker H_Z / row H_X`, row *and* column weight `≤ w`, `w` depending only on `(δ, ε)`). Good qLDPC codes (Panteleev–Kalachev 2022) do **not** settle it: their rate–distance curve is far below `1 − 2h(δ)`. The 2026 preprints listed above claim the CSS GV bound at bounded check weight; `formal_status: claimed-resolved` is kept pending verification. The certificate `InfoTheory.Known.Certificates.QuantumLdpcRateDistance` proves `trivial_code` (the `[[n, n, 1]]` code with weight `0`), `rate_le_one` (`k ≤ n`), `trivial_rate_forces_distance_le_one` (a rate-one CSS code has `d ≤ 1`, so the distance clause is a genuine constraint), and `binaryEntropy_hundredth_lt` (`h(1/100) < 1/2`, so the Statement's premises are satisfiable).
+
 ## References
 
 - A. R. Calderbank and P. W. Shor, "Good quantum error-correcting codes exist," *Physical Review A*, 54(2):1098–1105, 1996.

@@ -29,6 +29,10 @@ Quantum channel simulation is the operational dual to channel coding. For univer
 - **High-dimensional non-additivity:** By Shor's equivalence and Hastings' (2009) counterexample to additivity of entanglement of formation in high dimensions, $E_C(\mathcal{N}) < E_F(\mathcal{N})$ can occur for sufficiently high-dimensional channels.
 - **Qubit channels:** Whether $E_C(\mathcal{N}) = E_F(\mathcal{N})$ holds for all qubit channels ($d_1 = d_2 = 2$) remains open, paralleling the open additivity question for qubit minimum output entropy.
 
+## Formal statement and certificate
+
+Adversarial re-check (2026-11-27): the Lean `Statement` uses `E_C(N) = inf_{n≥1} (1/n) E_F(N^{⊗n})`, with reference dimension `2ⁿ`. This agrees with the limit form, given `E_C(N) ≤ E_F(N)` (BBCW). It is still open for qubit channels. The certificate `InfoTheory.Known.Certificates.QuantumReverseShannonNonCatalytic` proves that `partialTraceB` is a genuine partial trace (`partialTraceB_eq_sum`, `partialTraceB_posSemidef`, `partialTraceB_trace`), and proves `entanglementOfFormation_nonneg`, `channelEF_nonneg`, `channelEntanglementCost_nonneg` and `channelEntanglementCost_le_one_letter`. So the `sInf`/`sSup` objects are not junk-negative or unbounded. Explicit values such as `E_F(id₂) = 1` are not certified.
+
 ## References
 
 - M. Berta, F. G. S. L. Brandão, M. Christandl, and S. Wehner, "Entanglement cost of quantum channels," IEEE Trans. Inf. Theory, 2013; arXiv:1108.5357.

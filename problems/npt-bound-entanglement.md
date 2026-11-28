@@ -33,6 +33,10 @@ Whether the PPT condition is *exact* for undistillability — or whether there e
 - **$n$-copy undistillability:** Watrous (2004) proved that for every integer $n \ge 1$ there exist NPT states (in sufficiently high dimension $d(n)$) that are $n$-copy undistillable yet distillable at larger copy numbers. Strong analytical and numerical evidence (DiVincenzo et al. 2000; Dür et al. 2000; Pankowski–Piani–Horodecki–Horodecki 2010) suggests that Werner states with $\alpha = -1/2$ in dimension $d = 3$ (or $d \ge 4$) are $n$-copy undistillable for all $n \ge 1$, but a proof for all $n$ simultaneously remains elusive.
 - **Implications:** If NPT bound entanglement exists, then the set of undistillable states is non-convex (Shor–Smolin–Terhal 2001), and distillable entanglement $E_D$ is non-additive even on states of zero distillable entanglement.
 
+## Formal statement and certificate
+
+Adversarial re-check (2026-11-27): the Lean `Statement` encodes the Horodecki criterion faithfully, with `(ρ^{⊗n})^{T_B} = (ρ^{T_B})^{⊗n}` and Schmidt rank `≤ 2` across the true `A₁…Aₙ | B₁…Bₙ` cut after de-interleaving. The claimed proofs from 2001 and 2006 were not accepted, a 2024 survey still calls the problem open, and no resolution was found through 2026. The certificate `InfoTheory.Known.Certificates.NptBoundEntanglement` proves `bell_not_PPT` and `bell_distillable` (the Bell state is NPT and 1-copy distillable), `mixed_PPT` and `mixed_not_distillable` (the maximally mixed 2×2 state is PPT and undistillable for every `n`, via `kronPowerMat_smul_one`), and `isPPT_dB_one` (every state with `d_B = 1` is PPT). So both predicates take both truth values, and the Statement is not trivially settled.
+
 ## References
 
 - M. Horodecki, P. Horodecki, and R. Horodecki, "Mixed-state entanglement and distillation: Is there a 'bound' entanglement in nature?," *Phys. Rev. Lett.* **80**, 5239–5242 (1998).
