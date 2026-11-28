@@ -49,7 +49,7 @@
     "lean/InfoTheory/Problems/EntropicDoublingConstant.lean": "3b14ff42c2a74ac2dd26c85ad2f5d9a97f8444e09df801738bedf8e0a544c1d0",
     "lean/InfoTheory/Problems/EntropyRegion.lean": "c1a95a476549c222746a08d9eed4d1ce4c002bf24d7a2a7901ae0ff6785cdd24",
     "lean/InfoTheory/Problems/EntropyRegionDecidability.lean": "37efda9f479fd31eb362cce299d821923cf43300a3f592369165e0da1b2a1d41",
-    "lean/InfoTheory/Problems/ExplicitListDecodableBinary.lean": "e692ea01f10e0f387a739926f1eca05e08be513eb50414a4d40802df8104de16",
+    "lean/InfoTheory/Problems/ExplicitListDecodableBinary.lean": "4e87f7f531c2c18e9844d0e7c26a1129e675c0d3c46b673ef08573fb02054e51",
     "lean/InfoTheory/Problems/FiniteStateChannelCapacity.lean": "98741c414e3e940ea65def08b9c064c4e7e60093097e204d903a3c60f1b397fa",
     "lean/InfoTheory/Problems/GaussianBcFeedbackSumCapacity.lean": "8fb32a1f84bbad6093bbb0f4048ce8fa924e8a64aeedbdab26e2890da56eba40",
     "lean/InfoTheory/Problems/GaussianInterferenceChannel.lean": "5d3ed22d6190e987f7dc4861df7ef87bbef9b43845dd00fd2073399ab535648c",

@@ -37,6 +37,25 @@ Despite two decades of sustained progress, there remains an exponential chasm be
   - Chase (2021, Ann. Probab.): $\tilde{\Omega}(n^{3/2})$ traces, currently the best known lower bound for worst-case binary trace reconstruction at $d = 1/2$.
 - **Barriers for $k$-mer / local statistical query algorithms:** Chen, De, Lee, Servedio, and Sinha (2024) and Mazooji–Shomorony (2024) proved that $k$-mer / $O(n^{1/5})$-local statistical query algorithms cannot beat $\exp(\tilde{\Omega}(n^{1/5}))$, indicating that breaking the $n^{1/5}$ barrier requires fundamentally non-local techniques.
 
+## Formal statement and certificate
+
+- **Adversarial check (2026-11-27): Statement is faithful and open.** `traceReconWorstCaseSamples`
+  is the least `T > 0` such that every *pair* `x ≠ y` is distinguished from `T` traces with
+  average success `≥ 2/3`. This differs from worst-case reconstruction by at most an `O(n)`
+  factor (amplification plus a Scheffé tournament), so the polynomial question is the same.
+  The deletion law `deletionProb` is the exact `Del_d` likelihood (subsequence-embedding count).
+  The quasipolynomial upper bound of Burudgunte–Valiant–Wang (arXiv:2607.04073, July 2026) does
+  not settle the polynomial question; the abstract does not say whether it is worst-case, so the
+  "What is known" entry should be read with that caveat.
+- **Certificate** (`Known/Certificates/TraceReconstructionWorstCase.lean`):
+  - `deletionProb_self`, `deletionProb_nil`: `Pr[Del_d(x) = x] = (1-d)^n`, `Pr[Del_d(x) = ε] = d^n`;
+  - `fullTest_success`: one trace, test "is it the full word `x`?", success sum `≥ 2(1-d)^n + d^n`;
+  - regression `traceReconWorstCaseSamples_eq_one`: `T_wc(n, d) = 1` whenever
+    `2(1-d)^n + d^n ≥ 4/3`; instances `d = 0` (all `n`), `n = 0`, and at the Statement's own
+    `d = 1/2`: `traceReconWorstCaseSamples_one_half_one : T_wc(1, 1/2) = 1`.
+- **Not certified:** non-emptiness of the defining set for general `n` at `d = 1/2` (true, but
+  the proof needs `∑_z Pr[Del_d(y) = z] = 1`, not yet in `Known`), and all asymptotic bounds.
+
 ## References
 
 - V. I. Levenshtein, "Efficient reconstruction of sequences from their subsequences or supersequences," *J. Combin. Theory Ser. A*, 93(2):310–332, 2001.

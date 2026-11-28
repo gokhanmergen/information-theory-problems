@@ -38,6 +38,24 @@ For several years after Katz and Trevisan, it was widely conjectured that $q$-qu
   - Alrabiah, Guruswami, Kothari, and Manohar (2023, STOC 2024): $n \ge \Omega(k^3 / (\log k)^6)$ for all (even nonlinear) 3-query binary LDCs, via Kikuchi matrix spectral bounds for semirandom 3-XOR refutation.
 - **Separation from 3-query LCCs:** Kothari and Manohar (2024) proved an **exponential** lower bound $n \ge 2^{\Omega(k^{1/8})}$ for linear 3-query Locally *Correctable* Codes (LCCs), establishing the first exponential separation between 3-query LCCs and 3-query LDCs.
 
+## Formal statement and certificate
+
+- **Adversarial check (2026-11-27): Statement is faithful and open.** `IsBinaryLDC` is the
+  standard (possibly nonlinear) `q`-query `(δ, ε)` LDC. The statement says every `3`-query LDC
+  with constant `δ, ε > 0` has `n > C k^d` for all large `k`, i.e. super-polynomial length. Its
+  vacuity risk (no LDCs at all) is excluded by the certificate. Status: best lower bound
+  `n ≥ Ω̃(k^3)` (Alrabiah–Guruswami–Kothari–Manohar 2023; Janzer–Manohar 2024 give the same
+  exponent for `q = 3`), best upper bound `exp(exp(Õ(√log k)))` (Efremenko 2009). Late-2025
+  progress concerns *relaxed* LDCs (Gur–Minzer–Weissenberg–Zheng, ECCC TR25-217: 3-query RLDCs of
+  length `Õ(k^2)`) and does not affect this statement.
+- **Certificate** (`Known/Certificates/LocallyDecodableCodes3Query.lean`):
+  - `hadamard_isBinaryLDC`, `hadamard_isBinaryLDC_of_le`: the Hadamard code of length `2^k` is a
+    3-query `(δ, ε)`-LDC for every `k` whenever `δ ≤ 1/8`, `ε ≤ 1/4`, so the hypothesis of the
+    Statement is satisfiable at every message length (non-vacuity), consistently with the
+    conjectured answer;
+  - `isBinaryLDC_mono` (antitone in `δ, ε`), `isBinaryLDC_eps_le` (`ε ≤ 1/2` for any LDC).
+- **Not certified:** the `Ω̃(k^3)` / `Ω̃(k^2)` lower bounds, matching-vector codes.
+
 ## References
 
 - J. Katz and L. Trevisan, "On the efficiency of local decoding procedures for error-correcting codes," *Proc. 32nd ACM STOC*, pp. 80–86, 2000.

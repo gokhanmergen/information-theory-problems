@@ -1,5 +1,32 @@
 import InfoTheory.Core
 
+/-!
+# Explicit polynomial-time list-decodable binary codes at list-decoding capacity
+
+`Statement`: for every `p ∈ (0, 1/2)` and `ε ∈ (0, 1 - h(p))` there are a rational rate
+`a / b ≥ 1 - h(p) - ε`, a constant list size `L`, and uniform polynomial-time Turing machines
+`E, D` such that, for all large `m`, `E` maps `k = a m` bits injectively to `n = b m` bits and
+`D` list-decodes every Hamming ball of radius `p n` into a list of `L` messages.
+
+**Statement-fix (2026-11-27).** The previous statement fixed the message length to
+`k = ⌊(1 - h(p) - ε) n⌋` for *every* real `p, ε` and every `n ≥ N₀`. Two artefacts of that
+encoding changed the question:
+1. The decoder `D` lays its list out in `k`-bit blocks, so it must compute `k` from `n`; for a
+   non-computable real `1 - h(p) - ε` (all but countably many `ε`) no Turing machine computes
+   `n ↦ ⌊(1 - h(p) - ε) n⌋`, so the formal statement could fail for reasons of computability
+   rather than coding theory.
+2. The encoder `E` sees only `k`, but several `n` share the same `k`; it had to emit one tape
+   whose length-`n` prefixes work for all of them.
+The literature asks for an explicit family of rate `≥ 1 - h(p) - ε` (Guruswami–Rudra 2008,
+§1; Guruswami, "Algorithmic results in list decoding", 2006), and families defined on an
+infinite arithmetic progression of lengths are the standard notion of an explicit family.
+The fixed version lets the construction choose a rational rate `a / b ≥ 1 - h(p) - ε` and uses
+lengths `n = b m`, `k = a m`, so `E` and `D` can compute `n` from `k` and `k` from `n`. It
+remains a capacity statement: by the list-decoding converse (Elias 1991) a constant list size
+forces `a / b ≤ 1 - h(p) + o(1)`, and random codes achieve every rate `< 1 - h(p)`
+non-explicitly; what is open is an explicit, polynomial-time list-decodable family.
+-/
+
 open scoped BigOperators
 
 namespace InfoTheory.Problems.ExplicitListDecodableBinary
@@ -48,25 +75,30 @@ def extractListItem {L k : ℕ} (out : Fin (L * k) → Bool) (ℓ : Fin L) : Fin
       _ ≤ L * k := Nat.mul_le_mul_right k ℓ.2⟩
 
 /-- Explicit Uniform Polynomial-Time List-Decodable Binary Codes Achieving Capacity
-    (Guruswami–Sudan 2000; Kopparty–Ron-Zewi–Saraf–Wootters):
-    for every `p ∈ (0, 1/2)` and `ε > 0`, do there exist a constant list size `L` and
-    **uniform** polynomial-time Turing machines `(E, D)` (independent of blocklength `n`)
-    encoding `k = ⌊(1 - h(p) - ε) n⌋` bits into `n` bits and list-decoding within
-    Hamming radius `p n`? -/
+    (Guruswami–Sudan 2000; Guruswami–Rudra 2008):
+    for every `p ∈ (0, 1/2)` and `ε ∈ (0, 1 - h(p))`, are there a rational rate
+    `a / b ≥ 1 - h(p) - ε`, a constant list size `L` and **uniform** polynomial-time Turing
+    machines `(E, D)` such that for all large `m`, `E` encodes `k = a m` bits into `n = b m`
+    bits injectively and `D` outputs `L` candidates (as `L` consecutive `k`-bit blocks)
+    containing every message whose codeword is within Hamming distance `p n` of the input?
+    (Statement-fix 2026-11-27: rational rate and lengths `n = b m`; see the module docstring.) -/
 def Statement : Prop :=
   ∀ (p ε : ℝ), 0 < p → p < 1 / 2 → 0 < ε → ε < 1 - binaryEntropy p →
-    ∃ (L c d N₀ : ℕ) (E D : UniformTM), 0 < L ∧ 0 < c ∧
-      ∀ n : ℕ, N₀ ≤ n →
-        let k : ℕ := Nat.floor ((1 - binaryEntropy p - ε) * (n : ℝ))
+    ∃ (a b L c d N₀ : ℕ) (E D : UniformTM), 0 < b ∧ 0 < L ∧ 0 < c ∧
+      1 - binaryEntropy p - ε ≤ (a : ℝ) / (b : ℝ) ∧
+      ∀ m : ℕ, N₀ ≤ m →
+        let n : ℕ := b * m
+        let k : ℕ := a * m
         let T : ℕ := c * n ^ d
-        let enc (m : Fin k → Bool) : Fin n → Bool := readTapeBits E (tmRunOnBits E m T) n
-        let dec (y : Fin n → Bool) : Fin (L * k) → Bool := readTapeBits D (tmRunOnBits D y T) (L * k)
-        (∀ m : Fin k → Bool, (tmRunOnBits E m T).state.1 = 0) ∧
+        let enc (msg : Fin k → Bool) : Fin n → Bool := readTapeBits E (tmRunOnBits E msg T) n
+        let dec (y : Fin n → Bool) : Fin (L * k) → Bool :=
+          readTapeBits D (tmRunOnBits D y T) (L * k)
+        (∀ msg : Fin k → Bool, (tmRunOnBits E msg T).state.1 = 0) ∧
         (∀ y : Fin n → Bool, (tmRunOnBits D y T).state.1 = 0) ∧
         Function.Injective enc ∧
-        ∀ (m : Fin k → Bool) (y : Fin n → Bool),
-          (hammingDistVec (enc m) y : ℝ) ≤ p * (n : ℝ) →
-          ∃ ℓ : Fin L, extractListItem (dec y) ℓ = m
+        ∀ (msg : Fin k → Bool) (y : Fin n → Bool),
+          (hammingDistVec (enc msg) y : ℝ) ≤ p * (n : ℝ) →
+          ∃ ℓ : Fin L, extractListItem (dec y) ℓ = msg
 
 def problem : OpenProblem where
   id := "explicit-list-decodable-binary"

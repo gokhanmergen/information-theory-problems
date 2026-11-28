@@ -32,6 +32,32 @@ Despite this success over large alphabets, bringing explicit capacity-achieving 
 - **Concatenated / expander-based binary codes for fixed $p \in (0, 1/2)$:** Guruswami and Rudra (2008, 2011) achieved the binary Blokh–Zyablov list-decoding tradeoff via multilevel concatenation, which remains strictly below $1 - h(p)$ for all $p \in (0, 1/2)$.
 - **Randomized (non-explicit) binary codes:** Random linear codes and random LDPC codes (Mosheiff et al. 2020) achieve list-decoding capacity $1 - h(p) - \varepsilon$ with constant list size, but have no known polynomial-time (or polynomial-size circuit) list-decoding algorithm up to $p$.
 
+## Formal statement and certificate
+
+- **Statement-fix (2026-11-27).** The previous Lean statement required uniform Turing machines
+  with message length exactly `k = ⌊(1 - h(p) - ε) n⌋` for *every real* `p, ε` and every large
+  `n`. The decoder lays out its list in `k`-bit blocks and so must compute `k` from `n`; for
+  non-computable `1 - h(p) - ε` (all but countably many `ε`) no Turing machine can, so the
+  formal statement could fail for computability reasons unrelated to coding. The encoder also
+  saw only `k`, although several `n` share one `k`. The fixed statement lets the construction
+  pick a **rational rate `a/b ≥ 1 - h(p) - ε`** and uses the lengths `n = b m`, `k = a m`
+  (`m ≥ N₀`), which is the standard notion of an explicit family. Everything else is unchanged:
+  uniform single-tape TMs, time `c n^d`, injective encoder, constant list size `L`, worst-case
+  radius `p n`.
+- **Still open (checked 2026-11):** explicit capacity-achieving list decoding is known only over
+  large alphabets (folded RS, multiplicity codes, and the 2025 expander-based constructions with
+  list size `O(1/ε)`); for binary codes the best explicit efficiently list-decodable trade-off is
+  still the Blokh–Zyablov bound (Guruswami–Rudra), strictly below `1 - h(p)`.
+- **Certificate** (`Known/Certificates/ExplicitListDecodableBinary.lean`):
+  - `statement_iff`: `Statement` unfolds to a per-length predicate `Body`;
+  - `idTM_run`: semantics check of the TM model (a one-step machine halts with its input on
+    the tape and `readTapeBits` returns it);
+  - regression `body_identity_zero_radius`: at `p = 0` the identity code (`E = D = idTM`, rate
+    `1 = 1 - h(0)`, `L = 1`, one step) satisfies `Body` for every length, so halting, readout and
+    list layout are honest, not junk;
+  - `body_injective_rate_le`: any witness has rate `a/b ≤ 1`.
+- **Not certified:** the list-decoding converse and random-coding achievability.
+
 ## References
 
 - V. Guruswami and M. Sudan, "List decoding algorithms for certain concatenated codes," *Proc. 32nd ACM STOC*, pp. 181–190, 2000.

@@ -39,6 +39,26 @@ Determining the exact optimal redundancy $r_B(n, k)$ as a function of $n$ and $k
   - Vardy and Yaakobi (2016) and Asi and Yaakobi (2019) constructed primitive multiset batch codes via multiplicity codes, Reed–Muller codes, and array/graph constructions achieving $r_B(n, k) = O(\sqrt{n} \log n)$ for every constant $k$, and $r_B(n, n^\varepsilon) = o(n)$ for every $\varepsilon < 1/2$ (contrasting with PIR codes, which achieve $r_{\mathrm{PIR}}(n, n^\varepsilon) = o(n)$ for all $\varepsilon < 1$).
   - Polyanskii and Vorobyev (2019) and Hollmann–Khathuria–Kuzmin–Skachek studied constructions via combinatorial designs and incidence geometries, narrowing constants without yet proving $r_B(n, k) = O_k(\sqrt{n})$ for general constant $k \ge 5$.
 
+## Formal statement and certificate
+
+- **Adversarial check (2026-11-27): Statement is faithful and open.** `minBatchRedundancy n k`
+  is the `sInf` of redundancies of binary *linear* primitive multiset `k`-batch codes with
+  arbitrary (local) decoders. The set is non-empty (repetition code), so there is no junk
+  `sInf ∅ = 0`. The literature has `Ω(√n) ≤ r_B(n, k) ≤ Õ(√n)` for each fixed `k ≥ 3`
+  (Rao–Vardy 2016, Wootters 2016; Vardy–Yaakobi 2016); Li–Wootters (2021) call the lower bound
+  "tight up to a logarithmic factor for constant k". No 2024–2026 paper found closing the log
+  factor for every constant `k`. Caveat: I could not locate an explicit statement of the
+  conjecture `r_B(n, k) = O_k(√n)` under the name "Asi–Yaakobi"; the question is the natural
+  closure of the documented log gap.
+- **Certificate** (`Known/Certificates/BatchCodesOptimalRedundancy.lean`):
+  - `repetition_isBatchCode`, `minBatchRedundancy_le_repetition`: `r_B(n, k) ≤ (k-1) n`
+    (non-junk: the `sInf` is a genuine minimum);
+  - `one_le_minBatchRedundancy`: `r_B(n, k) ≥ 1` for `k ≥ 2` (no bijective linear encoder can
+    serve the request `(i, i)` from two disjoint sets);
+  - regressions: `minBatchRedundancy_one` (`r_B(n, 1) = 0`) and `minBatchRedundancy_two`
+    (`r_B(n, 2) = 1` exactly, via the single-parity code `parity_isBatchCode`).
+- **Not certified:** the `Ω(√n)` lower bound and the `Õ(√n)` constructions for `k ≥ 3`.
+
 ## References
 
 - Y. Ishai, E. Kushilevitz, R. Ostrovsky, and A. Sahai, "Batch codes and their applications," *Proc. 36th ACM STOC*, pp. 262–271, 2004.

@@ -47,6 +47,26 @@ The **single-shot interactive compression** problem asks whether a single execut
   - Braverman–Garg–Pankratov–Weinstein (2013) and Kol (2016) eliminated the dependence on $C$ on product distributions, achieving **$O(I \log I)$** communication (for bounded error); Sherstov (2016) and Braverman–Weinstein also studied related regimes.
   - **Linear compression $O(I^{\mathrm{ext}} + 1)$ vs $\Omega(I^{\mathrm{ext}} \log I^{\mathrm{ext}})$** remains a flagship open problem (BBCR 2010; Braverman 2012; Kol 2016).
 
+## Formal statement and certificate
+
+- **Adversarial check (2026-11-27): Statement is faithful and open, for Boolean functions.**
+  The Lean statement quantifies over Boolean `f` (with public and private coins, error `1/10`
+  compressed to error `1/3`). For *relations* the analogous claim is false: Ganor–Kol–Raz
+  ("Exponential separation of communication and external information", STOC 2016 / SICOMP 2021)
+  give a search problem with external information `O(k)` and distributional communication
+  `≥ 2^k`. That example is not a Boolean function, and Braverman–Minzer (arXiv:2103.04049) treat
+  external information of Boolean functions as a separate question (they separate external
+  from internal information; their communication-side gap is only near-quadratic, for amortized
+  zero-error communication). Braverman–Kol (STOC 2018) compress to `poly(I^ext) · log log C(π)`.
+  The "What is known" bullet above that calls linear compression "flagship open" is accurate
+  only for Boolean functions.
+- **Certificate** (`Known/Certificates/InteractiveInfoComplexityCompression.lean`):
+  - regression `extInfoCost_nonneg`, `extInfoCost_le_length`: `0 ≤ IC^ext(π) ≤ C(π) = L`;
+  - `protocolErr_nonneg`, `protocolErr_le_one`;
+  - `conclusion_of_short`, `conclusion_of_length_le_one`: the conclusion is met by `π` itself
+    when `L ≤ C (IC^ext + 1)`, so the side conditions are not an obstruction.
+- **Not certified:** BBCR / Braverman–Kol compression and any separation.
+
 ## References
 
 - B. Barak, M. Braverman, X. Chen, and A. Rao, "How to compress interactive communication," *Proc. 42nd ACM STOC*, 67–76 (2010); *SIAM J. Comput.* **42**(3), 1327–1363 (2013).

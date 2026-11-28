@@ -1,5 +1,6 @@
 import InfoTheory.Known.Certificates.AmplitudeConstrainedAwgnSupport
 import InfoTheory.Known.Certificates.AwgnFeedbackErrorExponent
+import InfoTheory.Known.Certificates.BatchCodesOptimalRedundancy
 import InfoTheory.Known.Certificates.BinaryDuplicationChannel
 import InfoTheory.Known.Certificates.BinaryMultiplierTwoWayChannel
 import InfoTheory.Known.Certificates.BinarySkewSymmetricBc
@@ -30,6 +31,7 @@ import InfoTheory.Known.Certificates.EditDistanceCodeCapacity
 import InfoTheory.Known.Certificates.EntropicDoublingConstant
 import InfoTheory.Known.Certificates.EntropyRegion
 import InfoTheory.Known.Certificates.EntropyRegionDecidability
+import InfoTheory.Known.Certificates.ExplicitListDecodableBinary
 import InfoTheory.Known.Certificates.FiniteStateChannelCapacity
 import InfoTheory.Known.Certificates.GaussianBcFeedbackSumCapacity
 import InfoTheory.Known.Certificates.GaussianInterferenceChannel
@@ -43,6 +45,7 @@ import InfoTheory.Known.Certificates.HypercontractivityRibbonDiscrete
 import InfoTheory.Known.Certificates.IndexCodingLinearNonlinearGap
 import InfoTheory.Known.Certificates.IndexCodingSingleLetter
 import InfoTheory.Known.Certificates.InsertionDeletionChannel
+import InfoTheory.Known.Certificates.InteractiveInfoComplexityCompression
 import InfoTheory.Known.Certificates.IntrinsicVsSecretKeyGap
 import InfoTheory.Known.Certificates.KissingNumberHighDim
 import InfoTheory.Known.Certificates.LdpMinimaxKlSharp
@@ -51,6 +54,8 @@ import InfoTheory.Known.Certificates.LinearNetworkCodingGap
 import InfoTheory.Known.Certificates.LinearRankEntropyRegionN6
 import InfoTheory.Known.Certificates.ListDecodingCapacityBinaryLinear
 import InfoTheory.Known.Certificates.ListDecodingZeroErrorCapacity
+import InfoTheory.Known.Certificates.LocallyCorrectableCodesConstantRate
+import InfoTheory.Known.Certificates.LocallyDecodableCodes3Query
 import InfoTheory.Known.Certificates.LogSobolevHypercubeSharp
 import InfoTheory.Known.Certificates.MacWithFeedback
 import InfoTheory.Known.Certificates.MartonInnerBoundTightness
@@ -82,6 +87,7 @@ import InfoTheory.Known.Certificates.ShannonCapacityUnionProduct
 import InfoTheory.Known.Certificates.SpernerCapacityDirectedGraphs
 import InfoTheory.Known.Certificates.TimingChannelGeneralQueue
 import InfoTheory.Known.Certificates.TraceReconstructionAverageCase
+import InfoTheory.Known.Certificates.TraceReconstructionWorstCase
 import InfoTheory.Known.Certificates.TwoWayChannelCapacity
 import InfoTheory.Known.Certificates.UndirectedNetworkCodingLiLi
 import InfoTheory.Known.Certificates.UniversalLossyRedundancy

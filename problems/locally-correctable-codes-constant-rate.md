@@ -35,6 +35,24 @@ In a breakthrough, Kopparty, Meir, Ron-Zewi, and Saraf (2017) constructed the fi
   - For growing $q = \omega(1)$ at constant rate $k = \Omega(n)$, no super-logarithmic lower bound is known: the gap between $\Omega(\log n)$ and $\exp(O(\sqrt{\log n \log \log n}))$ (and in particular whether $q = \mathrm{polylog}(n)$ is achievable) remains completely open.
 - **Related contrast with LTCs:** In 2022, Dinur–Evra–Livne–Lubotzky–Mozes and Panteleev–Kalachev constructed constant-rate, constant-distance Locally *Testable* Codes (LTCs) with $O(1)$ queries. No analogous $O(1)$-query or $\mathrm{polylog}(n)$-query construction is known for constant-rate LCCs.
 
+## Formal statement and certificate
+
+- **Adversarial check (2026-11-27): Statement is faithful and open.** `IsBinaryLCC` is the
+  standard linear `q`-query `(δ, ε)` LCC (uniform seed, non-adaptive queries, success
+  `≥ 1/2 + ε` at every coordinate for every codeword and every `y` within `δ n`). The statement
+  asks for constant `R, δ, ε` and `q ≤ C (log n)^c` along infinitely many `n`; no cheat makes it
+  trivial (`δ n → ∞`). Recent related results do **not** settle it: Kumar–Mon (STOC 2024) get
+  polylog queries only for *relaxed* LCCs; Yankovitz (ECCC TR25-168, rev. 2026) gets constant-rate
+  polylog-query block-wise LCCs only over alphabets with `log |Σ| ≤ k^ε` (concatenating to binary
+  multiplies the query count by `k^ε`). Best binary: `exp(Õ(√log n))` (Kopparty–Meir–Ron-Zewi–Saraf 2017).
+- **Certificate** (`Known/Certificates/LocallyCorrectableCodesConstantRate.lean`):
+  - `card_good_ge`: the union bound behind 2-query self-correction;
+  - regression `hadamard_isBinaryLCC`: the Hadamard code (length `2^k`, dimension `k`) is a
+    2-query `(1/8, 1/4)`-LCC for every `k`. So the predicate is satisfiable with constant
+    `δ, ε, q` at exponentially small rate; the difficulty is entirely the rate/query trade-off;
+  - `isBinaryLCC_mono_queries`: more queries never hurt.
+- **Not certified:** constant-rate constructions (multiplicity codes, KMRS) and lower bounds.
+
 ## References
 
 - J. Katz and L. Trevisan, "On the efficiency of local decoding procedures for error-correcting codes," *Proc. 32nd ACM STOC*, pp. 80–86, 2000.
