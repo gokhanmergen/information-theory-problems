@@ -15,6 +15,9 @@ import InfoTheory.Bridge.FeedbackConverse
 import InfoTheory.Bridge.RelayCoding
 import InfoTheory.Bridge.BroadcastCoding
 import InfoTheory.Bridge.WynerZiv
+import InfoTheory.Bridge.ContinuityAndShearer
+import InfoTheory.Bridge.WiretapCoding
+import InfoTheory.Bridge.GaussianConverse
 
 /-!
 # `InfoTheory.Bridge` — Non-Destructive Bridge to Mathlib & Cover & Thomas Foundations
@@ -62,4 +65,16 @@ Single convenience import re-exporting:
   Bergmans Binary Symmetric Degraded BC Capacity Region** (`degradedBSC_operational_capacity_region`).
 - `InfoTheory.Bridge.WynerZiv`: **Strong Typicality & the Markov Lemma** (El Gamal–Kim Lemma 12.1:
   `markov_lemma`) and the **Wyner–Ziv Lossy Source Coding Theorem** (`wyner_ziv_theorem`).
+- `InfoTheory.Bridge.ContinuityAndShearer`: **Sharp Fannes–Audenaert / Zhang Entropy Continuity**
+  (`shannonEntropy_continuity_audenaert`), **Alicki–Fannes–Winter Conditional Entropy & MI Continuity**
+  (`condEntropy_continuity`, `mutualInfo_continuity_min`), **Shearer's Lemma** (`shearer_inequality_weighted`),
+  **Han's Inequality** (`han_average_antitone_step`), and arbitrary-alphabet Zhang–Yeung.
+- `InfoTheory.Bridge.WiretapCoding`: **Wyner (1975) / Csiszár–Körner (1978) Wiretap Channel Secrecy
+  Capacity Theorem** (`wiretap_secrecy_capacity_theorem`, degraded simplification, weak-secrecy
+  converse via Csiszár's sum identity, and random-binning achievability).
+- `InfoTheory.Bridge.GaussianConverse`: **Strictly Causal Multi-User Gaussian Feedback & Relay
+  Cut-Set Converse Toolkit** (`causal_awgn_feedback_rate_le`, `causal_simo_awgn_feedback_rate_le`,
+  `gaussian_mac_feedback_sum_rate_converse`, `gaussian_bc_feedback_sum_rate_converse`,
+  `gaussian_relay_cutset_converse_coupled`, and the exact EMZ 2006 lower bound
+  `gaussian_relay_unit_energy_per_bit_ge`: `(3/4) · 2 ln 2 ≤ (P₁ + P₂) / R`).
 -/

@@ -1247,8 +1247,183 @@ SOLVED_THEOREMS = [
             "universal-lossy-redundancy",
         ],
     },
+    {
+        "id": "wyner-csiszar-korner-wiretap",
+        "title": "Wyner–Csiszár–Körner Wiretap Channel Secrecy Capacity Theorem",
+        "category": "ch15-network",
+        "authors": "Aaron D. Wyner; Imre Csiszár and János Körner",
+        "year": "1978",
+        "reference": "El Gamal & Kim, Theorem 22.1; Wyner (1975); Csiszár & Körner (1978)",
+        "tags": ["wiretap-channel", "secrecy-capacity", "csiszar-sum", "binning", "flagship", "ch15"],
+        "statement": (
+            "For any discrete memoryless wiretap channel $W(y, z \\mid x)$ with legitimate receiver $Y$ "
+            "and eavesdropper $Z$, the operational weak-secrecy capacity (requiring $P_e^{(n)} \\to 0$ and "
+            "$\\frac{1}{n} I(M; Z^n) \\to 0$) equals the single-letter Csiszár–Körner secrecy capacity:\n"
+            "$$C_s^{\\mathrm{op}}(W) = C_s(W) = \\sup_{V - X - (Y, Z)} \\bigl(I(V; Y) - I(V; Z)\\bigr).$$\n"
+            "Moreover, $0 \\le C_s(W) \\le C(W_B)$, $C_s(W) = \\sup_{P_X} (I(X; Y) - I(X; Z))$ whenever $Z$ "
+            "is stochastically degraded with respect to $Y$ (Wyner 1975), and $C_s(W) = 0$ whenever $Z$ is "
+            "less noisy than $Y$."
+        ),
+        "proof_notes": (
+            "Proved directly against `InfoTheory.Core.Channels.{WiretapChannel, wiretapSecrecyCapacity}`: "
+            "the weak-secrecy converse applies Fano's inequality and `csiszar_sum_identity` with auxiliary "
+            "$U_i = (Y^{<i}, Z_{>i})$; achievability uses prefix channel $V \\to X$ and i.i.d. random "
+            "binning reusing `dmc_random_coding_expected_error_le` for both Bob's decoding of $(M, L)$ "
+            "and Eve's conditional decoding of $L$ given $(M, Z^n)$ via Fano's inequality."
+        ),
+        "lean_decls": [
+            ("lean/InfoTheory/Bridge/WiretapCoding.lean", "wiretapSecrecyCapacity_degraded"),
+            ("lean/InfoTheory/Bridge/WiretapCoding.lean", "wiretapSecrecyCapacity_eq_zero_of_less_noisy_eve"),
+            ("lean/InfoTheory/Bridge/WiretapCoding.lean", "wiretapCode_rate_converse"),
+            ("lean/InfoTheory/Bridge/WiretapCoding.lean", "wiretap_weak_secrecy_converse"),
+            ("lean/InfoTheory/Bridge/WiretapCoding.lean", "wiretap_weak_secrecy_achievability"),
+            ("lean/InfoTheory/Bridge/WiretapCoding.lean", "wiretap_secrecy_capacity_theorem"),
+        ],
+        "related_open": [
+            "wiretap-with-feedback-capacity",
+            "covert-communication-second-order",
+            "broadcast-channel",
+        ],
+        "analogous_open": [
+            "private-vs-quantum-capacity-gap",
+        ],
+    },
+    {
+        "id": "gaussian-mac-and-bc-capacity",
+        "title": "Two-User Gaussian MAC Capacity Region & Scalar Gaussian BC Superposition Achievability",
+        "category": "ch15-network",
+        "authors": "Thomas M. Cover; Aaron D. Wyner; Patrick P. Bergmans",
+        "year": "1974",
+        "reference": "Cover & Thomas, Theorems 15.1.1, 15.3.6 & 15.6.2; El Gamal & Kim, Theorems 4.6 & 5.3",
+        "tags": ["gaussian-mac", "gaussian-bc", "superposition", "sic", "measurable-codes", "flagship", "ch15"],
+        "statement": (
+            "Over the two-user scalar Gaussian multiple-access channel $Y = X_1 + X_2 + Z$ "
+            "($Z \\sim \\mathcal{N}(0, N)$, $N > 0$) with measurable decoders, per-codeword power "
+            "constraints $\\sum_i x_{k,i}(m_k)^2 \\le n P_k$, and `ENNReal`-valued average error probability:\n"
+            "$$\\mathcal{C}_{\\mathrm{GMAC}}(P_1, P_2, N) = \\left\\{(R_1, R_2) \\ge 0 : "
+            "R_1 \\le \\tfrac{1}{2}\\log_2\\!\\left(1 + \\tfrac{P_1}{N}\\right),\\; "
+            "R_2 \\le \\tfrac{1}{2}\\log_2\\!\\left(1 + \\tfrac{P_2}{N}\\right),\\; "
+            "R_1 + R_2 \\le \\tfrac{1}{2}\\log_2\\!\\left(1 + \\tfrac{P_1 + P_2}{N}\\right)\\right\\}.$$\n"
+            "Over the two-receiver scalar Gaussian broadcast channel $Y_k = X + Z_k$ ($0 < N_1 \\le N_2$), "
+            "every rate pair with $R_1 < \\frac{1}{2}\\log_2(1 + \\frac{\\alpha P}{N_1})$ and "
+            "$R_2 < \\frac{1}{2}\\log_2(1 + \\frac{(1-\\alpha)P}{\\alpha P + N_2})$ ($\\alpha \\in [0, 1]$) "
+            "is operationally achievable via superposition coding."
+        ),
+        "proof_notes": (
+            "Proved in `Known/GaussianNetwork.lean` on top of `Core/GaussianOperational.lean` and "
+            "`Known/GaussianChannel.lean`: the MAC converse centers both encoders at their empirical "
+            "means to kill cross-user correlation before applying an average-power Gaussian likelihood-ratio "
+            "converse; corner-point achievability uses quantized successive interference cancellation (SIC) "
+            "with product-codebook power expurgation and exact real subtraction in Stage 2; convexity follows "
+            "from blocklength time-sharing."
+        ),
+        "lean_decls": [
+            ("lean/InfoTheory/Known/GaussianNetwork.lean", "gaussianMAC_sum_converse_code"),
+            ("lean/InfoTheory/Known/GaussianNetwork.lean", "gaussianMACCapacityRegion_subset_pentagon"),
+            ("lean/InfoTheory/Known/GaussianNetwork.lean", "gaussianMAC_corner_achievable"),
+            ("lean/InfoTheory/Known/GaussianNetwork.lean", "gaussianMACCapacityRegion_convex"),
+            ("lean/InfoTheory/Known/GaussianNetwork.lean", "gaussianMACCapacityRegion_eq"),
+            ("lean/InfoTheory/Known/GaussianNetwork.lean", "gaussianBC_superposition_achievable"),
+        ],
+        "related_open": [
+            "gaussian-mac-feedback-linear-optimality",
+            "gaussian-bc-feedback-sum-capacity",
+            "gaussian-interference-channel",
+            "gaussian-relay-channel-capacity",
+        ],
+    },
+    {
+        "id": "gaussian-causal-feedback-and-relay-converse",
+        "title": "Causal Multi-User Gaussian Feedback & Relay Cut-Set Converses (EMZ Minimum Energy per Bit Bound)",
+        "category": "ch15-network",
+        "authors": "Thomas M. Cover and Abbas El Gamal; Abbas El Gamal, Mehdi Mohseni, and Sina Zahedi",
+        "year": "2006",
+        "reference": "Cover & El Gamal (1979); El Gamal–Mohseni–Zahedi (2006), Table II; Cover & Thomas, Ch. 15",
+        "tags": ["gaussian-relay", "gaussian-feedback", "cutset-bound", "minimum-energy-per-bit", "flagship", "ch15"],
+        "statement": (
+            "For arbitrary measurable strictly causal feedback codes over vector AWGN channels "
+            "with expected drift energy constraints:\n"
+            "1. **General 1D & 2D/SIMO Causal Feedback Converse:** Every causal AWGN code with drift energy "
+            "$\\le nS$ obeys $(1 - P_e)\\ln M \\le \\frac{n}{2}\\ln(1 + S/N) + 1$ (and $\\frac{n}{2}\\ln(1 + (h_1^2 + h_2^2)P/N) + 1$ "
+            "in the SIMO setting via 2D orthogonal rotation invariance).\n"
+            "2. **Gaussian MAC & BC with Feedback:** For the $K$-user Gaussian MAC with feedback, "
+            "$\\sum_{j=1}^K R_j \\le \\frac{1}{2}\\log_2(1 + K^2 P / N)$; for the 2-receiver Gaussian BC with "
+            "feedback, $R_1 + R_2 \\le \\frac{1}{2}\\log_2(1 + (h_1^2 + h_2^2) P / N)$.\n"
+            "3. **Correlation-Coupled Gaussian Relay Cut-Set Bound & EMZ Table II:** Every achievable rate "
+            "$R$ on the three-node Gaussian relay channel $(g_{12}, g_{13}, g_{23}, P_1, P_2)$ satisfies\n"
+            "$$R \\le \\sup_{\\rho \\in [-1, 1]} \\min\\!\\left\\{\\tfrac{1}{2}\\log_2\\bigl(1 + (g_{12}^2 + g_{13}^2)P_1(1 - \\rho^2)\\bigr),\\; "
+            "\\tfrac{1}{2}\\log_2\\bigl(1 + g_{13}^2 P_1 + g_{23}^2 P_2 + 2 g_{13} g_{23} \\rho \\sqrt{P_1 P_2}\\bigr)\\right\\},$$\n"
+            "and at unit gains $(1, 1, 1)$ every positive operating point obeys the exact El Gamal–Mohseni–Zahedi "
+            "minimum-energy-per-bit lower bound $(P_1 + P_2)/R \\ge \\frac{3}{4} \\cdot 2\\ln 2$."
+        ),
+        "proof_notes": (
+            "Proves exact unit-Jacobian Lebesgue measure preservation (`measurePreserving_causalOutput`) "
+            "for strictly causal triangular maps, causal orthogonality $\\mathbb{E}[X_i Z_i] = 0$, and 2D "
+            "rotation invariance of product Gaussian noise (`measurePreserving_rot2D_awgnNoise`), then "
+            "applies an abstract likelihood-ratio meta-converse (`meta_converse_avg_error`) with direct "
+            "interfaces matching the frozen operational definitions of `GaussianMacFeedbackLinearOptimality`, "
+            "`GaussianBcFeedbackSumCapacity`, and `GaussianRelayChannelCapacity`."
+        ),
+        "lean_decls": [
+            ("lean/InfoTheory/Bridge/GaussianConverse.lean", "measurePreserving_causalOutput"),
+            ("lean/InfoTheory/Bridge/GaussianConverse.lean", "causal_awgn_feedback_rate_le"),
+            ("lean/InfoTheory/Bridge/GaussianConverse.lean", "causal_simo_awgn_feedback_rate_le"),
+            ("lean/InfoTheory/Bridge/GaussianConverse.lean", "gaussian_mac_feedback_sum_rate_converse"),
+            ("lean/InfoTheory/Bridge/GaussianConverse.lean", "gaussian_bc_feedback_sum_rate_converse"),
+            ("lean/InfoTheory/Bridge/GaussianConverse.lean", "gaussian_relay_cutset_converse_coupled"),
+            ("lean/InfoTheory/Bridge/GaussianConverse.lean", "gaussian_relay_unit_energy_per_bit_ge"),
+        ],
+        "related_open": [
+            "gaussian-relay-channel-capacity",
+            "gaussian-bc-feedback-sum-capacity",
+            "gaussian-mac-feedback-linear-optimality",
+            "awgn-feedback-error-exponent",
+        ],
+    },
 
     # ------------------------------------------------------------------ Entropy Region
+    {
+        "id": "fannes-audenaert-continuity-and-shearer",
+        "title": "Fannes–Audenaert / Winter Entropy Continuity, Shearer's Lemma, and Han's Inequality",
+        "category": "entropy-region",
+        "authors": "Zhen Zhang; Koenraad Audenaert; Andreas Winter; Fan Chung et al.; Te Sun Han",
+        "year": "2007",
+        "reference": "Cover & Thomas, Theorems 17.3.3 & 17.6.1; Zhang (2007); Winter (2016); Chung–Graham–Frankl–Shearer (1986)",
+        "tags": ["continuity", "fannes-audenaert", "shearer", "han-inequality", "polymatroid", "ch17"],
+        "statement": (
+            "1. **Sharp Fannes–Audenaert / Zhang Continuity:** For any $P, Q$ on a finite alphabet $\\mathcal{X}$ "
+            "($|\\mathcal{X}| \\ge 2$) at total variation distance $T = \\mathrm{TV}(P, Q)$,\n"
+            "$$|H(P) - H(Q)| \\le T \\log_2(|\\mathcal{X}| - 1) + h(T).$$\n"
+            "2. **Tight Alicki–Fannes–Winter Continuity:** For any $P_{XY}, Q_{XY}$ on $\\mathcal{X} \\times \\mathcal{Y}$ "
+            "(independent of $|\\mathcal{Y}|$),\n"
+            "$$|H(X \\mid Y)_P - H(X \\mid Y)_Q| \\le T \\log_2 |\\mathcal{X}| + (1 + T) h\\!\\left(\\frac{T}{1 + T}\\right).$$\n"
+            "3. **Shearer's Lemma & Han's Inequality:** For any weighted cover $\\sum_{S \\ni j} w_S \\ge k$ of "
+            "$[n]$ and any polymatroid or joint distribution $P$ on $\\prod_{i=1}^n \\mathcal{X}_i$, "
+            "$k \\, H(X^n) \\le \\sum_S w_S \\, H(X_S)$; in particular, the normalized $k$-subset average "
+            "$h_k = \\frac{1}{k \\binom{n}{k}} \\sum_{|S|=k} H(X_S)$ is nonincreasing in $k$ ($h_{k+1} \\le h_k$)."
+        ),
+        "proof_notes": (
+            "Constructs the explicit maximal coupling `maxCoupling P Q` achieving $\\Pr[X \\ne Y] = \\mathrm{TV}(P, Q)$ "
+            "and applies Fano's inequality for sharp unconditional continuity; proves Winter's bound via "
+            "almost-convexity of conditional entropy; derives weighted Shearer's lemma in full generality "
+            "for arbitrary polymatroids `IsPolymatroid n h` and specializes to Han's monotonicity and "
+            "arbitrary-alphabet Zhang–Yeung."
+        ),
+        "lean_decls": [
+            ("lean/InfoTheory/Bridge/ContinuityAndShearer.lean", "maxCoupling_estErrorProb"),
+            ("lean/InfoTheory/Bridge/ContinuityAndShearer.lean", "shannonEntropy_continuity_audenaert"),
+            ("lean/InfoTheory/Bridge/ContinuityAndShearer.lean", "condEntropy_continuity"),
+            ("lean/InfoTheory/Bridge/ContinuityAndShearer.lean", "mutualInfo_continuity_min"),
+            ("lean/InfoTheory/Bridge/ContinuityAndShearer.lean", "shearer_inequality_weighted"),
+            ("lean/InfoTheory/Bridge/ContinuityAndShearer.lean", "han_average_antitone_step"),
+            ("lean/InfoTheory/Bridge/ContinuityAndShearer.lean", "zhang_yeung_subsetEntropy"),
+        ],
+        "related_open": [
+            "conditional-entropy-sharp-continuity",
+            "entropy-region",
+            "secret-sharing-optimal-info-ratio",
+        ],
+    },
     {
         "id": "zhang-yeung-non-shannon",
         "title": "The Copy Lemma and Zhang–Yeung Non-Shannon Information Inequality",

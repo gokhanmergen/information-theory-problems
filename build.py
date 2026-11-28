@@ -58,6 +58,10 @@ FORMAL_STATUS_META = {
         "statement false",
         "The frozen Lean 4 statement is known to be false as formalized (catalog modeling error pending statement fix); the underlying open mathematical problem remains open.",
     ),
+    "statement-true": (
+        "statement true (known)",
+        "The frozen Lean 4 statement is already a known theorem in the literature (catalog error or resolved formalization); see the problem notes for details.",
+    ),
     "disproved": (
         "disproved (formal)",
         "The frozen Lean 4 statement has been formally disproved (`¬ Statement` verified in Lean 4), while the broader underlying open problem may remain open.",

@@ -141,11 +141,13 @@ p.provenance { color: var(--muted); font-style: italic; margin-top: 0; }
 .badge-lean { background: var(--lean-bg); color: var(--lean-fg); }
 .badge-lean-verified { background: var(--solved-bg); color: var(--solved-fg); font-weight: 600; }
 .badge-formal-statement-false { background: #fde2e1; color: #9e1c1c; font-weight: 600; }
+.badge-formal-statement-true { background: #dff4ec; color: #0f6b4b; font-weight: 600; }
 .badge-formal-disproved { background: #f3e5f5; color: #6a1b9a; font-weight: 600; }
 .badge-formal-claimed-resolved { background: #fff3cd; color: #8a5300; font-weight: 600; }
 .badge-formal-expected-false { background: #e8eaed; color: #4a4d52; }
 @media (prefers-color-scheme: dark) {
   .badge-formal-statement-false { background: #4a1919; color: #f69d9b; }
+  .badge-formal-statement-true { background: #12362a; color: #7adbb5; }
   .badge-formal-disproved { background: #3b1c47; color: #d8a8f0; }
   .badge-formal-claimed-resolved { background: #3f2f0d; color: #f0c96e; }
   .badge-formal-expected-false { background: #2d2f33; color: #b8bcc2; }
@@ -156,6 +158,7 @@ p.provenance { color: var(--muted); font-style: italic; margin-top: 0; }
   font-family: -apple-system, "Segoe UI", Helvetica, sans-serif; font-size: 0.86rem;
 }
 .formal-status-banner.formal-statement-false { border-left-color: #c62828; }
+.formal-status-banner.formal-statement-true { border-left-color: #0f6b4b; }
 .formal-status-banner.formal-disproved { border-left-color: #7b1fa2; }
 .formal-status-banner.formal-claimed-resolved { border-left-color: #b26a00; }
 .formal-status-banner.formal-expected-false { border-left-color: #6e6e73; }
