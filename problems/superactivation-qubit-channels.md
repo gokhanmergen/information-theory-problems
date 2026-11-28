@@ -35,6 +35,21 @@ However, the Smith–Yard construction requires PPT-entangled (bound entangled) 
   - Tensoring two anti-degradable channels is again anti-degradable, hence has $Q = 0$.
   - Therefore, superactivation of qubit channels can occur **only if** there exists a qubit channel with $Q(\mathcal{N}) = 0$ that is *neither* entanglement-breaking *nor* anti-degradable (for instance, a depolarizing channel $\mathcal{D}_p$ with $p < 1/4$ if $p_0 < 1/4$, or a non-degradable qubit channel with $Q = 0$ and $P > 0$). Whether any such zero-capacity qubit channel exists — let alone superactivates — remains completely open.
 
+## Formal statement and certificate
+
+- **Adversarial check (2026-11-27): Statement is faithful and open.** All known
+  superactivation examples use a PPT channel of dimension at least 4 (Smith–Yard 2008 and
+  later; the 2026 finite-blocklength study arXiv:2604.27042 uses the original erasure + PPT
+  pair). No qubit example and no impossibility proof found.
+- **Certificate** (`Known/Certificates/SuperactivationQubitChannels.lean`):
+  - `tensorCh`, `tensorCh_apply`, `exists_tensor_realisation`: a CPTP realisation `N₁₂` of
+    `tensorChannelApply N₁ N₂` always exists (the existential is never vacuous);
+  - `quantumCapacity_tensor_le_two`: `Q(N₁₂) ≤ 2`;
+  - regression `reset_pair_not_superactivating`: the reset pair satisfies `Q(N₁) = Q(N₂) = 0`
+    and the realisation clause, but `Q(reset₂ ⊗ reset₂) ≤ 0`, so the target `0 < Q(N₁₂)` is not
+    automatic; `tensorCh_idCh_apply` checks `id₂ ⊗ id₂ = id₄`.
+- **Not certified:** additivity of `Q` for anti-degradable or entanglement-breaking pairs.
+
 ## References
 
 - M. Horodecki, P. Horodecki, and R. Horodecki, "Separability of mixed states: necessary and sufficient conditions," *Phys. Lett. A* **223**, 1–8 (1996).

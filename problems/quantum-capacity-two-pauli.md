@@ -39,6 +39,20 @@ Yet just as for the depolarizing channel, neither the exact quantum capacity cur
 - **Entanglement-breaking threshold:** $\mathcal{N}_p$ is entanglement-breaking (separable Choi state) for $p \ge 1/2$.
 - **Open gap:** For $p \in (0.2272, 1/3)$, upper bounds via degradable extensions (Smith–Smolin 2008), approximate degradability (Sutter et al. 2017), and quantum flags improve the quantitative upper bound on $Q(\mathcal{N}_p)$, but none vanish strictly below $p = 1/3$. Determining whether $p_0 < 1/3$ or $p_0 = 1/3$ remains completely open.
 
+## Formal statement and certificate
+
+- **Adversarial check (2026-11-27): Statement is faithful and open.** The no-cloning
+  threshold `1/3` (Pauli weights `(1-p, p/2, 0, p/2)`) is the standard anti-degradability
+  point; `quantumCapacity` is non-junk (bounded `sSup`s, see the toolkit in
+  `Known/Certificates/QuantumCapacitySingleLetter.lean`). No 2024–2026 result shows
+  `Q(N_p) = 0` for some `p < 1/3`; symmetric-code searches (arXiv:2605.09138, 2026) only improve
+  the positivity threshold from below.
+- **Certificate** (`Known/Certificates/QuantumCapacityTwoPauli.lean`):
+  - `twoPauliCh_isTwoPauli`: an explicit Kraus realisation exists for every `p ∈ [0, 1]`;
+  - `quantumCapacity_twoPauli_le_one`: `Q ≤ 1`;
+  - regression `not_zeroCapacity_at_zero` (`N_0 = id`, `Q(id₂) = 1`).
+- **Not certified:** anti-degradability for `p ≥ 1/3`, the hashing bound `1 - h(p) - p`.
+
 ## References
 
 - D. P. DiVincenzo, P. W. Shor, and J. A. Smolin, "Quantum-channel capacity of very noisy channels," *Phys. Rev. A* **57**, 830–839 (1998).

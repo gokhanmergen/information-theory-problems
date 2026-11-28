@@ -38,6 +38,32 @@ Whether there exists a bounded-letter characterization $k(d_1, d_2) < \infty$ �
 - **Fixed dimension remains open:** For any fixed finite dimensions $(d_1, d_2)$ — and in particular for qubit-to-qubit channels $(d_1, d_2) = (2, 2)$ — it remains open whether a uniform finite $k(d_1, d_2)$ exists, or whether $Q(\mathcal{N})$ can require arbitrarily large blocklengths $n$ within fixed dimension.
 - **Computability:** Because no general computable upper bound converging to $Q(\mathcal{N})$ is known, it is not even known whether $Q(\mathcal{N})$ is Turing-computable, nor whether testing $Q(\mathcal{N}) > 0$ is decidable (Wolf–Pérez-García 2007; Cubitt et al. 2015).
 
+## Formal statement and certificate
+
+- **Adversarial check (2026-11-27): Statement is faithful and open.** Cubitt et al. (2015,
+  arXiv:1408.5115) build, for each `n`, a switched erasure / approximate-pbit channel with
+  `Q^{(n)} = 0 < Q`; its shield has `N` copies, so the dimension grows with `n`, and the paper
+  explicitly leaves a constant dimension bound open. Hence the fixed-`(d₁, d₂)` statement is
+  neither proved nor refuted. Junk check: every `sSup` in `coherentInfoRegN` / `quantumCapacity`
+  is over a nonempty bounded-above set (certified below).
+- **Certificate** (`Known/Certificates/QuantumCapacitySingleLetter.lean`, also the shared
+  quantum-capacity toolkit):
+  - `kronMat_eq_reindex` (Core `kronMat` = Mathlib Kronecker product reindexed by
+    `finProdFinEquiv`), mixed-product / adjoint / identity rules for `kronMat` and
+    `kronPowerMat`, and `kraus_power_complete` (`∑_s K_sᴴ K_s = 1`);
+  - `channelPowerApply_posSemidef` / `_trace` and `channelPowerCompApply_eq` (the little-endian
+    complementary channel is the Gram matrix `Tr(K_i ρ K_jᴴ)` indexed by `finFunctionFinEquiv`),
+    `channelPowerCompApply_posSemidef` / `_trace`: both outputs are states;
+  - `matEntropy_le_log2_of_state`, `coherentInfoN_le`, `coherentInfoRegN_le`,
+    `quantumCapacity_le_log2` (`Q(N) ≤ log₂ d₂`), `coherentInfoRegN_le_quantumCapacity`;
+  - regressions: `coherentInfoRegN_idCh` (`Q^{(n)}(id_d)/n = log₂ d` for all `n ≥ 1`),
+    `quantumCapacity_idCh` (`Q(id_d) = log₂ d`), `idCh_singleLetter`,
+    `quantumCapacity_resetQubit` (`Q = 0` for the entanglement-breaking reset channel
+    `ρ ↦ Tr(ρ)|0⟩⟨0|`), and `quantumCapacity_constOut_le` (`Q ≤ 0` for every
+    constant-pure-output channel).
+- **Not certified:** `Q(N) ≥ 0` for all channels, Devetak–Shor additivity for degradable
+  channels, the Cubitt et al. family.
+
 ## References
 
 - D. P. DiVincenzo, P. W. Shor, and J. A. Smolin, "Quantum-channel capacity of very noisy channels," *Phys. Rev. A* **57**, 830–839 (1998).

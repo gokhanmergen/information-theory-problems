@@ -36,6 +36,19 @@ Because classical discrete memoryless broadcast channels embed as diagonal c-q b
   - Radhakrishnan, Sen, and Warsi (2016) and Sen (2018) used the quantum union bound / convex splitting to prove full one-shot and asymptotic achievability of the exact single-letter quantum Marton inner bound $\mathcal{M}(\mathcal{N}) \subseteq \mathcal{C}(\mathcal{N})$ (including common messages).
 - **Outer bounds and tightness open:** Quantum generalizations of the Nair–El Gamal UV outer bound exist, but as in the classical setting, there is a gap between the quantum Marton inner bound and the best known outer bounds, and it remains open whether $\mathcal{M}(\mathcal{N}) = \mathcal{C}(\mathcal{N})$ for all c-q broadcast channels (and even more generally for fully quantum-input broadcast channels, where non-additivity of Holevo information already prevents single-letterization).
 
+## Formal statement and certificate
+
+- **Adversarial check (2026-11-27): Statement is faithful and open.** The Lean
+  `cqMartonInnerBound` is the Marton region with common auxiliary `W` in the private-message
+  form `R₁ ≤ I(WU;B₁)`, `R₂ ≤ I(WV;B₂)`, `R₁+R₂ ≤ I(WU;B₁) + I(V;B₂|W) − I(U;V|W)`,
+  `R₁+R₂ ≤ I(U;B₁|W) + I(WV;B₂) − I(U;V|W)` (the two sum-rate constraints together give the
+  `min{I(W;B₁), I(W;B₂)}` term; the statement-level text above shows the `W`-free version).
+  Conditional states with `p(w) = 0` are guarded, and `matEntropy` is only applied to Hermitian
+  combinations. Diagonal c-q channels embed classical broadcast channels, so the statement
+  implies classical Marton tightness, which is open; no 2024–2026 resolution found.
+- **Certificate:** none yet. Natural targets: `(0, 0)` lies in both regions (needs
+  `Tr(kronPowerMat …) = ∏ Tr`), and the region is bounded by `log₂ d₁ × log₂ d₂`.
+
 ## References
 
 - T. M. Cover, "Broadcast channels," *IEEE Trans. Inf. Theory* **18**(1), 2–14 (1972).

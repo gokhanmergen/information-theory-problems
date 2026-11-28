@@ -47,6 +47,25 @@ The core obstruction is the **superadditivity of coherent information**: DiVince
   - **No-cloning / anti-degradability bound:** For $p \ge 1/4$, $\mathcal{D}_p$ is anti-degradable (its Choi state is symmetrically 2-extendible; Bruß et al. 1998; Cerf 2000), which proves $Q(\mathcal{D}_p) = 0$ for all $p \ge 1/4$, hence $p_0 \le 0.25$.
   - Tighter upper bounds on $Q(\mathcal{D}_p)$ for $p \in (0, 1/4)$ have been obtained via degradable extensions (Smith–Smolin 2008), approximate degradability (Sutter–Scholz–Winter–Renner 2017), semidefinite programming / Rains information (Wang–Fang–Duan 2019), and quantum flag extensions (Fanizza–Kianvash–Giovannetti 2020; Kianvash–Fanizza–Giovannetti 2022). However, **none of the known upper bounds vanish strictly below $p = 1/4$**, leaving the entire interval $p_0 \in [0.1912, 0.25]$ open.
 
+## Formal statement and certificate
+
+- **Adversarial check (2026-11-27): Statement is faithful and open.** In the Core
+  parameterisation `D_p(ρ) = (1 - 4p/3)ρ + (2p/3)I`, `p = 1/4` is the shrinking factor `2/3`
+  of the optimal symmetric cloner (anti-degradability) and `p = 1/2` is entanglement-breaking,
+  matching the text. `quantumCapacity` is the Lloyd–Shor–Devetak `sup_n Q^{(1)}(N^{⊗n})/n` with
+  a correct Kraus-index complementary channel; all its `sSup`s are bounded (no junk). Recent
+  work (e.g. Agarwal–Kalra–Lee–Leung–Schaeffer–Sinha–Smith, arXiv:2605.09138, 2026) only
+  raises the positivity threshold from below; nothing shows `Q(D_p) = 0` for some `p < 1/4`.
+- **Certificate** (`Known/Certificates/QuantumCapacityDepolarizing.lean`, toolkit in
+  `Known/Certificates/QuantumCapacitySingleLetter.lean`):
+  - `depolCh_isDepolarizing`: an explicit Kraus realisation of `D_p` exists for every
+    `p ∈ [0, 1]`, so the `∀ N, IsDepolarizingChannel p N → …` quantifier is not vacuous;
+  - `quantumCapacity_le_one`: `Q(N) ≤ 1` for every qubit channel;
+  - regression `not_zeroCapacity_at_zero`: the identity channel realises `D_0` and has
+    `Q = 1` (`quantumCapacity_idQubit`), so the zero-capacity property genuinely fails at `p = 0`.
+- **Not certified:** `Q(D_p) = 0` for `p ≥ 1/4`, the hashing bound, and the independence of
+  `Q` from the chosen Kraus realisation.
+
 ## References
 
 - C. H. Bennett, D. P. DiVincenzo, J. A. Smolin, and W. K. Wootters, "Mixed-state entanglement and quantum error correction," *Phys. Rev. A* **54**, 3824–3851 (1996).

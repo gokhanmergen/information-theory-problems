@@ -74,6 +74,10 @@ import InfoTheory.Known.Certificates.PirCodedCollusionCapacity
 import InfoTheory.Known.Certificates.PoissonChannelDiscreteCapacity
 import InfoTheory.Known.Certificates.PolarCodeScalingExponent
 import InfoTheory.Known.Certificates.PrimitiveRelayChannelBsc
+import InfoTheory.Known.Certificates.PrivateVsQuantumCapacityGap
+import InfoTheory.Known.Certificates.QuantumCapacityDepolarizing
+import InfoTheory.Known.Certificates.QuantumCapacitySingleLetter
+import InfoTheory.Known.Certificates.QuantumCapacityTwoPauli
 import InfoTheory.Known.Certificates.QuantumEntropyPowerSharp
 import InfoTheory.Known.Certificates.QuantumLdpcRateDistance
 import InfoTheory.Known.Certificates.QuantumReverseShannonNonCatalytic
@@ -92,6 +96,7 @@ import InfoTheory.Known.Certificates.ShannonCapacityComputability
 import InfoTheory.Known.Certificates.ShannonCapacityUnionProduct
 import InfoTheory.Known.Certificates.SicPovmZauner
 import InfoTheory.Known.Certificates.SpernerCapacityDirectedGraphs
+import InfoTheory.Known.Certificates.SuperactivationQubitChannels
 import InfoTheory.Known.Certificates.TimingChannelGeneralQueue
 import InfoTheory.Known.Certificates.TraceReconstructionAverageCase
 import InfoTheory.Known.Certificates.TraceReconstructionWorstCase

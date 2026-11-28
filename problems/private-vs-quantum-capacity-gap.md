@@ -37,6 +37,22 @@ For qubit-to-qubit channels ($d_1 = d_2 = 2$), however, all PPT bipartite states
   - If $\mathcal{N}$ is anti-degradable or entanglement-breaking, $Q(\mathcal{N}) = P(\mathcal{N}) = 0$.
   - For the qubit depolarizing channel $\mathcal{D}_p$, it is known that $P(\mathcal{D}_p) > Q^{(1)}(\mathcal{D}_p)$ in certain regimes, and $P(\mathcal{D}_p) = 0$ for $p \ge 1/4$ (anti-degradable). Whether there is a noise interval $p \in (p_0, 1/4)$ where $Q(\mathcal{D}_p) = 0$ while $P(\mathcal{D}_p) > 0$, or whether *any* qubit channel satisfies $Q(\mathcal{N}) = 0 < P(\mathcal{N})$, remains completely open.
 
+## Formal statement and certificate
+
+- **Adversarial check (2026-11-27): Statement is faithful and open.** `privateCapacity` is the
+  regularised Devetak–Cai–Winter–Yeung formula and its `sSup` is bounded (certified). For
+  qubits, PPT implies entanglement-breaking, and the only known zero-capacity qubit channels
+  (anti-degradable, entanglement-breaking) have `P = 0`; no qubit example or impossibility
+  proof found in the 2015–2026 literature.
+- **Certificate** (`Known/Certificates/PrivateVsQuantumCapacityGap.lean`):
+  - `privateCapacity_le` (`P(N) ≤ log₂ d₂ + log₂ #Kraus`) and `privateCapacity_nonneg`
+    (`P(N) ≥ 0`): non-junk supremum;
+  - regressions: `privateCapacity_idCh` (`P(id_d) = log₂ d`), `privateCapacity_idQubit`
+    (`P(id₂) = 1`), `idQubit_not_witness` (`Q(id₂) = 1`), `resetQubit_capacities`
+    (`Q(reset₂) = 0`, `P(reset₂) ≥ 0`).
+- **Not certified:** `Q ≤ P` in general and `P = 0` for anti-degradable / entanglement-breaking
+  channels (needs nonnegativity of the Holevo quantity, i.e. concavity of `matEntropy`).
+
 ## References
 
 - K. Horodecki, M. Horodecki, P. Horodecki, and J. Oppenheim, "Secure key from bound entanglement," *Phys. Rev. Lett.* **94**, 160502 (2005).
