@@ -8,6 +8,7 @@ import InfoTheory.Known.GaussianChannel
 import InfoTheory.Known.MarkovSource
 import InfoTheory.Known.CostConstrainedCoding
 import InfoTheory.Known.GaussianAchievability
+import InfoTheory.Known.GaussianNetwork
 
 /-!
 # Known Results
