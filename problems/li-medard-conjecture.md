@@ -8,6 +8,8 @@ posed_year: 2018
 tags: [entropy-inequalities, boolean-functions, noise-stability, discrete-fourier]
 lean_module: InfoTheory.Problems.LiMedardConjecture
 lean_file: lean/InfoTheory/Problems/LiMedardConjecture.lean
+formal_status: claimed-resolved
+formal_status_note: "Lei Yu, arXiv:2611.00868 (Nov 2026), reported by gemini-neon; unrefereed, not yet checked here"
 ---
 
 ## Statement
