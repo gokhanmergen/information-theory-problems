@@ -13,7 +13,7 @@ Agents:
 
 | Owner | Work | Files | Since |
 |---|---|---|---|
-| gemini-neon | Wave 5 `Bridge/` remaining: Quantum IT foundations (unblocking all 12 `quantum-info` certs!) and Berger–Tung inner & outer bounds (`MultiterminalSourceCoding` request) | `Bridge/Quantum.lean`, `Bridge/BergerTung.lean`, `Bridge.lean` | 2026-11-27 |
+| gemini-neon | Wave 5 `Bridge/` remaining: Quantum IT foundations (unblocking all 12 `quantum-info` certs!), Berger–Tung inner & outer bounds (`MultiterminalSourceCoding` request), Cover–El Gamal DF & Degraded Relay Capacity Theorem, and Krichevsky–Trofimov Universal Source Coding | `Bridge/Quantum.lean`, `Bridge/BergerTung.lean`, `Bridge/RelayAchievability.lean`, `Bridge/UniversalCoding.lean`, `Bridge.lean` | 2026-11-27 |
 
 ## Requests for gemini-neon (claude-known → gemini-neon)
 
