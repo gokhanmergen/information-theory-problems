@@ -1,0 +1,295 @@
+{
+ "T": "-532356454721386925147158010951/500000000000000000000000000000",
+ "results": [
+  {
+   "certified": true,
+   "nodes": 27319,
+   "leaves": 13660,
+   "max_depth": 33,
+   "worst_leaf_upper": -1.0647170726537376,
+   "margin_to_T": 4.163210963862153e-06,
+   "job": "map:0000",
+   "seconds": 7.6
+  },
+  {
+   "certified": true,
+   "nodes": 46349,
+   "leaves": 23175,
+   "max_depth": 51,
+   "worst_leaf_upper": -1.0647129296271334,
+   "margin_to_T": 2.0184359463934364e-08,
+   "job": "map:0001",
+   "seconds": 13.2
+  },
+  {
+   "certified": true,
+   "nodes": 41773,
+   "leaves": 20887,
+   "max_depth": 52,
+   "worst_leaf_upper": -1.064712921779662,
+   "margin_to_T": 1.2336888170127413e-08,
+   "job": "map:0002",
+   "seconds": 11.9
+  },
+  {
+   "certified": true,
+   "nodes": 49889,
+   "leaves": 24945,
+   "max_depth": 46,
+   "worst_leaf_upper": -1.0647129359284426,
+   "margin_to_T": 2.6485668691683084e-08,
+   "job": "map:0012",
+   "seconds": 14.5
+  },
+  {
+   "certified": true,
+   "nodes": 8707,
+   "leaves": 4354,
+   "max_depth": 28,
+   "worst_leaf_upper": -1.0647216436033502,
+   "margin_to_T": 8.734160576448564e-06,
+   "job": "map:0022",
+   "seconds": 2.5
+  },
+  {
+   "certified": true,
+   "nodes": 7143,
+   "leaves": 3572,
+   "max_depth": 28,
+   "worst_leaf_upper": -1.0647174692594075,
+   "margin_to_T": 4.559816633522934e-06,
+   "job": "map:0101",
+   "seconds": 1.9
+  },
+  {
+   "certified": true,
+   "nodes": 32093,
+   "leaves": 16047,
+   "max_depth": 51,
+   "worst_leaf_upper": -1.064712927279856,
+   "margin_to_T": 1.7837082069050707e-08,
+   "job": "map:0102",
+   "seconds": 8.5
+  },
+  {
+   "certified": true,
+   "nodes": 52769,
+   "leaves": 26385,
+   "max_depth": 49,
+   "worst_leaf_upper": -1.0647130059214085,
+   "margin_to_T": 9.64786347512209e-08,
+   "job": "map:0110",
+   "seconds": 14.7
+  },
+  {
+   "certified": true,
+   "nodes": 37675,
+   "leaves": 18838,
+   "max_depth": 46,
+   "worst_leaf_upper": -1.064712997309402,
+   "margin_to_T": 8.786662818112495e-08,
+   "job": "map:0111",
+   "seconds": 10.3
+  },
+  {
+   "certified": true,
+   "nodes": 33005,
+   "leaves": 16503,
+   "max_depth": 46,
+   "worst_leaf_upper": -1.064713014940993,
+   "margin_to_T": 1.0549821908284801e-07,
+   "job": "map:0112",
+   "seconds": 9.1
+  },
+  {
+   "certified": true,
+   "nodes": 402383,
+   "leaves": 201192,
+   "max_depth": 49,
+   "worst_leaf_upper": -1.0647129100871406,
+   "margin_to_T": 6.44366706777458e-10,
+   "job": "map:0011",
+   "seconds": 127.3
+  },
+  {
+   "certified": true,
+   "nodes": 4019,
+   "leaves": 2010,
+   "max_depth": 25,
+   "worst_leaf_upper": -1.0647140846916627,
+   "margin_to_T": 1.1752488888983114e-06,
+   "job": "map:0121",
+   "seconds": 1.5
+  },
+  {
+   "certified": true,
+   "nodes": 4535,
+   "leaves": 2268,
+   "max_depth": 25,
+   "worst_leaf_upper": -1.0647133386714882,
+   "margin_to_T": 4.292287143874812e-07,
+   "job": "map:0122",
+   "seconds": 1.6
+  },
+  {
+   "certified": true,
+   "nodes": 459967,
+   "leaves": 229984,
+   "max_depth": 52,
+   "worst_leaf_upper": -1.0647129094567738,
+   "margin_to_T": 1.399983320917857e-11,
+   "job": "map:0120",
+   "seconds": 162.3
+  },
+  {
+   "certified": true,
+   "nodes": 401607,
+   "leaves": 200804,
+   "max_depth": 51,
+   "worst_leaf_upper": -1.0647129098590609,
+   "margin_to_T": 4.162869659441419e-10,
+   "job": "map:0202",
+   "seconds": 134.4
+  },
+  {
+   "certified": true,
+   "nodes": 393769,
+   "leaves": 196885,
+   "max_depth": 47,
+   "worst_leaf_upper": -1.0647129106368798,
+   "margin_to_T": 1.1941058532478515e-09,
+   "job": "map:0211",
+   "seconds": 127.1
+  },
+  {
+   "certified": true,
+   "nodes": 56741,
+   "leaves": 28371,
+   "max_depth": 52,
+   "worst_leaf_upper": -1.0647129113717313,
+   "margin_to_T": 1.9289574817931144e-09,
+   "job": "map:0220",
+   "seconds": 16.2
+  },
+  {
+   "certified": true,
+   "nodes": 359295,
+   "leaves": 179648,
+   "max_depth": 47,
+   "worst_leaf_upper": -1.064712910394564,
+   "margin_to_T": 9.517901135116308e-10,
+   "job": "map:0212",
+   "seconds": 113.6
+  },
+  {
+   "certified": true,
+   "nodes": 38533,
+   "leaves": 19267,
+   "max_depth": 47,
+   "worst_leaf_upper": -1.064712911708631,
+   "margin_to_T": 2.2658570129103237e-09,
+   "job": "map:0221",
+   "seconds": 10.7
+  },
+  {
+   "certified": true,
+   "nodes": 4227,
+   "leaves": 2114,
+   "max_depth": 25,
+   "worst_leaf_upper": -1.064746955047363,
+   "margin_to_T": 3.404560458910345e-05,
+   "job": "map:1111",
+   "seconds": 1.2
+  },
+  {
+   "certified": true,
+   "nodes": 3791,
+   "leaves": 1896,
+   "max_depth": 25,
+   "worst_leaf_upper": -1.064723027853253,
+   "margin_to_T": 1.011841047914046e-05,
+   "job": "map:1112",
+   "seconds": 1.1
+  },
+  {
+   "certified": true,
+   "nodes": 6255,
+   "leaves": 3128,
+   "max_depth": 25,
+   "worst_leaf_upper": -1.064741808560112,
+   "margin_to_T": 2.8899117338148237e-05,
+   "job": "map:1122",
+   "seconds": 1.8
+  },
+  {
+   "certified": true,
+   "nodes": 4213,
+   "leaves": 2107,
+   "max_depth": 23,
+   "worst_leaf_upper": -1.0647130848741302,
+   "margin_to_T": 1.7543135633438566e-07,
+   "job": "map:1212",
+   "seconds": 1.2
+  },
+  {
+   "certified": true,
+   "nodes": 2615,
+   "leaves": 1308,
+   "max_depth": 24,
+   "worst_leaf_upper": -1.0647420852757223,
+   "margin_to_T": 2.917583294858339e-05,
+   "job": "map:1221",
+   "seconds": 0.7
+  },
+  {
+   "certified": true,
+   "nodes": 44033,
+   "leaves": 22017,
+   "max_depth": 47,
+   "worst_leaf_upper": -1.0647129158155877,
+   "margin_to_T": 6.372813950074284e-09,
+   "job": "map:0222",
+   "seconds": 12.4
+  },
+  {
+   "certified": true,
+   "nodes": 3469,
+   "leaves": 1735,
+   "max_depth": 24,
+   "worst_leaf_upper": -1.0647180526000222,
+   "margin_to_T": 5.143157248334135e-06,
+   "job": "map:1222",
+   "seconds": 1.0
+  },
+  {
+   "certified": true,
+   "nodes": 107,
+   "leaves": 54,
+   "max_depth": 11,
+   "worst_leaf_upper": -1.0647230605719782,
+   "margin_to_T": 1.0151129204332107e-05,
+   "job": "sup:u",
+   "seconds": 0.0
+  },
+  {
+   "certified": true,
+   "nodes": 113,
+   "leaves": 57,
+   "max_depth": 13,
+   "worst_leaf_upper": -1.064713839493874,
+   "margin_to_T": 9.300511001732546e-07,
+   "job": "sup:v",
+   "seconds": 0.0
+  },
+  {
+   "certified": true,
+   "nodes": 5111,
+   "leaves": 2556,
+   "max_depth": 25,
+   "worst_leaf_upper": -1.0647188523850553,
+   "margin_to_T": 5.942942281495336e-06,
+   "job": "map:2222",
+   "seconds": 1.3
+  }
+ ]
+}

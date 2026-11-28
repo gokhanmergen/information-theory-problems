@@ -1,0 +1,33 @@
+PASS seven component files present  [['cc_cert_abca_e5.000e-07.json', 'cc_cert_competitors0-21_e5.000e-07.json', 'cc_cert_competitors21-35_e5.000e-07.json', 'cc_cert_competitors35-49_e5.000e-07.json', 'cc_cert_competitors49-63_e5.000e-07.json', 'cc_cert_competitors63-77_e5.000e-07.json', 'cc_cert_superposition_e5.000e-07.json']]
+PASS 1. exact instance == paper (14),(15),(17),(19) in cc_cert_abca_e5.000e-07.json
+PASS 1. exact instance == paper (14),(15),(17),(19) in cc_cert_competitors0-21_e5.000e-07.json
+PASS 1. exact instance == paper (14),(15),(17),(19) in cc_cert_competitors21-35_e5.000e-07.json
+PASS 1. exact instance == paper (14),(15),(17),(19) in cc_cert_competitors35-49_e5.000e-07.json
+PASS 1. exact instance == paper (14),(15),(17),(19) in cc_cert_competitors49-63_e5.000e-07.json
+PASS 1. exact instance == paper (14),(15),(17),(19) in cc_cert_competitors63-77_e5.000e-07.json
+PASS 1. exact instance == paper (14),(15),(17),(19) in cc_cert_superposition_e5.000e-07.json
+PASS 2. stored G(19) interval contains our arb enclosure (cc_cert_abca_e5.000e-07.json)  [width 1.87e-57]
+PASS 2. stored G(19) interval contains our arb enclosure (cc_cert_competitors0-21_e5.000e-07.json)  [width 1.87e-57]
+PASS 2. stored G(19) interval contains our arb enclosure (cc_cert_competitors21-35_e5.000e-07.json)  [width 1.87e-57]
+PASS 2. stored G(19) interval contains our arb enclosure (cc_cert_competitors35-49_e5.000e-07.json)  [width 1.87e-57]
+PASS 2. stored G(19) interval contains our arb enclosure (cc_cert_competitors49-63_e5.000e-07.json)  [width 1.87e-57]
+PASS 2. stored G(19) interval contains our arb enclosure (cc_cert_competitors63-77_e5.000e-07.json)  [width 1.87e-57]
+PASS 2. stored G(19) interval contains our arb enclosure (cc_cert_superposition_e5.000e-07.json)  [width 1.87e-57]
+   our G(19) = [-1.0647134094427738502943349372915164 +/- 2.87e-36]
+PASS 3a. one common target_B in all files
+   target_B = [-1.06471290944277385029433493729 +/- 1.52e-30]   B - G(19) = [5.000000000000000000000000e-7 +/- 1e-36]
+PASS 3b. B - G(19) <= 5e-7 + 1e-22
+   UB(p*) with B_T := target_B : [0.0916508833913554746709810846098 +/- 4.89e-32]
+PASS 3c. UB(p*) <= printed (25) 0.0916508833913554746710
+PASS 4a. common delta, omega
+PASS 4b. delta == 2^-30 < 1/e
+PASS 4c. stored omega >= 2h(delta)+delta(2ln6+range a)  [omega=4.243623e-08]
+   (our sharper modulus H2(delta) = [2.0297631e-8 +/- 7.78e-17] )
+PASS 7a. all 81 maps present exactly once  [81 maps]
+PASS 7b. both one-sided branches present once
+PASS 5/6. 81 map records: faces, targets, children, pruned uppers, vertex values
+PASS 5/6. 2 superposition records: faces, targets, children, pruned uppers, vertex values
+PASS 7c. total processed boxes == 4,729,704  [4729704]
+PASS    vertex values all < B - 3 omega (needed by our sharper modulus)  [max vertex [-1.073032196 +/- 1.55e-10]]
+PASS 8. replay transcript digests identical (83 identical, 0 differ, 0 not replayed)
+SUMMARY: ALL CHECKS PASSED

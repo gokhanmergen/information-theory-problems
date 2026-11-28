@@ -1,0 +1,34 @@
+T = -10647134094417738503/10000000000000000000 ~ -1.0647134094417738
+G(19) enclosure = [-1.064713409442773850294334937291516397 +/- 3.04e-37]
+T - G(19) = [9.99999994334937291516397e-13 +/- 3.14e-37]
+{"certified": true, "nodes": 27319, "leaves": 13660, "max_depth": 33, "worst_leaf_upper": -1.0647170726537376, "margin_to_T": 3.663211963862147e-06, "job": "map:0000", "seconds": 5.2}
+{"certified": true, "nodes": 46421, "leaves": 23211, "max_depth": 51, "worst_leaf_upper": -1.0647134274531305, "margin_to_T": 1.8011356638637053e-08, "job": "map:0001", "seconds": 9.1}
+{"certified": true, "nodes": 41839, "leaves": 20920, "max_depth": 52, "worst_leaf_upper": -1.0647134239643605, "margin_to_T": 1.45225867385786e-08, "job": "map:0002", "seconds": 8.0}
+{"certified": true, "nodes": 49989, "leaves": 24995, "max_depth": 46, "worst_leaf_upper": -1.0647134104639246, "margin_to_T": 1.022150816069805e-09, "job": "map:0012", "seconds": 9.0}
+{"certified": true, "nodes": 8707, "leaves": 4354, "max_depth": 28, "worst_leaf_upper": -1.0647216436033502, "margin_to_T": 8.234161576448558e-06, "job": "map:0022", "seconds": 1.6}
+{"certified": true, "nodes": 7143, "leaves": 3572, "max_depth": 28, "worst_leaf_upper": -1.0647174692594075, "margin_to_T": 4.059817633522928e-06, "job": "map:0101", "seconds": 1.3}
+{"certified": true, "nodes": 32157, "leaves": 16079, "max_depth": 51, "worst_leaf_upper": -1.0647134428083205, "margin_to_T": 3.336654664267248e-08, "job": "map:0102", "seconds": 5.7}
+{"certified": true, "nodes": 52857, "leaves": 26429, "max_depth": 49, "worst_leaf_upper": -1.0647134094991453, "margin_to_T": 5.7371326020548686e-11, "job": "map:0110", "seconds": 10.0}
+{"certified": true, "nodes": 37731, "leaves": 18866, "max_depth": 46, "worst_leaf_upper": -1.0647134457120766, "margin_to_T": 3.6270302822035156e-08, "job": "map:0111", "seconds": 7.4}
+{"certified": true, "nodes": 33061, "leaves": 16531, "max_depth": 46, "worst_leaf_upper": -1.064713425673928, "margin_to_T": 1.623215403367695e-08, "job": "map:0112", "seconds": 5.9}
+{"certified": true, "nodes": 403819, "leaves": 201910, "max_depth": 49, "worst_leaf_upper": -1.064713410229646, "margin_to_T": 7.878721307272856e-10, "job": "map:0011", "seconds": 79.4}
+{"certified": true, "nodes": 4019, "leaves": 2010, "max_depth": 25, "worst_leaf_upper": -1.0647140846916627, "margin_to_T": 6.752498888983056e-07, "job": "map:0121", "seconds": 1.0}
+{"certified": true, "nodes": 4537, "leaves": 2269, "max_depth": 25, "worst_leaf_upper": -1.0647140846916627, "margin_to_T": 6.752498888983056e-07, "job": "map:0122", "seconds": 1.5}
+{"certified": true, "nodes": 403123, "leaves": 201562, "max_depth": 51, "worst_leaf_upper": -1.0647134120388793, "margin_to_T": 2.5971054831657956e-09, "job": "map:0202", "seconds": 85.1}
+{"certified": true, "nodes": 395201, "leaves": 197601, "max_depth": 47, "worst_leaf_upper": -1.0647134120981916, "margin_to_T": 2.6564178351239706e-09, "job": "map:0211", "seconds": 83.2}
+{"certified": true, "nodes": 1033045, "leaves": 516523, "max_depth": 86, "worst_leaf_upper": -1.0647134094417738, "margin_to_T": 4.801476178731659e-17, "job": "map:0120", "seconds": 216.9}
+{"certified": true, "nodes": 56853, "leaves": 28427, "max_depth": 52, "worst_leaf_upper": -1.0647134158839089, "margin_to_T": 6.44213500193459e-09, "job": "map:0220", "seconds": 9.3}
+{"certified": true, "nodes": 38611, "leaves": 19306, "max_depth": 47, "worst_leaf_upper": -1.0647134133355218, "margin_to_T": 3.8937479764490065e-09, "job": "map:0221", "seconds": 5.5}
+{"certified": true, "nodes": 44127, "leaves": 22064, "max_depth": 47, "worst_leaf_upper": -1.0647134109801517, "margin_to_T": 1.53837774907149e-09, "job": "map:0222", "seconds": 6.2}
+{"certified": true, "nodes": 4227, "leaves": 2114, "max_depth": 25, "worst_leaf_upper": -1.064746955047363, "margin_to_T": 3.354560558910344e-05, "job": "map:1111", "seconds": 0.6}
+{"certified": true, "nodes": 3791, "leaves": 1896, "max_depth": 25, "worst_leaf_upper": -1.064723027853253, "margin_to_T": 9.618411479140454e-06, "job": "map:1112", "seconds": 0.5}
+{"certified": true, "nodes": 6255, "leaves": 3128, "max_depth": 25, "worst_leaf_upper": -1.064741808560112, "margin_to_T": 2.839911833814823e-05, "job": "map:1122", "seconds": 1.2}
+{"certified": true, "nodes": 4215, "leaves": 2108, "max_depth": 23, "worst_leaf_upper": -1.0647477450296032, "margin_to_T": 3.433558782944203e-05, "job": "map:1212", "seconds": 0.8}
+{"certified": true, "nodes": 2615, "leaves": 1308, "max_depth": 24, "worst_leaf_upper": -1.0647420852757223, "margin_to_T": 2.8675833948583383e-05, "job": "map:1221", "seconds": 0.5}
+{"certified": true, "nodes": 3469, "leaves": 1735, "max_depth": 24, "worst_leaf_upper": -1.0647180526000222, "margin_to_T": 4.64315824833413e-06, "job": "map:1222", "seconds": 0.6}
+{"certified": true, "nodes": 5111, "leaves": 2556, "max_depth": 25, "worst_leaf_upper": -1.0647188523850553, "margin_to_T": 5.44294328149533e-06, "job": "map:2222", "seconds": 1.0}
+{"certified": true, "nodes": 107, "leaves": 54, "max_depth": 11, "worst_leaf_upper": -1.0647230605719782, "margin_to_T": 9.651130204332101e-06, "job": "sup:u", "seconds": 0.0}
+{"certified": true, "nodes": 113, "leaves": 57, "max_depth": 13, "worst_leaf_upper": -1.064713839493874, "margin_to_T": 4.30052100173249e-07, "job": "sup:v", "seconds": 0.0}
+{"certified": true, "nodes": 360477, "leaves": 180239, "max_depth": 47, "worst_leaf_upper": -1.0647134097543343, "margin_to_T": 3.125603501692467e-10, "job": "map:0212", "seconds": 60.0}
+ALL CERTIFIED jobs 29 nodes 3110939 time 319s
+      319.53 real       584.14 user         4.02 sys

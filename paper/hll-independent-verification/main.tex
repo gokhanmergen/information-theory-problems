@@ -1,0 +1,265 @@
+\documentclass[11pt,draftclsnofoot,onecolumn,journal]{IEEEtran}
+\usepackage{amsmath,amssymb}
+\usepackage[hidelinks]{hyperref}
+\usepackage{booktabs}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+\newtheorem{remark}{Remark}
+\newcommand{\ab}{\bar\alpha}
+
+\title{An Independent Certificate for the One-Letter Bound in the
+Huang--Liu--Liu Counterexample to Marton's Inner Bound}
+\author{%
+  [Author list TBD]\thanks{%
+  Code and outputs:
+  \url{https://github.com/gokhanmergen/information-theory-problems},
+  directory \texttt{attempts/marton-inner-bound-tightness/code/independent-cert}.}%
+\thanks{AI use: the verification code, the computations and this draft were produced by an AI
+system (Claude Opus 5.5, Anthropic). The human authors are responsible for the content.}}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Huang, Liu and Liu (arXiv:2608.19869) recently showed that Marton's inner bound is not tight
+for the two-receiver broadcast channel. Their argument rests on a ternary base channel~$T$ with a
+fixed-input two-letter gain of $2.83\times10^{-6}$ nats. The upper side of that gain is a
+one-letter bound $UB(p^*)\le 0.0916508833913554746710$, and proving it requires certifying a
+\emph{global} maximum of a non-concave information functional $G_T$ over all auxiliary
+distributions. Huang--Liu--Liu did this with an interval branch-and-bound. Its stored
+certificate keeps only per-face summaries and transcript hashes, so it cannot be audited
+box by box.
+
+We give an independent certificate. It uses a different design: the closed simplex with no
+boundary cutoff, exact integer arithmetic for every linear form, and Arb ball arithmetic for
+logarithms. It shares no numerical code with the original. It proves the bound needed by
+Huang--Liu--Liu, and it also proves the sharper statement $\max G_T\in[G^\star,\,G^\star+10^{-12})$,
+where $G^\star$ is the value at their reported optimizer. As a consequence, the fixed-input gap is
+at least $3.8275\times10^{-6}$ nats.
+
+We also check that the Anantharam--Gohari--Nair cardinality theorem applies to $G_T$ with explicit
+parameters, and we give a self-contained proof of the determinism part. Finally, we audit the
+original certificate files and reproduce all 83 of their transcript hashes bit for bit.
+We found no error.
+\end{abstract}
+
+\section{Setting}
+
+All logarithms are natural. Let $T$ be the ternary broadcast channel of~\cite[(14)--(15)]{HLL}
+with marginals $T_Y,T_Z$. Let $p^*$ be the input law of~\cite[(16)]{HLL}, and let
+$\alpha=\alpha_0$ and $a=(a_x)$ be as in~\cite[(17)]{HLL}. Every printed decimal is read as an
+exact rational. For finite $\mathcal U,\mathcal V$ and a law $P_{UVX}$ define
+\[
+G(P_{UVX})=-\alpha H(Y)-\ab H(Z)+I(U;Y)+I(V;Z)-I(U;V)+\textstyle\sum_x p(x)a_x,\qquad \ab=1-\alpha,
+\]
+and let $B_T=\sup G$ over all finite alphabets. Huang--Liu--Liu~\cite[(23)--(24)]{HLL} show that the
+Marton sum rate with common auxiliary satisfies
+\[
+M_T(p)\le UB(p):=\alpha H_p(Y)+\ab H_p(Z)+B_T-a\cdot p\qquad\text{for all }p\in\Delta(\mathcal X),
+\]
+and they assert the numerical bound $UB(p^*)\le 0.0916508833913554746710$~\cite[(25)]{HLL}. Their
+optimizer~\cite[(19)]{HLL} has $X=f(U,V)$ for the map $f=\left(\begin{smallmatrix}0&1\\2&0\end{smallmatrix}\right)$
+with binary $U,V$. Its value is
+$G^\star:=G(19)=-1.06471340944277385029433\ldots$, and it induces exactly~$p^*$. Since
+\[
+UB(p^*)=I(U;Y)+I(V;Z)-I(U;V)\big|_{(19)}+(B_T-G^\star)=0.0916503833913554\ldots+(B_T-G^\star),
+\]
+inequality~(25) is equivalent to $B_T-G^\star\le 5.0000000000000000000189\times10^{-7}$. So the
+certified quantity is the gap between the global maximum of $G$ and its value at~(19).
+
+\section{Reduction to a finite-dimensional problem}
+
+\begin{proposition}\label{prop:red}
+$B_T$ equals the maximum of $G$ over the following domain:
+\begin{itemize}
+\item[(i)] $X=f(U,V)$ with $U,V$ binary, $f$ any of the $81$ maps $\{0,1\}^2\to\{0,1,2\}$, and $P_{UV}$ in the
+closed $3$-simplex;
+\item[(ii)] the two branches $(U=X,\ V\text{ constant})$ and $(V=X,\ U\text{ constant})$, with $p_X$ in the closed $2$-simplex.
+\end{itemize}
+Moreover, in (i) it suffices to take one $f$ from each of the $27$ orbits under relabelling of $U$ and of~$V$.
+\end{proposition}
+
+\begin{IEEEproof}
+\emph{Cardinality.} Anantharam, Gohari and Nair~\cite[Thm.~3]{AGN} consider the maximization over
+$p(x)$ of
+\begin{multline*}
+-(\delta_1+\lambda(\delta_0+\gamma_2))I(X;Y)-(1-\lambda)(\delta_0+\gamma_2)I(X;Z)\\
++\max_{p(u,v|x)}\big[(\delta_1+\gamma_2)I(U;Y)+\gamma_2I(V;Z)-\gamma_2I(U;V)\big]-\textstyle\sum_xd_xp(x).
+\end{multline*}
+They show that it is attained with $|\mathcal U|+|\mathcal V|\le|\mathcal X|+1$ and $X$ a function of $(U,V)$.
+Writing $-\alpha H(Y)=-\alpha I(X;Y)-\alpha\sum_xp(x)H(T_Y(\cdot|x))$, and similarly for $Z$, shows
+that $G$ is exactly this objective with
+\[
+\delta_0=\delta_1=0,\quad \gamma_2=1,\quad \lambda=\alpha\in(0,1),\quad d_x=-a_x+\alpha H(T_Y(\cdot|x))+\ab H(T_Z(\cdot|x)).
+\]
+Hence some maximizer has $|\mathcal U|+|\mathcal V|\le4$ and $X=f(U,V)$. (A maximizer exists, because
+the bounds $|\mathcal U|,|\mathcal V|\le|\mathcal X|$ of~\cite{GA} make the supremum a maximum over a compact set.)
+
+\emph{Case analysis.} This leaves $(|\mathcal U|,|\mathcal V|)\in\{(2,2),(1,3),(3,1)\}$ or smaller sizes.
+\begin{itemize}
+\item Smaller sizes, and $f$ undefined on zero-mass cells, are faces of the closed $(2,2)$ simplex.
+$G$ is continuous there with $0\log0=0$, and every partial map extends to a full one.
+\item For $(1,3)$ with $X=f(V)$, the Markov chain $V\to X\to Z$ and the fact that $X$ is a function of $V$
+give $I(V;Z)=I(X;Z)$. So the value equals that of branch $V=X$. The case $(3,1)$ is symmetric.
+\end{itemize}
+
+\emph{Symmetry.} Relabelling $U$ or $V$ leaves every term of $G$ invariant. The resulting group of
+order~$4$ has $(81+9+9+9)/4=27$ orbits on the maps.
+\end{IEEEproof}
+
+\begin{remark}
+The determinism part has a two-line proof that does not depend on~\cite{AGN}. Fix $P_{UV}$. The
+maps $P_{X|UV}\mapsto P_{Y|U},P_{Z|V},p_Y,p_Z,p_X$ are linear, and each term of $G$ is convex in
+$P_{X|UV}$:
+\begin{itemize}
+\item $I(U;Y)$ is convex in $P_{Y|U}$ for fixed $P_U$, and likewise $I(V;Z)$;
+\item $-H(Y)$ and $-H(Z)$ are convex;
+\item $a\cdot p_X$ is linear and $I(U;V)$ is fixed.
+\end{itemize}
+So the maximum over $P_{X|UV}$ is attained at a vertex, which is a deterministic map. The
+cardinality bound $|\mathcal U|+|\mathcal V|\le4$ is the only input taken from~\cite{AGN}. We read the
+proof of~\cite[Prop.~3, Lemma~1]{AGN} but did not re-derive its appendix lemma on linearity of
+$H(V|Z)$ under multiplicative perturbations.
+\end{remark}
+
+\section{The certificate}
+
+For a map $f$ and the cell vector $p\in\Delta_3$,
+\[
+G(p)=\ab H(Y)+\alpha H(Z)+H(UV)-H(UY)-H(VZ)+a\cdot p_X .
+\]
+This is a sum of $w\,h(c\cdot p)$ terms with $h(t)=-t\log t$ (concave), $w>0$ and $c\ge0$; of
+$w\,g(d\cdot p)$ terms with $g(t)=t\log t$ (convex); and of a linear term. The two branches have the
+same form on $\Delta_2$.
+
+\begin{lemma}[box bound]\label{lem:box}
+Let $K=\{lo\le p\le hi,\ \sum_ip_i=1\}$, and let $[t_1,t_2]$ be the exact range of $c\cdot p$ on $K$.
+\begin{itemize}
+\item For every $m>0$ and every $t\ge0$, $h(t)\le m-(1+\log m)\,t$.
+\item For every $A\ge g(t_1)$ and $B\ge g(t_2)$, the chord through $(t_1,A)$ and $(t_2,B)$ dominates $g$ on $[t_1,t_2]$.
+\end{itemize}
+Replacing each coefficient of the resulting affine function of $p$ by an upper bound (legal since
+$p\ge0$) and maximizing over $K$ by the greedy rule gives an upper bound on $\sup_KG$.
+\end{lemma}
+
+The tangent bound holds at $t=0$, so no cutoff away from the boundary of the simplex is needed.
+This differs from~\cite{HLL}, who certify a $\delta$-interior for $\delta=2^{-30}$ and handle the
+boundary by recursion over faces.
+
+\emph{Arithmetic.} Box corners are integers over $2^{160}$ and channel coefficients are integers
+over $10^{12}$. Every range $[t_1,t_2]$ and every greedy step is therefore computed exactly with
+integers. Logarithms, and products and quotients involving them, are evaluated in Arb~\cite{Arb}
+via python-flint at 128 bits. Every quantity entering the bound is the upper endpoint of a ball,
+and the test ``bound $<$ target'' is a certain ball comparison.
+
+\emph{Search.} Depth-first branch-and-bound. A box is discarded if its bound is below the target.
+Otherwise its bounds-consistent hull is bisected along its longest side. Coverage holds by
+construction.
+
+\emph{Targets.} We take $T_5$ to be the largest rational on the $10^{-30}$ grid such that
+$\alpha H_{p^*}(Y)+\ab H_{p^*}(Z)+T_5-a\cdot p^*\le 0.0916508833913554746710$, computed with outward
+rounding. This gives $T_5-G^\star=5.0000000000000000189\times10^{-7}$. The sharper target is
+$T_{12}=-10647134094417738503/10^{19}$, for which $T_{12}-G^\star=9.99999994\times10^{-13}$.
+
+\begin{theorem}\label{thm:main}
+$G<T_{12}$ on the whole domain of Proposition~\ref{prop:red}. Hence
+\[
+G^\star\le B_T<G^\star+10^{-12},
+\]
+and in particular $B_T<T_5$, so~\cite[(25)]{HLL} holds. Moreover $UB(p^*)\le 0.09165038339235547467$.
+\end{theorem}
+
+The proof is computer-assisted. Table~\ref{tab:runs} lists the run data; both runs used two
+processes on an Apple-silicon laptop.
+
+\begin{table}[h]
+\centering
+\caption{Branch-and-bound runs (27 map orbits plus 2 branches).}\label{tab:runs}
+\begin{tabular}{lrrrr}
+\toprule
+target & boxes & boxes for HLL's map & max depth & wall time\\
+\midrule
+$T_5$ & 2{,}531{,}505 & 459{,}967 & 52 & 406 s\\
+$T_{12}$ & 3{,}110{,}939 & 1{,}033{,}045 & 86 & 319 s\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\emph{Controls.} With target $G^\star-10^{-9}$ the search must fail, and it does: it stops at an
+unsplittable box within $2\times10^{-4}$ of~(19). A randomized test compares Lemma~\ref{lem:box}'s
+bound with $G$ evaluated directly from its mutual-information form at 50 digits. It covers 400
+boxes with widths from $2^{-1}$ to $2^{-45}$, 30\% of them touching the boundary, and finds no violation.
+
+\section{Consequence for the fixed-input gap}
+
+Take Huang--Liu--Liu's explicit two-letter law~\cite[App.~A]{HLL}, with $W=(Q,W_c)$ and $P(Q=0)=\mu$ as
+printed. Each of its two components has both coordinate marginals exactly equal to $p^*$, which
+is~\cite[(26)]{HLL}. Since $I(Q,W_c;Y^2)\ge I(W_c;Y^2\mid Q)$ and the conditional terms average
+exactly over $Q$, Arb evaluation gives
+\[
+M_{T^{\otimes2}}(P^*)\ \ge\ V_{\rm lo}=0.18330459432065522490176\ldots\ .
+\]
+By Theorem~\ref{thm:main},
+\[
+V_{\rm lo}-2\,UB(p^*)\ \ge\ 3.8275\times10^{-6}\ \text{nats}.
+\]
+With the bound~(25) alone the gap is $2.8275\times10^{-6}$, as printed in~\cite{HLL}. This is the
+fixed-input input to~\cite[Thm.~4]{HLL}, which then yields an unconstrained finite channel with
+$M_{\tilde T^{\otimes2}}>2M_{\tilde T}$. We did not re-check~\cite[Thms.~2,~4]{HLL}, the gradient-shaping
+and constraint-removal steps, beyond reading them.
+
+\section{Audit of the original certificate}
+
+We read the original certificate files (seven JSON files) as untrusted data and checked them
+with our own Arb code. Every check passed:
+\begin{itemize}
+\item the instance equals the paper's;
+\item the stored target $B$ satisfies $B-G^\star=5\times10^{-7}$;
+\item the stored boundary modulus dominates its formula;
+\item all $81$ maps and both branches are present, each with all $15$ (respectively $7$) faces;
+\item face targets equal $B-(4-|S|)\omega$ exactly;
+\item every recorded pruned upper bound is below its target, and no boxes remain;
+\item the vertex values agree with ours to $10^{-40}$;
+\item the box total is $4{,}729{,}704$.
+\end{itemize}
+
+The individual boxes are not stored, so the bounds cannot be re-derived from the files. Instead,
+we re-ran the original engine under different gmpy2 and MPFR versions, and all $83$ transcript
+digests matched. We also prove a boundary lemma that justifies their face recursion with a
+sharper modulus. Let $p=(1-r)q+re_i$, where $q$ puts no mass on cell~$i$. With $B$ the indicator of
+cell~$i$,
+\begin{align*}
+G(p)&=\textstyle\sum_bP(b)G(p_b)+\ab I(B;Y)+\alpha I(B;Z)+H(B)-I(B;UY)-I(B;VZ)\\
+&\le(1-r)G(q)+rG(e_i)+H_2(r).
+\end{align*}
+
+\section{What is and is not established}
+
+Theorem~\ref{thm:main} rests on four things:
+\begin{itemize}
+\item the cited theorem~\cite[Thm.~3]{AGN};
+\item Arb's guaranteed enclosures;
+\item exact integer arithmetic;
+\item the correctness of about $350$ lines of our code, whose soundness argument is
+Lemma~\ref{lem:box}.
+\end{itemize}
+The code has not yet been reviewed by a second party. We did not verify~\cite[Thms.~2,~4,
+Prop.~3]{HLL} or the explicit lifted instance~\cite[(30)--(43)]{HLL}. An earlier non-rigorous
+recomputation in our repository reproduces~(40)--(43).
+
+\begin{thebibliography}{9}
+\bibitem{HLL} M.~Huang, Y.~Liu, and Y.~Liu, ``Sub-optimality of Marton's inner bound for the
+two-receiver broadcast channel,'' arXiv:2608.19869v1, Aug.~2026; code at
+\url{https://github.com/yanxiaoliu-mike/Suboptimality_Marton}.
+\bibitem{AGN} V.~Anantharam, A.~Gohari, and C.~Nair, ``On the evaluation of Marton's inner bound
+for two-receiver broadcast channels,'' \emph{IEEE Trans. Inf. Theory}, vol.~65, no.~3,
+pp.~1361--1371, 2019.
+\bibitem{GA} A.~Gohari and V.~Anantharam, ``Evaluation of Marton's inner bound for the general
+broadcast channel,'' \emph{IEEE Trans. Inf. Theory}, vol.~58, no.~2, pp.~608--619, 2012.
+\bibitem{Arb} F.~Johansson, ``Arb: efficient arbitrary-precision midpoint-radius interval
+arithmetic,'' \emph{IEEE Trans. Comput.}, vol.~66, no.~8, pp.~1281--1292, 2017.
+\end{thebibliography}
+
+\end{document}
