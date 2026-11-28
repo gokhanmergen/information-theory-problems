@@ -31,6 +31,12 @@ Certified:
 * `statement_of_k_two_or_three_even`: the `Statement`'s conclusion holds for `k = 2`, and for
   `k = 3` with `q` even. Both follow from the Bush bound.
 
+* **Regression** (known small-`q` values): `regression_statement_of_card_le_four` — the
+  `Statement`'s conclusion holds for every field with `q ≤ 4` (classical: for `q ≤ 4` the
+  admissible `k` are `k = 2`, or `k = 3 = q - 1` with `q = 4` even, both settled by the Bush
+  bound); `regression_ders_length` — the doubly extended Reed–Solomon codes realize the
+  known maximal length `q + 1` for every `1 ≤ k ≤ q + 1`.
+
 Not certified:
 * Segre's theorem (`k = 3`, `q` odd: ovals are conics) and Ball's theorem (the conjecture for
   `q = p` prime, J. Eur. Math. Soc. 14 (2012)). Both need finite-geometry or polynomial-method
@@ -291,5 +297,23 @@ theorem statement_of_k_two_or_three_even (F : Type) [Field F] [Fintype F] [Decid
       n ≤ Fintype.card F + 2 else n ≤ Fintype.card F + 1 := by
   have hb := bush_bound (by omega) h
   split_ifs <;> omega
+
+/-! ### Regression: known small-`q` values -/
+
+/-- **Regression**: the MDS conjecture holds for all fields of order `q ≤ 4` (only `k = 2`, and
+`k = 3` with `q = 4`, are admissible; both follow from the Bush bound). -/
+theorem regression_statement_of_card_le_four (F : Type) [Field F] [Fintype F] [DecidableEq F]
+    (hq : Fintype.card F ≤ 4) (n k : ℕ) (hk : 2 ≤ k) (hkq : k ≤ Fintype.card F - 1)
+    (h : IsLinearMDSCode F n k) :
+    if Fintype.card F % 2 = 0 ∧ (k = 3 ∨ k = Fintype.card F - 1) then
+      n ≤ Fintype.card F + 2 else n ≤ Fintype.card F + 1 := by
+  refine statement_of_k_two_or_three_even F n k ?_ h
+  omega
+
+/-- **Regression**: MDS codes of the maximal known length `q + 1` exist for `1 ≤ k ≤ q + 1`. -/
+theorem regression_ders_length (F : Type) [Field F] [Fintype F] [DecidableEq F] {k : ℕ}
+    (hk1 : 1 ≤ k) (hkq : k ≤ Fintype.card F + 1) :
+    IsLinearMDSCode F (Fintype.card F + 1) k :=
+  ders_isLinearMDSCode hk1 hkq
 
 end InfoTheory.Known.Certificates.MdsConjecture

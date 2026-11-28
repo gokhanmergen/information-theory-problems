@@ -20,6 +20,12 @@ Combin. Probab. Comput. 19, 2010). This file proves known facts about the exact 
 * `statement_at_uniformOnSubspace`: for subspace-uniform `P` the Statement's inequality holds
   with equality (`0 = 0`), so the constant is tested exactly at the extremal objects.
 
+## Regression
+* `regression_ruzsaDist_delta0` — for the point mass `δ₀` (uniform on the zero subspace) the
+  frozen `ruzsaDist` gives the known value `d[X; 0] = H(X)/2` (Tao 2010, §3; GGMT 2023,
+  Lemma 3.11 ff.), so the Statement's left side for `U = δ₀` is `H(P)/2`;
+  `delta0_isUniformOnSubspace` — `δ₀` is an admissible `U` (subspace `⊥`).
+
 ## Not certified
 * The GGMT bound with an absolute constant (and Liao's improvement), and Ruzsa's triangle
   inequality for `d`, are out of scope.
@@ -189,5 +195,47 @@ theorem statement_at_uniformOnSubspace (n : ℕ) (P : ProbDist (Fin n → ZMod 2
     ∃ U : ProbDist (Fin n → ZMod 2),
       IsUniformOnSubspace n U ∧ ruzsaDist n P U = 2 * ruzsaDist n P P :=
   ⟨P, hP, by rw [ruzsaDist_uniformOnSubspace_self n P hP]; ring⟩
+
+/-! ### Regression: `d[X; 0] = H(X)/2` -/
+
+/-- The point mass at `0 ∈ 𝔽₂ⁿ`. -/
+noncomputable def delta0 (n : ℕ) : ProbDist (Fin n → ZMod 2) where
+  pmf := fun x => if x = 0 then 1 else 0
+  nonneg := fun x => by split_ifs <;> norm_num
+  sum_one := by simp
+
+/-- `δ₀` is the uniform distribution on the zero subspace. -/
+theorem delta0_isUniformOnSubspace (n : ℕ) : IsUniformOnSubspace n (delta0 n) :=
+  ⟨⊥, fun x => by simp [delta0, Submodule.mem_bot]⟩
+
+lemma map_add_delta0_pmf (n : ℕ) (P : ProbDist (Fin n → ZMod 2)) (z : Fin n → ZMod 2) :
+    ((P.prod (delta0 n)).map (fun xy i => xy.1 i + xy.2 i)).pmf z = P.pmf z := by
+  simp only [ProbDist.map, ProbDist.prod, Fintype.sum_prod_type]
+  have hin : ∀ x : Fin n → ZMod 2,
+      (∑ y : Fin n → ZMod 2, if (fun i => x i + y i) = z then P.pmf x * (delta0 n).pmf y else 0)
+        = if x = z then P.pmf x else 0 := by
+    intro x
+    rw [Finset.sum_eq_single 0]
+    · simp [delta0]
+    · intro y _ hy
+      simp [delta0, hy]
+    · intro h; exact absurd (Finset.mem_univ _) h
+  simp_rw [hin]
+  simp
+
+/-- **Regression** (Tao 2010; GGMT 2023): `d[X; 0] = H(X)/2`. -/
+theorem regression_ruzsaDist_delta0 (n : ℕ) (P : ProbDist (Fin n → ZMod 2)) :
+    ruzsaDist n P (delta0 n) = shannonEntropy P / 2 := by
+  have hsum : shannonEntropy ((P.prod (delta0 n)).map (fun xy i => xy.1 i + xy.2 i)) =
+      shannonEntropy P := by
+    unfold shannonEntropy
+    exact Finset.sum_congr rfl fun z _ => by rw [map_add_delta0_pmf]
+  have hdelta : shannonEntropy (delta0 n) = 0 := by
+    unfold shannonEntropy
+    refine Finset.sum_eq_zero fun x _ => ?_
+    by_cases hx : x = 0 <;> simp [delta0, hx, negPLogP, log2]
+  unfold ruzsaDist
+  rw [hsum, hdelta]
+  ring
 
 end InfoTheory.Known.Certificates.EntropicDoublingConstant

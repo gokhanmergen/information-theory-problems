@@ -30,6 +30,16 @@ probability", IEEE Trans. Inf. Theory 59(10), 2013.
   `kanoriaMontanariC1_pos` (`c₁ > 0`; numerically `c₁ ≈ 0.2885`, Kanoria–Montanari 2013,
   where `A₁ = log₂(2e) - ∑_{ℓ≥1} 2^{-ℓ-1} ℓ log₂ ℓ ≈ 1.1542` and `c₁ = log₂ e - A₁`). With
   junk `tsum = 0` one would get `c₁ = -1`.
+* **Regression** (the frozen objects reproduce solved special cases):
+  `regression_maxMI_one` (the block-1 object `C₁(d) = 1 - d`, the BEC capacity),
+  `regression_maxMI_zero` (`C_n(0) = n`, the noiseless channel), `capacity_zero`/`capacity_one`
+  (`C(0) = 1`, `C(1) = 0`), `regression_convex_endpoint_chord` (the convexity inequality of
+  `DeletionChannel.Statement` holds on the closed chord `d₁ = 0`, `d₂ = 1`, which the Statement
+  excludes), `regression_highD_formula_erasure` (the `sInf` formula defining
+  `highDeletionLimit`, applied to the erasure-channel capacity `1 - d`, returns the known value
+  `1`), and `regression_expansion_at_zero` (the expansion form of
+  `DeletionChannelSmallDAsymptotics.Statement` is exact at `d = 0` for every coefficient
+  sequence, since `C(0) = 1 = 1 - h(0)`).
 
 ## Not certified
 * The literature bounds `0.1185 ≤ L ≤ 0.3745` (Drinea–Mitzenmacher 2007; Rahmati–Duman 2015),
@@ -58,6 +68,25 @@ theorem capacity_zero : binaryDeletionCapacity 0 = 1 := binaryDeletionCapacity_z
 theorem capacity_one : binaryDeletionCapacity 1 = 0 :=
   le_antisymm (by simpa using binaryDeletionCapacity_le_one_sub (le_refl (1 : ℝ)))
     (binaryDeletionCapacity_nonneg 1)
+
+/-- **Regression** (BEC value): at blocklength `1` the frozen object `binaryDeletionMaxMI`
+is the erasure-channel capacity `1 - d` (Cover–Thomas §7.1.5). -/
+theorem regression_maxMI_one {d : ℝ} (h1 : d ≤ 1) : binaryDeletionMaxMI d 1 = 1 - d :=
+  binaryDeletionMaxMI_one h1
+
+/-- **Regression** (noiseless value): `C_n(0) = n`. -/
+theorem regression_maxMI_zero (n : ℕ) : binaryDeletionMaxMI 0 n = n :=
+  binaryDeletionMaxMI_zero n
+
+/-- **Regression**: the convexity inequality of `DeletionChannel.Statement` holds on the
+closed chord between the endpoints `d₁ = 0` and `d₂ = 1` (which the Statement excludes): it
+reduces to the known bound `C(d) ≤ 1 - d` together with `C(0) = 1`, `C(1) = 0`. -/
+theorem regression_convex_endpoint_chord {t : ℝ} (ht0 : 0 ≤ t) (_ht1 : t ≤ 1) :
+    binaryDeletionCapacity (t * 0 + (1 - t) * 1) ≤
+      t * binaryDeletionCapacity 0 + (1 - t) * binaryDeletionCapacity 1 := by
+  rw [capacity_zero, capacity_one]
+  have := binaryDeletionCapacity_le_one_sub (d := t * 0 + (1 - t) * 1) (by linarith)
+  linarith
 
 /-! ### `DeletionChannelHighDLimit` -/
 
@@ -94,6 +123,21 @@ theorem highDeletionLimit_nonneg : 0 ≤ highDeletionLimit :=
 theorem highDeletionLimit_le_one : highDeletionLimit ≤ 1 :=
   (highDeletionLimit_le_ratio (d := 1 / 2) (by norm_num) (by norm_num)).trans
     (ratio_le_one (by norm_num))
+
+/-- **Regression** (formula check in the solved erasure case): the `sInf` formula that defines
+`highDeletionLimit`, applied to the erasure-channel capacity `1 - d` instead of
+`binaryDeletionCapacity d`, returns the known value `1`. -/
+theorem regression_highD_formula_erasure :
+    sInf { r : ℝ | ∃ d : ℝ, 0 < d ∧ d < 1 ∧ r = (1 - d) / (1 - d) } = 1 := by
+  have hset : { r : ℝ | ∃ d : ℝ, 0 < d ∧ d < 1 ∧ r = (1 - d) / (1 - d) } = {1} := by
+    ext r
+    simp only [Set.mem_ofPred_eq, Set.mem_singleton_iff]
+    constructor
+    · rintro ⟨d, -, hd1, rfl⟩
+      exact div_self (by linarith)
+    · rintro rfl
+      exact ⟨1 / 2, by norm_num, by norm_num, by norm_num⟩
+  rw [hset, csInf_singleton]
 
 /-! ### `DeletionChannelSmallDAsymptotics` -/
 
@@ -181,5 +225,13 @@ theorem kanoriaMontanariC1_pos : 0 < kanoriaMontanariC1 := by
     rw [hl1, hl2, hl4]
     nlinarith [h3, h5, h6, h7, h8]
   linarith
+
+/-- **Regression** (boundary consistency): at `d = 0` the expansion
+`C(d) = 1 - h(d) + ∑_{k≥1} c_k d^k` of `DeletionChannelSmallDAsymptotics.Statement` holds for
+every coefficient sequence, since `C(0) = 1` and `h(0) = 0`. -/
+theorem regression_expansion_at_zero (c : ℕ → ℝ) :
+    binaryDeletionCapacity 0 = 1 - binaryEntropy 0 + ∑' k : ℕ, c (k + 1) * (0 : ℝ) ^ (k + 1) := by
+  rw [capacity_zero]
+  simp [binaryEntropy, negPLogP, log2]
 
 end InfoTheory.Known.Certificates.DeletionChannel

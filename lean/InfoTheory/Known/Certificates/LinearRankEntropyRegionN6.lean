@@ -25,6 +25,14 @@ proves known facts about the *exact* predicate `InClosedLinearRankCone`.
   is not trivially witnessed by `m = 0`; `linearRank_mem_cone`, `cone6_ne_zero`: the cone
   contains a nonzero vector (rank function of `U_{1,6}` over `GF(2)`).
 
+## Regression
+* `regression_cone1_iff`, `regression_statement_n1`: for `n = 1` the exact predicate
+  `InClosedLinearRankCone 1` is the known polyhedral cone `{h | h(∅) = 0, h({0}) ≥ 0}`
+  (it equals `Γ_1`), so the `Statement`'s form, instantiated at `n = 1`, holds with three
+  inequalities — the polyhedrality question is answered correctly in the trivial solved case.
+  (Uses `isLinearRankVector_uniformRankOne_scaled`: `t · rank(U_{1,n})` is a linear rank vector
+  for every `t > 0`.)
+
 ## Not certified
 * The DFZ results themselves (the 24 new inequalities on 5 variables, polyhedrality of
   `cl(L_5)`, infinitely many inequalities needed on 6+ variables in a fixed characteristic)
@@ -275,5 +283,60 @@ theorem cone6_ne_zero : ∃ h : Finset (Fin 6) → ℝ, InClosedLinearRankCone 6
   ⟨_, linearRank_mem_cone isLinearRankVector_uniformRankOne, fun h0 => by
     have := congrFun h0 {0}
     simp at this⟩
+
+/-! ### Regression: the solved case `n = 1` -/
+
+/-- `t · rank(U_{1,n})` (`h(S) = t` for `S ≠ ∅`) is a linear rank vector for every `t > 0`. -/
+theorem isLinearRankVector_uniformRankOne_scaled {n : ℕ} {t : ℝ} (ht : 0 < t) :
+    IsLinearRankVector n (fun S => if S = ∅ then 0 else t) := by
+  refine ⟨2, 1, 1, ⟨Nat.prime_two⟩, one_pos, t, fun _ => ⊤, ht, fun S => ?_⟩
+  beta_reduce
+  by_cases hS : S = ∅
+  · subst hS
+    have hbot : (⨆ j ∈ (∅ : Finset (Fin n)),
+        (⊤ : Submodule (GaloisField 2 1) (Fin 1 → GaloisField 2 1))) = ⊥ := by simp
+    rw [hbot]; simp
+  · obtain ⟨i, hi⟩ := Finset.nonempty_iff_ne_empty.2 hS
+    have htop : (⨆ j ∈ S, (⊤ : Submodule (GaloisField 2 1) (Fin 1 → GaloisField 2 1))) = ⊤ :=
+      top_le_iff.1 (le_iSup₂_of_le i hi le_rfl)
+    simp only [hS, ite_false]
+    rw [htop, finrank_top, Module.finrank_fin_fun]
+    norm_num
+
+private lemma finset_fin_one (S : Finset (Fin 1)) : S = ∅ ∨ S = {0} := by
+  revert S; decide
+
+/-- **Regression** (`n = 1`): `cl(cone L_1) = {h | h(∅) = 0, 0 ≤ h({0})}`. -/
+theorem regression_cone1_iff (h : Finset (Fin 1) → ℝ) :
+    InClosedLinearRankCone 1 h ↔ h ∅ = 0 ∧ 0 ≤ h {0} := by
+  constructor
+  · intro hh
+    obtain ⟨h0, hmono, -⟩ := cone_isPolymatroid hh
+    exact ⟨h0, h0 ▸ hmono ∅ {0} (Finset.empty_subset _)⟩
+  · rintro ⟨h0, h1⟩ ε hε
+    rcases h1.lt_or_eq with hpos | hzero
+    · refine ⟨1, fun _ => fun S => if S = ∅ then 0 else h {0},
+        fun _ => isLinearRankVector_uniformRankOne_scaled hpos, fun S => ?_⟩
+      rcases finset_fin_one S with rfl | rfl <;> simp [h0, hε]
+    · refine ⟨0, fun j => j.elim0, fun j => j.elim0, fun S => ?_⟩
+      rcases finset_fin_one S with rfl | rfl <;> simp [h0, ← hzero, hε]
+
+/-- **Regression**: the `Statement`'s polyhedrality form holds at `n = 1` (three inequalities:
+`h(∅) ≥ 0`, `-h(∅) ≥ 0`, `h({0}) ≥ 0`). -/
+theorem regression_statement_n1 :
+    ∃ (m : ℕ) (a : Fin m → Finset (Fin 1) → ℝ),
+      ∀ h : Finset (Fin 1) → ℝ,
+        InClosedLinearRankCone 1 h ↔ ∀ k : Fin m, 0 ≤ ∑ S : Finset (Fin 1), a k S * h S := by
+  refine ⟨3, ![e1 ∅, 0 - e1 ∅, e1 {0}], fun h => ?_⟩
+  rw [regression_cone1_iff]
+  have key : ∀ k : Fin 3, (∑ S : Finset (Fin 1), (![e1 ∅, 0 - e1 ∅, e1 {0}] : Fin 3 → _) k S * h S)
+      = lin ((![e1 ∅, 0 - e1 ∅, e1 {0}] : Fin 3 → _) k) h := fun k => rfl
+  simp only [key, Fin.forall_fin_succ, IsEmpty.forall_iff, and_true]
+  simp only [Fin.isValue, Matrix.cons_val_zero, lin_e1, Fin.succ_zero_eq_one,
+    Matrix.cons_val_one, Matrix.head_cons, lin_sub, lin_zero, Fin.succ_one_eq_two,
+    Matrix.cons_val_two, Matrix.tail_cons]
+  constructor
+  · rintro ⟨h0, h1⟩; exact ⟨h0.ge, by linarith, h1⟩
+  · rintro ⟨h0, h0', h1⟩; exact ⟨by linarith, h1⟩
 
 end InfoTheory.Known.Certificates.LinearRankEntropyRegionN6

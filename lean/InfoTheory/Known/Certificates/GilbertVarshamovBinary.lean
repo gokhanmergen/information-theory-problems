@@ -26,6 +26,11 @@ Certified, for `0 < δ < 1/2`:
 * `gilbertVarshamov_sandwich`: `1 - h(δ) ≤ R_2(δ) ≤ 1 - δ` with `1 - h(δ) < 1 - δ`. So the
   equality in the `Statement` is genuinely open with respect to these bounds.
 
+* **Regression** (solved endpoints): `regression_rate_zero` — `R_2(0) = 1`, and
+  `regression_statement_eq_at_zero` — the `Statement`'s equation `R_2(δ) = 1 - h(δ)` holds at
+  the excluded boundary `δ = 0` (both sides are `1`); `regression_rate_one` — `R_2(1) = 0`
+  (only two codewords at distance `n`).
+
 Not certified:
 * The asymptotic Hamming bound `R_2(δ) ≤ 1 - h(δ/2)` (MacWilliams–Sloane Ch. 17 §7). The finite
   bound is `Known.hamming_bound`. The asymptotic form also needs the lower estimate
@@ -117,5 +122,41 @@ theorem gilbertVarshamov_sandwich {δ : ℝ} (h0 : 0 < δ) (h1 : δ < 1 / 2) :
       gilbertVarshamov δ < 1 - δ :=
   ⟨gilbertVarshamov_le_asymptoticCodeRate h0 h1,
     asymptoticCodeRate_two_le_one_sub h0 (by linarith), gilbertVarshamov_lt_one_sub h0 h1⟩
+
+/-! ### Regression: solved endpoint values -/
+
+/-- **Regression**: `R_2(0) = 1` (with no distance constraint every word is a codeword). -/
+theorem regression_rate_zero : asymptoticCodeRate 2 0 = 1 := by
+  have hl2 : 0 < Real.log 2 := Real.log_pos one_lt_two
+  have hterm : ∀ n : ℕ, 1 ≤ n →
+      (Real.log (maxCodeSize 2 n (Nat.ceil ((0 : ℝ) * (n : ℝ))) : ℝ) /
+        Real.log ((2 : ℕ) : ℝ)) / (n : ℝ) = 1 := by
+    intro n hn
+    have hnpos : (0 : ℝ) < n := by exact_mod_cast hn
+    rw [zero_mul, Nat.ceil_zero, maxCodeSize_zero]
+    push_cast
+    rw [Real.log_pow, mul_div_assoc, div_self hl2.ne', mul_one, div_self hnpos.ne']
+  have hmem : (1 : ℝ) ∈ {r : ℝ | ∃ N : ℕ, ∀ n ≥ N,
+      (Real.log (maxCodeSize 2 n (Nat.ceil ((0 : ℝ) * (n : ℝ))) : ℝ) /
+        Real.log ((2 : ℕ) : ℝ)) / (n : ℝ) ≤ r} := by
+    refine ⟨0, fun n _ => ?_⟩
+    have := (binary_rate_term_mem_Icc n (Nat.ceil ((0 : ℝ) * (n : ℝ)))).2
+    push_cast at this ⊢
+    exact this
+  unfold asymptoticCodeRate
+  refine le_antisymm (csInf_le (rate_set_bddBelow 0) hmem) (le_csInf ⟨1, hmem⟩ ?_)
+  rintro r ⟨N, hN⟩
+  have := hN (max N 1) (le_max_left _ _)
+  rwa [hterm _ (le_max_right _ _)] at this
+
+/-- **Regression**: the `Statement`'s equation holds at the excluded boundary `δ = 0`. -/
+theorem regression_statement_eq_at_zero : asymptoticCodeRate 2 0 = gilbertVarshamov 0 := by
+  rw [regression_rate_zero]
+  simp [gilbertVarshamov, binaryEntropy, negPLogP, log2]
+
+/-- **Regression**: `R_2(1) = 0`. -/
+theorem regression_rate_one : asymptoticCodeRate 2 1 = 0 :=
+  le_antisymm (by simpa using asymptoticCodeRate_two_le_one_sub (δ := 1) one_pos le_rfl)
+    (asymptoticCodeRate_two_mem_Icc 1).1
 
 end InfoTheory.Known.Certificates.GilbertVarshamovBinary

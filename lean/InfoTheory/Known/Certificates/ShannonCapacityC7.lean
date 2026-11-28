@@ -22,6 +22,13 @@ Certified here, about the exact objects in `Statement`:
 * `sqrt10_le_lovaszTheta_cycle7` — so `√10 ≤ Θ(C₇) ≤ ϑ(C₇) < 7/2`, i.e. neither side of the
   strict inequality is a junk value and the `Statement` is not trivially settled.
 
+* **Regression** (solved cases of the same objects `shannonCapacity`, `lovaszTheta`,
+  `cycleGraph`): `regression_cycle4` — `Θ(C₄) = 2 = α(C₄)` (even cycle, perfect graph;
+  upper bound by the clique cover `{0,1}, {2,3}`); `regression_cycle5_not_strict` — for `C₅`
+  the analogue of the `Statement` is **false**: `Θ(C₅) = ϑ(C₅) = √5` (Lovász 1979), so the
+  strict separation asked for `C₇` genuinely fails for the pentagon;
+  `regression_complete` — `Θ(K_n) = 1`.
+
 Not certified:
 * `367^{1/5} ≤ Θ(C₇)` (Polak–Schrijver 2019, needs a 367-word independent set in `C₇^{⊠5}`);
 * the matching lower bound `ϑ(C₇) ≥ 7 cos(π/7)/(1+cos(π/7))` (needs the dual/eigenvalue
@@ -208,5 +215,64 @@ theorem known_bounds :
     lovaszTheta (cycleGraph 7) < 7 / 2 :=
   ⟨sqrt10_le_shannonCapacity_cycle7, shannonCapacity_cycle7_le_lovaszTheta,
     lovaszTheta_cycle7_le, lovaszTheta_cycle7_lt⟩
+
+/-! ### Regression: solved cases of the same objects -/
+
+/-- Clique-cover bound (fibres of `f` are cliques): `α(G^{⊠k}) ≤ |W|^k`. -/
+private theorem indepNumber_strongPower_le_of_cover {V₀ W₀ : Type*} [Fintype V₀] [Fintype W₀]
+    {G : SimpleGraph V₀} (f : V₀ → W₀) (hf : ∀ x y, f x = f y → x = y ∨ G.Adj x y) (k : ℕ) :
+    indepNumber (strongPower G k) ≤ Fintype.card W₀ ^ k := by
+  classical
+  obtain ⟨S, hS, hc⟩ := exists_indepSet_card_eq_indepNumber (strongPower G k)
+  rw [← hc]
+  have hinj : Set.InjOn (fun x : Fin k → V₀ => f ∘ x) (S : Set (Fin k → V₀)) := by
+    intro x hx y hy hxy
+    by_contra hne
+    exact hS x hx y hy ⟨hne, fun i => hf _ _ (congrFun hxy i)⟩
+  have := Finset.card_le_card_of_injOn _ (t := (Finset.univ : Finset (Fin k → W₀)))
+    (fun _ _ => Finset.mem_coe.mpr (Finset.mem_univ _)) hinj
+  simpa [Fintype.card_fun] using this
+
+/-- Clique-cover bound for the Shannon capacity: `Θ(G) ≤ |W|` (a cover by `|W|` cliques). -/
+private theorem shannonCapacity_le_of_cover {V₀ W₀ : Type*} [Fintype V₀] [Fintype W₀]
+    {G : SimpleGraph V₀} (f : V₀ → W₀) (hf : ∀ x y, f x = f y → x = y ∨ G.Adj x y) :
+    shannonCapacity G ≤ Fintype.card W₀ := by
+  refine (shannonCapacity_le_iff G).2 fun k hk => ?_
+  have h1 : (indepNumber (strongPower G k) : ℝ) ≤ (Fintype.card W₀ : ℝ) ^ k := by
+    exact_mod_cast indepNumber_strongPower_le_of_cover f hf k
+  calc _ ≤ ((Fintype.card W₀ : ℝ) ^ k) ^ ((1 : ℝ) / (k : ℝ)) :=
+        Real.rpow_le_rpow (by positivity) h1 (by positivity)
+    _ = _ := by rw [one_div]; exact Real.pow_rpow_inv_natCast (by positivity) hk.ne'
+
+/-- `Θ(K_n) = 1` for the complete graph on a nonempty vertex set (perfect graph: `Θ = α`). -/
+private theorem shannonCapacity_top {V₀ : Type*} [Fintype V₀] [Nonempty V₀] :
+    shannonCapacity (⊤ : SimpleGraph V₀) = 1 := by
+  refine le_antisymm ?_ (one_le_shannonCapacity _)
+  have := shannonCapacity_le_of_cover (G := (⊤ : SimpleGraph V₀)) (fun _ => ()) (fun x y _ => by
+    by_cases h : x = y
+    · exact Or.inl h
+    · exact Or.inr ((SimpleGraph.top_adj x y).2 h))
+  simpa using this
+
+/-- **Regression**: `Θ(C₄) = 2` (perfect graph, `Θ = α`). -/
+theorem regression_cycle4 : shannonCapacity (cycleGraph 4) = 2 := by
+  refine le_antisymm ?_ ?_
+  · have := shannonCapacity_le_of_cover (G := cycleGraph 4)
+      (fun x : ZMod 4 => decide (x = 0 ∨ x = 1)) (by decide)
+    simpa using this
+  · have h2 : 2 ≤ indepNumber (cycleGraph 4) :=
+      le_indepNumber_iff.2 ⟨{0, 2}, by decide, by decide⟩
+    exact le_trans (by exact_mod_cast h2) (le_shannonCapacity _)
+
+/-- **Regression** (Lovász 1979): for the pentagon `Θ(C₅) = ϑ(C₅)`, so the analogue of the
+`Statement` for `C₅` is false. -/
+theorem regression_cycle5_not_strict :
+    ¬ shannonCapacity (cycleGraph 5) < lovaszTheta (cycleGraph 5) := by
+  rw [shannonCapacity_cycle5, lovaszTheta_cycle5]
+  exact lt_irrefl _
+
+/-- **Regression**: `Θ(K_n) = 1`. -/
+theorem regression_complete (n : ℕ) [NeZero n] : shannonCapacity (⊤ : SimpleGraph (Fin n)) = 1 :=
+  shannonCapacity_top
 
 end InfoTheory.Known.Certificates.ShannonCapacityC7

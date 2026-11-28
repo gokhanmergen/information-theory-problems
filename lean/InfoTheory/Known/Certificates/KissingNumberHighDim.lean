@@ -30,6 +30,10 @@ Certified:
   `0.2075`, so it does not settle the `Statement`. It does show that the `Statement`'s quantity
   `log₂ τ(d) / d` is bounded below by a positive constant and is not junk.
 
+* **Regression** (known small values): `regression_kissing_one` — `τ(1) = 2`;
+  `regression_kissing_two_ge` — `6 ≤ τ(2)` (regular hexagon; the known value is `τ(2) = 6`,
+  the matching upper bound is not formalized); `kissingNumber_zero` — `τ(0) = 0`.
+
 Not certified:
 * The Chabauty–Shannon–Wyner lower bound `τ(d) ≥ (2/√3)^{d(1+o(1))}` (Shannon 1959; Wyner 1965),
   which needs spherical-cap volume estimates. Only the weaker exponent `1 - h(1/4)` is
@@ -294,5 +298,48 @@ theorem gilbertVarshamov_quarter_pos : 0 < gilbertVarshamov (1 / 4) := by
   have : Real.binEntropy (1 / 4) < Real.log 2 := Real.binEntropy_lt_log_two.mpr (by norm_num)
   rw [sub_pos, div_lt_one hl2]
   exact this
+
+/-! ### Regression: known small values -/
+
+/-- **Regression**: `τ(1) = 2` (the only unit vectors in `ℝ¹` are `±1`). -/
+theorem regression_kissing_one : kissingNumber 1 = 2 := by
+  refine le_antisymm ?_ (by simpa using two_mul_le_kissingNumber 1)
+  obtain ⟨pts, h1, h2⟩ := exists_config_kissingNumber 1
+  by_contra hlt
+  rw [not_le] at hlt
+  have hsq : ∀ i, pts i 0 ^ 2 = 1 := fun i => by simpa using h1 i
+  have key : ∀ x y : ℝ, x ^ 2 = 1 → y ^ 2 = 1 → x * y ≤ 1 / 2 → x * y = -1 := by
+    intro x y hx hy hxy
+    have h : (x * y - 1) * (x * y + 1) = 0 := by linear_combination y ^ 2 * hx + hy
+    rcases mul_eq_zero.1 h with h | h
+    · linarith
+    · linarith
+  let i0 : Fin (kissingNumber 1) := ⟨0, by omega⟩
+  let i1 : Fin (kissingNumber 1) := ⟨1, by omega⟩
+  let i2 : Fin (kissingNumber 1) := ⟨2, by omega⟩
+  have h01 := h2 i0 i1 (by simp [i0, i1, Fin.ext_iff])
+  have h02 := h2 i0 i2 (by simp [i0, i2, Fin.ext_iff])
+  have h12 := h2 i1 i2 (by simp [i1, i2, Fin.ext_iff])
+  simp only [Fin.sum_univ_one] at h01 h02 h12
+  have e01 := key _ _ (hsq i0) (hsq i1) h01
+  have e02 := key _ _ (hsq i0) (hsq i2) h02
+  have e12 := key _ _ (hsq i1) (hsq i2) h12
+  have hprod : (pts i0 0 * pts i1 0 * pts i2 0) ^ 2 =
+      (pts i0 0 * pts i1 0) * (pts i1 0 * pts i2 0) * (pts i0 0 * pts i2 0) := by ring
+  rw [e01, e02, e12] at hprod
+  nlinarith [sq_nonneg (pts i0 0 * pts i1 0 * pts i2 0)]
+
+/-- **Regression**: `6 ≤ τ(2)` (the regular hexagon; `τ(2) = 6` is classical). -/
+theorem regression_kissing_two_ge : 6 ≤ kissingNumber 2 := by
+  set t : ℝ := Real.sqrt 3 / 2 with ht
+  have hs : t * t = 3 / 4 := by
+    rw [ht, div_mul_div_comm, Real.mul_self_sqrt (by norm_num)]; norm_num
+  let pts : Fin 6 → Fin 2 → ℝ :=
+    ![![1, 0], ![1 / 2, t], ![-1 / 2, t], ![-1, 0], ![-1 / 2, -t], ![1 / 2, -t]]
+  refine le_kissingNumber pts ?_ ?_
+  · intro i
+    fin_cases i <;> simp [pts, Fin.sum_univ_two] <;> nlinarith [hs]
+  · intro i j hij
+    fin_cases i <;> fin_cases j <;> simp [pts, Fin.sum_univ_two] at hij ⊢ <;> nlinarith [hs]
 
 end InfoTheory.Known.Certificates.KissingNumberHighDim

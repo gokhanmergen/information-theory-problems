@@ -16,6 +16,12 @@ Certified:
 * `exists_listDecodable_zero`: the zero code is `(p, 1)`-list-decodable for every `p`.
 * `not_exists_of_lt`: the predicate is false for `k > n`, as it should be.
 
+* **Regression** (trivial radii): `regression_radius_zero` — at radius `p = 0` the full space
+  `F₂ⁿ` (rate `1`) is `(0, 1)`-list-decodable, the known value of list-decoding capacity
+  `1 - h(0) = 1`; `regression_radius_one` — at radius `p = 1` (every ball is the whole space)
+  no linear `[n, k]` code is `(1, L)`-list-decodable with `L < 2^k`, consistent with the
+  list-decoding capacity being `0` for `p ≥ 1/2` (bounded list size forces `k = O(1)`).
+
 Not certified:
 * The random-linear-code list size `h(p)/ε + o(1/ε)` (Guruswami–Håstad–Kopparty, *On the
   list-decodability of random linear codes*, IEEE Trans. IT 57 (2011); Li–Wootters, *Improved
@@ -102,6 +108,61 @@ theorem not_exists_of_lt {n k : ℕ} (h : n < k) (p : ℝ) (L : ℕ) :
   rintro ⟨V, -, hV, -, -⟩
   have := Submodule.finrank_le V
   simp only [Module.finrank_fin_fun] at this
+  omega
+
+/-! ### Regression: trivial radii -/
+
+/-- **Regression** (radius `0`, rate `1`): the whole space is a linear `[n, n]` code that is
+`(0, 1)`-list-decodable (every radius-0 ball is a single word). -/
+theorem regression_radius_zero (n : ℕ) : ExistsBinaryLinearListDecodable n n 0 1 := by
+  refine ⟨⊤, Finset.univ, ?_, ?_, ?_⟩
+  · rw [finrank_top, Module.finrank_fin_fun]
+  · intro c; simp
+  · intro y
+    refine Finset.card_le_one.mpr fun a ha b hb => ?_
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and, zero_mul] at ha hb
+    have ha' : a = y := by
+      by_contra h
+      have := hammingDistVec_pos.mpr h
+      have : (0 : ℝ) < hammingDistVec a y := by exact_mod_cast this
+      linarith
+    have hb' : b = y := by
+      by_contra h
+      have := hammingDistVec_pos.mpr h
+      have : (0 : ℝ) < hammingDistVec b y := by exact_mod_cast this
+      linarith
+    rw [ha', hb']
+
+/-- Inverse of `toZ`. -/
+def fromZ {n : ℕ} (v : Fin n → ZMod 2) : Fin n → Bool := fun i => decide (v i = 1)
+
+theorem toZ_fromZ {n : ℕ} (v : Fin n → ZMod 2) : toZ (fromZ v) = v := by
+  funext i
+  have key : ∀ x : ZMod 2, (if decide (x = 1) = true then (1 : ZMod 2) else 0) = x := by decide
+  exact key (v i)
+
+/-- **Regression** (radius `1`): every Hamming ball of radius `n` is the whole space, so a
+linear `[n, k]` code is `(1, L)`-list-decodable only if `2^k ≤ L`. -/
+theorem regression_radius_one {n k L : ℕ} (hL : L < 2 ^ k) :
+    ¬ ExistsBinaryLinearListDecodable n k 1 L := by
+  classical
+  rintro ⟨V, C, hV, hC, hdec⟩
+  have hball := hdec (fun _ => false)
+  have hfilt : C.filter (fun c => (hammingDistVec c (fun _ => false) : ℝ) ≤ 1 * (n : ℝ)) = C := by
+    refine Finset.filter_true_of_mem fun c _ => ?_
+    rw [one_mul]; exact_mod_cast hammingDistVec_le_length _ _
+  rw [hfilt] at hball
+  have hcardV : (Finset.univ.filter (fun v : Fin n → ZMod 2 => v ∈ V)).card = 2 ^ k := by
+    rw [← Fintype.card_subtype]
+    have := Module.card_eq_pow_finrank (K := ZMod 2) (V := V)
+    rw [ZMod.card, hV] at this
+    rw [← this]
+  have hle : (Finset.univ.filter (fun v : Fin n → ZMod 2 => v ∈ V)).card ≤ C.card := by
+    refine Finset.card_le_card_of_injOn fromZ (fun v hv => ?_) (fun v _ w _ h => ?_)
+    · simp only [Finset.coe_filter, Finset.mem_univ, true_and, Set.mem_ofPred_eq] at hv
+      exact (hC _).mpr (by rw [show (fun i => if fromZ v i then (1 : ZMod 2) else 0) = toZ (fromZ v)
+        from rfl, toZ_fromZ]; exact hv)
+    · rw [← toZ_fromZ v, ← toZ_fromZ w, h]
   omega
 
 end InfoTheory.Known.Certificates.ListDecodingCapacityBinaryLinear

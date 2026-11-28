@@ -35,6 +35,12 @@ Certified:
 * `sqrt_two_sub_one_lt_half`: that window is nonempty. So the trivial threshold does not
   settle the `Statement`.
 
+* **Regression** (exact small values): `regression_repetition` — for `t < n ≤ 2t + 1` the
+  frozen `maxDeletionCodeSize n t` equals `2`, the known optimum attained by the repetition
+  code `{0ⁿ, 1ⁿ}` (Levenshtein 1966); `maxDeletionCodeSize_zero` (`= 2ⁿ` at `t = 0`) and
+  `deletionCodeCapacity_zero` / `deletionCodeCapacity_of_half_le` (`1` at `δ = 0`, `0` for
+  `δ ≥ 1/2`) are the solved endpoint values.
+
 Not certified:
 * Bukh–Guruswami–Håstad (2017): `deletionCodeCapacity δ > 0` for `δ < √2 - 1`. This needs
   their explicit concatenated construction and an analysis of LCS of random words.
@@ -314,5 +320,45 @@ theorem statement_iff_window : InfoTheory.Problems.EditDistanceCodeCapacity.Stat
     exact lt_irrefl 0 h2
   · rintro ⟨δ, h1, -, h2⟩
     exact ⟨δ, h1, h2⟩
+
+/-! ### Regression: exact small values -/
+
+/-- Constant strings with different symbols have no common subsequence. -/
+theorem lcsLength_replicate_ne {a b : Bool} (hab : a ≠ b) :
+    ∀ m k : ℕ, lcsLength (List.replicate m a) (List.replicate k b) = 0
+  | 0, _ => by simp [lcsLength]
+  | m + 1, 0 => by simp [List.replicate_succ, lcsLength]
+  | m + 1, k + 1 => by
+    rw [List.replicate_succ, List.replicate_succ, lcsLength, if_neg hab,
+      ← List.replicate_succ, lcsLength_replicate_ne hab m (k + 1), ← List.replicate_succ,
+      lcsLength_replicate_ne hab (m + 1) k]
+    rfl
+
+/-- **Regression** (Levenshtein 1966): for `t < n ≤ 2t + 1` the maximum size of a
+`t`-deletion-correcting binary code of length `n` is exactly `2`, attained by the repetition
+code `{0ⁿ, 1ⁿ}`. -/
+theorem regression_repetition {n t : ℕ} (h1 : t < n) (h2 : n ≤ 2 * t + 1) :
+    maxDeletionCodeSize n t = 2 := by
+  refine le_antisymm (maxDeletionCodeSize_le_two h2) ?_
+  have hne : (fun _ : Fin n => false) ≠ (fun _ : Fin n => true) := by
+    intro h
+    have := congrFun h ⟨0, by omega⟩
+    simp at this
+  have hdist : ∀ a b : Bool, a ≠ b →
+      t < deletionDist (fun _ : Fin n => a) (fun _ : Fin n => b) := by
+    intro a b hab
+    unfold deletionDist
+    rw [List.ofFn_const, List.ofFn_const, lcsLength_replicate_ne hab]
+    omega
+  have := card_le_maxDeletionCodeSize (n := n) (t := t)
+    (C := {fun _ => false, fun _ => true}) (by
+      intro x hx y hy hxy
+      simp only [Finset.mem_insert, Finset.mem_singleton] at hx hy
+      rcases hx with rfl | rfl <;> rcases hy with rfl | rfl
+      · exact absurd rfl hxy
+      · exact hdist false true (by decide)
+      · exact hdist true false (by decide)
+      · exact absurd rfl hxy)
+  rwa [Finset.card_pair hne] at this
 
 end InfoTheory.Known.Certificates.EditDistanceCodeCapacity

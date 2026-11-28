@@ -22,6 +22,13 @@ random variables", 2023). This file checks that the auxiliary definitions `intCo
   genuinely excludes degenerate laws.
 * `entropy_gap_pos`: the conjectured gap `½ ln((n+1)/n)` is positive for `n ≥ 1`.
 
+## Regression
+* `regression_bernoulli_half`: for i.i.d. fair Bernoulli `X₁, X₂` (`bern`), the exact objects
+  `intConvPow`/`intEntropyFn` give `H(X₁+X₂) = (3/2) ln 2 = H(X₁) + ½ ln 2`
+  (`conv_bern`: `X₁ + X₂ ~ (1/4, 1/2, 1/4)`), the known textbook value; so at `n = 1` the
+  Statement's inequality is an equality with `ε = 0` for this law (the Statement's large-entropy
+  hypothesis `M ≤ H` excludes it, so nothing about the Statement is decided).
+
 ## Not certified
 * Any part of the conjecture (Gavalakis's log-concave case, Tao's asymptotic results); the
   general summability of convolution powers of a PMF.
@@ -93,5 +100,65 @@ theorem entropy_gap_pos {n : ℕ} (hn : 1 ≤ n) :
   refine mul_pos (by norm_num) (Real.log_pos ?_)
   rw [one_lt_div (by linarith)]
   linarith
+
+/-! ### Regression: fair Bernoulli -/
+
+/-- The fair Bernoulli PMF on `{0, 1} ⊆ ℤ`. -/
+noncomputable def bern : ℤ → ℝ := fun k => if k = 0 ∨ k = 1 then 1 / 2 else 0
+
+/-- `X₁ + X₂` for fair Bernoulli: the `(1/4, 1/2, 1/4)` law. -/
+lemma conv_bern (n : ℤ) :
+    intConvFn bern bern n = if n = 0 ∨ n = 2 then 1 / 4 else if n = 1 then 1 / 2 else 0 := by
+  unfold intConvFn
+  rw [tsum_eq_sum (s := {0, 1}) (fun b hb => by
+    simp only [Finset.mem_insert, Finset.mem_singleton, not_or] at hb
+    simp [bern, hb.1, hb.2])]
+  rw [Finset.sum_pair (by norm_num)]
+  rcases (by omega : n = 0 ∨ n = 1 ∨ n = 2 ∨ (n ≠ 0 ∧ n ≠ 1 ∧ n ≠ 2)) with rfl | rfl | rfl | ⟨h0, h1, h2⟩
+  · norm_num [bern]
+  · norm_num [bern]
+  · norm_num [bern]
+  · have h3 : n - 1 ≠ 0 := by omega
+    have h4 : n - 1 ≠ 1 := by omega
+    simp [bern, h0, h1, h2, h3, h4]
+
+/-- `H(X₁) = ln 2`. -/
+lemma entropy_bern : intEntropyFn bern = Real.log 2 := by
+  unfold intEntropyFn
+  rw [tsum_eq_sum (s := {0, 1}) (fun b hb => by
+    simp only [Finset.mem_insert, Finset.mem_singleton, not_or] at hb
+    simp [bern, hb.1, hb.2])]
+  rw [Finset.sum_pair (by norm_num)]
+  have l2 : Real.log (1 / 2) = - Real.log 2 := by rw [one_div, Real.log_inv]
+  norm_num [bern]
+  rw [l2]; ring
+
+/-- `H(X₁ + X₂) = (3/2) ln 2`. -/
+lemma entropy_conv_bern : intEntropyFn (intConvFn bern bern) = 3 / 2 * Real.log 2 := by
+  unfold intEntropyFn
+  rw [tsum_eq_sum (s := {0, 1, 2}) (fun b hb => by
+    simp only [Finset.mem_insert, Finset.mem_singleton, not_or] at hb
+    simp [conv_bern, hb.1, hb.2.1, hb.2.2])]
+  rw [Finset.sum_insert (by norm_num), Finset.sum_pair (by norm_num)]
+  simp only [conv_bern]
+  have l2 : Real.log (1 / 2) = - Real.log 2 := by rw [one_div, Real.log_inv]
+  have l4 : Real.log (1 / 4) = -(2 * Real.log 2) := by
+    rw [one_div, Real.log_inv, show (4 : ℝ) = 2 ^ 2 by norm_num, Real.log_pow]; norm_num
+  norm_num
+  rw [l2, l4]; ring
+
+/-- **Regression** (exact Bernoulli(1/2) computation): for i.i.d. fair bits the frozen objects
+give `H(X₁ + X₂) = H(X₁) + ½ ln((1+1)/1)` exactly, i.e. the Statement's inequality at `n = 1`
+holds with equality and `ε = 0`. -/
+theorem regression_bernoulli_half :
+    intEntropyFn (intConvPow bern (1 + 1)) =
+      intEntropyFn (intConvPow bern 1) +
+        (1 / 2 : ℝ) * Real.log ((((1 : ℕ) : ℝ) + 1) / ((1 : ℕ) : ℝ)) := by
+  have h2 : intConvPow bern (1 + 1) = intConvFn bern bern := by
+    show intConvFn (intConvPow bern 1) bern = _
+    rw [intConvPow_one]
+  rw [h2, intConvPow_one, entropy_conv_bern, entropy_bern]
+  norm_num
+  ring
 
 end InfoTheory.Known.Certificates.DiscreteEntropyPowerInequality

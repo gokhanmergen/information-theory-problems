@@ -30,6 +30,12 @@ An exhaustive search (outside Lean) over all code pairs of length `n ≤ 4` foun
 rate `(1+log₂3)/2`, so improving the certified lower bound needs longer codes. The upper bound
 `3/2` (Shannon sum capacity) would require an entropy argument that is not formalised here.
 The `Statement` itself is not settled by these facts.
+
+* **Regression** (exact small-blocklength optima, Kasami–Lin 1976): `regression_n1` — at
+  `n = 1` every uniquely decodable pair has `|A|·|B| ≤ 2` (sum rate `1`), attained by
+  `({0,1}, {0})`; `regression_n2` — at `n = 2` every pair has `|A|·|B| ≤ 6`, attained by the
+  Kasami–Lin pair `({00,11}, {00,01,10})` (sum rate `(1 + log₂ 3)/2`). Both upper bounds are
+  exhaustive checks by `decide` over all code pairs, using the exact predicate `IsAdderMACCode`.
 -/
 
 open scoped BigOperators
@@ -91,5 +97,27 @@ theorem one_lt_capacity : 1 < zeroErrorAdderMACSumCapacity := by
 /-- `C < 2`. -/
 theorem capacity_lt_two : zeroErrorAdderMACSumCapacity < 2 :=
   known_bounds.2.trans_lt log2_three_lt_two
+
+/-! ### Regression: exact optima at blocklengths `1` and `2` -/
+
+/-- Decidability of `IsAdderMACCode`. -/
+@[instance_reducible] def decIsAdderMACCode (n : ℕ) (A B : Finset (Fin n → Fin 2)) :
+    Decidable (IsAdderMACCode n A B) := by
+  unfold IsAdderMACCode; exact Finset.decidableDforallFinset
+
+attribute [local instance] decIsAdderMACCode
+
+/-- **Regression** (`n = 1`): the best uniquely decodable pair has `|A|·|B| = 2`. -/
+theorem regression_n1 :
+    (∃ A B : Finset (Fin 1 → Fin 2), IsAdderMACCode 1 A B ∧ A.card * B.card = 2) ∧
+      ∀ A B : Finset (Fin 1 → Fin 2), IsAdderMACCode 1 A B → A.card * B.card ≤ 2 :=
+  ⟨⟨Finset.univ, {fun _ => 0}, by decide, by decide⟩, by decide⟩
+
+/-- **Regression** (`n = 2`, Kasami–Lin 1976): the best uniquely decodable pair has
+`|A|·|B| = 6`, e.g. `A = {00, 11}`, `B = {00, 01, 10}`. -/
+theorem regression_n2 :
+    (∃ A B : Finset (Fin 2 → Fin 2), IsAdderMACCode 2 A B ∧ A.card * B.card = 6) ∧
+      ∀ A B : Finset (Fin 2 → Fin 2), IsAdderMACCode 2 A B → A.card * B.card ≤ 6 :=
+  ⟨⟨{![0, 0], ![1, 1]}, {![0, 0], ![0, 1], ![1, 0]}, by decide, by decide⟩, by decide⟩
 
 end InfoTheory.Known.Certificates.ZeroErrorMacAdder

@@ -21,6 +21,12 @@ Certified here:
 * `zeroErrorList2Cap32_le` — `zeroErrorList2Cap32 ≤ log₂(3/2)`, the elementary upper bound
   quoted in the docstring.
 
+* **Regression** (known small values of the maximum trifferent code size `T(n)`; Körner–Marton
+  1988, and the docstring's own `T(1) = 3`, `T(2) = 4`): `regression_T1`, `regression_T2`,
+  `regression_T3` — the frozen predicate `IsTrifferentCode` gives `T(1) = 3`, `T(2) = 4`,
+  `T(3) = 6` (explicit codes checked by `decide`; the matching upper bounds are Elias's bound
+  `|C| ≤ 2 (3/2)^n`, which is tight for `n ≤ 3`).
+
 Not certified: the lower bound `(1/4) log₂(9/5) ≤ zeroErrorList2Cap32` (Körner–Marton 1988,
 random coding with expurgation). The `Statement` (strict inequality) is not settled by these
 facts: it is the well-known open problem of improving Elias's trifferent bound.
@@ -193,5 +199,45 @@ theorem zeroErrorList2Cap32_le : zeroErrorList2Cap32 ≤ log2 ((3 : ℝ) / 2) :=
 /-- Summary: `0 ≤ zeroErrorList2Cap32 ≤ log₂(3/2)`. -/
 theorem known_bounds : 0 ≤ zeroErrorList2Cap32 ∧ zeroErrorList2Cap32 ≤ log2 ((3 : ℝ) / 2) :=
   ⟨zeroErrorList2Cap32_nonneg, zeroErrorList2Cap32_le⟩
+
+/-! ### Regression: known small values `T(1) = 3`, `T(2) = 4`, `T(3) = 6` -/
+
+/-- Decidability of `IsTrifferentCode` (built in stages to keep instance search shallow). -/
+@[instance_reducible] def decIsTrifferentCode (n : ℕ) (C : Finset (Fin n → Fin 3)) :
+    Decidable (IsTrifferentCode n C) := by
+  unfold IsTrifferentCode
+  have : ∀ x y : Fin n → Fin 3, Decidable (∀ z ∈ C, x ≠ y → y ≠ z → x ≠ z →
+      ∃ i : Fin n, x i ≠ y i ∧ y i ≠ z i ∧ x i ≠ z i) := fun x y => inferInstance
+  have : ∀ x : Fin n → Fin 3, Decidable (∀ y ∈ C, ∀ z ∈ C, x ≠ y → y ≠ z → x ≠ z →
+      ∃ i : Fin n, x i ≠ y i ∧ y i ≠ z i ∧ x i ≠ z i) := fun x => inferInstance
+  infer_instance
+
+attribute [local instance] decIsTrifferentCode
+
+/-- **Regression**: `T(1) = 3` (all three symbols form a trifferent code of length `1`). -/
+theorem regression_T1 :
+    (∃ C : Finset (Fin 1 → Fin 3), IsTrifferentCode 1 C ∧ C.card = 3) ∧
+      ∀ C : Finset (Fin 1 → Fin 3), IsTrifferentCode 1 C → C.card ≤ 3 := by
+  refine ⟨⟨{![0], ![1], ![2]}, by decide, by decide⟩, fun C hC => ?_⟩
+  have := card_le_of_isTrifferentCode 1 C hC
+  omega
+
+/-- **Regression**: `T(2) = 4`, e.g. `{00, 01, 12, 22}`. -/
+theorem regression_T2 :
+    (∃ C : Finset (Fin 2 → Fin 3), IsTrifferentCode 2 C ∧ C.card = 4) ∧
+      ∀ C : Finset (Fin 2 → Fin 3), IsTrifferentCode 2 C → C.card ≤ 4 := by
+  refine ⟨⟨{![0, 0], ![0, 1], ![1, 2], ![2, 2]}, by decide,
+    by decide⟩, fun C hC => ?_⟩
+  have := card_le_of_isTrifferentCode 2 C hC
+  omega
+
+/-- **Regression**: `T(3) = 6`, e.g. `{000, 011, 102, 121, 212, 220}`. -/
+theorem regression_T3 :
+    (∃ C : Finset (Fin 3 → Fin 3), IsTrifferentCode 3 C ∧ C.card = 6) ∧
+      ∀ C : Finset (Fin 3 → Fin 3), IsTrifferentCode 3 C → C.card ≤ 6 := by
+  refine ⟨⟨{![0, 0, 0], ![0, 1, 1], ![1, 0, 2], ![1, 2, 1], ![2, 1, 2], ![2, 2, 0]},
+    by decide, by decide⟩, fun C hC => ?_⟩
+  have := card_le_of_isTrifferentCode 3 C hC
+  omega
 
 end InfoTheory.Known.Certificates.ListDecodingZeroErrorCapacity

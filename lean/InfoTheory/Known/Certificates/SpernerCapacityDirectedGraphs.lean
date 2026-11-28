@@ -21,6 +21,13 @@ History: the entry previously stated `Σ(\vec{C}_5) < 1`; `one_le_spernerCapacit
 shows that was false (with Alon's out-degree bound `Σ(\vec{C}_m) = 1`), which is why the
 entry was replaced (statement-fix commit 0c19d64).
 
+* **Regression** (solved cases): `regression_tournament_two` — every tournament on `2`
+  vertices (the exact object `tournamentOfBits 2 ori`) has `Σ = 1`, Sperner's theorem
+  (Gargano–Körner–Vaccaro 1993); `regression_complete_symmetric` — the complete symmetric
+  digraph on `n` vertices has `Σ = log₂ n = log₂ Θ(K̄_n)` (symmetric-digraph reduction to
+  Shannon capacity of the edgeless confusability graph); `regression_empty` — the edgeless
+  digraph has `Σ = 0 = log₂ Θ(K_n)`.
+
 Not certified: Alon's construction of tournaments with `2^{Σ} ≥ n/2` and transitive
 subtournaments of size `O(log n)`, and the out-degree upper bound.
 -/
@@ -173,5 +180,52 @@ theorem known_bounds_tournament {n : ℕ} (hn : 2 ≤ n)
           rw [Fintype.card_fin]
           have : log2 (n : ℝ) = Real.logb 2 n := rfl
           rw [this, Real.rpow_logb (by norm_num) (by norm_num) hn0]
+
+/-! ### Regression: solved cases -/
+
+/-- **Regression** (Sperner's theorem): every tournament on two vertices has `Σ = 1`. -/
+theorem regression_tournament_two (ori : { p : Fin 2 × Fin 2 // p.1 < p.2 } → Bool) :
+    spernerCapacity (InfoTheory.Problems.SpernerCapacityDirectedGraphs.tournamentOfBits 2 ori)
+      = 1 := by
+  obtain ⟨u, v, huv⟩ := tournament_has_edge le_rfl ori
+  refine le_antisymm ?_ (one_le_spernerCapacity _ huv)
+  have := spernerCapacity_le_log2_card
+    (InfoTheory.Problems.SpernerCapacityDirectedGraphs.tournamentOfBits 2 ori)
+  simpa [log2, div_self (Real.log_pos one_lt_two).ne'] using this
+
+/-- The complete symmetric digraph (`u → v` for all `u ≠ v`). -/
+def completeDi (n : ℕ) : DiGraph (Fin n) where
+  edge u v := u ≠ v
+  irrefl _ h := h rfl
+
+/-- The edgeless digraph. -/
+def emptyDi (n : ℕ) : DiGraph (Fin n) where
+  edge _ _ := False
+  irrefl _ h := h
+
+/-- **Regression** (symmetric digraphs reduce to Shannon capacity): the complete symmetric
+digraph on `n ≥ 1` vertices has `Σ = log₂ n`. -/
+theorem regression_complete_symmetric (n : ℕ) [NeZero n] :
+    spernerCapacity (completeDi n) = log2 n := by
+  classical
+  refine le_antisymm (by simpa using spernerCapacity_le_log2_card (completeDi n)) ?_
+  refine le_csSup (spernerCapacity_set_bddAbove _) ⟨1, Finset.univ, one_pos,
+    Finset.univ_nonempty, fun x _ y _ hxy => ?_, ?_⟩
+  · obtain ⟨i, hi⟩ := Function.ne_iff.1 hxy
+    exact ⟨i, hi⟩
+  · simp
+
+/-- **Regression**: the edgeless digraph on `n ≥ 1` vertices has `Σ = 0` (codes have one word). -/
+theorem regression_empty (n : ℕ) [NeZero n] : spernerCapacity (emptyDi n) = 0 := by
+  refine le_antisymm (csSup_le ⟨0, 1, {fun _ => 0}, one_pos, by simp,
+    fun x hx y hy hxy => absurd ((Finset.mem_singleton.1 hx).trans (Finset.mem_singleton.1 hy).symm)
+      hxy, by simp [log2]⟩ ?_) (spernerCapacity_nonneg _)
+  rintro r ⟨k, C, -, hC, hcode, rfl⟩
+  have hcard : C.card ≤ 1 := Finset.card_le_one.2 fun x hx y hy => by
+    by_contra hxy
+    obtain ⟨i, hi⟩ := hcode x hx y hy hxy
+    exact hi
+  have h1 : C.card = 1 := le_antisymm hcard (Finset.card_pos.2 hC)
+  simp [h1, log2]
 
 end InfoTheory.Known.Certificates.SpernerCapacityDirectedGraphs
