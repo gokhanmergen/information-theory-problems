@@ -19,6 +19,12 @@ variable and power control.
 * `decoupled_region_eq` : for `a = b = 0` (two separate AWGN links) the region is exactly the
   rectangle `[0, ½ log₂(1 + P₁)] × [0, ½ log₂(1 + P₂)]`, i.e. the textbook capacity region.
 * `zero_achievable` : `(0, 0)` is operationally achievable, so the left-hand side is nonempty.
+* **Regression** `strong_region_eq` : under strong interference `a² ≥ 1, b² ≥ 1` the region is
+  *exactly* the Sato / Han–Kobayashi capacity region
+  `{0 ≤ Rⱼ ≤ C(Pⱼ), R₁ + R₂ ≤ min(C(P₁ + a²P₂), C(P₂ + b²P₁))}` (`StrongInterferenceRegion`);
+  `⊆` is `strong_region_sum_le` (per phase `C((P₁ + a²P₂c)/N₁) + C(P₂p/N₂) ≤ C(P₁ + a²P₂)`, then
+  Jensen), `⊇` is `strong_subset_region` (single phase, all power common).  With
+  `decoupled_region_eq` the frozen formula reproduces the textbook answer in both solved cases.
 
 ## Not certified
 * Achievability of the region (Han–Kobayashi 1981 with `Q`; Gaussian inputs) and any converse
@@ -191,6 +197,114 @@ theorem decoupled_region_eq {P₁ P₂ : ℝ} (hP₁ : 0 ≤ P₁) (hP₂ : 0 �
     simp only [ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow, zero_mul, add_zero,
       div_one, zero_add, mul_zero]
     refine ⟨h2, h4, ?_, ?_, ?_, ?_, ?_⟩ <;> linarith
+
+/-! ### Regression: strong interference `a² ≥ 1, b² ≥ 1` (Sato 1981; Han–Kobayashi 1981)
+
+Under strong interference the capacity region is
+`{R₁ ≤ C(P₁), R₂ ≤ C(P₂), R₁ + R₂ ≤ min(C(P₁ + a²P₂), C(P₂ + b²P₁))}`.  We prove that the
+frozen region `InGaussianHKRegion` is *exactly* this set, so the formula reduces to the known
+answer in this solved case. -/
+
+/-- The known strong-interference capacity region (Sato 1981; Han–Kobayashi 1981). -/
+def StrongInterferenceRegion (a b P₁ P₂ R₁ R₂ : ℝ) : Prop :=
+  0 ≤ R₁ ∧ 0 ≤ R₂ ∧ R₁ ≤ cap P₁ ∧ R₂ ≤ cap P₂ ∧
+  R₁ + R₂ ≤ cap (P₁ + a ^ 2 * P₂) ∧ R₁ + R₂ ≤ cap (P₂ + b ^ 2 * P₁)
+
+/-- Per-phase sum-rate bound: `C(A / N) + C(B / M) ≤ C(A + N - 1)` when `1 + B ≤ N`, `M ≥ 1`. -/
+theorem cap_div_add_cap_div_le {A N B M : ℝ} (hA : 0 ≤ A) (hB : 0 ≤ B) (hM : 1 ≤ M)
+    (hBN : 1 + B ≤ N) : cap (A / N) + cap (B / M) ≤ cap ((A + N - 1) / 1) := by
+  have hN : 0 < N := by linarith
+  have h1 : cap (B / M) ≤ cap B := cap_mono (div_nonneg hB (by linarith)) (div_le_self hB hM)
+  have h2 : cap (A / N) + cap B ≤ cap ((A + N - 1) / 1) := by
+    unfold cap log2
+    have hl : 0 < Real.log 2 := Real.log_pos one_lt_two
+    have e : 1 + A / N = (A + N) / N := by field_simp; ring
+    rw [e, div_one, show 1 + (A + N - 1) = A + N by ring,
+      Real.log_div (by positivity) hN.ne']
+    have := Real.log_le_log (by linarith) hBN
+    have h3 : Real.log (1 + B) / Real.log 2 ≤ Real.log N / Real.log 2 :=
+      div_le_div_of_nonneg_right this hl.le
+    have h4 : (Real.log (A + N) - Real.log N) / Real.log 2 =
+        Real.log (A + N) / Real.log 2 - Real.log N / Real.log 2 := sub_div _ _ _
+    rw [h4]
+    linarith
+  linarith
+
+/-- **Strong interference, `⊆`**: every point of the frozen region satisfies the two sum-rate
+    bounds `R₁ + R₂ ≤ C(P₁ + a²P₂)` and `R₁ + R₂ ≤ C(P₂ + b²P₁)` when `a² ≥ 1`, `b² ≥ 1`. -/
+theorem strong_region_sum_le {a b P₁ P₂ R₁ R₂ : ℝ} (ha : 1 ≤ a ^ 2) (hb : 1 ≤ b ^ 2)
+    (h : InGaussianHKRegion a b P₁ P₂ R₁ R₂) :
+    R₁ + R₂ ≤ cap (P₁ + a ^ 2 * P₂) ∧ R₁ + R₂ ≤ cap (P₂ + b ^ 2 * P₁) := by
+  obtain ⟨-, -, m, w, P₁c, P₁p, P₂c, P₂p, hw, hw1, hnn, hP₁, hP₂, h⟩ := h
+  dsimp only at h
+  obtain ⟨-, -, h3, h4, -⟩ := h
+  constructor
+  · have key : ∀ i, cap ((P₁c i + P₁p i + a ^ 2 * P₂c i) / (1 + a ^ 2 * P₂p i)) +
+        cap (P₂p i / (1 + b ^ 2 * P₁p i)) ≤
+        cap ((P₁c i + P₁p i + a ^ 2 * P₂c i + (1 + a ^ 2 * P₂p i) - 1) / 1) := fun i => by
+      obtain ⟨h1, h2, h3, h4⟩ := hnn i
+      exact cap_div_add_cap_div_le (by positivity) h4
+        (le_add_of_nonneg_right (by positivity)) (by nlinarith)
+    have hav := avg_cap_le (w := w) (N := fun _ => 1) (P := P₁ + a ^ 2 * P₂)
+      (x := fun i => P₁c i + P₁p i + a ^ 2 * P₂c i + (1 + a ^ 2 * P₂p i) - 1) hw hw1
+      (fun i => by obtain ⟨h1, h2, h3, h4⟩ := hnn i; nlinarith [sq_nonneg a])
+      (fun _ => le_rfl) (by
+        have e := lin_avg w (fun i => P₁c i + P₁p i) (fun i => P₂c i + P₂p i) 1 (a ^ 2)
+        have e2 : ∑ i, w i * (P₁c i + P₁p i + a ^ 2 * P₂c i + (1 + a ^ 2 * P₂p i) - 1) =
+            ∑ i, w i * (1 * (P₁c i + P₁p i) + a ^ 2 * (P₂c i + P₂p i)) :=
+          Finset.sum_congr rfl fun i _ => by ring
+        rw [e2, ← e]
+        nlinarith [sq_nonneg a])
+    exact h3.trans ((avg_le hw key).trans hav)
+  · have key : ∀ i, cap (P₁p i / (1 + a ^ 2 * P₂p i)) +
+        cap ((P₂c i + P₂p i + b ^ 2 * P₁c i) / (1 + b ^ 2 * P₁p i)) ≤
+        cap ((P₂c i + P₂p i + b ^ 2 * P₁c i + (1 + b ^ 2 * P₁p i) - 1) / 1) := fun i => by
+      obtain ⟨h1, h2, h3, h4⟩ := hnn i
+      rw [add_comm]
+      exact cap_div_add_cap_div_le (by positivity) h2
+        (le_add_of_nonneg_right (by positivity)) (by nlinarith)
+    have hav := avg_cap_le (w := w) (N := fun _ => 1) (P := P₂ + b ^ 2 * P₁)
+      (x := fun i => P₂c i + P₂p i + b ^ 2 * P₁c i + (1 + b ^ 2 * P₁p i) - 1) hw hw1
+      (fun i => by obtain ⟨h1, h2, h3, h4⟩ := hnn i; nlinarith [sq_nonneg b])
+      (fun _ => le_rfl) (by
+        have e := lin_avg w (fun i => P₂c i + P₂p i) (fun i => P₁c i + P₁p i) 1 (b ^ 2)
+        have e2 : ∑ i, w i * (P₂c i + P₂p i + b ^ 2 * P₁c i + (1 + b ^ 2 * P₁p i) - 1) =
+            ∑ i, w i * (1 * (P₂c i + P₂p i) + b ^ 2 * (P₁c i + P₁p i)) :=
+          Finset.sum_congr rfl fun i _ => by ring
+        rw [e2, ← e]
+        nlinarith [sq_nonneg b])
+    exact h4.trans ((avg_le hw key).trans hav)
+
+/-- **Strong interference, `⊇`**: the known capacity region is contained in the frozen region
+    (single phase, everything common: `Pⱼc = Pⱼ`, `Pⱼp = 0`). -/
+theorem strong_subset_region {a b P₁ P₂ R₁ R₂ : ℝ} (ha : 1 ≤ a ^ 2) (hb : 1 ≤ b ^ 2)
+    (hP₁ : 0 ≤ P₁) (hP₂ : 0 ≤ P₂) (h : StrongInterferenceRegion a b P₁ P₂ R₁ R₂) :
+    InGaussianHKRegion a b P₁ P₂ R₁ R₂ := by
+  obtain ⟨h1, h2, hR₁, hR₂, hs₁, hs₂⟩ := h
+  apply basic_mem_region
+  refine ⟨h1, h2, P₁, 0, P₂, 0, hP₁, le_rfl, by simp, hP₂, le_rfl, by simp, ?_⟩
+  have ca : cap P₂ ≤ cap (a ^ 2 * P₂) := cap_mono hP₂ (by nlinarith)
+  have cb : cap P₁ ≤ cap (b ^ 2 * P₁) := cap_mono hP₁ (by nlinarith)
+  simp only [mul_zero, add_zero, div_one, zero_add]
+  have l1 : log2 1 = 0 := by simp [log2]
+  rw [l1]
+  unfold cap at ca cb hR₁ hR₂ hs₁ hs₂
+  refine ⟨hR₁, hR₂, by linarith, by linarith, by linarith, by linarith, by linarith⟩
+
+/-- **Regression (strong interference)**: for `a² ≥ 1`, `b² ≥ 1` the frozen region
+    `InGaussianHKRegion` is exactly the Sato / Han–Kobayashi capacity region
+    `{R₁ ≤ C(P₁), R₂ ≤ C(P₂), R₁ + R₂ ≤ min(C(P₁ + a²P₂), C(P₂ + b²P₁))}`. -/
+theorem strong_region_eq {a b P₁ P₂ : ℝ} (ha : 1 ≤ a ^ 2) (hb : 1 ≤ b ^ 2)
+    (hP₁ : 0 ≤ P₁) (hP₂ : 0 ≤ P₂) :
+    {p : ℝ × ℝ | InGaussianHKRegion a b P₁ P₂ p.1 p.2} =
+      {p : ℝ × ℝ | StrongInterferenceRegion a b P₁ P₂ p.1 p.2} := by
+  ext ⟨R₁, R₂⟩
+  simp only [Set.mem_ofPred_eq]
+  constructor
+  · intro h
+    obtain ⟨hs₁, hs₂⟩ := strong_region_sum_le ha hb h
+    exact ⟨h.1, h.2.1, region_R₁_le h, region_R₂_le h, hs₁, hs₂⟩
+  · exact strong_subset_region ha hb hP₁ hP₂
 
 /-! ### Operational side: `(0, 0)` is achievable -/
 

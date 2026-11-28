@@ -25,7 +25,20 @@ broadcast channel `W` with private messages, the operational region
 * `zero_mem_bc3CapacityRegion`, `zero_mem_umRegion` — both sides contain the origin.
   So both sides of the statement are nonempty bounded sets.
 
+* **Regression** `superpositionInnerBound_bc12_subset_umRegion` — for every 3-DMBC, every point
+  of the superposition coding region (Bridge `superpositionInnerBound`) of the receivers-1,2
+  sub-BC `bc12 W`, padded with `R₃ = 0`, lies in `umRegion W` (`Q, W` constant, `U₁₂ := U`,
+  `V₁ := X`, `T₁ = R₁`, `L₁₂ = R₂`, all else `0`; every covering term vanishes and each packing
+  bound reduces to `I(X; Y₁ | U)`, `I(X; Y₁)` or `I(U; Y₂)`).  Hence
+  `bcCapacityRegion_bc12_subset_umRegion_of_degraded`: **if `bc12 W` is physically degraded,
+  its capacity region (Bergmans–Gallager) times `{0}` is inside the frozen UM region** — in
+  particular the Gohari–El Gamal–Anantharam-type gap that refuted the pre-fix region cannot
+  recur on degraded sub-BCs.
+
 ## Not certified
+* The full useless-receiver inclusion `martonInnerBound (Y₁, Y₂) × {0} ⊆ umRegion W` (needs the
+  Fourier–Motzkin elimination with binning, see the next item); only the superposition part
+  (no binning) is certified above.
 * Achievability of `umRegion` (Padakandla–Pradhan, Theorem 2; needs multivariate covering and
   superposition — two-receiver superposition coding is in
   `Bridge.superpositionInnerBound_subset_bcCapacityRegion`), and any converse beyond the box.
@@ -504,4 +517,277 @@ theorem zero_mem_umRegion [Nonempty X] (W : BroadcastChannel3 X Y₁ Y₂ Y₃) 
   · simp [umCoveringConstraints, condMutualInfo_eq_zero_of_subsingleton_fst]
   · simp [umDecodingConstraints, condMutualInfo_eq_zero_of_subsingleton_fst]
 
+/-! ### Regression: superposition coding for receivers 1, 2 lies on the `R₃ = 0` face
+
+For every 3-DMBC `W`, let `bc12 W` be the two-receiver BC seen by receivers 1 and 2.  Every
+point of the superposition coding region (Bridge `superpositionInnerBound`) of `bc12 W`, padded
+with `R₃ = 0`, lies in the frozen `umRegion W`: take `Q, W` constant, `U₁₂ := U_sc` (carrying
+`M₂` as `L₁₂`), `V₁ := X` (carrying `M₁` as `T₁`), all other layers constant and all bin rates
+`0`.  With the Bergmans–Gallager theorem this gives: if `bc12 W` is physically degraded, its
+capacity region (times `{0}`) is inside `umRegion W`. -/
+
+section Regression
+
+variable {Ω α α' β γ γ' : Type*} [Fintype Ω] [Fintype α] [Fintype α'] [Fintype β] [Fintype γ]
+  [Fintype γ']
+
+theorem cmi_zero_of_fst_const (R : ProbDist Ω) (F : Ω → α × β × γ) (c : α)
+    (h : ∀ t, (F t).1 = c) : condMutualInfo (R.map F) = 0 := by
+  have e : R.map F = R.map (fun t => (c, (F t).2.1, (F t).2.2)) :=
+    congrArg (fun G => R.map G) (funext fun t => Prod.ext (h t) rfl)
+  rw [e]
+  have e0 : R.map (fun t => (c, (F t).2.1, (F t).2.2)) =
+      (R.map (fun t => (F t).2)).map (fun yz => (c, yz.1, yz.2)) := by rw [map_comp_eq]; rfl
+  have e1 : (R.map (fun t => (c, (F t).2.1, (F t).2.2))).map (fun t => (t.1, t.2.2)) =
+      (R.map (fun t => (F t).2.2)).map (fun z => (c, z)) := by rw [map_comp_eq, map_comp_eq]; rfl
+  have e2 : (R.map (fun t => (c, (F t).2.1, (F t).2.2))).map (fun t => (t.2.1, t.2.2)) =
+      R.map (fun t => (F t).2) := by rw [map_comp_eq]; rfl
+  have e3 : (R.map (fun t => (c, (F t).2.1, (F t).2.2))).map (fun t => t.2.2) =
+      R.map (fun t => (F t).2.2) := by rw [map_comp_eq]; rfl
+  have i0 : Function.Injective (fun yz : β × γ => (c, yz.1, yz.2)) := fun a b h => by
+    simp only [Prod.mk.injEq] at h; exact Prod.ext h.2.1 h.2.2
+  have i1 : Function.Injective (fun z : γ => (c, z)) := fun a b h => (Prod.mk.inj h).2
+  unfold condMutualInfo; dsimp only
+  rw [e1, e2, e3, e0, shannonEntropy_map_of_injective _ i0, shannonEntropy_map_of_injective _ i1]
+  ring
+
+theorem cmi_zero_of_snd_const (R : ProbDist Ω) (F : Ω → α × β × γ) (c : β)
+    (h : ∀ t, (F t).2.1 = c) : condMutualInfo (R.map F) = 0 := by
+  have e : R.map F = R.map (fun t => ((F t).1, c, (F t).2.2)) :=
+    congrArg (fun G => R.map G) (funext fun t => Prod.ext rfl (Prod.ext (h t) rfl))
+  rw [e]
+  have e0 : R.map (fun t => ((F t).1, c, (F t).2.2)) =
+      (R.map (fun t => ((F t).1, (F t).2.2))).map (fun xz => (xz.1, c, xz.2)) := by
+    rw [map_comp_eq]; rfl
+  have e1 : (R.map (fun t => ((F t).1, c, (F t).2.2))).map (fun t => (t.1, t.2.2)) =
+      R.map (fun t => ((F t).1, (F t).2.2)) := by rw [map_comp_eq]; rfl
+  have e2 : (R.map (fun t => ((F t).1, c, (F t).2.2))).map (fun t => (t.2.1, t.2.2)) =
+      (R.map (fun t => (F t).2.2)).map (fun z => (c, z)) := by rw [map_comp_eq, map_comp_eq]; rfl
+  have e3 : (R.map (fun t => ((F t).1, c, (F t).2.2))).map (fun t => t.2.2) =
+      R.map (fun t => (F t).2.2) := by rw [map_comp_eq]; rfl
+  have i0 : Function.Injective (fun xz : α × γ => (xz.1, c, xz.2)) := fun a b h => by
+    simp only [Prod.mk.injEq] at h; exact Prod.ext h.1 h.2.2
+  have i1 : Function.Injective (fun z : γ => (c, z)) := fun a b h => (Prod.mk.inj h).2
+  unfold condMutualInfo; dsimp only
+  rw [e1, e2, e3, e0, shannonEntropy_map_of_injective _ i0, shannonEntropy_map_of_injective _ i1]
+  ring
+
+/-- Relabelling the first and the conditioning variable injectively. -/
+theorem cmi_relabel (R : ProbDist Ω) (F : Ω → α' × β × γ') (G : Ω → α × β × γ) (g : α → α')
+    (h : γ → γ') (hg : Function.Injective g) (hh : Function.Injective h)
+    (hF : ∀ t, F t = (g (G t).1, (G t).2.1, h (G t).2.2)) :
+    condMutualInfo (R.map F) = condMutualInfo (R.map G) := by
+  have e : R.map F = (R.map G).map (fun t => (g t.1, t.2.1, h t.2.2)) := by
+    rw [map_comp_eq]; exact congrArg (fun G => R.map G) (funext hF)
+  rw [e]
+  generalize R.map G = K
+  have hg1 : Function.Injective (fun t : α × γ => (g t.1, h t.2)) := by
+    intro x y hxy
+    simp only [Prod.mk.injEq] at hxy
+    exact Prod.ext (hg hxy.1) (hh hxy.2)
+  have hg2 : Function.Injective (fun t : α × β × γ => (g t.1, t.2.1, h t.2.2)) := by
+    intro x y hxy
+    simp only [Prod.mk.injEq] at hxy
+    exact Prod.ext (hg hxy.1) (Prod.ext hxy.2.1 (hh hxy.2.2))
+  have hg3 : Function.Injective (fun t : β × γ => (t.1, h t.2)) := by
+    intro x y hxy
+    simp only [Prod.mk.injEq] at hxy
+    exact Prod.ext hxy.1 (hh hxy.2)
+  unfold condMutualInfo
+  dsimp only
+  have e1 : (K.map (fun t => (g t.1, t.2.1, h t.2.2))).map (fun t => (t.1, t.2.2)) =
+      (K.map (fun t => (t.1, t.2.2))).map (fun t => (g t.1, h t.2)) := by
+    rw [map_comp_eq, map_comp_eq]; rfl
+  have e2 : (K.map (fun t => (g t.1, t.2.1, h t.2.2))).map (fun t => (t.2.1, t.2.2)) =
+      (K.map (fun t => (t.2.1, t.2.2))).map (fun t => (t.1, h t.2)) := by
+    rw [map_comp_eq, map_comp_eq]; rfl
+  have e3 : (K.map (fun t => (g t.1, t.2.1, h t.2.2))).map (fun t => t.2.2) =
+      (K.map (fun t => t.2.2)).map h := by
+    rw [map_comp_eq, map_comp_eq]; rfl
+  rw [e1, e2, e3, shannonEntropy_map_of_injective _ hg1, shannonEntropy_map_of_injective _ hg2,
+    shannonEntropy_map_of_injective _ hg3, shannonEntropy_map_of_injective _ hh]
+
+/-- `I(A; Y) ≤ I(B; Y | c)` when the conditioning variable is constant and `A = hh(B)`. -/
+theorem mi_le_cmi_of_const (R : ProbDist Ω) (F : Ω → α' × β × γ) (A : Ω → α) (Y : Ω → β)
+    (c : γ) (hh : α' → α) (hc : ∀ t, (F t).2.2 = c) (hA : ∀ t, A t = hh (F t).1)
+    (hY : ∀ t, Y t = (F t).2.1) :
+    mutualInfo (R.map (fun t => (A t, Y t))) ≤ condMutualInfo (R.map F) := by
+  have e : R.map F = (R.map (fun t => ((F t).1, (F t).2.1))).map (fun ab => (ab.1, ab.2, c)) := by
+    rw [map_comp_eq]
+    exact congrArg (fun G => R.map G) (funext fun t => Prod.ext rfl (Prod.ext rfl (hc t)))
+  rw [e, condMutualInfo_map_const]
+  refine le_trans (le_of_eq ?_) (mi_map_left_le _ hh)
+  rw [map_comp_eq]
+  congr 1
+  exact congrArg (fun G => R.map G) (funext fun t => Prod.ext (hA t) (hY t))
+
+theorem cmi_const_fst {Ω α β γ : Type*} [Fintype Ω] [Fintype α] [Fintype β] [Fintype γ]
+    (R : ProbDist Ω) (F : Ω → α × β × γ) (h : ∀ t t', (F t).1 = (F t').1) :
+    condMutualInfo (R.map F) = 0 := by
+  obtain ⟨t₀, -⟩ : ∃ t : Ω, True := by
+    by_contra hc; push Not at hc
+    have : ∑ t : Ω, R.pmf t = 0 := Finset.sum_eq_zero fun t _ => (hc t).elim
+    linarith [R.sum_one]
+  exact cmi_zero_of_fst_const R F _ fun t => h t t₀
+
+theorem cmi_const_snd {Ω α β γ : Type*} [Fintype Ω] [Fintype α] [Fintype β] [Fintype γ]
+    (R : ProbDist Ω) (F : Ω → α × β × γ) (h : ∀ t t', (F t).2.1 = (F t').2.1) :
+    condMutualInfo (R.map F) = 0 := by
+  obtain ⟨t₀, -⟩ : ∃ t : Ω, True := by
+    by_contra hc; push Not at hc
+    have : ∑ t : Ω, R.pmf t = 0 := Finset.sum_eq_zero fun t _ => (hc t).elim
+    linarith [R.sum_one]
+  exact cmi_zero_of_snd_const R F _ fun t => h t t₀
+
+/-- The two-receiver BC seen by receivers 1 and 2 of a 3-DMBC. -/
+def bc12 (W : BroadcastChannel3 X Y₁ Y₂ Y₃) : BroadcastChannel X Y₁ Y₂ where
+  trans x y := ∑ y₃ : Y₃, W.trans x (y.1, y.2, y₃)
+  nonneg x y := Finset.sum_nonneg fun y₃ _ => W.nonneg x _
+  sum_one x := by simpa [Fintype.sum_prod_type] using W.sum_one x
+
+theorem bcAuxJoint_bc12 (W : BroadcastChannel3 X Y₁ Y₂ Y₃) {U : Type*} [Fintype U]
+    (Pux : ProbDist (U × X)) :
+    bcAuxJoint (bc12 W) Pux =
+      ((dmcPrecomp W Prod.snd).joint Pux).map (fun z => (z.1, (z.2.1, z.2.2.1))) := by
+  classical
+  refine probDist_eq_of_pmf fun ⟨a, y₁, y₂⟩ => ?_
+  simp only [bcAuxJoint, bc12, ProbDist.map, DMC.joint, dmcPrecomp]
+  rw [Fintype.sum_prod_type, Finset.sum_eq_single a]
+  · rw [Finset.mul_sum, Fintype.sum_prod_type, Finset.sum_eq_single y₁]
+    · rw [Fintype.sum_prod_type, Finset.sum_eq_single y₂]
+      · simp
+      · intro b _ hb; simp [hb]
+      · simp
+    · intro b _ hb; simp [hb]
+    · simp
+  · intro b _ hb; simp [hb]
+  · simp
+
+/-- **Superposition point ⇒ UM point** (before closure): `Q, W` constant, `U₁₂ := U`,
+    `V₁ := X`, rate split `T₁ = R₁`, `L₁₂ = R₂`, everything else `0`. -/
+theorem superposition_pre_mem_umRegion (W : BroadcastChannel3 X Y₁ Y₂ Y₃) {R₁ R₂ : ℝ} {kU : ℕ}
+    (Pux : ProbDist (Fin kU × X)) (h1 : 0 ≤ R₁) (h2 : 0 ≤ R₂)
+    (hR₂ : R₂ ≤ mutualInfo ((bcAuxJoint (bc12 W) Pux).map (fun z => (z.1.1, z.2.2))))
+    (hR₁ : R₁ ≤ condMutualInfo ((bcAuxJoint (bc12 W) Pux).map (fun z => (z.1.2, z.2.1, z.1.1))))
+    (hs : R₁ + R₂ ≤ mutualInfo ((bcAuxJoint (bc12 W) Pux).map (fun z => (z.1.2, z.2.1)))) :
+    (R₁, R₂, (0 : ℝ)) ∈ umRegion W := by
+  classical
+  obtain ⟨a₀, -⟩ : ∃ a : Fin kU × X, True := by
+    by_contra hc; push Not at hc
+    have : ∑ t : Fin kU × X, Pux.pmf t = 0 := Finset.sum_eq_zero fun t _ => (hc t).elim
+    linarith [Pux.sum_one]
+  have : Nonempty X := ⟨a₀.2⟩
+  have : Nonempty (Fin kU) := ⟨a₀.1⟩
+  set K3 := (dmcPrecomp W Prod.snd).joint Pux with hK3
+  rw [bcAuxJoint_bc12, map_comp_eq] at hR₂ hR₁ hs
+  let eX := Fintype.equivFin X
+  let ιU : Fin kU → Fin (kU + Fintype.card X + 1) := Fin.castLE (by omega)
+  let ιX : X → Fin (kU + Fintype.card X + 1) := fun x => Fin.castLE (by omega) (eX x)
+  have hιU : Function.Injective ιU := Fin.castLE_injective _
+  have hιX : Function.Injective ιX := (Fin.castLE_injective _).comp eX.injective
+  let φ : Fin kU × X → UMAux (kU + Fintype.card X + 1) X := fun a =>
+    (0, 0, fun j => if j = 0 then ιU a.1 else 0, fun j => if j = 0 then ιX a.2 else 0, a.2)
+  let T : Fin 3 → ℝ := fun j => if j = 0 then R₁ else 0
+  let L : Fin 3 → ℝ := fun j => if j = 0 then R₂ else 0
+  refine subset_closure (subset_convexHull ℝ _ ⟨_, Pux.map φ, 0, 0, L, 0, T, 0, ?_, ?_, ?_, ?_⟩)
+  · intro i
+    refine ⟨le_rfl, le_rfl, ?_, le_rfl, ?_, le_rfl⟩ <;> simp only [L, T] <;> split_ifs <;> linarith
+  · simp [T, L]
+  · unfold umCoveringConstraints
+    simp only [map_comp_eq]
+    refine ⟨fun i => ?_, ?_, ?_⟩
+    · fin_cases i <;>
+      · repeat (first | rw [cmi_const_fst _ _ (fun t t' => rfl)] |
+          rw [cmi_const_snd _ _ (fun t t' => rfl)])
+        simp
+    all_goals
+      repeat (first | rw [cmi_const_fst _ _ (fun t t' => rfl)] |
+        rw [cmi_const_snd _ _ (fun t t' => rfl)])
+      simp
+  · intro J
+    have hJ : J = K3.map (fun z => (φ z.1, z.2)) :=
+      InfoTheory.Known.Certificates.BroadcastChannel.joint_eq_map_of_comp W Pux Prod.snd φ (fun t => t.2.2.2.2) (fun _ => rfl) J (fun _ => rfl)
+        K3 (fun _ => rfl)
+    rw [hJ]
+    have hR₁' : R₁ ≤ condMutualInfo (K3.map (fun z => (z.1.2, z.2.1, z.1.1))) := hR₁
+    have hR₂' : R₂ ≤ mutualInfo (K3.map (fun z => (z.1.1, z.2.2.1))) := hR₂
+    have hs' : R₁ + R₂ ≤ mutualInfo (K3.map (fun z => (z.1.2, z.2.1))) := hs
+    refine ⟨?_, ?_, ?_⟩ <;> unfold umDecodingConstraints <;> simp only [map_comp_eq]
+    · -- receiver 1
+      refine ⟨?_, ?_, ?_, ?_, ?_⟩
+      · refine le_trans (le_of_eq (by simp [T])) (le_trans hR₁' (le_of_eq
+          (cmi_relabel K3 _ _ ιX (fun u => (((0 : Fin _), (0 : Fin _)), ιU u, (0 : Fin _))) hιX
+            (fun a b hab => hιU (by simp only [Prod.mk.injEq] at hab; exact hab.2.1))
+            (fun t => rfl)).symm))
+      · refine le_trans (le_of_eq (by simp [T, L]; ring)) (le_trans hs'
+          (le_add_of_le_of_nonneg (mi_le_cmi_of_const K3 _ (fun z => z.1.2) (fun z => z.2.1)
+            (((0 : Fin _), (0 : Fin _)), (0 : Fin _)) (fun p => Function.invFun ιX p.2)
+            (fun t => rfl) (fun t => (Function.leftInverse_invFun hιX t.1.2).symm)
+            (fun t => rfl)) (condMutualInfo_nonneg _)))
+      · refine le_trans (le_of_eq (by simp [T, L])) (le_trans hR₁' (le_add_of_le_of_nonneg
+          (le_of_eq (cmi_relabel K3 _ _ (fun x => ((0 : Fin _), ιX x))
+            (fun u => (((0 : Fin _), (0 : Fin _)), ιU u)) 
+            (fun a b hab => hιX (by simp only [Prod.mk.injEq] at hab; exact hab.2))
+            (fun a b hab => hιU (by simp only [Prod.mk.injEq] at hab; exact hab.2))
+            (fun t => rfl)).symm) (condMutualInfo_nonneg _)))
+      · refine le_trans (le_of_eq (by simp [T, L]; ring)) (le_trans hs'
+          (le_add_of_le_of_nonneg (mi_le_cmi_of_const K3 _ (fun z => z.1.2) (fun z => z.2.1)
+            ((0 : Fin _), (0 : Fin _)) (fun p => Function.invFun ιX p.2.2)
+            (fun t => rfl) (fun t => (Function.leftInverse_invFun hιX t.1.2).symm)
+            (fun t => rfl)) (condMutualInfo_nonneg _)))
+      · refine le_trans (le_of_eq (by simp [T, L]; ring)) (le_trans hs'
+          (le_add_of_le_of_nonneg (mi_le_cmi_of_const K3 _ (fun z => z.1.2) (fun z => z.2.1)
+            (0 : Fin _) (fun p => Function.invFun ιX p.2.2.2)
+            (fun t => rfl) (fun t => (Function.leftInverse_invFun hιX t.1.2).symm)
+            (fun t => rfl)) (condMutualInfo_nonneg _)))
+    · -- receiver 2
+      refine ⟨?_, ?_, ?_, ?_, ?_⟩
+      · exact le_trans (le_of_eq (by simp [T])) (condMutualInfo_nonneg _)
+      · exact le_trans (le_of_eq (by simp [T, L]))
+          (add_nonneg (condMutualInfo_nonneg _) (condMutualInfo_nonneg _))
+      · refine le_trans (le_of_eq (by simp [T, L])) (le_trans hR₂'
+          (le_add_of_le_of_nonneg (mi_le_cmi_of_const K3 _ (fun z => z.1.1) (fun z => z.2.2.1)
+            (((0 : Fin _), (0 : Fin _)), (0 : Fin _)) (fun p => Function.invFun ιU p.1)
+            (fun t => rfl) (fun t => (Function.leftInverse_invFun hιU t.1.1).symm)
+            (fun t => rfl)) (condMutualInfo_nonneg _)))
+      · refine le_trans (le_of_eq (by simp [T, L])) (le_trans hR₂'
+          (le_add_of_le_of_nonneg (mi_le_cmi_of_const K3 _ (fun z => z.1.1) (fun z => z.2.2.1)
+            ((0 : Fin _), (0 : Fin _)) (fun p => Function.invFun ιU p.2.1)
+            (fun t => rfl) (fun t => (Function.leftInverse_invFun hιU t.1.1).symm)
+            (fun t => rfl)) (condMutualInfo_nonneg _)))
+      · refine le_trans (le_of_eq (by simp [T, L])) (le_trans hR₂'
+          (le_add_of_le_of_nonneg (mi_le_cmi_of_const K3 _ (fun z => z.1.1) (fun z => z.2.2.1)
+            (0 : Fin _) (fun p => Function.invFun ιU p.2.2.1)
+            (fun t => rfl) (fun t => (Function.leftInverse_invFun hιU t.1.1).symm)
+            (fun t => rfl)) (condMutualInfo_nonneg _)))
+    · -- receiver 3: nothing to decode
+      refine ⟨?_, ?_, ?_, ?_, ?_⟩
+      · exact le_trans (le_of_eq (by simp [T])) (condMutualInfo_nonneg _)
+      all_goals
+        exact le_trans (le_of_eq (by simp [T, L]))
+          (add_nonneg (condMutualInfo_nonneg _) (condMutualInfo_nonneg _))
+
+/-- **Regression: the UM region contains the superposition coding region of receivers 1, 2 on its
+    `R₃ = 0` face.** -/
+theorem superpositionInnerBound_bc12_subset_umRegion (W : BroadcastChannel3 X Y₁ Y₂ Y₃) :
+    ∀ r ∈ superpositionInnerBound (bc12 W), (r.1, r.2, (0 : ℝ)) ∈ umRegion W := by
+  intro r hr
+  have hcl : IsClosed {r : ℝ × ℝ | (r.1, r.2, (0 : ℝ)) ∈ umRegion W} :=
+    isClosed_closure.preimage (continuous_fst.prodMk (continuous_snd.prodMk continuous_const))
+  refine closure_minimal (fun p hp => ?_) hcl hr
+  obtain ⟨h1, h2, kU, Pux, hR₂, hR₁, hs⟩ := hp
+  exact superposition_pre_mem_umRegion W Pux h1 h2 hR₂ hR₁ hs
+
+/-- **Regression (degraded case)**: if the receivers-1,2 sub-BC `bc12 W` is physically degraded,
+    its capacity region (Bergmans–Gallager, `Bridge.degradedBC_capacity_theorem`), padded with
+    `R₃ = 0`, lies in the frozen `umRegion W`. -/
+theorem bcCapacityRegion_bc12_subset_umRegion_of_degraded (W : BroadcastChannel3 X Y₁ Y₂ Y₃)
+    (hdeg : IsPhysicallyDegradedBC (bc12 W)) :
+    ∀ r ∈ bcCapacityRegion (bc12 W), (r.1, r.2, (0 : ℝ)) ∈ umRegion W := by
+  rw [degradedBC_capacity_theorem _ hdeg, ← superpositionInnerBound_eq_degradedBCRegion _ hdeg]
+  exact superpositionInnerBound_bc12_subset_umRegion W
+
+end Regression
+
 end InfoTheory.Known.Certificates.BroadcastChannelThreeReceivers
+

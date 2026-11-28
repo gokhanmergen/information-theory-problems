@@ -24,7 +24,17 @@ operational capacity region `bcCapacityRegion W` equals Marton's inner bound
   i.e. Shannon's theorem for each marginal). In particular both sides are nonempty, closed,
   bounded sets, and they contain `(0, 0)` and the corner points `(C₁, 0)`, `(0, C₂)`.
 
+* **Regression** `superpositionInnerBound_subset_martonInnerBound` — Marton's region (with the
+  common auxiliary) contains the superposition coding region of Bridge (`W := U_sc`, `U := X`,
+  `V` constant), and `bcCapacityRegion_subset_martonInnerBound_of_degraded` — hence, by the
+  Bergmans–Gallager theorem `Bridge.degradedBC_capacity_theorem`, **on every physically degraded
+  BC the capacity region is contained in the frozen Marton region**: the frozen formula is not
+  too small in this solved case.
+
 ## Not certified
+* `martonInnerBound W ⊆ bcCapacityRegion W` on degraded BCs (the other half of the degraded
+  regression; it needs a single-letter argument showing Marton's region is inside the
+  degraded-BC region, not done).
 * Achievability of Marton's region (`martonInnerBound W ⊆ bcCapacityRegion W`): Marton coding
   needs the mutual covering lemma, which is not in the library (superposition coding is:
   `Bridge.superpositionInnerBound_subset_bcCapacityRegion`, db659ea).
@@ -403,5 +413,121 @@ theorem mk_zero_mem_iff [Nonempty X] (W : BroadcastChannel X Y₁ Y₂) (R : ℝ
 theorem zero_mk_mem_iff [Nonempty X] (W : BroadcastChannel X Y₁ Y₂) (R : ℝ) :
     ((0 : ℝ), R) ∈ bcCapacityRegion W ↔ ((0 : ℝ), R) ∈ martonInnerBound W := by
   rw [zero_mk_mem_bcCapacityRegion_iff, zero_mk_mem_martonInnerBound_iff]
+
+/-! ### Regression: Marton's region contains the superposition region; degraded BCs
+
+Marton's region with `W := U_sc` (the superposition cloud centre), `U := X`, `V := const`
+reduces to the superposition coding region `R₂ ≤ I(U; Y₂)`, `R₁ ≤ I(X; Y₁ | U)`,
+`R₁ + R₂ ≤ I(X; Y₁)`.  Combined with the Bergmans–Gallager degraded BC capacity theorem
+(`Bridge.degradedBC_capacity_theorem`) this shows that on every physically degraded BC the
+capacity region is contained in the frozen `martonInnerBound W`. -/
+
+section Regression
+
+/-- If the auxiliary `φ(A)` determines the channel input (`g ∘ φ = f`), the joint law on
+    `B × Y` built from `P.map φ` is the pushforward of the joint law on `A × Y`. -/
+theorem joint_eq_map_of_comp {A B Y : Type*} [Fintype A] [Fintype B] [Fintype Y]
+    (Ch : DMC X Y) (P : ProbDist A) (f : A → X) (φ : A → B) (g : B → X)
+    (hg : ∀ a, g (φ a) = f a) (J : ProbDist (B × Y))
+    (hJ : ∀ z, J.pmf z = (P.map φ).pmf z.1 * Ch.trans (g z.1) z.2) (K : ProbDist (A × Y))
+    (hK : ∀ z, K.pmf z = P.pmf z.1 * Ch.trans (f z.1) z.2) :
+    J = K.map (fun z => (φ z.1, z.2)) := by
+  classical
+  refine probDist_eq_of_pmf fun ⟨b, y⟩ => ?_
+  rw [hJ]
+  simp only [ProbDist.map, hK]
+  rw [Finset.sum_mul, Fintype.sum_prod_type]
+  refine Finset.sum_congr rfl fun a _ => ?_
+  rw [Finset.sum_eq_single y]
+  · by_cases h : φ a = b
+    · subst h; simp [hg]
+    · simp [h]
+  · intro y' _ hy; simp [hy]
+  · simp
+
+/-- Conditional mutual information is invariant under an injective relabelling of the first
+    variable: `I(g(A); B | C) = I(A; B | C)`. -/
+theorem condMutualInfo_map_fst_injective {α α' β γ : Type*} [Fintype α] [Fintype α']
+    [Fintype β] [Fintype γ] (K : ProbDist (α × β × γ)) (g : α → α')
+    (hg : Function.Injective g) :
+    condMutualInfo (K.map (fun t => (g t.1, t.2.1, t.2.2))) = condMutualInfo K := by
+  have hg1 : Function.Injective (fun t : α × γ => (g t.1, t.2)) := by
+    intro x y h
+    simp only [Prod.mk.injEq] at h
+    exact Prod.ext (hg h.1) h.2
+  have hg2 : Function.Injective (fun t : α × β × γ => (g t.1, t.2.1, t.2.2)) := by
+    intro x y h
+    simp only [Prod.mk.injEq] at h
+    exact Prod.ext (hg h.1) (Prod.ext h.2.1 h.2.2)
+  unfold condMutualInfo
+  dsimp only
+  have e1 : (K.map (fun t => (g t.1, t.2.1, t.2.2))).map (fun t => (t.1, t.2.2)) =
+      (K.map (fun t => (t.1, t.2.2))).map (fun t => (g t.1, t.2)) := by
+    rw [map_comp_eq, map_comp_eq]; rfl
+  have e2 : (K.map (fun t => (g t.1, t.2.1, t.2.2))).map (fun t => (t.2.1, t.2.2)) =
+      K.map (fun t => (t.2.1, t.2.2)) := by
+    rw [map_comp_eq]; rfl
+  have e3 : (K.map (fun t => (g t.1, t.2.1, t.2.2))).map (fun t => t.2.2) =
+      K.map (fun t => t.2.2) := by
+    rw [map_comp_eq]; rfl
+  rw [e1, e2, e3, shannonEntropy_map_of_injective _ hg1, shannonEntropy_map_of_injective _ hg2]
+
+/-- **Regression: Marton's region contains the superposition coding region**
+    (choose `W := U_sc`, `U := X`, `V` constant). -/
+theorem superpositionInnerBound_subset_martonInnerBound (W : BroadcastChannel X Y₁ Y₂) :
+    superpositionInnerBound W ⊆ martonInnerBound W := by
+  classical
+  refine closure_minimal ?_ isClosed_closure
+  rintro ⟨R₁, R₂⟩ ⟨h1, h2, kU, Pux, hR₂, hR₁, hsum⟩
+  apply subset_closure
+  let e := Fintype.equivFin X
+  let φ : Fin kU × X → Fin kU × Fin (Fintype.card X) × Fin 1 × X := fun a => (a.1, e a.2, 0, a.2)
+  refine ⟨h1, h2, kU, Fintype.card X, 1, Pux.map φ, ?_⟩
+  intro joint IWU_Y1 IWV_Y2 IU_Y1_W IV_Y2_W IUV_W
+  set J := bcAuxJoint W Pux with hJdef
+  have hJ : joint = J.map (fun z => (φ z.1, z.2)) :=
+    joint_eq_map_of_comp W Pux (fun a => a.2) φ (fun b => b.2.2.2) (fun _ => rfl) joint
+      (fun _ => rfl) J (fun _ => rfl)
+  -- `I(X; Y₁) ≤ I(W, U; Y₁)`
+  have hA : mutualInfo (J.map (fun z => (z.1.2, z.2.1))) ≤ IWU_Y1 := by
+    have e1 : IWU_Y1 = mutualInfo (J.map (fun z => ((z.1.1, e z.1.2), z.2.1))) := by
+      change mutualInfo (joint.map _) = _
+      rw [hJ, map_comp_eq]; rfl
+    rw [e1]
+    refine le_trans (le_of_eq ?_) (mi_map_left_le _ (fun b => e.symm b.2))
+    rw [map_comp_eq]
+    have hf : (fun z : (Fin kU × X) × (Y₁ × Y₂) => (z.1.2, z.2.1)) =
+        Prod.map (fun b : Fin kU × Fin (Fintype.card X) => e.symm b.2) id ∘
+          fun z => ((z.1.1, e z.1.2), z.2.1) := by
+      funext z; simp
+    rw [hf]
+  -- `I(U_sc; Y₂) ≤ I(W, V; Y₂)`
+  have hB : mutualInfo (J.map (fun z => (z.1.1, z.2.2))) ≤ IWV_Y2 := by
+    have e1 : IWV_Y2 = mutualInfo (J.map (fun z => ((z.1.1, (0 : Fin 1)), z.2.2))) := by
+      change mutualInfo (joint.map _) = _
+      rw [hJ, map_comp_eq]; rfl
+    rw [e1]
+    refine le_trans (le_of_eq ?_) (mi_map_left_le _ Prod.fst)
+    rw [map_comp_eq]; rfl
+  -- `I(U; Y₁ | W) = I(X; Y₁ | U_sc)`
+  have hC : IU_Y1_W = condMutualInfo (J.map (fun z => (z.1.2, z.2.1, z.1.1))) := by
+    change condMutualInfo (joint.map _) = _
+    rw [hJ, map_comp_eq]
+    have := condMutualInfo_map_fst_injective (J.map (fun z => (z.1.2, z.2.1, z.1.1))) e
+      e.injective
+    rw [map_comp_eq] at this
+    exact this
+  have hD : IUV_W = 0 := condMutualInfo_eq_zero_of_subsingleton _
+  have hE : 0 ≤ IV_Y2_W := condMutualInfo_nonneg _
+  refine ⟨by linarith, by linarith, by linarith, by linarith⟩
+
+/-- **Regression: on every physically degraded BC the capacity region is contained in Marton's
+    region** (Bergmans–Gallager `C(W) = superposition region ⊆ martonInnerBound W`). -/
+theorem bcCapacityRegion_subset_martonInnerBound_of_degraded (W : BroadcastChannel X Y₁ Y₂)
+    (hdeg : IsPhysicallyDegradedBC W) : bcCapacityRegion W ⊆ martonInnerBound W := by
+  rw [degradedBC_capacity_theorem W hdeg, ← superpositionInnerBound_eq_degradedBCRegion W hdeg]
+  exact superpositionInnerBound_subset_martonInnerBound W
+
+end Regression
 
 end InfoTheory.Known.Certificates.BroadcastChannel

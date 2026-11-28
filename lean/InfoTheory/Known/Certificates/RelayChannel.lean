@@ -37,12 +37,19 @@ So both sides of the equation are finite reals in `[0, log₂ |Y|]`, and the ope
 `≥` every fixed-relay direct-link capacity and `≤` the cutset bound. Neither side is a junk value.
 (For degenerate alphabets with `Fin 0` input or relay alphabet both sides are `sSup ∅ = 0`.)
 
+* **Regression** `decodeForward_le_coverElGamalTheorem7Rate` — for every input law `P(x, x_r)`
+  the decode-and-forward rate `min(I(X; Y_r | X_r), I(X, X_r; Y))` (Cover–El Gamal Thm 1, the
+  capacity of the physically degraded relay channel) is `≤ coverElGamalTheorem7Rate W`
+  (`Q` constant, `W := X_r`, `U := X ~ p(x | x_r)`, `V` constant: `c₁ = I(X, X_r; Y)`,
+  `c₂ ≥ I(X; Y_r | X_r)`, `c₃ ≥ c₂`).  So the frozen three-constraint formula, with its
+  `X ⊥ X_r | (W, Q)` structure, still contains coherent decode-forward.
+
 ## Not certified
 * Achievability of `coverElGamalTheorem7Rate` (`coverElGamalTheorem7Rate W ≤ relayCapacity W`,
   CEG79): this needs block-Markov coding, which is not in the library.
-* `coverElGamalTheorem7Rate W ≤ relayCutsetBound W`, and equality with the decode-forward rate
-  on degraded channels (choose `W = X_r`, `U = X`, `V` constant): routine but long entropy
-  bookkeeping, not done.
+* `coverElGamalTheorem7Rate W ≤ relayCutsetBound W` (hence `Thm 7 = DF = cutset` on degraded
+  channels; the degraded-channel identity `DF = cutset` itself is not formalized either):
+  needs Markov-chain entropy inequalities for `thm7Joint`, not done.
 * The catalog-error channel of the earlier statement
   (`attempts/relay-channel/2026-11-26-claude-opus-5-5-thm7-transcription-catalog-error.md`):
   the faithful Theorem 7 rate equals `3/2 = C` there (on paper, Claim 3 of that attempt).
@@ -417,5 +424,209 @@ theorem coverElGamalTheorem7Rate_nonneg [Nonempty X] [Nonempty Xr] [Nonempty Y]
     ⟨1, 1, 1, 1, ProbDist.uniform, trivialTest _, trivialTest _, constKernel _ ProbDist.uniform,
       constKernel _ ProbDist.uniform, trivialTest _, rfl⟩ ?_
   exact thm7MinRate_nonneg_of_const _
+
+/-! ### Regression: decode-and-forward is a special case of Theorem 7
+
+With `Q` constant, `W := X_r`, `U := X` (drawn from `p(x | x_r)`, so `U` carries the
+source–relay correlation), `X = U`, `X_r = W` deterministically and `V` constant, the three
+Theorem 7 constraints become `c₁ = I(X, X_r; Y)`, `c₂ = 0 + I(X; Y_r | X_r)` and
+`c₃ = c₂ + I(X_r; Y | X_r) - 0 = c₂`, i.e. the decode-and-forward rate
+`min(I(X, X_r; Y), I(X; Y_r | X_r))` (Cover–El Gamal 1979, Thm 1), which is the capacity of
+the physically degraded relay channel.  We prove `DF(P) ≤ coverElGamalTheorem7Rate W` for every
+input law `P(x, x_r)`. -/
+
+section DecodeForward
+
+/-- Conditional mutual information is invariant under injective relabellings of the first and
+    the conditioning variable: `I(g(A); B | h(C)) = I(A; B | C)`. -/
+theorem condMutualInfo_map_injective {α α' β γ γ' : Type*} [Fintype α] [Fintype α']
+    [Fintype β] [Fintype γ] [Fintype γ'] (K : ProbDist (α × β × γ)) (g : α → α') (h : γ → γ')
+    (hg : Function.Injective g) (hh : Function.Injective h) :
+    condMutualInfo (K.map (fun t => (g t.1, t.2.1, h t.2.2))) = condMutualInfo K := by
+  have hg1 : Function.Injective (fun t : α × γ => (g t.1, h t.2)) := by
+    intro x y hxy
+    simp only [Prod.mk.injEq] at hxy
+    exact Prod.ext (hg hxy.1) (hh hxy.2)
+  have hg2 : Function.Injective (fun t : α × β × γ => (g t.1, t.2.1, h t.2.2)) := by
+    intro x y hxy
+    simp only [Prod.mk.injEq] at hxy
+    exact Prod.ext (hg hxy.1) (Prod.ext hxy.2.1 (hh hxy.2.2))
+  have hg3 : Function.Injective (fun t : β × γ => (t.1, h t.2)) := by
+    intro x y hxy
+    simp only [Prod.mk.injEq] at hxy
+    exact Prod.ext hxy.1 (hh hxy.2)
+  unfold condMutualInfo
+  dsimp only
+  have e1 : (K.map (fun t => (g t.1, t.2.1, h t.2.2))).map (fun t => (t.1, t.2.2)) =
+      (K.map (fun t => (t.1, t.2.2))).map (fun t => (g t.1, h t.2)) := by
+    rw [map_comp_eq, map_comp_eq]; rfl
+  have e2 : (K.map (fun t => (g t.1, t.2.1, h t.2.2))).map (fun t => (t.2.1, t.2.2)) =
+      (K.map (fun t => (t.2.1, t.2.2))).map (fun t => (t.1, h t.2)) := by
+    rw [map_comp_eq, map_comp_eq]; rfl
+  have e3 : (K.map (fun t => (g t.1, t.2.1, h t.2.2))).map (fun t => t.2.2) =
+      (K.map (fun t => t.2.2)).map h := by
+    rw [map_comp_eq, map_comp_eq]; rfl
+  rw [e1, e2, e3, shannonEntropy_map_of_injective _ hg1, shannonEntropy_map_of_injective _ hg2,
+    shannonEntropy_map_of_injective _ hg3, shannonEntropy_map_of_injective _ hh]
+
+/-- Deterministic kernel `a ↦ δ_{f a}`. -/
+noncomputable def detKernel {α β : Type*} [Fintype α] [Fintype β] [DecidableEq β] (f : α → β) :
+    DMC α β where
+  trans a b := if f a = b then 1 else 0
+  nonneg a b := by split_ifs <;> norm_num
+  sum_one a := by simp
+
+/-- The point mass on `Fin 1`. -/
+def pointDist : ProbDist (Fin 1) where
+  pmf _ := 1
+  nonneg _ := zero_le_one
+  sum_one := by simp
+
+/-- `P(x_r) = ∑ₓ P(x, x_r)`. -/
+theorem map_snd_pmf (P : ProbDist (X × Xr)) (xr : Xr) :
+    (P.map Prod.snd).pmf xr = ∑ x, P.pmf (x, xr) := by
+  classical
+  simp only [ProbDist.map]
+  rw [Fintype.sum_prod_type]
+  refine Finset.sum_congr rfl fun x _ => ?_
+  rw [Finset.sum_eq_single xr]
+  · simp
+  · intro b _ hb; simp [hb]
+  · simp
+
+/-- The conditional law `p(x | x_r)` (uniform where `P(x_r) = 0`). -/
+noncomputable def condKernel [Nonempty X] (P : ProbDist (X × Xr)) : DMC Xr X where
+  trans xr x := if (P.map Prod.snd).pmf xr = 0 then (Fintype.card X : ℝ)⁻¹
+    else P.pmf (x, xr) / (P.map Prod.snd).pmf xr
+  nonneg xr x := by
+    split_ifs
+    · positivity
+    · exact div_nonneg (P.nonneg _) ((P.map Prod.snd).nonneg _)
+  sum_one xr := by
+    split_ifs with h
+    · simp [Finset.card_univ]
+    · rw [← Finset.sum_div, ← map_snd_pmf]; exact div_self h
+
+theorem marg_mul_condKernel [Nonempty X] (P : ProbDist (X × Xr)) (x : X) (xr : Xr) :
+    (P.map Prod.snd).pmf xr * (condKernel P).trans xr x = P.pmf (x, xr) := by
+  simp only [condKernel]
+  split_ifs with h
+  · have hle : P.pmf (x, xr) ≤ (P.map Prod.snd).pmf xr := by
+      rw [map_snd_pmf]
+      exact Finset.single_le_sum (f := fun x' => P.pmf (x', xr)) (fun _ _ => P.nonneg _)
+        (Finset.mem_univ x)
+    rw [h, zero_mul]
+    linarith [P.nonneg (x, xr)]
+  · field_simp
+
+/-- **Regression: the decode-and-forward rate is a Theorem 7 rate.**  For every input law
+    `P(x, x_r)`, `min(I(X; Y_r | X_r), I(X, X_r; Y)) ≤ coverElGamalTheorem7Rate W`. -/
+theorem decodeForward_le_coverElGamalTheorem7Rate [Nonempty Y] (W : RelayChannel X Xr Y Yr)
+    (P : ProbDist (X × Xr)) :
+    min (condMutualInfo ((W.joint P).map (fun z => (z.1.1, z.2.2, z.1.2))))
+        (mutualInfo ((W.joint P).map (fun z => (z.1, z.2.1)))) ≤
+      coverElGamalTheorem7Rate W := by
+  classical
+  have : Nonempty X := by
+    by_contra hne
+    rw [not_nonempty_iff] at hne
+    have : ∑ a : X × Xr, P.pmf a = 0 := Finset.sum_eq_zero fun a _ => (IsEmpty.false a.1).elim
+    linarith [P.sum_one]
+  set eX := Fintype.equivFin X
+  set eR := Fintype.equivFin Xr
+  set Pr := P.map Prod.snd
+  let pW : DMC (Fin 1) (Fin (Fintype.card Xr)) :=
+    { trans := fun _ w => Pr.pmf (eR.symm w)
+      nonneg := fun _ w => Pr.nonneg _
+      sum_one := fun _ => by rw [Equiv.sum_comp eR.symm (fun xr => Pr.pmf xr)]; exact Pr.sum_one }
+  let pU : DMC (Fin (Fintype.card Xr) × Fin 1) (Fin (Fintype.card X)) :=
+    { trans := fun w u => (condKernel P).trans (eR.symm w.1) (eX.symm u)
+      nonneg := fun w u => (condKernel P).nonneg _ _
+      sum_one := fun w => by
+        rw [Equiv.sum_comp eX.symm (fun x => (condKernel P).trans (eR.symm w.1) x)]
+        exact (condKernel P).sum_one _ }
+  let pX : DMC (Fin (Fintype.card X) × Fin 1) X := detKernel (fun u => eX.symm u.1)
+  let pXr : DMC (Fin (Fintype.card Xr) × Fin 1) Xr := detKernel (fun w => eR.symm w.1)
+  let pV : DMC (Fin (Fintype.card X) × Xr × Yr × Fin 1) (Fin 1) := trivialTest _
+  set J := thm7Joint W pointDist pW pU pX pXr pV with hJdef
+  set K := W.joint P with hKdef
+  let σ : (X × Xr) × (Y × Yr) →
+      Fin 1 × Fin (Fintype.card Xr) × Fin (Fintype.card X) × X × Xr × Y × Yr × Fin 1 :=
+    fun z => (0, eR z.1.2, eX z.1.1, z.1.1, z.1.2, z.2.1, z.2.2, 0)
+  have hJ : J = K.map σ := by
+    refine probDist_eq_of_pmf fun t => ?_
+    obtain ⟨q, w, u, x, xr, y, yr, v⟩ := t
+    have hq : q = 0 := Subsingleton.elim _ _
+    have hv : v = 0 := Subsingleton.elim _ _
+    subst hq hv
+    have hR : (K.map σ).pmf (0, w, u, x, xr, y, yr, 0) =
+        if eR xr = w ∧ eX x = u then P.pmf (x, xr) * W.trans (x, xr) (y, yr) else 0 := by
+      simp only [ProbDist.map]
+      rw [Finset.sum_eq_single ((x, xr), (y, yr))]
+      · by_cases hc : eR xr = w ∧ eX x = u
+        · obtain ⟨rfl, rfl⟩ := hc; simp [σ, hKdef, DMC.joint]
+        · rw [ite_eq_right_of_eq_false _ _ (eq_false hc)]
+          refine ite_eq_right_of_eq_false _ _ (eq_false fun h => ?_)
+          simp only [σ, Prod.mk.injEq] at h
+          exact hc ⟨h.2.1, h.2.2.1⟩
+      · intro z _ hz
+        refine ite_eq_right_of_eq_false _ _ (eq_false fun h => ?_)
+        simp only [σ, Prod.mk.injEq] at h
+        exact hz (Prod.ext (Prod.ext h.2.2.2.1 h.2.2.2.2.1) (Prod.ext h.2.2.2.2.2.1 h.2.2.2.2.2.2.1))
+      · simp
+    rw [hR]
+    simp only [hJdef, thm7Joint, pointDist, pW, pU, pX, pXr, pV, detKernel, trivialTest]
+    by_cases hc : eR xr = w ∧ eX x = u
+    · obtain ⟨rfl, rfl⟩ := hc
+      simp only [Equiv.symm_apply_apply, ↓reduceIte, and_self, mul_one, one_mul]
+      rw [marg_mul_condKernel]
+    · rw [ite_eq_right_of_eq_false _ _ (eq_false hc)]
+      by_cases hw : eR xr = w
+      · have hu : eX.symm u ≠ x := fun h => hc ⟨hw, by rw [← h]; simp⟩
+        simp [hu]
+      · have hw' : eR.symm w ≠ xr := fun h => hw (by rw [← h]; simp)
+        simp [hw']
+  -- the three constraints
+  have hc₁ : mutualInfo (K.map (fun z => (z.1, z.2.1))) ≤
+      condMutualInfo (J.map fun t => ((t.2.2.2.1, t.2.2.2.2.1), t.2.2.2.2.2.1, t.1)) -
+      condMutualInfo (J.map fun t => (t.2.2.2.2.2.2.1, t.2.2.2.2.2.2.2,
+        (t.2.2.1, t.2.2.2.1, t.2.2.2.2.1, t.2.2.2.2.2.1, t.1))) := by
+    rw [condMutualInfo_eq_zero_of_subsingleton (β := Fin 1), sub_zero, hJ, map_comp_eq]
+    have := condMutualInfo_map_const (K.map (fun z => (z.1, z.2.1))) (0 : Fin 1)
+    rw [map_comp_eq] at this
+    exact le_of_eq this.symm
+  have hDF : condMutualInfo (K.map (fun z => (z.1.1, z.2.2, z.1.2))) =
+      condMutualInfo (J.map fun t => (t.2.2.1, t.2.2.2.2.2.2.1, (t.2.1, t.2.2.2.2.1, t.1))) := by
+    rw [hJ, map_comp_eq]
+    have := condMutualInfo_map_injective (K.map (fun z => (z.1.1, z.2.2, z.1.2))) eX
+      (fun xr => (eR xr, xr, (0 : Fin 1))) eX.injective
+      (fun a b h => by simp only [Prod.mk.injEq] at h; exact h.2.1)
+    rw [map_comp_eq] at this
+    exact this.symm
+  have hc₂ : condMutualInfo (K.map (fun z => (z.1.1, z.2.2, z.1.2))) ≤
+      condMutualInfo (J.map fun t =>
+        (t.2.2.2.1, (t.2.2.2.2.2.2.2, t.2.2.2.2.2.1), (t.2.2.1, t.2.2.2.2.1, t.1))) +
+      condMutualInfo (J.map fun t => (t.2.2.1, t.2.2.2.2.2.2.1, (t.2.1, t.2.2.2.2.1, t.1))) := by
+    rw [hDF]
+    linarith [condMutualInfo_nonneg (J.map fun t =>
+        (t.2.2.2.1, (t.2.2.2.2.2.2.2, t.2.2.2.2.2.1), (t.2.2.1, t.2.2.2.2.1, t.1)))]
+  have hz := condMutualInfo_eq_zero_of_subsingleton (β := Fin 1) (J.map fun t =>
+    (t.2.2.2.2.2.2.1, t.2.2.2.2.2.2.2, (t.2.2.1, t.2.2.2.2.1, t.2.2.2.2.2.1, t.1)))
+  have hn := condMutualInfo_nonneg (J.map fun t => (t.2.2.2.2.1, t.2.2.2.2.2.1, (t.2.1, t.1)))
+  have hmem : thm7MinRate J ∈ { r : ℝ | ∃ (kQ kW kU kV : ℕ) (pQ : ProbDist (Fin kQ))
+      (pW : DMC (Fin kQ) (Fin kW)) (pU : DMC (Fin kW × Fin kQ) (Fin kU))
+      (pX : DMC (Fin kU × Fin kQ) X) (pXr : DMC (Fin kW × Fin kQ) Xr)
+      (pV : DMC (Fin kU × Xr × Yr × Fin kQ) (Fin kV)),
+      r = thm7MinRate (thm7Joint W pQ pW pU pX pXr pV) } :=
+    ⟨1, _, _, 1, pointDist, pW, pU, pX, pXr, pV, rfl⟩
+  refine le_trans ?_ (le_csSup (thm7Rates_bddAbove W) hmem)
+  unfold thm7MinRate
+  dsimp only
+  refine le_min (min_le_of_right_le hc₁) (le_min (min_le_of_left_le hc₂) ?_)
+  refine min_le_of_left_le (le_trans hc₂ ?_)
+  rw [hz]
+  linarith
+
+end DecodeForward
 
 end InfoTheory.Known.Certificates.RelayChannel
