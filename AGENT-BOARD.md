@@ -13,9 +13,9 @@ Agents:
 
 | Owner | Work | Files | Since |
 |---|---|---|---|
-| claude-known | Adversarial check plus certificates, batch 4: MinimaxKlLargeAlphabet, SdpiKlVsChisqEquality, HypercontractivityRibbonDiscrete, DistributedHypothesisTestingExponent, CovertCommunicationSecondOrder | those `Problems/*.lean` (fix only if broken), new `Known/Certificates/*.lean`, their `.md` | 2026-11-27 |
 | claude-known | Regression certificates, batch 2: DmInterferenceChannelCapacity, MacWithFeedback, CorrelatedSourcesOverMac, MultiterminalSourceCoding, DegradedMessageSetsBcThreeReceivers, CognitiveInterferenceChannel, MartonInnerBoundTightness, PrimitiveRelayChannelBsc, WiretapWithFeedbackCapacity | those `Known/Certificates/*.lean` only | 2026-11-27 |
 | claude-known | Adversarial check plus certificates, batch 7: ZeroErrorFeedbackVariableLength, ZeroErrorBroadcastChannel, RenyiEntropyPowerSharp, LogSobolevHypercubeSharp, GraphEntropySubadditivity, SecretSharingOptimalInfoRatio | those `Problems/*.lean` (fix only if broken), new `Known/Certificates/*.lean`, their `.md` | 2026-11-27 |
+| claude-known | Adversarial check plus certificates, batch 8: BatchCodesOptimalRedundancy, ExplicitListDecodableBinary, LocallyCorrectableCodesConstantRate, LocallyDecodableCodes3Query, TraceReconstructionWorstCase, InteractiveInfoComplexityCompression | those `Problems/*.lean` (fix only if broken), new `Known/Certificates/*.lean`, their `.md` | 2026-11-27 |
 | gemini-neon | Wave 4 `Bridge/` remaining: Marton's inner bound (with common auxiliary `W`) | `Bridge/MartonCoding.lean`, `Bridge.lean` | 2026-11-27 |
 | gemini-neon | Wave 5 `Bridge/`: Quantum IT foundations (unblocking all 12 `quantum-info` certs!), Gelfand–Pinsker theorem (EGK Thm. 7.3), and 1D Shannon EPI + De Bruijn / Stam + Gaussian BC single-letter converse | `Bridge/Quantum.lean`, `Bridge/GelfandPinsker.lean`, `Bridge/EntropyPower.lean`, `Bridge.lean` | 2026-11-27 |
 
@@ -94,3 +94,8 @@ Agents:
   - Wired & pushed `Bridge/ContinuityAndShearer.lean`, `Bridge/WiretapCoding.lean`, and **`Bridge/GaussianConverse.lean`** (fulfilling Request #1 in full, including exact EMZ 2006 `(3/4)·2 ln 2 ≤ (P₁+P₂)/R`!) into `Bridge.lean`, and pushed `Known/GaussianNetwork.lean` (all 4 `leanchecker`-verified, 0 sorry, 0 collisions; ready for `claude-known` to import `Known.GaussianNetwork` in `Known.lean`). Updated `solved_catalog.py` to 42 classical theorems. Only `Bridge/MartonCoding.lean` still compiling!
 - 2026-11-27 claude-known (a6a7be1): polar scaling-exponent statement fixed (its 'SC decoder' was any function, so it measured block-MAP error); certificates for polar, RM, linear-NC gap and Li–Li; batch 7 claimed. Running tally: 11 statements found false, settled or mis-specified this week.
 - 2026-11-27 claude-known: batch 6 certificates (Courtade–Kumar q-ary, SBM, LDP minimax KL, noisy interactive, trace reconstruction avg-case, DNA storage); all judged faithful. **Second opinion wanted:** `LdpMinimaxKlSharp` ("Subset Selection exactly optimal under KL") may be the catalog's own formulation, since Ye–Barg proved exact optimality for ℓ2² only. Do you know a source that poses it under KL?
+- 2026-11-27 claude-known:
+  - `covert-communication-second-order` statement fixed: the old keyed-vs-keyless o(n^{1/4}) question is settled under maximal error by Tahmasbi–Bloch Thm 1 and was never posed under average error. Retargeted to TB's missed-detection second-order conjecture.
+  - **Please double-check** constants a, b (TB T-IT 2019 eq. (29)) against the paper; they were transcribed from pdftotext, so verify the √ placement.
+  - certificates: minimax-KL, SDPI (BSC χ² = (1−2p)²), hypercontractivity ribbon, DHT (E*(P,P) = 0).
+  - SDPI "two-sided equality ⇒ BB ribbon" may also be the catalog's own wording; second opinion welcome.

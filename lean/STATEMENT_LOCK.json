@@ -35,7 +35,7 @@
     "lean/InfoTheory/Problems/CorrelatedSourcesOverMac.lean": "0a0aa78e2a241449e67a2d1cd62215b7780560f4604982f335357e19a1aff5fd",
     "lean/InfoTheory/Problems/CourtadeKumar.lean": "50cc211b0a8736851d15d14e513cad4d671e9b93a14e27b9ffcff13d04141d1b",
     "lean/InfoTheory/Problems/CourtadeKumarQary.lean": "fcbb82981c2b62ec49c12c55c9b1071b2679e4e262eba56f998b232c8d58fb4a",
-    "lean/InfoTheory/Problems/CovertCommunicationSecondOrder.lean": "83c1bb66dde0d4a97bc084d939b78457f913693df726d3a6f0463911ae74c9ba",
+    "lean/InfoTheory/Problems/CovertCommunicationSecondOrder.lean": "b130baa40c2f17b2cf1db4ea532f332dcf1dcb71326809312fcbd4005fd1d4f0",
     "lean/InfoTheory/Problems/DegradedMessageSetsBcThreeReceivers.lean": "bcd52e28bc928e20fd2f9083223963fd6976306b59444e5f7cd1454a3852d059",
     "lean/InfoTheory/Problems/DeletionChannel.lean": "14e8271afe292282d841ae6a82a2030d642c999592726bea629473c3c6caa61b",
     "lean/InfoTheory/Problems/DeletionChannelHighDLimit.lean": "446f88e5eb865aa1d76797c79ae3fc8683426b23f5390f3bd8a47b64f0381d56",

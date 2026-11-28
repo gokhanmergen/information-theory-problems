@@ -15,11 +15,13 @@ import InfoTheory.Known.Certificates.CommonInformationExactVsWyner
 import InfoTheory.Known.Certificates.CorrelatedSourcesOverMac
 import InfoTheory.Known.Certificates.CourtadeKumar
 import InfoTheory.Known.Certificates.CourtadeKumarQary
+import InfoTheory.Known.Certificates.CovertCommunicationSecondOrder
 import InfoTheory.Known.Certificates.DegradedMessageSetsBcThreeReceivers
 import InfoTheory.Known.Certificates.DeletionChannel
 import InfoTheory.Known.Certificates.DeletionChannelHighDLimit
 import InfoTheory.Known.Certificates.DeletionChannelSmallDAsymptotics
 import InfoTheory.Known.Certificates.DiscreteEntropyPowerInequality
+import InfoTheory.Known.Certificates.DistributedHypothesisTestingExponent
 import InfoTheory.Known.Certificates.DmInterferenceChannelCapacity
 import InfoTheory.Known.Certificates.DmcZeroRateErrorExponent
 import InfoTheory.Known.Certificates.DnaStorageUnorderedChannel
@@ -34,6 +36,7 @@ import InfoTheory.Known.Certificates.GaussianMultipleDescriptions3
 import InfoTheory.Known.Certificates.GaussianRelayChannelCapacity
 import InfoTheory.Known.Certificates.GilbertVarshamovBinary
 import InfoTheory.Known.Certificates.GrayWynerLossy
+import InfoTheory.Known.Certificates.HypercontractivityRibbonDiscrete
 import InfoTheory.Known.Certificates.IndexCodingLinearNonlinearGap
 import InfoTheory.Known.Certificates.IndexCodingSingleLetter
 import InfoTheory.Known.Certificates.InsertionDeletionChannel
@@ -48,6 +51,7 @@ import InfoTheory.Known.Certificates.ListDecodingZeroErrorCapacity
 import InfoTheory.Known.Certificates.MacWithFeedback
 import InfoTheory.Known.Certificates.MartonInnerBoundTightness
 import InfoTheory.Known.Certificates.MdsConjecture
+import InfoTheory.Known.Certificates.MinimaxKlLargeAlphabet
 import InfoTheory.Known.Certificates.MmseDimensionSingleCrossing
 import InfoTheory.Known.Certificates.MrsGerberGeneral
 import InfoTheory.Known.Certificates.MultipleDescriptionsGeneral
@@ -62,6 +66,7 @@ import InfoTheory.Known.Certificates.ReedMullerCapacityGeneralDmc
 import InfoTheory.Known.Certificates.RegeneratingCodesExactRepair
 import InfoTheory.Known.Certificates.RelayChannel
 import InfoTheory.Known.Certificates.SbmMultiCommunityThreshold
+import InfoTheory.Known.Certificates.SdpiKlVsChisqEquality
 import InfoTheory.Known.Certificates.SecretKeyCapacityPublicDiscussion
 import InfoTheory.Known.Certificates.ShannonCapacityC7
 import InfoTheory.Known.Certificates.ShannonCapacityComplementProduct

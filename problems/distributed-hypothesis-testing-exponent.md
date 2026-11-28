@@ -36,6 +36,18 @@ Posed by Ahlswede and Csiszár (1986) as the multiterminal generalization of the
 - **Testing against conditional independence:** Rahman and Wagner (2012) proved that the Shimokawa–Han–Amari inner bound is **tight** when testing against conditional independence ($Q_{X, (Y, Z)} = P_{XZ} P_{Y|Z}$, where $(Y, Z)$ is observed at the decoder and $X \perp Y \mid Z$ under $H_1$), demonstrating that Wyner–Ziv binning is genuinely optimal in a broad non-trivial class.
 - **Improved converses and open gap:** Watanabe (2022) and Weinberger–Kochman / Rahman–Wagner developed stronger outer bounds and second-order analyses, yet for general positive-rate pairs $(P_{XY}, Q_{XY})$ beyond conditional independence, whether $E^*(R, P, Q) = E_{\mathrm{SHA}}(R, P, Q)$ holds in general remains open.
 
+## Formal statement and certificate
+
+- **Adversarial check (2026-11-27): Statement is faithful.**
+  - `shaInnerBoundRaw` matches the SHA exponent: Markov chain `U - X - Y`, `Q̃ = P_{U|X} Q`, binning rate `I(U;X|Y) ≤ R`, the binning term `D + R - I(U;X|Y)` under `H_P(U|Y) ≤ H_{P̃}(U|Y)`, and no binning term when `I(U;X) ≤ R`.
+  - The absolute-continuity guards rule out `log 0` junk, and full support makes every set nonempty and bounded.
+  - The known counterexamples to SHA optimality use non-binary alphabets: Watanabe (arXiv:2201.13005) uses a product of two DSBSs, and Kochman–Wang (arXiv:2306.14499, Example 3) use ternary `X`. The binary case is still open as of 2026-11; Girish–Cung–Telatar (arXiv:2601.10526) study only linear codes.
+- **Certificate** `lean/InfoTheory/Known/Certificates/DistributedHypothesisTestingExponent.lean` (kernel-checked, standard axioms only) proves:
+  - `E* ≥ 0`, because exponent `0` is always achievable;
+  - **regression:** `E*(R, P, P) = 0` (`dhtOptimalExponent_self`), the Stein value `D(P‖P) = 0`;
+  - `E_SHA ≥ 0`, together with its raw version.
+- Not certified: SHA achievability, the Ahlswede–Csiszár testing-against-independence formula, and `E_SHA(R, P, P) = 0`.
+
 ## References
 
 - R. Ahlswede and I. Csiszár, "Hypothesis testing with communication constraints," *IEEE Trans. Inf. Theory* **32**(4), 533–542 (1986).

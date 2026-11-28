@@ -40,6 +40,16 @@ When the alphabet size $k$ grows proportionally with the sample size $n$ ($k / n
   - Kamath, Orlitsky, Pichapati, and Suresh (2015) proved sharp upper and lower bounds for every $\alpha > 0$, showing e.g. that for $\alpha = 1$ ($k = n$), $r_{n, n}$ lies in a narrow interval strictly below $1/2$ nat ($\approx 0.42$ to $0.50$ nats), and that single-parameter add-$\beta$ estimators are strictly suboptimal compared to estimators that treat unseen symbols separately.
   - Orlitsky and Suresh (2015) showed that modified Good–Turing estimators are competitive against the best *natural* (label-invariant) estimator on every distribution, yet the exact minimax value $c(\alpha)$ and the exact asymptotic minimax-optimal estimator in the proportional regime $k / n \to \alpha \in (0, \infty)$ remain open.
 
+## Formal statement and certificate
+
+- **Adversarial check (2026-11-27): Statement is faithful.** Every Braess–Sauer estimator has full support, so all KL values are finite. The family is a subset of the full-support estimators that `minimaxKLRisk` ranges over. So `minimaxKLRisk ≤ braessSauerKLRisk` always holds, and `Statement` asks for the reverse inequality up to `o(1)` when `k = max 2 ⌊αn⌋`. Bits vs nats does not matter for an `o(1)` question. A literature search (2026-11) found no resolution: Kamath–Orlitsky–Pichapati–Suresh (2015) give only bounds for `k/n → α`.
+- **Certificate** `lean/InfoTheory/Known/Certificates/MinimaxKlLargeAlphabet.lean` (kernel-checked, standard axioms only). For every `k ≥ 1` it proves:
+  - both risks are reals in `[0, log₂(n+k)]` (`minimaxKLRisk_nonneg`, `braessSauerKLRisk_le_log2`);
+  - the Laplace estimator belongs to the family (`laplaceEst_isBraessSauer`);
+  - `minimaxKLRisk ≤ braessSauerKLRisk`;
+  - **regression** for `n = 0`: both risks equal `log₂ k`, the classical value `min_Q max_P D(P‖Q)` (`minimaxKLRisk_zero_samples`, `braessSauerKLRisk_zero_samples`).
+- Not certified: the `(k-1)/(2n)` and `log(k/n)` asymptotics.
+
 ## References
 
 - R. E. Krichevsky and V. K. Trofimov, "The performance of universal encoding," *IEEE Trans. Inf. Theory* **27**(2), 199–207 (1981).

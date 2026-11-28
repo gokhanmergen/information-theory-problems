@@ -42,6 +42,16 @@ Yet checking Nair's KL inequality requires minimizing a *non-convex* difference 
   - The continuous-time log-Sobolev constant of the complete graph $K_q$ was computed exactly by Diaconis and Saloff-Coste (1996), with a **two-valued** extremizer; this determines the tangent slope of the ribbon at $p = 2$ in the continuous-time limit.
   - Polyanskiy and Samorodnitsky (2019) and Kamath–Anantharam / Nair–Wang established sharp bounds and studied extremal functions for the discrete-time $q$-ary symmetric channel; however, whether two-valued functions are globally extremal across all $(p, q_2)$ and $\alpha \in (0, 1)$ — and how to efficiently compute $\mathcal{R}(P_{XY})$ for general discrete sources — remains open.
 
+## Formal statement and certificate
+
+- **Adversarial check (2026-11-27): Statement is faithful.** `inFullHypercontractivityRibbon` is Nair's KL form of `E[f(X)g(Y)] ≤ ‖f‖_p ‖g‖_{q'}`. All `rpow`s act on nonnegative bases with `q' = q/(q-1)` finite. Since `m ≥ 3`, the two-valued test is a genuine restriction. A literature search (2026-11) found no resolution.
+- **Certificate** `lean/InfoTheory/Known/Certificates/HypercontractivityRibbonDiscrete.lean` (kernel-checked, standard axioms only) proves:
+  - marginal KL data processing;
+  - every `(p, p)` is in every ribbon;
+  - **regression at `α = 0`** (`ρ = 1`): the ribbon is exactly `p = q` (`identity_ribbon_iff`), and for `p < q` the two-valued test already fails (`identity_twoValued_fails`), so the implication holds there;
+  - **regression at `α = (m-1)/m`** (independent `X`, `Y`): the ribbon is all of `1 < p ≤ q` (`independent_ribbon`).
+- Not certified: the doubly-symmetric binary ribbon for `0 < α < 1/2`, and Nair's functional/KL equivalence.
+
 ## References
 
 - W. Beckner, "Inequalities in Fourier analysis," *Ann. of Math.* **102**(1), 159–182 (1975).

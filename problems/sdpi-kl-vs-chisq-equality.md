@@ -40,6 +40,20 @@ Understanding precisely when global KL contraction matches local $\chi^2$ contra
 - **Symmetric $q$-ary channels ($q \ge 4$):** For the $q$-ary symmetric channel $W = (1-\lambda)I + \frac{\lambda}{q} J$ at uniform input $Q = \mathrm{Unif}_q$, $s_{\chi^2}(\mathrm{Unif}_q, W) = (1 - \lambda)^2$, whereas for $q \ge 4$ and $\lambda$ near $1$, $D(e_1 W \| \mathrm{Unif}_q) / D(e_1 \| \mathrm{Unif}_q) \approx \frac{q - 1}{2 \ln q}(1 - \lambda)^2 > (1 - \lambda)^2$, so $s_{\mathrm{KL}}(\mathrm{Unif}_q, W) > s_{\chi^2}(\mathrm{Unif}_q, W)$ (Polyanskiy–Wu 2017).
 - **General characterization open:** For general discrete sources $(X, Y)$ with $|\mathcal{X}|, |\mathcal{Y}| \ge 3$, no necessary and sufficient algebraic or structural characterization of $s_{\mathrm{KL}}(Q, W) = s_{\chi^2}(Q, W)$ is known, nor is it known whether two-sided equality $s_{\mathrm{KL}}(X \to Y) = s_{\mathrm{KL}}(Y \to X) = \rho_m^2(X; Y)$ forces the full hypercontractivity ribbon to equal the Bonami–Beckner hyperbola.
 
+## Formal statement and certificate
+
+- **Adversarial check (2026-11-27): Statement is faithful.** The condition `inNairRibbon` is the Carlen–Cordero-Erausquin/Nair dual of `E[f(X)g(Y)] ≤ ‖f‖_p ‖g‖_{q'}`. The hypotheses force full support, so the two SDPI constants are `sSup`s of bounded sets in `[0, 1]`. Ribbon ⊆ hyperbola always holds, so the implication in `Statement` is exactly the "coincides" question. Degenerate cases (`kX = 1`, `p = q`) are true and harmless. A literature search (2026-11) found no resolution.
+- **Certificate** `lean/InfoTheory/Known/Certificates/SdpiKlVsChisqEquality.lean` (kernel-checked, standard axioms only) proves:
+  - `0 ≤ s_KL ≤ 1` (KL data processing);
+  - `χ²` data processing (`chiSq_channel_le`, via Cauchy–Schwarz) and `0 ≤ s_{χ²} ≤ 1`;
+  - **regressions:**
+    - `s_{χ²}(Unif, BSC(p)) = (1-2p)²`;
+    - for the noiseless channel on `Fin k`, both constants equal `1`;
+    - for a channel with identical rows, both constants equal `0`;
+    - for the noiseless source, the Nair ribbon is exactly `p = q` (the Bonami–Beckner region with `ρ = 1`);
+    - the noiseless source satisfies all the hypotheses of `Statement` and its conclusion.
+- Not certified: `s_KL(Unif, BSC(p)) = (1-2p)²` for `0 < p < 1/2`, and the general inequality `s_{χ²} ≤ s_KL`.
+
 ## References
 
 - R. Ahlswede and P. Gács, "Spreading of sets in product spaces and hypercontraction of the Markov operator," *Ann. Probab.* **4**(6), 925–939 (1976).
