@@ -20,6 +20,7 @@ import InfoTheory.Bridge.WiretapCoding
 import InfoTheory.Bridge.GaussianConverse
 import InfoTheory.Bridge.MartonCoding
 import InfoTheory.Bridge.GelfandPinsker
+import InfoTheory.Bridge.EntropyPower
 
 /-!
 # `InfoTheory.Bridge` — Non-Destructive Bridge to Mathlib & Cover & Thomas Foundations
@@ -86,4 +87,9 @@ Single convenience import re-exporting:
   channels with noncausal transmitter side information (El Gamal–Kim Thm. 7.3:
   `gelfand_pinsker_theorem`, deterministic-vs-stochastic equivalence, Csiszár-sum converse,
   and random-binning achievability).
+- `InfoTheory.Bridge.EntropyPower`: **Cramér–Rao Inequality**, **Stam's Fisher Information
+  Inequality** (`stam_inequality`), **De Bruijn's Identity** (`de_bruijn_identity`),
+  **Shannon's 1D Entropy Power Inequality** (`entropyPower_add_ge`, Cover & Thomas Thm. 17.8.1),
+  and **Bergmans's Scalar Gaussian Broadcast Channel Single-Letter Converse**
+  (`gaussianBC_single_letter_converse`).
 -/

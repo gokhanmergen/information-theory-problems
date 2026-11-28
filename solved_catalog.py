@@ -772,6 +772,58 @@ SOLVED_THEOREMS = [
             "awgn-feedback-error-exponent",
         ],
     },
+    {
+        "id": "shannon-epi-debruijn-stam",
+        "title": "De Bruijn's Identity, Stam's Inequality, Shannon's 1D Entropy Power Inequality & Gaussian BC Converse",
+        "category": "ch8-9-gaussian",
+        "authors": "Claude E. Shannon; A. J. Stam; Nelson M. Blachman; Patrick P. Bergmans",
+        "year": "1959",
+        "reference": "Cover & Thomas, Theorems 17.7.1, 17.7.2, 17.8.1 & §15.6.2; Blachman (1965); Bergmans (1974)",
+        "tags": ["entropy-power-inequality", "epi", "de-bruijn", "stam", "cramer-rao", "gaussian-bc", "flagship", "ch17"],
+        "statement": (
+            "For independent 1D continuous random variables $X, Y$ with finite second moments and "
+            "differential entropies:\n"
+            "1. **Cramér–Rao Inequality:** $1 / J(X) \\le \\mathrm{Var}(X)$.\n"
+            "2. **Stam's Fisher Information Inequality:** $\\frac{1}{J(X + Y)} \\ge \\frac{1}{J(X)} + \\frac{1}{J(Y)}$ "
+            "(and $J(X + Y) \\le \\alpha^2 J(X) + (1 - \\alpha)^2 J(Y)$).\n"
+            "3. **De Bruijn's Identity:** For $Z \\sim \\mathcal{N}(0, 1)$ independent of $X$ and every $t > 0$,\n"
+            "$$\\frac{d}{dt} h(X + \\sqrt{t}\\, Z) = \\frac{1}{2} J(X + \\sqrt{t}\\, Z).$$\n"
+            "4. **Shannon's 1D Entropy Power Inequality (EPI):**\n"
+            "$$N(X + Y) \\ge N(X) + N(Y), \\qquad N(X) = \\frac{1}{2\\pi e} e^{2 h(X)}.$$\n"
+            "5. **Bergmans's Scalar Gaussian BC Single-Letter Converse:** For $0 < N_1 \\le N_2$ and "
+            "$\\mathbb{E}[X^2] \\le P$, there exists $\\alpha \\in [0, 1]$ with "
+            "$I(X; Y_1 \\mid U) \\le \\frac{1}{2}\\ln(1 + \\alpha P / N_1)$ and "
+            "$I(U; Y_2) \\le \\frac{1}{2}\\ln(1 + (1 - \\alpha)P / (\\alpha P + N_2))$."
+        ),
+        "proof_notes": (
+            "Proves the 1D heat equation $\\partial_t f_t = \\frac{1}{2}\\partial_y^2 f_t$ for Gaussian "
+            "convolutions `awgnOutputDensity`, derives `fisherInfo_awgnOutput_le_inv` ($J(f_t) \\le 1/t$) "
+            "and `stam_weighted_inequality` via score-function Cauchy–Schwarz, proves `de_bruijn_identity` "
+            "via dominated differentiation + integration by parts, establishes `diffEntropy_conv_ge_weighted_awgn` "
+            "via Blachman–Stam monotonicity on $(0, \\infty)$, and passes $t \\to 0^+$ via $L^1$ approximate "
+            "identity and Fatou's lemma on $D(f_t \\| \\mathcal{N}(0,1))$ to obtain full 1D `entropyPower_add_ge` "
+            "and `gaussianBC_single_letter_converse`."
+        ),
+        "lean_decls": [
+            ("lean/InfoTheory/Bridge/EntropyPower.lean", "cramer_rao_inequality"),
+            ("lean/InfoTheory/Bridge/EntropyPower.lean", "stam_inequality"),
+            ("lean/InfoTheory/Bridge/EntropyPower.lean", "de_bruijn_identity"),
+            ("lean/InfoTheory/Bridge/EntropyPower.lean", "entropyPower_add_ge_of_awgn"),
+            ("lean/InfoTheory/Bridge/EntropyPower.lean", "entropyPower_add_ge"),
+            ("lean/InfoTheory/Bridge/EntropyPower.lean", "gaussianBC_single_letter_converse"),
+        ],
+        "related_open": [
+            "conditional-entropy-power-conjecture",
+            "renyi-entropy-power-sharp",
+            "discrete-entropy-power-inequality",
+            "gaussian-optimality-mutual-information",
+            "gaussian-bc-feedback-sum-capacity",
+            "gaussian-interference-channel",
+        ],
+        "analogous_open": [
+            "quantum-entropy-power-sharp",
+        ],
+    },
 
     # ------------------------------------------------------------------ Ch. 10
     {
