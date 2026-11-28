@@ -1,0 +1,85 @@
+python-flint Arb, working precision 320 bits; all logs natural (nats)
+
+== exact-rational checks ==
+PASS  HLL (14)-(17) constants identical to ../hll_check.py (model.py cross-check)
+PASS  weights (32) and mu identical to ../hll_check.py
+PASS  (32): lambda + delta0 + delta1 == 1 exactly
+PASS  (32): 0 < lambda < 1, delta0 > 0, delta1 > 0
+PASS  (16): p* is a probability vector with full support (relative interior)
+PASS  (14),(15): every channel row sums to 1 exactly and is strictly positive
+PASS  independent-cert/results_T5.json: 29/29 jobs certified, T = -532356454721386925147158010951/500000000000000000000000000000
+PASS  independent-cert/results_1e-12.json: 29/29 jobs certified, T = -10647134094417738503/10000000000000000000
+
+== L = M ln 2 = ln N, N = 2^M, M = 2,000,000 ==
+   L = [1386294.36111989061883446424292 +/- 3.65e-24]
+PASS  A_i(L) = L + ln((1-p_i)/p_i) > 0 for i = 0,1 (Thm 2 'L large enough')
+
+== gradient of UB at p* (HLL (36)-(37)) ==
+   dUB/dp_0 = [0.0748378170063101472443353827799 +/- 2.24e-32]
+   dUB/dp_1 = [0.340175905949018448694728415059 +/- 1.61e-31]
+   dUB/dp_2 = [0.365554585015044188854804593685 +/- 2.32e-31]
+   range(grad UB - b) <= [4.692109048907094e-22 +/- 2.45e-38]
+PASS  (37): max rho - min rho < 4.692109048907095e-22
+PASS  (36): coordinate 2 carries the largest supergradient entry (r = 2)
+
+== Theorem-2 ideal weights from the exact gradient (comparison only) ==
+   lambda_L = [0.9999997719852742883894251 +/- 9.49e-27]   (32): [0.9999997719852742883894200 +/- 3e-30]
+   delta0_L = [2.097079033700793907939729e-7 +/- 3.09e-32]   (32): [2.097079033700794000000000e-7 +/- 3e-36]
+   delta1_L = [1.830682234153118411551363e-8 +/- 1.54e-33]   (32): [1.830682234153118000000000e-8 +/- 3e-37]
+
+== gradient range of Phi at p* (HLL (38)-(39)), computed directly ==
+   dPhi/dp_0 = [0.365554501663215766790129640447 +/- 2.70e-31]
+   dPhi/dp_1 = [0.365554501663215748322553082220 +/- 1.44e-31]
+   dPhi/dp_2 = [0.365554501663215754027872744894 +/- 4.70e-31]
+   eps_ours := range(grad Phi(p*)) <= [1.846757655822741e-17 +/- 3.68e-33]
+PASS  (39): range of grad Phi(p*) < 1.846843880121467e-17
+PASS  eps_ours is a (positive) upper bound; used in place of (39) below
+
+== one-letter side (HLL (40)) ==
+   f_T5(p*) = alpha H(Y*) + abar H(Z*) + T5 - a.p* <= [0.09165088339135547467100000 +/- 3e-30]
+   f_T12(p*) = alpha H(Y*) + abar H(Z*) + T12 - a.p* <= [0.09165038339235547466531602 +/- 1.91e-27]
+PASS  UB(p*) <= f_T5(p*) <= printed (25)  [B_T < T5 is independent-cert Claim 2]
+   U = (25) : M_T~ <= lambda U + shaping + eps <= [0.3008418660991544625389 +/- 1.23e-23]
+   U = T5   : M_T~ <= lambda U + shaping + eps <= [0.3008418660991544625389 +/- 1.23e-23]
+   U = T12  : M_T~ <= lambda U + shaping + eps <= [0.3008413661002684696681 +/- 3.07e-23]
+PASS  (40): M_T~ <= 0.30084186609915448 with U = printed (25)
+PASS  (40): M_T~ <= 0.30084186609915448 with U = f_T5(p*)
+   [eps_ours vs printed eps (39): bound with printed eps = [0.3008418660991544625398 +/- 2.56e-23]]
+
+== two-letter side (HLL (41)-(42)) ==
+PASS  Appendix-A components are probability laws with both X-marginals = p* exactly (HLL (26) => (13))
+   exact functional at P*: L_0 = [0.1833045943997910672913410 +/- 3.70e-26]  L_1 = [0.1833045943278075898887487 +/- 1.38e-26]
+   M*  = M_{T(x)2}(P*) >= [0.1833045943278075898887487 +/- 1.38e-26]
+   HLL mixture bound (49), gamma >= [0.1833045943206552249017673 +/- 4.39e-26]
+   I(Q;Y^2) = [7.9135842e-11 +/- 3.90e-19]   I(Q;Z^2) = [7.1523650e-12 +/- 1.31e-20]  (dropped by HLL (49))
+   C = I(U;V|W) = [0.009264735029677910031689355 +/- 2.95e-29]   (mixture of components: [0.009264735029677910031689355 +/- 2.95e-29] )
+PASS  exact M_{T(x)2}(P*) >= HLL's mixture bound gamma (dropping I(Q;.) >= 0)
+PASS  mixture bound reproduces HLL (46) gamma = 0.183304594320655224901767...
+PASS  C = I(U;V|W) <= ln 4 (|U| = |V| = 4), as used in (41)
+   (42) with M* (ours), ln 4  : M_T~(x)2 >= [0.6016856143310940053540 +/- 2.17e-25]
+   (42) with gamma (HLL), ln 4: M_T~(x)2 >= [0.6016856143239416436287 +/- 7.07e-24]
+   (42) with M*, exact C      : M_T~(x)2 >= [0.6016862422970873920420 +/- 2.24e-23]
+PASS  (42): lambda^2 gamma + 2L(d0 p0 + d1 p1) - (1-lambda^2) ln 4 >= 0.60168561432394163
+PASS  (42) also with our exact M*
+
+== the gap (HLL (43)) ==
+   U = (25) , two-letter = gamma,ln4: M_T~(x)2 - 2 M_T~ >= [1.8821256327185508826e-6 +/- 2.59e-26]
+   U = (25) , two-letter = M*,ln4   : M_T~(x)2 - 2 M_T~ >= [1.8821327850802761753e-6 +/- 4.65e-26]
+   U = (25) , two-letter = M*,C     : M_T~(x)2 - 2 M_T~ >= [2.5100987784669641979e-6 +/- 2.04e-26]
+   U = T5   , two-letter = gamma,ln4: M_T~(x)2 - 2 M_T~ >= [1.8821256327185508826e-6 +/- 2.59e-26]
+   U = T5   , two-letter = M*,ln4   : M_T~(x)2 - 2 M_T~ >= [1.8821327850802761753e-6 +/- 4.65e-26]
+   U = T5   , two-letter = M*,C     : M_T~(x)2 - 2 M_T~ >= [2.5100987784669641979e-6 +/- 2.04e-26]
+   U = T12  , two-letter = gamma,ln4: M_T~(x)2 - 2 M_T~ >= [2.8821234047042925684e-6 +/- 2.04e-26]
+   U = T12  , two-letter = M*,ln4   : M_T~(x)2 - 2 M_T~ >= [2.8821305570660178611e-6 +/- 4.09e-26]
+   U = T12  , two-letter = M*,C     : M_T~(x)2 - 2 M_T~ >= [3.5100965504527058837e-6 +/- 2.59e-26]
+   cancelled form (53) [no L terms], U = (25), gamma, ln 4: gap >= [1.8821256327185508826e-6 +/- 2.59e-26]
+PASS  (43): gap > 1.88e-6 (HLL's chain: U = (25), gamma, ln 4, our eps)
+PASS  (43) via the L-free cancelled form
+   |direct - cancelled| = [5.2223e-96 +/- 3.09e-101]
+PASS  (43): gap > 1.8821256327185490e-6 exactly as printed (with our smaller eps)
+   with HLL's printed eps (39) instead of eps_ours: gap >= [1.8821256327185491581e-6 +/- 4.00e-26]
+PASS  (43) > 1.88e-6 also with printed eps (39)
+   printed (42) - 2 * printed (40) = [1.8821256326700000000e-6 +/- 3e-30]  (note: below printed (43) by ~4.6e-17; (43) was computed from unrounded values)
+PASS  all nine (U, two-letter) combinations give gap > 1.88e-6
+
+ALL CHECKS PASSED

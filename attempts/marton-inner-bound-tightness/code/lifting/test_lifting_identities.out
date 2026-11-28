@@ -1,0 +1,10 @@
+instances: 200 one-letter (N=3, |X|=3, |W|=|U|=|V|=2), 50 two-letter (N=2); seed 20261127
+T1 (10) identity, max |lhs-rhs| over M and L_t       : 2.109e-15
+T2 (9) identity  H(G)=h2+pH(K|X=i), max |diff|        : 6.661e-16
+T2 (9) bound     max H(G) - (h2 + p ln N)  (<= 0)      : -1.392e-04
+T3 (11) identity M_G = I(WUV;G)-I(U;V|WG), max |diff| : 1.110e-15
+T3 (11) bound    max M_G - H(G)            (<= 0)      : -2.667e-01
+T4 (12) chain    max M_T~ - [lam M_T + sum d(h2+pL)] (<= 0): -2.198e-02
+T5 (51)/(52)     max rhs - lhs             (<= 0)      : -4.956e-02
+NEG control: 1.5x label credit, max rhs - lhs (must be > 0): 9.674e-02
+ALL TESTS PASSED
