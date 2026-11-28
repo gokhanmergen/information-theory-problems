@@ -1,0 +1,377 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs,tabularx,array}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{placeins}
+\hypersetup{colorlinks=true,linkcolor=blue!50!black,urlcolor=blue!50!black,citecolor=blue!50!black}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+
+\title{Frozen, Certified, and Often Wrong:\\
+Lessons from Formalizing 114 Open Problems in Information Theory in Lean~4}
+\author{The \emph{Open Problems in Information Theory} contributors\thanks{%
+Repository: \url{https://github.com/gokhanmergen/information-theory-problems}; site:
+\url{https://gokhanmergen.github.io/information-theory-problems/}. Every number in this note is
+reproducible from the repository at the commits cited. \textbf{DRAFT}: prepared with the help of AI
+agents. The author list, venue, and final framing are for the maintainers to decide.}}
+\date{Draft of 27 November 2026}
+
+\emergencystretch=3em
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We describe a public catalog of 114 open problems in information theory in which every
+problem is paired with a \emph{frozen} Lean~4/Mathlib proposition \code{Statement : Prop}.
+Anyone, human or machine, may settle a problem by giving a kernel-checked proof of
+\code{Statement} or of \code{\textasciitilde Statement} that uses only Lean's standard axioms.
+Such a benchmark is only as meaningful as its formal statements. A proof of a mis-formalized
+proposition settles nothing, and a mis-formalized proposition is exactly what an automated prover
+will find first.
+We therefore attach to every statement a machine-checked \emph{certificate}: Lean proofs that the
+exact objects in \code{Statement} satisfy the known bounds quoted in the problem's docstring, and
+regression tests against textbook special cases. These are backed by a 70k-line library of
+formalized Shannon theory.
+Building the certificates and auditing provenance changed a large share of the catalog.
+Of the 109 statements in the first frozen release, 24 (22\%) had to be semantically repaired, some
+more than once. Two more turned out to be theorems already in the literature, and one, a
+formulation of the catalog's own, was formally disproved. We classify these failures into six
+types, describe the checks that caught each, and give recommendations for anyone freezing formal
+statements of open problems.
+We also report the catalog's first formal results: a kernel-checked disproof, and a
+machine-checked bridge from an independent published Lean proof of the Courtade--Kumar conjecture
+to the catalog's frozen statement. The bridge proves that two independently written formalizations
+of $I(f(X);Y)$ are equal.
+\end{abstract}
+
+\section{Introduction}
+
+Lists of open problems shape research. Erd\H{o}s's problems, now catalogued online, show that a
+precise, public, versioned list draws sustained work from professionals, amateurs and,
+increasingly, AI systems. Information theory has many famous open problems: the capacity of the
+deletion channel, the two-receiver broadcast channel, the interference channel, the Shannon
+capacity of $C_7$, the entropy region for four or more variables, and many more. These are
+scattered across surveys, monographs and talk slides, with statements that differ in their
+quantifiers and conventions.
+
+We built a catalog of these problems as a git repository. Each problem has a Markdown file
+(statement, background, what is known, references) and a Lean~4 file defining a proposition
+\code{Statement}. The Lean files and the shared \code{Core} definitions are frozen: a SHA-256 lock
+file covers 130 files, and CI rejects any solution that modifies them. A solution is a Lean file
+proving \code{Statement} or its negation. A verifier checks definitional equality of the proved
+type with the frozen proposition and that the proof depends only on \code{propext},
+\code{Classical.choice} and \code{Quot.sound}, and replays the proof with \code{leanchecker}.
+
+Freezing statements makes a solution's meaning unambiguous, but it also freezes any mistake. The
+main lesson of this note is that such mistakes are common, even in statements written carefully
+by people and agents who know the subject. They are also predictable in type, and most of them
+can be caught mechanically before anyone tries to solve the problem.
+
+\paragraph{Contributions.}
+\begin{enumerate}[leftmargin=*,itemsep=2pt]
+\item A catalog of 114 open problems across ten areas of information theory, each with a frozen
+Lean~4 statement and a kernel-checked solution protocol (Section~\ref{sec:catalog}).
+\item \emph{Certificates}: Lean proofs about the exact objects in every frozen statement, showing
+that the statement is not vacuous and agrees with known special cases. Coverage is 114/114, built
+on a library of formalized Shannon theory (Section~\ref{sec:cert}).
+\item An empirical account of what went wrong. 24 of the 109 originally frozen statements were
+semantically repaired, 2 were already theorems, and 1 catalog formulation was formally disproved.
+We give a six-way taxonomy and the detection method for each case (Section~\ref{sec:errors}).
+\item The first formal results against the frozen statements: a kernel-checked disproof, and a
+bridge from an external Lean proof of the Courtade--Kumar conjecture (Section~\ref{sec:results}).
+\item Recommendations for formal benchmarks of open problems (Section~\ref{sec:lessons}).
+\end{enumerate}
+
+\section{The catalog}\label{sec:catalog}
+
+\begin{table}[t]
+\centering
+\begin{tabular}{lr@{\qquad}lr}
+\toprule
+Area & Problems & Area & Problems\\
+\midrule
+Network information theory & 18 & Channel capacity & 12\\
+Coding theory & 13 & Quantum information & 12\\
+Entropy inequalities & 13 & Network coding & 10\\
+Source coding & 10 & Zero-error information theory & 10\\
+Security and privacy & 8 & Statistical information theory & 8\\
+\bottomrule
+\end{tabular}
+\caption{The 114 cataloged problems by area.}\label{tab:areas}
+\end{table}
+
+Table~\ref{tab:areas} lists the areas. Problems range from the classical (the binary deletion
+channel, the general relay channel, the Shannon capacity of $C_7$, the four-variable entropy
+region) to recent questions with precise conjectured answers (e.g.\ the Tahmasbi--Bloch
+second-order conjecture for covert communication, or the minimum energy per bit of the Gaussian
+relay channel under linear relaying).
+
+\paragraph{Core definitions.}
+All statements are written over a shared, frozen \code{Core} of about 2{,}000 lines. It contains
+finite distributions, entropy and mutual information in bits, discrete memoryless channels and
+their powers, operational capacity regions defined through codes with vanishing error, codes and
+distances, graphs and zero-error capacities, network codes, quantum states and channels,
+differential entropy, and a few security and statistics primitives. Operational quantities are
+defined from codes, not from single-letter formulas. For example, the broadcast-channel capacity
+region is the closure of the set of rate pairs achievable by sequences of codes, so a
+single-letter formula cannot be built into a definition by accident.
+
+\paragraph{Solutions and attempts.}
+Formal solutions live in \code{Solutions/}. Informal work (partial results, numerics, surveys,
+dead ends) is recorded in per-problem attempt files that follow a protocol. In that protocol
+every claim is tagged \code{[proved]}, \code{[sketch]}, \code{[heuristic]} or
+\code{[conjectural]}, and the file's status moves from \emph{unverified} to
+\emph{community-reviewed}, \emph{verified} or \emph{refuted}. The repository currently holds 64
+attempt files.
+
+\section{Certificates}\label{sec:cert}
+
+A frozen statement can be wrong in ways that type-checking never reveals. The commonest case in
+Lean is a \emph{junk value}. \code{sSup} of an unbounded or empty set of reals is $0$, division
+by zero is $0$, and a capacity defined with such an \code{sSup} may silently equal $0$. The
+``open problem'' then becomes trivial or meaningless.
+
+For each problem we therefore require a \emph{certificate}, a Lean module that proves facts about
+the \emph{exact} objects named in \code{Statement}:
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+\item \textbf{Known bounds.} Every fact the docstring claims (``it is known that $A\le X\le B$'')
+is proved about the frozen $X$. The proof uses the defining sets, not a re-definition.
+\item \textbf{Non-vacuity.} The hypotheses of the statement are satisfiable, and the sets inside
+each \code{sSup}/\code{sInf} are nonempty and bounded where they need to be.
+\item \textbf{Regressions.} The frozen objects reproduce textbook special cases. Examples: the
+Han--Kobayashi region equals the strong-interference capacity region; Marton's region contains
+the degraded-BC capacity region; decode-and-forward is at most the frozen relay inner bound; the
+successive-cancellation error of an uncoded bit on BSC$(p)$ is $p$; the complementary graph
+entropy of $K_n$ under the uniform law is $\log_2 n$.
+\item \textbf{Settled statements.} If a certificate proves \code{Statement} or
+\code{\textasciitilde Statement} outright, the problem was not open. The audit lists it
+separately and excludes it from coverage, and the statement goes to a repair pass.
+\end{itemize}
+CI builds all certificates, audits every declaration for axioms beyond the standard three and for
+name collisions, and replays each module with \code{leanchecker}. Coverage is currently 114/114,
+with one statement listed as settled-false (Section~\ref{sec:results}).
+
+\paragraph{The supporting library.}
+The certificates needed real information theory, not just unfolding. Over the same period,
+two cooperating agents built about 60{,}000 lines of ``bridge'' modules connecting \code{Core}
+to Mathlib, plus about 10{,}000 lines of textbook results. Together they contain roughly 3{,}900
+theorem and lemma declarations. Among them are chain rules, Fano, the AEP and typicality, Pinsker,
+the method of types, Sanov, and Chernoff--Stein. They also include operational coding theorems
+stated against \code{Core}:
+\begin{itemize}[leftmargin=*,itemsep=1pt]
+\item channel coding and the AWGN capacity $\tfrac12\log_2(1+P/N)$;
+\item Slepian--Wolf, Wyner--Ziv and Gelfand--Pinsker;
+\item the Gaussian MAC region;
+\item Marton achievability (\code{martonInnerBound\_subset\_bcCapacityRegion});
+\item the physically degraded relay capacity;
+\item wiretap secrecy capacity;
+\item the one-dimensional Shannon entropy power inequality via Stam and de~Bruijn;
+\item minimax universal redundancy asymptotics;
+\item Lov\'asz's $\Theta(C_5)=\sqrt5$.
+\end{itemize}
+Certificates are about 34{,}000 lines.
+
+\section{What went wrong}\label{sec:errors}
+
+The first frozen release had 109 problems (be80f07, 26~Nov~2026). Five problems added later are
+excluded from the statistics below. We count a statement as \emph{repaired} if a later commit
+changed the meaning of its Lean file. Docstring-only edits do not count. Two \code{Core}
+definitions (the hypercontractivity ribbon and multi-source networks) were also corrected; the
+statements that use them are not added to the count.
+
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+\item \textbf{24 of 109 (22\%)} statements were semantically repaired. Six were repaired more
+than once: Gaussian relay three times, universal lossy redundancy three times, and the Gaussian
+interference channel, three-description Gaussian multiple descriptions, explicit list decoding and
+the timing channel twice each.
+\item \textbf{2} statements were found to be known theorems. The sharp R\'enyi entropy power
+inequality statement is Ram--Sason (2016), Thm.~1, which holds for all independent pairs. The formalized matrix-SNR
+single-crossing property of the MMSE follows from Payar\'o--Palomar (2009) and
+Bustin--Payar\'o--Palomar--Shamai (2013). Both are now marked solved.
+\item \textbf{1} statement, a formulation of the catalog's own that is not posed in the
+literature, was formally disproved: the SDPI equality question (Section~\ref{sec:results}).
+\item A provenance audit also flagged one further catalog formulation (LDP minimax risk under KL)
+and one misattributed conjecture (batch codes). Neither changed the Lean statement.
+\end{itemize}
+In total, 27 of the 109 original statements (25\%) did not, as frozen, encode a genuinely open
+problem.
+
+\begin{table}[p]
+\centering\footnotesize\sloppy
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{2.6cm}cL>{\raggedright\arraybackslash}p{2.3cm}}
+\toprule
+Type & \# & Examples (problem: defect) & Caught by\\
+\midrule
+T1. Lean artefacts (junk values, computability, encodings) & 5 &
+AWGN feedback, Gaussian MD3, Gaussian relay: \code{sSup}/\code{sInf} in $\mathbb R$ over
+possibly unbounded sets (moved to $\mathbb R_{\ge0}\cup\{\infty\}$ with guards); explicit list
+decoding: a Turing-machine decoder had to compute $\lfloor(1-h(p)-\varepsilon)n\rfloor$ for
+non-computable reals; earlier, its tape had no blank delimiter. LDP minimax: zero-mass
+estimators gave infinite KL. &
+Re-audit; non-vacuity certificates\\
+T2. Mis-transcribed known regions or definitions & 7 (+2 \code{Core}) &
+Relay: Cover--El Gamal Thm.~7 transcribed without its auxiliary structure. Gray--Wyner with side
+information: bin index charged only to the common link. Three-receiver BC: a hand-made Marton
+region. Gaussian IC: time sharing without power control or coded $Q$. BMC: the plain
+Dueck/Berger bound, vacuous here. Polar codes: the ``SC decoder'' was any function, i.e.\
+block-MAP decoding. Distributed hypothesis testing: the Shimokawa--Han--Amari exponent without time sharing. Hypercontractivity ribbon (\code{Core}): wrong orientation and form, replaced
+by Nair's KL characterization. Network coding (\code{Core}): sources could equal sinks. &
+Regression certificates; literature re-reading\\
+T3. Statements false as posed (contradicted by known results or numerics) & 7 &
+Gaussian relay: hybrid DF/CF optimality, false by El Gamal--Mohseni--Zahedi (2006); then a
+low-SNR slope question contradicted by El Gamal--Gohari--Nair (2022). Primitive BSC relay:
+$\max(\text{PDF},\text{CF})$, beaten by time sharing. Gaussian MD3: equality with a single
+scheme. Poisson: $O(\sqrt A)$ support, against $A^{0.71}$ numerics. Timing: a relaxed constraint
+made the statement false for every service law. Universal lossy: full-simplex minimax. Sperner:
+$\Sigma(\vec C_5)<1$, but $\Sigma(\vec C_m)=1$ for every directed cycle. &
+Literature; numerics; explicit counterexamples\\
+T4. Already settled questions & 3 (+2) &
+Covert communication: the keyed-vs-keyless question is settled by Tahmasbi--Bloch Thm.~1.
+Wyner--Ziv dispersion: a single-dispersion form, replaced by a two-constant $(V_{\min},V_{\max})$ form (the reason is recorded only in the diff; counted here provisionally). Noisy
+interactive coding: a non-adaptive model, against the adaptive randomized one in which the
+question is posed. Plus the two known theorems above (R\'enyi EPI, MMSE). &
+Literature search\\
+T5. Unposed or misattributed questions & 2 (+1) &
+Zero-error BC: computability of a feedback capacity (posed nowhere), retargeted to Hu--Shayevitz's
+$\rho^*(C_5)>0$. Graph entropy: the open question concerns complementary graph entropy, not
+Witsenhausen's rate. Batch codes: misattributed conjecture (no change to the Lean statement). &
+Provenance audit (verbatim quote required)\\
+T6. Degenerate quantifier domains & 2 &
+Network-coding decidability: networks with only local demands. Cognitive IC: a missing rate
+constraint in the region. &
+Re-audit\\
+\bottomrule
+\end{tabularx}
+\caption{Taxonomy of defects in the 109 originally frozen statements. Counts are by problem and
+type. A problem repaired twice for different reasons is counted under both types, so the column
+sums to more than 24. Details and diffs are in commits 0c19d64, 094f988, 49c683f, 36fb580,
+03ced53, 440e082, 6e9452a, a6a7be1, 04eb1a9, b0d03d1, bcfe4c9, d2acd3a and f8059b4.}
+\label{tab:taxonomy}
+\end{table}
+
+Table~\ref{tab:taxonomy} gives the taxonomy. Three observations stand out.
+
+\paragraph{The hardest errors are faithful-looking transcriptions.} Type T2 errors pass every
+syntactic check and most human readings. The relay-channel statement transcribed Cover--El
+Gamal's Theorem~7 in a natural but wrong way, and an explicit $4\times2\to6\times2$ counterexample
+refuted the transcription. The Gray--Wyner inner bound charged the bin index of the common
+description only to the common link. A Slepian--Wolf regression on a BEC source exposed it:
+the point $(e,0,1-e)$ is achievable at $D=0$ but was outside the frozen region. These were found
+by \emph{regression certificates}: proving that the frozen objects reproduce a textbook special
+case.
+
+\paragraph{``Open'' needs a citation.} Four statements (the two T5 statements and two catalog
+formulations, SDPI and LDP minimax) had no verifiable source posing them in the frozen form. Requiring a verbatim quote
+from a source that poses the question was the single most effective provenance check.
+
+\paragraph{Errors cluster in network information theory and in operational definitions.} Of the
+24 repaired statements, 11 are in network information theory or multiterminal source coding.
+These are the areas with the most auxiliary random variables, time-sharing conventions and
+closure operations.
+
+\section{Formal results}\label{sec:results}
+
+\paragraph{A kernel-checked disproof (SDPI).}
+The statement \code{SdpiKlVsChisqEquality} asked whether equality of the KL and $\chi^2$
+strong data-processing constants on both sides forces membership in a hypercontractivity ribbon.
+It is a formulation of the catalog's own. A three-state reversible counterexample was first found
+numerically; the solution file (\code{Solutions/SdpiKlVsChisqEquality.lean}) then proves
+$\neg$\code{Statement} with standard axioms only. The key step is a global inequality
+$D(PW\|QW)\le 0.09\,D(P\|Q)$ that is tight to second order at $P=Q$. It is closed by a grouping
+identity, a power-series bound, and an exact-rational LP positivity certificate. The value of
+this result is mainly as a catalog correction. It also shows how cheaply a mis-specified
+statement falls to a determined search.
+
+\paragraph{A second disproof (finite-letter exact common information).}
+The solution file for \code{CommonInformation\-ExactVsWyner} disproves finite-letter attainment
+of exact common information. On the symmetric binary erasure source SBES$(3/4)$, every finite-letter
+value strictly exceeds $h(3/4)$ while the limit is at most $h(3/4)$. The proof is about 2{,}600
+lines and combines Pinsker-based strictness with a shell-wise random-rectangle covering bound. Its
+mathematical content merits a separate write-up.
+
+\paragraph{A bridge to an external proof (Courtade--Kumar).}
+The Courtade--Kumar conjecture ($I(f(X);Y)\le1-h(\alpha)$ for Boolean $f$ under BSC$(\alpha)$
+noise) was proved in September 2026 by several groups. One proof (Chen et~al., arXiv:2609.24931)
+is formalized in Lean in a separate repository of about 45{,}500 modules on Lean v4.33.1. The
+catalog uses v4.36.0, so the proof cannot be imported. Its target proposition, however, depends
+only on Mathlib.
+
+We copied the target file byte-for-byte (pinned commit and SHA-256) and proved in the catalog
+\[
+\code{GeneralCK.GeneralCourtadeKumar}\;\Longrightarrow\;\code{CourtadeKumar.Statement}.
+\]
+The core lemma is an \emph{equality}: the catalog's $I(f(X);Y)$, a pushforward of a uniform
+input through a product BSC, and the external project's hand-written finite-sum formula agree for
+every $n$, every $f$ and every $\alpha\in[0,1]$. Two formalizations written independently,
+by different authors and for different purposes, agree exactly; this is itself evidence that neither is
+mis-specified. The chain to the frozen statement has two kernel-checked hops in separate builds.
+A single-kernel check would need a bridge project on the external toolchain.
+
+\paragraph{Claimed resolutions are tracked, not trusted.}
+Several catalog problems are claimed resolved by preprints from 2026. Examples are Marton's inner
+bound (Huang--Liu--Liu, arXiv:2608.19869), the Li--M\'edard conjecture (Yu, arXiv:2611.00868),
+sharp continuity of quantum conditional entropy (arXiv:2607.24687), and good qLDPC codes. The
+catalog records these as \code{claimed-resolved}, with the evidence and the gap. For example,
+Huang--Liu--Liu's explicit numbers have been independently recomputed, but their certified
+one-letter upper bound has not. The status changes only once a check is recorded.
+
+\FloatBarrier
+\section{Recommendations}\label{sec:lessons}
+
+\begin{enumerate}[leftmargin=*,itemsep=3pt]
+\item \textbf{Certify before you freeze.} Prove the known bounds about the exact frozen objects,
+and prove non-vacuity of every hypothesis and every \code{sSup}/\code{sInf}. Junk values are the
+first thing a prover will exploit.
+\item \textbf{Write regression certificates against textbook special cases.} Most type T2 errors
+were caught this way, and nothing else caught them reliably.
+\item \textbf{Prefer operational definitions.} Defining capacities through codes, not formulas,
+kept every single-letter formula a theorem to be proved rather than a definition.
+\item \textbf{Require a verbatim source for ``open''.} Eight of the 27 defective statements
+were either posed nowhere in the frozen form or already settled.
+\item \textbf{Search for settled-ness, and re-search.} The literature moves quickly. Two
+statements were already theorems, and four more problems saw claimed resolutions within months.
+\item \textbf{Make retirement explicit.} When a statement is repaired, keep the old proposition,
+renamed and marked retired, together with its disproof. Never keep it as the problem.
+\item \textbf{Cross-check against independent formalizations.} When an outside group formalizes
+the same quantity, proving the two definitions equal is cheap. It is also strong evidence for both.
+\end{enumerate}
+
+\section{Limitations}
+
+Certificates establish non-vacuity and agreement with special cases. They cannot establish that a
+statement says what the literature means. Most of the auditing described here was done by AI
+agents working under an explicit protocol, with limited expert human review, so some of the 82
+statements not flagged may still be wrong. The defect counts cover a short, intensive period and
+should be read as a lower bound on the error rate of carefully written, unaudited formal
+statements. The counts by type involve judgment calls; the commit history gives the raw material.
+
+\section*{Acknowledgements}
+We thank the authors of the external Lean development \code{dpwoodru/general-courtade-kumar-lean}
+for making their target statement self-contained, which made the bridge in
+Section~\ref{sec:results} a short proof.
+
+\begin{thebibliography}{99}\small
+\bibitem{cgjlmnw} Z.~Chen, A.~Gohari, A.~Javanmard, H.~Lin, V.~Mirrokni, C.~Nair, D.~P.~Woodruff,
+``A proof of the most informative Boolean function conjecture,'' arXiv:2609.24931, 2026.
+\bibitem{hll} M.~Huang, Y.~Liu, Y.~Liu, ``Sub-optimality of Marton's inner bound for the
+two-receiver broadcast channel,'' arXiv:2608.19869, 2026.
+\bibitem{yu} L.~Yu, ``Noise stability on the hypercube: order $7/8$,'' arXiv:2611.00868, 2026.
+\bibitem{rs} E.~Ram, I.~Sason, ``On R\'enyi entropy power inequalities,'' \emph{IEEE Trans.\
+Inf.\ Theory}, 2016 (arXiv:1601.06555).
+\bibitem{emz} A.~El Gamal, M.~Mohseni, S.~Zahedi, ``Bounds on capacity and minimum
+energy-per-bit for AWGN relay channels,'' \emph{IEEE Trans.\ Inf.\ Theory}, 2006.
+\bibitem{egn} A.~El Gamal, A.~Gohari, C.~Nair, ``Achievable rates for the relay channel with
+orthogonal receiver components,'' IEEE ITW, 2021; and ``A strengthened cutset upper bound on
+the capacity of the relay channel and applications,'' \emph{IEEE Trans.\ Inf.\ Theory}, 2022.
+\bibitem{tb} M.~Tahmasbi, M.~R.~Bloch, ``First- and second-order asymptotics in covert
+communication,'' \emph{IEEE Trans.\ Inf.\ Theory}, 2019.
+\bibitem{hs} Y.~Hu, O.~Shayevitz, ``The $\rho$-capacity of a graph,'' \emph{IEEE Trans.\ Inf.\
+Theory}, 2017.
+\bibitem{nair} C.~Nair, ``Equivalent formulations of hypercontractivity using information
+measures,'' IZS, 2014.
+\bibitem{mathlib} The mathlib Community, ``The Lean mathematical library,'' CPP, 2020.
+\end{thebibliography}
+\end{document}
