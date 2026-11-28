@@ -85,7 +85,20 @@ in particular, is where the optimality question remains genuinely open.
   one-letter Marton bounds for binary-input broadcast channels, following Geng, Gohari, Nair,
   and Yu (ITA 2011) and run in 2011–2012, found no strict two-letter improvement. Nair (ITA
   2020) proved *local* tensorization at the product optimizer for product channels with a
-  binary component.
+  binary component. Anantharam, Gohari, and Nair (IEEE TIT 2019, Sec. II-C, Lemma 2, Remarks
+  9–10) give the dual two-letter test for products of binary-input channels, with a
+  $|U|+|V|\le5$ reduction. They report "rather exhaustive" searches on binary-input,
+  binary-output channels that found no gain.
+- **Two-letter bound (computer-assisted, 2026-11-27).** The two-letter Marton sum rate of
+  the BSSC is $\le 0.36664$ bits/letter, below the outer bound 0.369297. So two-letter Marton
+  cannot close the window, and any two-letter gain is at most about 0.005 bits/letter.
+  - It follows from the dual criterion $B_{T\otimes T}(\tfrac12,0)\le 2B_T(\tfrac12,0)+0.01$,
+    certified by a branch-and-bound over all 862 reduced problems.
+  - The run is float64 with a $10^{-9}$ margin, not interval arithmetic, so it is labelled
+    `[sketch]`.
+  - Multistart search finds the two-letter maximum equal to the one-letter value to
+    $10^{-15}$.
+  - See `attempts/binary-skew-symmetric-bc/2026-11-27-claude-opus-5-5-binary-input-multiletter.md`.
 - No published global multi-letter result for the BSSC is known to us. The exactness of
   $R_{\mathrm{M,sum}}(W_{\mathrm{BSSC}})$ is supported by this evidence but remains unproven.
 
@@ -114,5 +127,7 @@ in particular, is where the optimality question remains genuinely open.
   (chandra.ie.cuhk.edu.hk/pub/papers/BC/GK-outer.pdf).
 - M. Huang, Y. Liu, and Y. Liu, "Sub-optimality of Marton's inner bound for the two-receiver
   broadcast channel," arXiv:2608.19869, 2026.
+- V. Anantharam, A. Gohari, and C. Nair, "On the evaluation of Marton's inner bound for
+  two-receiver broadcast channels," *IEEE Trans. Inf. Theory*, 65(3), 2019.
 - C. Nair, "On Marton's achievable region: local tensorization for product channels with a
   binary component," *Information Theory and Applications Workshop (ITA)*, 2020.

@@ -108,6 +108,12 @@ coding beats it — is one of the central unresolved questions of multiuser info
 - **Consequence for this entry.** If the claim is correct, the answer to the question above
   is **no**, and the frozen Lean `Statement` is false. The binary-input case remains open:
   Huang–Liu–Liu note that counterexamples appear to require non-binary inputs.
+  - Their constraint-removal step cannot be realised with a binary input.
+  - For binary input, the fixed-input Marton functions have slopes bounded by
+    $h(p)/\min(p,1-p)$.
+  - So shaping by receiver-revealed, output-side components needs a weight bounded below,
+    while HLL's limit needs that weight to vanish. That relies on an unbounded input label.
+  - See `attempts/binary-skew-symmetric-bc/2026-11-27-claude-opus-5-5-binary-input-multiletter.md`.
 - Before this, the classical suboptimality example was for three receivers: Nair and
   El Gamal (2009) proved that naive superposition is suboptimal even with degraded message
   sets.
