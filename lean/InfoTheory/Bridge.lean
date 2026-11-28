@@ -21,6 +21,7 @@ import InfoTheory.Bridge.GaussianConverse
 import InfoTheory.Bridge.MartonCoding
 import InfoTheory.Bridge.GelfandPinsker
 import InfoTheory.Bridge.EntropyPower
+import InfoTheory.Bridge.Quantum
 
 /-!
 # `InfoTheory.Bridge` — Non-Destructive Bridge to Mathlib & Cover & Thomas Foundations
@@ -92,4 +93,9 @@ Single convenience import re-exporting:
   **Shannon's 1D Entropy Power Inequality** (`entropyPower_add_ge`, Cover & Thomas Thm. 17.8.1),
   and **Bergmans's Scalar Gaussian Broadcast Channel Single-Letter Converse**
   (`gaussianBC_single_letter_converse`).
+- `InfoTheory.Bridge.Quantum`: **Quantum Information Theory Foundations** directly against
+  `Core/Quantum.lean` — von Neumann entropy bounds, concavity (`vonNeumannEntropy_concave`),
+  tensor additivity (`vonNeumannEntropy_kronDensity`), purification symmetry, Peres–Horodecki
+  PPT criterion (`isPPT_of_isSeparable`), Bell state entanglement & distillability, trace distance,
+  identity/replacement/depolarizing/two-Pauli channels, and the `d = 2` tetrahedron SIC-POVM.
 -/

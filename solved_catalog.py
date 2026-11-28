@@ -20,6 +20,7 @@ SOLVED_CATEGORY_LABELS = {
     "ch15-network": "Ch. 15 / EGK · Network Information Theory",
     "entropy-region": "Entropy Region & Non-Shannon Inequalities",
     "zero-error-coding": "Zero-Error & Classical Coding Bounds",
+    "quantum-info": "Quantum Information Theory",
 }
 
 SOLVED_THEOREMS = [
@@ -1749,6 +1750,97 @@ SOLVED_THEOREMS = [
         ],
         "analogous_open": [
             "kissing-number-high-dim",
+        ],
+    },
+
+    # ------------------------------------------------------------------ Quantum Information Theory
+    {
+        "id": "von-neumann-entropy-and-peres-horodecki",
+        "title": "Von Neumann Entropy Properties, Peres–Horodecki PPT Criterion, and Bell-State Entanglement",
+        "category": "quantum-info",
+        "authors": "John von Neumann; Asher Peres; Michał, Paweł, and Ryszard Horodecki",
+        "year": "1996",
+        "reference": "Nielsen & Chuang, Ch. 11; Wilde, Ch. 11; Peres (1996); Horodecki et al. (1996)",
+        "tags": ["von-neumann-entropy", "peres-horodecki", "ppt", "bell-state", "entanglement", "quantum"],
+        "statement": (
+            "For finite-dimensional density matrices $\\rho \\in \\mathcal{D}(\\mathbb{C}^d)$:\n"
+            "1. **Von Neumann Entropy:** $0 \\le S(\\rho) \\le \\log_2 d$, $S(|\\psi\\rangle\\langle\\psi|) = 0$, "
+            "$S(I/d) = \\log_2 d$, unitary invariance $S(U\\rho U^\\dagger) = S(\\rho)$, concavity "
+            "$S(\\sum_i p_i \\rho_i) \\ge \\sum_i p_i S(\\rho_i)$, tensor additivity "
+            "$S(\\rho \\otimes \\sigma) = S(\\rho) + S(\\sigma)$, and purification symmetry "
+            "$S(M M^\\dagger) = S(M^\\dagger M)$.\n"
+            "2. **Peres–Horodecki PPT Criterion:** Every separable bipartite state $\\rho_{AB}$ has "
+            "positive partial transpose ($\\rho_{AB}^{T_B} \\succeq 0$).\n"
+            "3. **Bell State $|\\Phi^+\\rangle$:** Satisfies $S(|\\Phi^+\\rangle\\langle\\Phi^+|) = 0$, "
+            "$\\mathrm{Tr}_A(|\\Phi^+\\rangle\\langle\\Phi^+|) = I/2$, $\\neg\\mathrm{IsPPT}$, "
+            "$\\neg\\mathrm{IsSeparable}$, and $1$-copy distillability (`IsDistillable`)."
+        ),
+        "proof_notes": (
+            "Proved directly against `InfoTheory.Core.Quantum` in `Bridge/Quantum.lean` via spectral "
+            "characteristic-polynomial invariance, Peierls' inequality for concavity (`vonNeumannEntropy_concave`), "
+            "explicit partial-trace/partial-transpose Kronecker algebra (`partialTransposeB_kronMat`), "
+            "and direct eigenvalue witnesses for the Bell state `bellStatePhiPlus`."
+        ),
+        "lean_decls": [
+            ("lean/InfoTheory/Bridge/Quantum.lean", "vonNeumannEntropy_le_log2"),
+            ("lean/InfoTheory/Bridge/Quantum.lean", "vonNeumannEntropy_concave"),
+            ("lean/InfoTheory/Bridge/Quantum.lean", "vonNeumannEntropy_kronDensity"),
+            ("lean/InfoTheory/Bridge/Quantum.lean", "matEntropy_mul_conjTranspose_eq_conjTranspose_mul"),
+            ("lean/InfoTheory/Bridge/Quantum.lean", "isPPT_of_isSeparable"),
+            ("lean/InfoTheory/Bridge/Quantum.lean", "bellStatePhiPlus_not_isPPT"),
+            ("lean/InfoTheory/Bridge/Quantum.lean", "bellStatePhiPlus_isDistillable"),
+        ],
+        "related_open": [
+            "npt-bound-entanglement",
+            "quantum-squashed-entanglement-faithfulness",
+            "conditional-entropy-sharp-continuity",
+            "quantum-entropy-power-sharp",
+        ],
+    },
+    {
+        "id": "quantum-channels-capacities-and-sic-povm",
+        "title": "Quantum Channel Capacities, Explicit Depolarizing/Two-Pauli Channels, Trace Distance & d = 2 SIC-POVM",
+        "category": "quantum-info",
+        "authors": "Alexander S. Holevo; Seth Lloyd; Peter W. Shor; Igor Devetak; Gerhard Zauner",
+        "year": "1999",
+        "reference": "Wilde, Quantum Information Theory; Zauner (1999)",
+        "tags": ["quantum-channel", "quantum-capacity", "depolarizing", "sic-povm", "trace-distance", "quantum"],
+        "statement": (
+            "1. **Trace Distance:** $0 \\le D(\\rho, \\sigma) = \\frac{1}{2}\\|\\rho - \\sigma\\|_1 \\le 1$, "
+            "symmetric, with $D(\\rho, \\sigma) = 0 \\iff \\rho = \\sigma$.\n"
+            "2. **Channel & Capacity Foundations:** Every Kraus channel $N : M_{d_1} \\to M_{d_2}$ and its "
+            "complementary channel $N^c$ preserve PSD and trace-1; $0 \\le S_{\\min}(N), Q(N), P(N) \\le \\log_2 d_2$; "
+            "the identity channel satisfies $S_{\\min}(\\mathrm{Id}_d) = 0$ and $Q(\\mathrm{Id}_d) = \\log_2 d$; "
+            "every constant replacement channel satisfies $Q(N) = 0$.\n"
+            "3. **Explicit Channels & Zauner $d = 2$ SIC-POVM:** Explicit 4-Kraus depolarizing channel "
+            "$\\mathcal{D}_p$ and 3-Kraus two-Pauli channel realize `IsDepolarizingChannel p` and "
+            "`IsTwoPauliChannel p` for all $p \\in [0, 1]$, and the regular tetrahedron in $\\mathbb{C}^2$ "
+            "witnesses `IsSICPOVM 2`."
+        ),
+        "proof_notes": (
+            "Proved directly against `InfoTheory.Core.Quantum` in `Bridge/Quantum.lean` (91 public "
+            "declarations), validating all quantum channel, capacity, trace-distance, and SIC-POVM "
+            "definitions in `Core/Quantum.lean`."
+        ),
+        "lean_decls": [
+            ("lean/InfoTheory/Bridge/Quantum.lean", "traceDistance_eq_zero_iff"),
+            ("lean/InfoTheory/Bridge/Quantum.lean", "applyMat_pureState_entropy_eq_complementary"),
+            ("lean/InfoTheory/Bridge/Quantum.lean", "idQuantumChannel_quantumCapacity"),
+            ("lean/InfoTheory/Bridge/Quantum.lean", "constQuantumChannel_quantumCapacity"),
+            ("lean/InfoTheory/Bridge/Quantum.lean", "depolarizingChannel_isDepolarizing"),
+            ("lean/InfoTheory/Bridge/Quantum.lean", "twoPauliChannel_isTwoPauli"),
+            ("lean/InfoTheory/Bridge/Quantum.lean", "exists_sicPovm_two"),
+        ],
+        "related_open": [
+            "quantum-capacity-depolarizing",
+            "quantum-capacity-two-pauli",
+            "quantum-capacity-single-letter",
+            "private-vs-quantum-capacity-gap",
+            "classical-capacity-additivity-threshold",
+            "superactivation-qubit-channels",
+            "quantum-broadcast-capacity",
+            "quantum-reverse-shannon-non-catalytic",
+            "sic-povm-zauner",
         ],
     },
 ]
