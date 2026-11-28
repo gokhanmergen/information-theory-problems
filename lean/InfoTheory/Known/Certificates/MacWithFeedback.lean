@@ -26,6 +26,11 @@ feedback, some `k ≥ 1` satisfies `macFeedbackCapacityRegion W = coverLeungKLet
 * Generic counting tools reused by other certificates: `sum_success_le_card`,
   `err_ge_one_sub_card`, `rate_le_log2_of_counting`.
 
+* **Regression** `macPentagon_subset_coverLeungKLetterRegion_one` — with `U` constant the
+  frozen `k = 1` Cover–Leung formula contains every product-input no-feedback pentagon
+  `Bridge.macPentagon W P₁ P₂` (`R₁ ≤ I(X₁;Y|X₂)`, `R₂ ≤ I(X₂;Y|X₁)`, `R₁+R₂ ≤ I(X₁X₂;Y)`);
+  a horizon-1 strategy is an input letter (`stratEquiv`).
+
 ## Not certified
 * The sharper outer bound `R₁ + R₂ ≤ C(W) = max I(X₁, X₂; Y)` (now within reach: view the MAC
   feedback code as a DMC feedback code on `X₁ × X₂` and apply
@@ -318,5 +323,155 @@ theorem zero_mem_coverLeungKLetterRegion [Nonempty X₁] [Nonempty X₂] (k : �
   · exact mul_nonneg (by positivity) (condMutualInfo_nonneg _)
   · exact mul_nonneg (by positivity) (condMutualInfo_nonneg _)
   · simpa using mul_nonneg (by positivity : (0 : ℝ) ≤ 1 / (k : ℝ)) (mutualInfo_nonneg _)
+
+/-! ### Regression: the `k = 1` Cover–Leung formula contains the no-feedback pentagons
+
+With `U` constant, the Cover–Leung constraints reduce to the product-input MAC pentagon
+`R₁ ≤ I(X₁;Y|X₂)`, `R₂ ≤ I(X₂;Y|X₁)`, `R₁ + R₂ ≤ I(X₁,X₂;Y)` (Cover–Thomas Thm. 15.3.1). For
+`k = 1` a causal strategy is just an input letter (`stratEquiv`), so every no-feedback pentagon
+`Bridge.macPentagon W P₁ P₂` lies in `coverLeungKLetterRegion 1 W`. -/
+
+section Regression
+
+section Relabel
+
+variable {A B C A' B' C' : Type*} [Fintype A] [Fintype B] [Fintype C]
+  [Fintype A'] [Fintype B'] [Fintype C']
+
+/-- `I(fa(A); fb(B) | fc(C)) = I(A; B | C)` for injective relabellings. -/
+theorem cmi_map_inj3 (K : ProbDist (A × B × C)) (fa : A → A') (fb : B → B') (fc : C → C')
+    (hfa : Function.Injective fa) (hfb : Function.Injective fb) (hfc : Function.Injective fc) :
+    condMutualInfo (K.map (fun t => (fa t.1, fb t.2.1, fc t.2.2))) = condMutualInfo K := by
+  have hg1 : Function.Injective (fun t : A × C => (fa t.1, fc t.2)) := by
+    intro x y hxy
+    simp only [Prod.mk.injEq] at hxy
+    exact Prod.ext (hfa hxy.1) (hfc hxy.2)
+  have hg2 : Function.Injective (fun t : A × B × C => (fa t.1, fb t.2.1, fc t.2.2)) := by
+    intro x y hxy
+    simp only [Prod.mk.injEq] at hxy
+    exact Prod.ext (hfa hxy.1) (Prod.ext (hfb hxy.2.1) (hfc hxy.2.2))
+  have hg3 : Function.Injective (fun t : B × C => (fb t.1, fc t.2)) := by
+    intro x y hxy
+    simp only [Prod.mk.injEq] at hxy
+    exact Prod.ext (hfb hxy.1) (hfc hxy.2)
+  unfold condMutualInfo
+  dsimp only
+  have e1 : (K.map (fun t => (fa t.1, fb t.2.1, fc t.2.2))).map (fun t => (t.1, t.2.2)) =
+      (K.map (fun t => (t.1, t.2.2))).map (fun t => (fa t.1, fc t.2)) := by
+    rw [map_comp_eq, map_comp_eq]; rfl
+  have e2 : (K.map (fun t => (fa t.1, fb t.2.1, fc t.2.2))).map (fun t => (t.2.1, t.2.2)) =
+      (K.map (fun t => (t.2.1, t.2.2))).map (fun t => (fb t.1, fc t.2)) := by
+    rw [map_comp_eq, map_comp_eq]; rfl
+  have e3 : (K.map (fun t => (fa t.1, fb t.2.1, fc t.2.2))).map (fun t => t.2.2) =
+      (K.map (fun t => t.2.2)).map fc := by
+    rw [map_comp_eq, map_comp_eq]; rfl
+  rw [e1, e2, e3, shannonEntropy_map_of_injective _ hg1, shannonEntropy_map_of_injective _ hg2,
+    shannonEntropy_map_of_injective _ hg3, shannonEntropy_map_of_injective _ hfc]
+
+/-- `I(f(A); g(B)) = I(A; B)` for injective relabellings. -/
+theorem mi_map_inj (K : ProbDist (A × B)) (f : A → A') (g : B → B')
+    (hf : Function.Injective f) (hg : Function.Injective g) :
+    mutualInfo (K.map (fun t => (f t.1, g t.2))) = mutualInfo K := by
+  unfold mutualInfo
+  have e1 : (K.map (fun t => (f t.1, g t.2))).fst = K.fst.map f := by
+    rw [← map_fst_eq_fst, ← map_fst_eq_fst, map_comp_eq, map_comp_eq]; rfl
+  have e2 : (K.map (fun t => (f t.1, g t.2))).snd = K.snd.map g := by
+    rw [← map_snd_eq_snd, ← map_snd_eq_snd, map_comp_eq, map_comp_eq]; rfl
+  have hfg : Function.Injective (fun t : A × B => (f t.1, g t.2)) := fun x y h =>
+    Prod.ext (hf (Prod.mk.inj h).1) (hg (Prod.mk.inj h).2)
+  rw [e1, e2, shannonEntropy_map_of_injective _ hf, shannonEntropy_map_of_injective _ hg,
+    shannonEntropy_map_of_injective _ hfg]
+
+/-- The pushforward along an injective map evaluated at an image point. -/
+theorem pmf_map_of_injective (P : ProbDist A) (f : A → B) (hf : Function.Injective f) (a : A) :
+    (P.map f).pmf (f a) = P.pmf a := by
+  classical
+  simp only [ProbDist.map]
+  rw [Finset.sum_eq_single a]
+  · simp
+  · intro a' _ hne
+    simp [hf.ne hne]
+  · simp
+
+end Relabel
+
+/-- For horizon `k = 1` a causal feedback strategy is just an input letter. -/
+def stratEquiv (X Y : Type*) [Fintype X] [Fintype Y] : X ≃ MACFeedbackStrat 1 X Y where
+  toFun x := fun _ _ => x
+  invFun s := s 0 (fun j => absurd j.2 (Nat.not_lt_zero _))
+  left_inv _ := rfl
+  right_inv s := by
+    funext i f
+    have hi : i = 0 := Subsingleton.elim _ _
+    subst hi
+    exact congrArg (s 0) (funext fun j => absurd j.2 (Nat.not_lt_zero _))
+
+/-- `Y ≃ (Fin 1 → Y)`. -/
+def finOneEquiv (Y : Type*) : Y ≃ (Fin 1 → Y) where
+  toFun a := fun _ => a
+  invFun f := f 0
+  left_inv _ := rfl
+  right_inv f := funext fun i => by rw [Subsingleton.elim i 0]
+
+open Classical in
+/-- **Regression (no feedback)**: every product-input MAC pentagon (Cover–Thomas
+    Thm. 15.3.1) lies in the frozen `k = 1` Cover–Leung region (`U` constant). -/
+theorem macPentagon_subset_coverLeungKLetterRegion_one (W : MACChannel X₁ X₂ Y)
+    (P₁ : ProbDist X₁) (P₂ : ProbDist X₂) :
+    macPentagon W P₁ P₂ ⊆ coverLeungKLetterRegion 1 W := by
+  intro r hr
+  obtain ⟨hr1, hr2, hI1, hI2, hS⟩ := hr
+  let e₁ := stratEquiv X₁ Y
+  let e₂ := stratEquiv X₂ Y
+  let eY := finOneEquiv Y
+  let Jp := W.joint (P₁.prod P₂)
+  let E : (X₁ × X₂) × Y →
+      Fin 1 × MACFeedbackStrat 1 X₁ Y × MACFeedbackStrat 1 X₂ Y × (Fin 1 → Y) :=
+    fun t => (0, e₁ t.1.1, e₂ t.1.2, eY t.2)
+  have hE : Function.Injective E := by
+    intro x y h
+    simp only [E, Prod.mk.injEq] at h
+    exact Prod.ext (Prod.ext (e₁.injective h.2.1) (e₂.injective h.2.2.1)) (eY.injective h.2.2.2)
+  have h0 : ((1 : ℕ) : ℝ) = 1 := Nat.cast_one
+  refine subset_closure ⟨hr1, hr2, 1, ProbDist.uniform, fun _ => P₁.map e₁, fun _ => P₂.map e₂,
+    Jp.map E, ?_, ?_, ?_, ?_⟩
+  · intro u s₁ s₂ y
+    have hu : u = 0 := Subsingleton.elim _ _
+    subst hu
+    have key : ((0 : Fin 1), s₁, s₂, y) = E ((e₁.symm s₁, e₂.symm s₂), y 0) := by
+      simp only [E, Equiv.apply_symm_apply]
+      exact Prod.ext rfl (Prod.ext rfl (Prod.ext rfl (eY.apply_symm_apply y).symm))
+    have hp₁ : (P₁.map e₁).pmf s₁ = P₁.pmf (e₁.symm s₁) := by
+      conv_lhs => rw [← e₁.apply_symm_apply s₁]
+      exact pmf_map_of_injective _ _ e₁.injective _
+    have hp₂ : (P₂.map e₂).pmf s₂ = P₂.pmf (e₂.symm s₂) := by
+      conv_lhs => rw [← e₂.apply_symm_apply s₂]
+      exact pmf_map_of_injective _ _ e₂.injective _
+    have hs₁ : ∀ g : Fin (0 : Fin 1).1 → Y, s₁ 0 g = e₁.symm s₁ := fun g =>
+      congrArg (s₁ 0) (funext fun j => absurd j.2 (Nat.not_lt_zero _))
+    have hs₂ : ∀ g : Fin (0 : Fin 1).1 → Y, s₂ 0 g = e₂.symm s₂ := fun g =>
+      congrArg (s₂ 0) (funext fun j => absurd j.2 (Nat.not_lt_zero _))
+    rw [key, pmf_map_of_injective _ _ hE, hp₁, hp₂, Fin.prod_univ_one, hs₁, hs₂]
+    simp only [Jp, DMC.joint, ProbDist.prod, ProbDist.uniform, Fintype.card_fin, Nat.cast_one,
+      div_one, one_mul]
+  · rw [map_comp_eq, h0, div_one, one_mul]
+    have h := cmi_map_inj3 (Jp.map (fun t => (t.1.1, t.2, t.1.2))) e₁ eY
+      (fun x => (e₂ x, (0 : Fin 1))) e₁.injective eY.injective
+      (fun x y h => e₂.injective (Prod.mk.inj h).1)
+    rw [map_comp_eq] at h
+    exact h ▸ hI1
+  · rw [map_comp_eq, h0, div_one, one_mul]
+    have h := cmi_map_inj3 (Jp.map (fun t => (t.1.2, t.2, t.1.1))) e₂ eY
+      (fun x => (e₁ x, (0 : Fin 1))) e₂.injective eY.injective
+      (fun x y h => e₁.injective (Prod.mk.inj h).1)
+    rw [map_comp_eq] at h
+    exact h ▸ hI2
+  · rw [map_comp_eq, h0, div_one, one_mul]
+    have h := mi_map_inj Jp (fun p => (e₁ p.1, e₂ p.2)) eY
+      (fun x y h => Prod.ext (e₁.injective (Prod.mk.inj h).1) (e₂.injective (Prod.mk.inj h).2))
+      eY.injective
+    exact h ▸ hS
+
+end Regression
 
 end InfoTheory.Known.Certificates.MacWithFeedback

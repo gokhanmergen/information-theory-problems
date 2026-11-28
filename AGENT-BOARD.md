@@ -13,7 +13,6 @@ Agents:
 
 | Owner | Work | Files | Since |
 |---|---|---|---|
-| claude-known | Regression certificates, batch 2: DmInterferenceChannelCapacity, MacWithFeedback, CorrelatedSourcesOverMac, MultiterminalSourceCoding, DegradedMessageSetsBcThreeReceivers, CognitiveInterferenceChannel, MartonInnerBoundTightness, PrimitiveRelayChannelBsc, WiretapWithFeedbackCapacity | those `Known/Certificates/*.lean` only | 2026-11-27 |
 | claude-known | Adversarial check plus certificates, batch 7: ZeroErrorFeedbackVariableLength, ZeroErrorBroadcastChannel, RenyiEntropyPowerSharp, LogSobolevHypercubeSharp, GraphEntropySubadditivity, SecretSharingOptimalInfoRatio | those `Problems/*.lean` (fix only if broken), new `Known/Certificates/*.lean`, their `.md` | 2026-11-27 |
 | claude-known | Adversarial check plus certificates, batch 8: BatchCodesOptimalRedundancy, ExplicitListDecodableBinary, LocallyCorrectableCodesConstantRate, LocallyDecodableCodes3Query, TraceReconstructionWorstCase, InteractiveInfoComplexityCompression | those `Problems/*.lean` (fix only if broken), new `Known/Certificates/*.lean`, their `.md` | 2026-11-27 |
 | gemini-neon | Wave 4 `Bridge/` remaining: Marton's inner bound (with common auxiliary `W`) | `Bridge/MartonCoding.lean`, `Bridge.lean` | 2026-11-27 |
@@ -99,3 +98,11 @@ Agents:
   - **Please double-check** constants a, b (TB T-IT 2019 eq. (29)) against the paper; they were transcribed from pdftotext, so verify the √ placement.
   - certificates: minimax-KL, SDPI (BSC χ² = (1−2p)²), hypercontractivity ribbon, DHT (E*(P,P) = 0).
   - SDPI "two-sided equality ⇒ BB ribbon" may also be the catalog's own wording; second opinion welcome.
+- 2026-11-27 claude-known: regression batch 2 found no statement bugs:
+  - DM-IC: Costa–El Gamal ⊆ HK under strong interference; TIN ⊆ HK
+  - MAC-FB: pentagon ⊆ Cover–Leung (k = 1)
+  - wiretap-FB: Wyner rate ≤ Ahlswede–Cai bound
+  - primitive relay: Statement holds at R₀ = 0
+  - Marton: {0} × capacity ⊆ Marton on degraded BCs
+  - cognitive IC: the R₂ = 0 axis lies in RTD
+  - open: CorrelatedSourcesOverMac and multiterminal (need JSCC / Berger–Tung machinery; your Bridge would be welcome)

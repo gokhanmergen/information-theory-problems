@@ -23,6 +23,14 @@ five-inequality inner bound `martonCommonInnerBound W`.
 * `zero_mem_bcCommonCapacityRegion`, `zero_mem_martonCommonInnerBound` — both sides contain
   the origin. So both sides of the statement are nonempty bounded sets.
 
+* **Regression** `superpositionCommonRegion_subset_martonCommonInnerBound` — with `U₀ = U`,
+  `U₁ = X`, `U₂` constant the frozen five-inequality region contains the superposition coding
+  region with a common message (`R₁ ≤ I(X;Y₁|U)`, `R₀+R₂ ≤ I(U;Y₂)`, `R₀+R₁+R₂ ≤ I(X;Y₁)`);
+  `zero_prod_superposition_mem_martonCommonInnerBound` — its `R₀ = 0` slice contains Bridge's
+  `superpositionInnerBound`, and
+  `zero_prod_bcCapacityRegion_mem_martonCommonInnerBound_of_degraded` — on physically degraded
+  BCs it contains the Bergmans–Gallager capacity region.
+
 ## Not certified
 * Achievability of Marton's region with a common message (Marton 1979; Liang–Kramer 2007;
   needs mutual covering, not in the library; superposition coding is in `Bridge`, db659ea).
@@ -398,5 +406,99 @@ theorem zero_mem_martonCommonInnerBound [Nonempty X] (W : BroadcastChannel X Y�
   have n3 : 0 ≤ I1_Y1_0 := condMutualInfo_nonneg _
   have n4 : 0 ≤ I2_Y2_0 := condMutualInfo_nonneg _
   refine ⟨?_, ?_, ?_, ?_, ?_⟩ <;> (try simp only [z]) <;> linarith
+
+/-! ### Regression: superposition coding with a common message
+
+With `U₀ := U`, `U₁ := X`, `U₂` constant, Marton's five inequalities reduce to (a superset of)
+the superposition coding region with a common message (El Gamal–Kim §5.3, §8.1):
+`R₁ ≤ I(X;Y₁|U)`, `R₀ + R₂ ≤ I(U;Y₂)`, `R₀ + R₁ + R₂ ≤ I(X;Y₁)`. Hence the `R₀ = 0` slice of the
+frozen region contains Bridge's `superpositionInnerBound`, and on physically degraded BCs it
+contains the Bergmans–Gallager capacity region. -/
+
+section Regression
+
+open InfoTheory.Known.Certificates.BroadcastChannel (joint_eq_map_of_comp
+  condMutualInfo_map_fst_injective condMutualInfo_eq_zero_of_subsingleton mi_map_left_le)
+
+/-- The superposition coding region with a common message, for the auxiliary law `Pux`. -/
+def superpositionCommonRegion (W : BroadcastChannel X Y₁ Y₂) {kU : ℕ}
+    (Pux : ProbDist (Fin kU × X)) : Set (ℝ × ℝ × ℝ) :=
+  let J := bcAuxJoint W Pux
+  { r | 0 ≤ r.1 ∧ 0 ≤ r.2.1 ∧ 0 ≤ r.2.2 ∧
+    r.2.1 ≤ condMutualInfo (J.map (fun z => (z.1.2, z.2.1, z.1.1))) ∧
+    r.1 + r.2.2 ≤ mutualInfo (J.map (fun z => (z.1.1, z.2.2))) ∧
+    r.1 + r.2.1 + r.2.2 ≤ mutualInfo (J.map (fun z => (z.1.2, z.2.1))) }
+
+/-- **Regression**: the frozen Marton common-message region contains the superposition coding
+    region with a common message (take `U₀ = U`, `U₁ = X`, `U₂` constant). -/
+theorem superpositionCommonRegion_subset_martonCommonInnerBound (W : BroadcastChannel X Y₁ Y₂)
+    {kU : ℕ} (Pux : ProbDist (Fin kU × X)) :
+    superpositionCommonRegion W Pux ⊆ martonCommonInnerBound W := by
+  classical
+  rintro ⟨R₀, R₁, R₂⟩ ⟨h0, h1, h2, hR₁, hR₀₂, hsum⟩
+  apply subset_closure
+  let e := Fintype.equivFin X
+  let φ : Fin kU × X → Fin kU × Fin (Fintype.card X) × Fin 1 × X :=
+    fun a => (a.1, e a.2, 0, a.2)
+  refine ⟨h0, h1, h2, kU, Fintype.card X, 1, Pux.map φ, ?_⟩
+  intro joint I01 I02 I1 I2 I12
+  set J := bcAuxJoint W Pux with hJdef
+  have hJ : joint = J.map (fun z => (φ z.1, z.2)) :=
+    joint_eq_map_of_comp W Pux (fun a => a.2) φ (fun b => b.2.2.2) (fun _ => rfl) joint
+      (fun _ => rfl) J (fun _ => rfl)
+  -- `I(X; Y₁) ≤ I(U₀, U₁; Y₁)`
+  have hA : mutualInfo (J.map (fun z => (z.1.2, z.2.1))) ≤ I01 := by
+    have e1 : I01 = mutualInfo (J.map (fun z => ((z.1.1, e z.1.2), z.2.1))) := by
+      change mutualInfo (joint.map _) = _
+      rw [hJ, map_comp_eq]; rfl
+    rw [e1]
+    refine le_trans (le_of_eq ?_) (mi_map_left_le _ (fun b => e.symm b.2))
+    rw [map_comp_eq]
+    have hf : (fun z : (Fin kU × X) × (Y₁ × Y₂) => (z.1.2, z.2.1)) =
+        Prod.map (fun b : Fin kU × Fin (Fintype.card X) => e.symm b.2) id ∘
+          fun z => ((z.1.1, e z.1.2), z.2.1) := by
+      funext z; simp
+    rw [hf]
+  -- `I(U; Y₂) ≤ I(U₀, U₂; Y₂)`
+  have hB : mutualInfo (J.map (fun z => (z.1.1, z.2.2))) ≤ I02 := by
+    have e1 : I02 = mutualInfo (J.map (fun z => ((z.1.1, (0 : Fin 1)), z.2.2))) := by
+      change mutualInfo (joint.map _) = _
+      rw [hJ, map_comp_eq]; rfl
+    rw [e1]
+    refine le_trans (le_of_eq ?_) (mi_map_left_le _ Prod.fst)
+    rw [map_comp_eq]; rfl
+  -- `I(U₁; Y₁ | U₀) = I(X; Y₁ | U)`
+  have hC : I1 = condMutualInfo (J.map (fun z => (z.1.2, z.2.1, z.1.1))) := by
+    change condMutualInfo (joint.map _) = _
+    rw [hJ, map_comp_eq]
+    have := condMutualInfo_map_fst_injective (J.map (fun z => (z.1.2, z.2.1, z.1.1))) e
+      e.injective
+    rw [map_comp_eq] at this
+    exact this
+  have hD : I12 = 0 := condMutualInfo_eq_zero_of_subsingleton _
+  have hE : 0 ≤ I2 := condMutualInfo_nonneg _
+  refine ⟨by linarith, by linarith, by linarith, by linarith, by linarith⟩
+
+/-- **Regression (`R₀ = 0` slice)**: `{0} × superpositionInnerBound W ⊆ martonCommonInnerBound W`. -/
+theorem zero_prod_superposition_mem_martonCommonInnerBound (W : BroadcastChannel X Y₁ Y₂)
+    {r : ℝ × ℝ} (hr : r ∈ superpositionInnerBound W) :
+    ((0 : ℝ), r.1, r.2) ∈ martonCommonInnerBound W := by
+  have hc : Continuous (fun r : ℝ × ℝ => ((0 : ℝ), r.1, r.2)) := by fun_prop
+  have := map_mem_closure hc hr (t := martonCommonInnerBound W) (fun x hx => by
+    obtain ⟨h1, h2, kU, Pux, hR₂, hR₁, hsum⟩ := hx
+    exact superpositionCommonRegion_subset_martonCommonInnerBound W Pux
+      ⟨le_rfl, h1, h2, hR₁, by simpa using hR₂, by simpa using hsum⟩)
+  rwa [martonCommonInnerBound, closure_closure] at this
+
+/-- **Regression (degraded BC)**: on every physically degraded BC, the private-message capacity
+    region (Bergmans–Gallager) embeds in the `R₀ = 0` slice of the frozen Marton region. -/
+theorem zero_prod_bcCapacityRegion_mem_martonCommonInnerBound_of_degraded
+    (W : BroadcastChannel X Y₁ Y₂) (hdeg : IsPhysicallyDegradedBC W) {r : ℝ × ℝ}
+    (hr : r ∈ bcCapacityRegion W) : ((0 : ℝ), r.1, r.2) ∈ martonCommonInnerBound W := by
+  rw [degradedBC_capacity_theorem W hdeg, ← superpositionInnerBound_eq_degradedBCRegion W hdeg]
+    at hr
+  exact zero_prod_superposition_mem_martonCommonInnerBound W hr
+
+end Regression
 
 end InfoTheory.Known.Certificates.MartonInnerBoundTightness

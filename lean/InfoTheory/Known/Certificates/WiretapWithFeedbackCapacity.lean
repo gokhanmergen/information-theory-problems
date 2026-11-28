@@ -22,6 +22,13 @@ equals the Ahlswede–Cai bound `ahlswedeCaiBound W = max_{P_X} min(I(X; Y), H(Y
   and it is `≥ 0`. So both sides of the statement are finite reals in
   `[0, max(C(p(y|x)), log₂ |Y|)] = [0, log₂ |Y|]`.
 
+* **Regression** `mi_sub_mi_le_ahlswedeCaiBound`, `wynerRate_le_ahlswedeCaiBound` — the frozen
+  formula is at least Wyner's no-feedback rate `sup_P [I(X;Y) - I(X;Z)]` (the secrecy capacity
+  without feedback of degraded channels), via `I(X;Y) - I(X;Z) ≤ H(Y|Z)`
+  (`mi_sub_mi_le_condEntropy`); `ahlswedeCaiBound_eq_capacity_of_subsingleton` — with a trivial
+  eavesdropper it equals `C(p(y|x))`; `ahlswedeCaiBound_eq_zero_of_fun` — if `Y` is a function
+  of `Z` it is `0`.
+
 ## Not certified
 * The Ahlswede–Cai converse `C_s^{fb} ≤ ahlswedeCaiBound` and its achievability for degraded
   channels (secret key generation from the feedback + one-time pad), and the sharper
@@ -159,5 +166,134 @@ theorem ahlswedeCaiBound_le_capacity (W : WiretapChannel X Y Z) :
 theorem ahlswedeCaiBound_le_log2_card (W : WiretapChannel X Y Z) :
     ahlswedeCaiBound W ≤ log2 (Fintype.card Y) :=
   (ahlswedeCaiBound_le_capacity W).trans (capacity_le_log_card_output _)
+
+/-! ### Regression: the frozen Ahlswede–Cai formula in solved cases -/
+
+section Regression
+
+open InfoTheory.Known.Certificates.BroadcastChannel (joint_map_fst_eq)
+
+/-- Entropy bookkeeping for `J = W.joint P` on `X × (Y × Z)`:
+    `I(X;Y) - I(X;Z) ≤ H(Y|Z)` (since `I(X;Y) ≤ I(X;Y,Z)` and `H(Y|X,Z) ≥ 0`). -/
+theorem mi_sub_mi_le_condEntropy (J : ProbDist (X × (Y × Z))) :
+    mutualInfo (J.map (fun t => (t.1, t.2.1))) - mutualInfo (J.map (fun t => (t.1, t.2.2))) ≤
+      condEntropy (J.map (fun t => (t.2.1, t.2.2))) := by
+  have f1 : (J.map (fun t => (t.1, t.2.1))).fst = J.map (fun t => t.1) := by
+    rw [← map_fst_eq_fst, map_comp_eq]; rfl
+  have f2 : (J.map (fun t => (t.1, t.2.1))).snd = J.map (fun t => t.2.1) := by
+    rw [← map_snd_eq_snd, map_comp_eq]; rfl
+  have f3 : (J.map (fun t => (t.1, t.2.2))).fst = J.map (fun t => t.1) := by
+    rw [← map_fst_eq_fst, map_comp_eq]; rfl
+  have f4 : (J.map (fun t => (t.1, t.2.2))).snd = J.map (fun t => t.2.2) := by
+    rw [← map_snd_eq_snd, map_comp_eq]; rfl
+  have f5 : (J.map (fun t => (t.2.1, t.2.2))).snd = J.map (fun t => t.2.2) := by
+    rw [← map_snd_eq_snd, map_comp_eq]; rfl
+  -- `I(X; Z | Y) ≥ 0`
+  have hc := condMutualInfo_nonneg (J.map (fun t => (t.1, t.2.2, t.2.1)))
+  unfold condMutualInfo at hc
+  dsimp only at hc
+  have g1 : (J.map (fun t => (t.1, t.2.2, t.2.1))).map (fun t => (t.1, t.2.2)) =
+      J.map (fun t => (t.1, t.2.1)) := by rw [map_comp_eq]; rfl
+  have g2 : (J.map (fun t => (t.1, t.2.2, t.2.1))).map (fun t => (t.2.1, t.2.2)) =
+      (J.map (fun t => (t.2.1, t.2.2))).map Prod.swap := by rw [map_comp_eq, map_comp_eq]; rfl
+  have g3 : (J.map (fun t => (t.1, t.2.2, t.2.1))).map (fun t => t.2.2) =
+      J.map (fun t => t.2.1) := by rw [map_comp_eq]; rfl
+  rw [g1, g2, g3, shannonEntropy_map_of_injective _ Prod.swap_injective] at hc
+  -- `H(X, Z, Y) ≥ H(X, Z)`
+  have hm := shannonEntropy_map_le (fun p : X × Z × Y => (p.1, p.2.1))
+    (J.map (fun t => (t.1, t.2.2, t.2.1)))
+  rw [map_comp_eq] at hm
+  have hm' : shannonEntropy (J.map ((fun p : X × Z × Y => (p.1, p.2.1)) ∘
+      (fun t => (t.1, t.2.2, t.2.1)))) = shannonEntropy (J.map (fun t => (t.1, t.2.2))) := rfl
+  rw [hm'] at hm
+  unfold mutualInfo condEntropy
+  rw [f1, f2, f3, f4, f5]
+  linarith
+
+theorem ahlswedeCai_bddAbove (W : WiretapChannel X Y Z) :
+    BddAbove { r : ℝ | ∃ (P : ProbDist X),
+      r = min (mutualInfo ((W.joint P).map (fun t => (t.1, t.2.1))))
+              (condEntropy ((W.joint P).map (fun t => (t.2.1, t.2.2)))) } := by
+  refine ⟨(marginalFst W).capacity, fun r hr => ?_⟩
+  obtain ⟨P, rfl⟩ := hr
+  exact min_le_of_left_le (mi_fst_le_capacity W P id (W.joint P) (fun _ => rfl) id)
+
+/-- **Regression (no feedback, Wyner / Csiszár–Körner)**: for every input law,
+    `I(X;Y) - I(X;Z) ≤ ahlswedeCaiBound W`. For a degraded wiretap channel the supremum of the
+    left side over `P` is Wyner's secrecy capacity without feedback, so the frozen formula is at
+    least the no-feedback secrecy capacity there (feedback cannot hurt). -/
+theorem mi_sub_mi_le_ahlswedeCaiBound (W : WiretapChannel X Y Z) (P : ProbDist X) :
+    mutualInfo ((W.joint P).map (fun t => (t.1, t.2.1))) -
+        mutualInfo ((W.joint P).map (fun t => (t.1, t.2.2))) ≤ ahlswedeCaiBound W := by
+  refine le_trans (le_min ?_ (mi_sub_mi_le_condEntropy (W.joint P)))
+    (le_csSup (ahlswedeCai_bddAbove W) ⟨P, rfl⟩)
+  linarith [mutualInfo_nonneg ((W.joint P).map (fun t => (t.1, t.2.2)))]
+
+/-- The supremum form: Wyner's rate `sup_P [I(X;Y) - I(X;Z)]` is at most the frozen bound. -/
+theorem wynerRate_le_ahlswedeCaiBound [Nonempty X] (W : WiretapChannel X Y Z) :
+    sSup { r : ℝ | ∃ P : ProbDist X, r = mutualInfo ((W.joint P).map (fun t => (t.1, t.2.1))) -
+        mutualInfo ((W.joint P).map (fun t => (t.1, t.2.2))) } ≤ ahlswedeCaiBound W :=
+  csSup_le ⟨_, ⟨ProbDist.uniform, rfl⟩⟩ (fun _ ⟨P, hr⟩ => hr ▸ mi_sub_mi_le_ahlswedeCaiBound W P)
+
+/-- **Regression (useless eavesdropper)**: if `Z` is trivial, the frozen formula is exactly the
+    main channel's capacity `C(p(y|x))` (the known secrecy capacity, with or without feedback). -/
+theorem ahlswedeCaiBound_eq_capacity_of_subsingleton [Nonempty X] [Subsingleton Z]
+    [Nonempty Z] (W : WiretapChannel X Y Z) :
+    ahlswedeCaiBound W = (marginalFst W).capacity := by
+  refine le_antisymm (ahlswedeCaiBound_le_capacity W) ?_
+  refine csSup_le ⟨_, ⟨ProbDist.uniform, rfl⟩⟩ (fun r hr => ?_)
+  obtain ⟨P, rfl⟩ := hr
+  set J := W.joint P
+  have hm : (marginalFst W).mutualInfo P = mutualInfo (J.map (fun t => (t.1, t.2.1))) := by
+    rw [joint_map_fst_eq W P id J (fun _ => rfl)]; rfl
+  rw [hm]
+  refine le_trans (le_min le_rfl ?_) (le_csSup (ahlswedeCai_bddAbove W) ⟨P, rfl⟩)
+  -- `I(X;Y) ≤ H(Y) ≤ H(Y,Z) = H(Y|Z) + H(Z)` and `H(Z) = 0`
+  have hz : (J.map (fun t => (t.2.1, t.2.2))).snd = J.map (fun _ => Classical.arbitrary Z) := by
+    rw [← map_snd_eq_snd, map_comp_eq]
+    congr 1
+    funext t
+    exact Subsingleton.elim _ _
+  have h1 : (J.map (fun t => (t.1, t.2.1))).fst = J.map (fun t => t.1) := by
+    rw [← map_fst_eq_fst, map_comp_eq]; rfl
+  have h2 : (J.map (fun t => (t.1, t.2.1))).snd = J.map (fun t => t.2.1) := by
+    rw [← map_snd_eq_snd, map_comp_eq]; rfl
+  have m1 := shannonEntropy_map_le (fun p : X × Y => p.1) (J.map (fun t => (t.1, t.2.1)))
+  have m2 := shannonEntropy_map_le (fun p : Y × Z => p.1) (J.map (fun t => (t.2.1, t.2.2)))
+  rw [map_comp_eq] at m1 m2
+  have m1' : shannonEntropy (J.map ((fun p : X × Y => p.1) ∘ fun t => (t.1, t.2.1))) =
+      shannonEntropy (J.map (fun t => t.1)) := rfl
+  have m2' : shannonEntropy (J.map ((fun p : Y × Z => p.1) ∘ fun t => (t.2.1, t.2.2))) =
+      shannonEntropy (J.map (fun t => t.2.1)) := rfl
+  rw [m1'] at m1
+  rw [m2'] at m2
+  unfold mutualInfo condEntropy
+  rw [hz, shannonEntropy_map_const, h1, h2]
+  linarith
+
+/-- **Regression (eavesdropper sees the main output)**: if `Y` is a function of `Z` on the
+    support of the channel, the frozen formula is `0` (no secrecy is possible, even with
+    feedback: the eavesdropper also sees the feedback signal). -/
+theorem ahlswedeCaiBound_eq_zero_of_fun (W : WiretapChannel X Y Z) (ψ : Z → Y)
+    (hψ : ∀ x y z, W.trans x (y, z) ≠ 0 → y = ψ z) : ahlswedeCaiBound W = 0 := by
+  refine le_antisymm ?_ (ahlswedeCaiBound_nonneg W)
+  unfold ahlswedeCaiBound
+  refine Real.sSup_nonpos (fun r hr => ?_)
+  obtain ⟨P, rfl⟩ := hr
+  refine min_le_of_right_le (le_of_eq ?_)
+  set J := W.joint P
+  have hsupp : J.map (fun t => (t.2.1, t.2.2)) = (J.map (fun t => t.2.2)).map (fun z => (ψ z, z)) := by
+    rw [map_comp_eq]
+    refine map_congr_of_support J (fun t ht => ?_)
+    have hw : W.trans t.1 t.2 ≠ 0 := right_ne_zero_of_mul ht
+    have := hψ t.1 t.2.1 t.2.2 hw
+    simp only [Function.comp_apply, this]
+  have hz : (J.map (fun t => (t.2.1, t.2.2))).snd = J.map (fun t => t.2.2) := by
+    rw [← map_snd_eq_snd, map_comp_eq]; rfl
+  unfold condEntropy
+  rw [hz, hsupp, shannonEntropy_map_of_injective _ (fun a b h => (Prod.mk.inj h).2)]
+  ring
+
+end Regression
 
 end InfoTheory.Known.Certificates.WiretapWithFeedbackCapacity

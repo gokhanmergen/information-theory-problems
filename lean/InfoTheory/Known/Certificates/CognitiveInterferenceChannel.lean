@@ -27,6 +27,11 @@ equals the Rini–Tuninetti–Devroye inner bound `rtdInnerBound W`.
   receiver-1 sum constraint and the penalty constraint `R'₁ₚ + R'₂c ≥ I(X₁, U₁ₚ; U₂c | U₀, Q)`
   combine to `R₁ ≤ I(·; Y₁ | Q)`). So both sides of the statement are nonempty bounded sets.
 
+* **Regression** `mk_zero_mem_rtdInnerBound_of`, `Icc_prod_zero_subset_rtdInnerBound` — with
+  `U₁ₚ = (X₁, X₂)` and the other auxiliaries constant, every RTD penalty vanishes and the
+  receiver-1 constraints reduce to `R₁ ≤ I(X₁X₂;Y₁|Q)`; so the frozen RTD region contains the
+  whole known primary axis `[0, C(X₁X₂ → Y₁)] × {0}` (= the operational axis above).
+
 ## Not certified
 * Achievability of the RTD region (superposition, binning and Gelfand–Pinsker coding are not in
   the library) and the known capacity results for special classes (strong interference,
@@ -172,5 +177,180 @@ theorem rtdInnerBound_subset_box [Nonempty Y₁] [Nonempty Y₂]
   refine ⟨⟨h1, ?_⟩, ⟨h2, ?_⟩⟩
   · rw [e1]; linarith
   · rw [e2]; linarith
+
+/-! ### Regression: the primary axis of the RTD formula
+
+With `R₂ = 0` both transmitters know `M₁`, and the known answer is `R₁ ≤ max I(X₁, X₂; Y₁)`
+(`mk_zero_mem_cognitiveICCapacityRegion_iff`). Carrying `M₁` in the private auxiliary
+`U₁ₚ := (X₁, X₂)` with all other auxiliaries constant, every binning / covering penalty of the
+RTD region vanishes and its three receiver-1 constraints reduce to `R₁ ≤ I(X₁, X₂; Y₁ | Q)`. -/
+
+section Regression
+
+open InfoTheory.Known.Certificates.DmInterferenceChannelCapacity (cmi_relabel)
+
+private theorem pmf_map_inj {α β : Type*} [Fintype α] [Fintype β] (P : ProbDist α) (f : α → β)
+    (hf : Function.Injective f) (a : α) : (P.map f).pmf (f a) = P.pmf a := by
+  classical
+  simp only [ProbDist.map]
+  rw [Finset.sum_eq_single a]
+  · simp
+  · intro a' _ hne
+    simp [hf.ne hne]
+  · simp
+
+/-- If the RTD input law is `P(a | q)` pushed along an injective `emb` that remembers the
+    channel input, the RTD joint law is the pushforward of the plain joint law
+    `p(q) p(x₁, x₂ | q) W(y | x₁, x₂)`. -/
+theorem rtd_joint_eq_map (W : InterferenceChannel X₁ X₂ Y₁ Y₂) {kQ k₀ k₁p k₂c k₂p : ℕ}
+    (Pq : ProbDist (Fin kQ)) (Pxx : Fin kQ → ProbDist (X₁ × X₂))
+    (emb : X₁ × X₂ → Fin k₀ × Fin k₁p × Fin k₂c × Fin k₂p × X₁ × X₂)
+    (hemb : Function.Injective emb) (hg : ∀ a, ((emb a).2.2.2.2.1, (emb a).2.2.2.2.2) = a)
+    (J : ProbDist (Fin kQ × (Fin k₀ × Fin k₁p × Fin k₂c × Fin k₂p × X₁ × X₂) × (Y₁ × Y₂)))
+    (hJ : ∀ z, J.pmf z = Pq.pmf z.1 * ((Pxx z.1).map emb).pmf z.2.1 *
+      W.trans (z.2.1.2.2.2.2.1, z.2.1.2.2.2.2.2) z.2.2)
+    (K : ProbDist (Fin kQ × (X₁ × X₂) × (Y₁ × Y₂)))
+    (hK : ∀ z, K.pmf z = Pq.pmf z.1 * (Pxx z.1).pmf z.2.1 * W.trans z.2.1 z.2.2) :
+    J = K.map (fun z => (z.1, emb z.2.1, z.2.2)) := by
+  classical
+  refine probDist_eq_of_pmf fun ⟨q, b, y⟩ => ?_
+  by_cases hb : ∃ a, emb a = b
+  · obtain ⟨a, rfl⟩ := hb
+    have hinj : Function.Injective
+        (fun z : Fin kQ × (X₁ × X₂) × (Y₁ × Y₂) => (z.1, emb z.2.1, z.2.2)) := by
+      intro z z' h
+      simp only [Prod.mk.injEq] at h
+      exact Prod.ext h.1 (Prod.ext (hemb h.2.1) h.2.2)
+    have hr : (K.map (fun z => (z.1, emb z.2.1, z.2.2))).pmf (q, emb a, y) = K.pmf (q, a, y) :=
+      pmf_map_inj K _ hinj (q, a, y)
+    rw [hr, hJ, hK]
+    dsimp only
+    rw [pmf_map_inj _ _ hemb, hg]
+  · have h0 : ((Pxx q).map emb).pmf b = 0 := by
+      simp only [ProbDist.map]
+      exact Finset.sum_eq_zero fun a _ => by rw [if_neg (fun h => hb ⟨a, h⟩)]
+    rw [hJ]
+    dsimp only
+    rw [h0, mul_zero, zero_mul]
+    simp only [ProbDist.map]
+    refine (Finset.sum_eq_zero fun z _ => ?_).symm
+    rw [if_neg]
+    intro h
+    simp only [Prod.mk.injEq] at h
+    exact hb ⟨z.2.1, h.2.1⟩
+
+/-- **Regression (primary axis)**: for every time-shared joint input law
+    `p(q) p(x₁, x₂ | q)`, the frozen RTD region contains `[0, I(X₁, X₂; Y₁ | Q)] × {0}`. -/
+theorem mk_zero_mem_rtdInnerBound_of (W : InterferenceChannel X₁ X₂ Y₁ Y₂) {kQ : ℕ}
+    (Pq : ProbDist (Fin kQ)) (Pxx : Fin kQ → ProbDist (X₁ × X₂))
+    (K : ProbDist (Fin kQ × (X₁ × X₂) × (Y₁ × Y₂)))
+    (hK : ∀ z, K.pmf z = Pq.pmf z.1 * (Pxx z.1).pmf z.2.1 * W.trans z.2.1 z.2.2)
+    {R : ℝ} (h0 : 0 ≤ R) (hR : R ≤ condMutualInfo (K.map (fun z => (z.2.1, z.2.2.1, z.1)))) :
+    (R, (0 : ℝ)) ∈ rtdInnerBound W := by
+  let e := Fintype.equivFin (X₁ × X₂)
+  let emb : X₁ × X₂ → Fin 1 × Fin (Fintype.card (X₁ × X₂)) × Fin 1 × Fin 1 × X₁ × X₂ :=
+    fun a => (0, e a, 0, 0, a.1, a.2)
+  have hemb : Function.Injective emb := fun a b h => by
+    simp only [emb, Prod.mk.injEq] at h
+    exact e.injective h.2.1
+  refine subset_closure ⟨h0, le_rfl, kQ, 1, Fintype.card (X₁ × X₂), 1, 1, Pq,
+    fun q => (Pxx q).map emb, 0, R, 0, 0, 0, 0, 0, le_rfl, h0, le_rfl, le_rfl, le_rfl,
+    le_rfl, le_rfl, by ring, by ring, ?_⟩
+  intro J bin2c bin2p bin12p bin2cp bin12cp pen1
+  have hJ : J = K.map (fun z => (z.1, emb z.2.1, z.2.2)) :=
+    rtd_joint_eq_map W Pq Pxx emb hemb (fun _ => rfl) J (fun _ => rfl) K hK
+  have z1 : bin2c = 0 := condMutualInfo_eq_zero_of_subsingleton_fst _
+  have z2 : bin2p = 0 := condMutualInfo_eq_zero_of_subsingleton_fst _
+  have z3 : bin12p = 0 := condMutualInfo_eq_zero_of_subsingleton _
+  have z4 : bin2cp = 0 := condMutualInfo_eq_zero_of_subsingleton_fst _
+  have z5 : bin12cp = 0 := condMutualInfo_eq_zero_of_subsingleton _
+  have z6 : pen1 = 0 := condMutualInfo_eq_zero_of_subsingleton _
+  have c6 : condMutualInfo (J.map (fun z =>
+      ((z.2.1.2.2.2.2.1, z.2.1.2.1), z.2.2.1, (z.2.1.1, z.2.1.2.2.1, z.1)))) =
+      condMutualInfo (K.map (fun z => (z.2.1, z.2.2.1, z.1))) := by
+    rw [hJ, map_comp_eq]
+    exact cmi_relabel K (fun z => z.2.1) (fun z => z.2.2.1) (fun z => z.1)
+      (fun a => (a.1, e a)) (fun q => ((0 : Fin 1), (0 : Fin 1), q))
+      (fun a b h => e.injective (Prod.mk.inj h).2)
+      (fun a b h => (Prod.mk.inj (Prod.mk.inj h).2).2)
+  have c7 : condMutualInfo (J.map (fun z =>
+      ((z.2.1.2.2.2.2.1, z.2.1.2.1, z.2.1.2.2.1), z.2.2.1, (z.2.1.1, z.1)))) =
+      condMutualInfo (K.map (fun z => (z.2.1, z.2.2.1, z.1))) := by
+    rw [hJ, map_comp_eq]
+    exact cmi_relabel K (fun z => z.2.1) (fun z => z.2.2.1) (fun z => z.1)
+      (fun a => (a.1, e a, (0 : Fin 1))) (fun q => ((0 : Fin 1), q))
+      (fun a b h => e.injective (Prod.mk.inj (Prod.mk.inj h).2).1)
+      (fun a b h => (Prod.mk.inj h).2)
+  have c8 : condMutualInfo (J.map (fun z =>
+      ((z.2.1.1, z.2.1.2.2.2.2.1, z.2.1.2.1, z.2.1.2.2.1), z.2.2.1, z.1))) =
+      condMutualInfo (K.map (fun z => (z.2.1, z.2.2.1, z.1))) := by
+    rw [hJ, map_comp_eq]
+    exact cmi_relabel K (fun z => z.2.1) (fun z => z.2.2.1) (fun z => z.1)
+      (fun a => ((0 : Fin 1), a.1, e a, (0 : Fin 1))) id
+      (fun a b h => e.injective (Prod.mk.inj (Prod.mk.inj (Prod.mk.inj h).2).2).1)
+      Function.injective_id
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · linarith
+  · linarith
+  · linarith
+  · linarith
+  · linarith
+  · rw [c6]; linarith
+  · rw [c7]; linarith
+  · rw [c8]; linarith
+  · simp only [add_zero]; exact condMutualInfo_nonneg _
+  · simp only [add_zero]; exact condMutualInfo_nonneg _
+  · simp only [add_zero]; exact condMutualInfo_nonneg _
+
+/-- **Regression (primary axis, exact)**: the frozen RTD region contains the whole known
+    primary axis `[0, C(X₁X₂ → Y₁)] × {0}`, which is exactly the operational axis
+    (`mk_zero_mem_cognitiveICCapacityRegion_iff`). So on the `R₂ = 0` axis the frozen formula
+    is not too small. -/
+theorem Icc_prod_zero_subset_rtdInnerBound [Nonempty X₁] [Nonempty X₂]
+    (W : InterferenceChannel X₁ X₂ Y₁ Y₂) :
+    Set.Icc 0 (marginalFst W).capacity ×ˢ ({0} : Set ℝ) ⊆ rtdInnerBound W := by
+  classical
+  set T : Set ℝ := {R | (R, (0 : ℝ)) ∈ rtdInnerBound W} with hT
+  have hTc : IsClosed T :=
+    isClosed_closure.preimage (continuous_id.prodMk continuous_const)
+  have hIco : Set.Ico 0 (marginalFst W).capacity ⊆ T := by
+    rintro R ⟨h0, hR⟩
+    unfold DMC.capacity at hR
+    have hne : Set.Nonempty {r : ℝ | ∃ P : ProbDist (X₁ × X₂), r = (marginalFst W).mutualInfo P} :=
+      ⟨_, ⟨ProbDist.uniform, rfl⟩⟩
+    obtain ⟨r, ⟨P, rfl⟩, hlt⟩ := exists_lt_of_lt_csSup hne hR
+    let K : ProbDist (Fin 1 × (X₁ × X₂) × (Y₁ × Y₂)) := (W.joint P).map (fun z => ((0 : Fin 1), z))
+    have hinj : Function.Injective (fun z : (X₁ × X₂) × (Y₁ × Y₂) => ((0 : Fin 1), z)) :=
+      fun a b h => (Prod.mk.inj h).2
+    have hK : ∀ z, K.pmf z = (ProbDist.uniform : ProbDist (Fin 1)).pmf z.1 *
+        ((fun _ => P) z.1).pmf z.2.1 * W.trans z.2.1 z.2.2 := by
+      rintro ⟨q, a, y⟩
+      have hq : q = 0 := Subsingleton.elim _ _
+      subst hq
+      rw [show (K.pmf ((0 : Fin 1), a, y)) = (W.joint P).pmf (a, y) from pmf_map_inj _ _ hinj (a, y)]
+      simp [DMC.joint, ProbDist.uniform]
+    have hI : condMutualInfo (K.map (fun z => (z.2.1, z.2.2.1, z.1))) =
+        (marginalFst W).mutualInfo P := by
+      have h1 : K.map (fun z => (z.2.1, z.2.2.1, z.1)) =
+          ((W.joint P).map (fun z => (z.1, z.2.1))).map (fun ab => (ab.1, ab.2, (0 : Fin 1))) := by
+        rw [map_comp_eq, map_comp_eq]; rfl
+      rw [h1, condMutualInfo_map_const,
+        InfoTheory.Known.Certificates.BroadcastChannel.joint_map_fst_eq W P id (W.joint P)
+          (fun _ => rfl)]
+      rfl
+    exact mk_zero_mem_rtdInnerBound_of W ProbDist.uniform (fun _ => P) K hK h0
+      (hI ▸ hlt.le)
+  rintro ⟨R, z⟩ ⟨hR, hz⟩
+  rw [Set.mem_singleton_iff] at hz
+  subst hz
+  show R ∈ T
+  rcases eq_or_lt_of_le (hR.1.trans hR.2) with hC | hC
+  · have hR0 : R = 0 := le_antisymm (hC ▸ hR.2) hR.1
+    subst hR0
+    exact zero_mem_rtdInnerBound W
+  · rw [← closure_Ico hC.ne] at hR
+    exact closure_minimal hIco hTc hR
+
+end Regression
 
 end InfoTheory.Known.Certificates.CognitiveInterferenceChannel

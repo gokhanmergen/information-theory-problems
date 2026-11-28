@@ -34,6 +34,13 @@ The frozen statement asks whether, for the symmetric primitive BSC relay channel
 * `statement_sides_mem_Icc` — for every instance of the statement, **both sides lie in
   `[1 - h(p), 1]`**, so the equation compares two genuine finite values (no junk).
 
+* **Regression at the solved endpoint `R₀ = 0`** — `primitiveBscRelayCapacity_zero`:
+  `C_BSC(p₁, p₂, 0) = 1 - h(p₁)` (a relay index in `Fin 1` carries nothing:
+  `isDmcAchievableRate_of_primitive_zero`); `primitiveBscCFRateConcave_zero`: the time-shared CF
+  formula at `R₀ = 0` is also `1 - h(p₁)` (`∑ wᵢRᵢ ≤ 0` forces the active `Rᵢ = 0`, and
+  `R_CF(0) ≤ I(X;Y) ≤ 1 - h(p₁)`); hence `statement_at_zero`: **the frozen statement holds at
+  `R₀ = 0`**.
+
 ## Not certified
 * The MAC-cut half `C_BSC ≤ 1 - h(p₁) + R₀` of the cutset bound: it needs Fano's inequality
   for a decoder that also sees the relay index (`I(M; Yⁿ, J) ≤ I(Xⁿ; Yⁿ) + log |J|`); the
@@ -343,5 +350,114 @@ theorem statement_sides_mem_Icc (p R₀ : ℝ) (h0 : 0 < p) (h1 : p < 1 / 2) (hR
       primitiveBscRelayCapacity_le_one _ _ _ _ R₀⟩,
     ⟨one_sub_binaryEntropy_le_primitiveBscCFRateConcave _ _ _ _ hR₀,
       primitiveBscCFRateConcave_le_one _ _ _ _ R₀⟩⟩
+
+/-! ### Regression: the solved endpoint `R₀ = 0`
+
+With no relay link the channel is the direct link `BSC(p₁)`, whose capacity is `1 - h(p₁)`.
+Both sides of the frozen statement reduce to this value: the operational side because a
+relay index in `Fin 1` carries nothing, the compress-and-forward side because with
+`∑ wᵢ Rᵢ ≤ 0` every active `Rᵢ` is `0` and then `R_CF(0) ≤ I(X; Y) ≤ 1 - h(p₁)`. -/
+
+section Regression
+
+/-- With `R₀ = 0` the relay index is constant, so a primitive relay code is a code for the
+    direct link `BSC(p₁)` with the same error. -/
+theorem isDmcAchievableRate_of_primitive_zero {R : ℝ}
+    (h : IsPrimitiveBscAchievable p₁ p₂ h10 h11 h20 h21 0 R) :
+    IsDmcAchievableRate (bsc p₁ h10 h11) R := by
+  classical
+  obtain ⟨h0, h⟩ := h
+  refine ⟨h0, fun δ hδ => ?_⟩
+  obtain ⟨N, hN⟩ := h δ hδ
+  refine ⟨N, fun n hn => ?_⟩
+  obtain ⟨enc, relay, dec, herr⟩ := hN n hn
+  have hM0 : Nat.max 1 (Nat.floor ((2 : ℝ) ^ ((n : ℝ) * 0))) = 1 := by simp
+  have hrel : ∀ v, relay v = ⟨0, natMax_one_pos _⟩ := fun v =>
+    Fin.ext (by have h2 : ((relay v) : ℕ) < 1 := lt_of_lt_of_eq (relay v).2 hM0; simp; omega)
+  refine ⟨enc, fun y₁ => dec y₁ ⟨0, natMax_one_pos _⟩, ?_⟩
+  rw [← marginalFst_bscRelayBroadcast h10 h11 h20 h21]
+  refine le_of_eq_of_le ?_ herr
+  have hM : max 1 (Nat.floor ((2 : ℝ) ^ ((n : ℝ) * R))) ≠ 0 :=
+    (lt_of_lt_of_le Nat.zero_lt_one (le_max_left _ _)).ne'
+  unfold dmcAvgError
+  rw [ite_eq_right hM]
+  congr 1
+  refine Finset.sum_congr rfl fun m _ => ?_
+  simp only [hrel]
+  exact (sum_ite_fst_power _ (enc m) (fun a => dec a ⟨0, natMax_one_pos _⟩ ≠ m)).symm
+
+/-- **Operational side at `R₀ = 0`**: `C_BSC(p₁, p₂, 0) = 1 - h(p₁)`. -/
+theorem primitiveBscRelayCapacity_zero :
+    primitiveBscRelayCapacity p₁ p₂ h10 h11 h20 h21 0 = 1 - binaryEntropy p₁ := by
+  refine le_antisymm ?_ (one_sub_binaryEntropy_le_primitiveBscRelayCapacity h10 h11 h20 h21 0)
+  rw [← bsc_capacity h10 h11]
+  exact csSup_le ⟨0, isPrimitive_zero h10 h11 h20 h21 0⟩ fun R hR =>
+    shannon_channel_coding_converse _ R (isDmcAchievableRate_of_primitive_zero h10 h11 h20 h21 hR)
+
+/-- The `(X, Y)` marginal of any CF joint law is the `BSC(p₁)` joint law of its input. -/
+theorem cf_map_xy_general {kU : ℕ} (Px : ProbDist Bool) (Q : DMC Bool (Fin kU))
+    (J : ProbDist (Bool × (Bool × Bool) × Fin kU))
+    (hJ : ∀ t, J.pmf t = Px.pmf t.1 *
+      (bscRelayBroadcast p₁ p₂ h10 h11 h20 h21).trans t.1 t.2.1 * Q.trans t.2.1.2 t.2.2) :
+    J.map (fun t => (t.1, t.2.1.1)) = (bsc p₁ h10 h11).joint Px := by
+  classical
+  have hQ : ∀ b, ∑ u, Q.trans b u = 1 := Q.sum_one
+  refine probDist_eq_of_pmf fun xy => ?_
+  obtain ⟨x, y⟩ := xy
+  simp only [ProbDist.map, hJ, DMC.joint, bsc, bscRelayBroadcast, Fintype.sum_prod_type,
+    Fintype.sum_bool]
+  cases x <;> cases y <;> simp [← Finset.mul_sum, hQ] <;> ring
+
+/-- The CF objective at `R = 0` is at most `I(X; Y) ≤ 1 - h(p₁)`. -/
+theorem cf_obj_zero_le {kU : ℕ} (Px : ProbDist Bool) (Q : DMC Bool (Fin kU))
+    (J : ProbDist (Bool × (Bool × Bool) × Fin kU))
+    (hJ : ∀ t, J.pmf t = Px.pmf t.1 *
+      (bscRelayBroadcast p₁ p₂ h10 h11 h20 h21).trans t.1 t.2.1 * Q.trans t.2.1.2 t.2.2) :
+    min (mutualInfo (J.map (fun t => (t.1, (t.2.1.1, t.2.2)))))
+      (mutualInfo (J.map (fun t => (t.1, t.2.1.1))) + 0 -
+        condMutualInfo (J.map (fun t => (t.2.2, t.2.1.2, (t.1, t.2.1.1))))) ≤
+      1 - binaryEntropy p₁ := by
+  have hxy : mutualInfo (J.map (fun t => (t.1, t.2.1.1))) ≤ 1 - binaryEntropy p₁ := by
+    rw [cf_map_xy_general h10 h11 h20 h21 Px Q J hJ, ← bsc_capacity h10 h11]
+    exact dmc_mutualInfo_le_capacity _ _
+  have hc := condMutualInfo_nonneg (J.map (fun t => (t.2.2, t.2.1.2, (t.1, t.2.1.1))))
+  exact min_le_of_right_le (by linarith)
+
+theorem primitiveBscCFRate_zero_le :
+    primitiveBscCFRate p₁ p₂ h10 h11 h20 h21 0 ≤ 1 - binaryEntropy p₁ := by
+  unfold primitiveBscCFRate
+  refine csSup_le ⟨_, 1, ProbDist.uniform, trivialTest Bool, rfl⟩ (fun r hr => ?_)
+  obtain ⟨kU, Px, Q, rfl⟩ := hr
+  exact cf_obj_zero_le h10 h11 h20 h21 Px Q _ (fun t => rfl)
+
+/-- **CF side at `R₀ = 0`**: `R_CF^{conc}(p₁, p₂, 0) = 1 - h(p₁)`. -/
+theorem primitiveBscCFRateConcave_zero :
+    primitiveBscCFRateConcave p₁ p₂ h10 h11 h20 h21 0 = 1 - binaryEntropy p₁ := by
+  refine le_antisymm ?_ (one_sub_binaryEntropy_le_primitiveBscCFRateConcave h10 h11 h20 h21 le_rfl)
+  unfold primitiveBscCFRateConcave
+  refine csSup_le ⟨_, 1, fun _ => 1, fun _ => 0, fun _ => zero_le_one, by simp, fun _ => le_rfl,
+    by simp, rfl⟩ (fun r hr => ?_)
+  obtain ⟨m, w, Rs, hw0, hw1, hRs0, hsum, rfl⟩ := hr
+  have hnn : ∀ i ∈ (Finset.univ : Finset (Fin m)), 0 ≤ w i * Rs i :=
+    fun i _ => mul_nonneg (hw0 i) (hRs0 i)
+  have hz : ∀ i, w i * Rs i = 0 := fun i =>
+    (Finset.sum_eq_zero_iff_of_nonneg hnn).1
+      (le_antisymm hsum (Finset.sum_nonneg hnn)) i (Finset.mem_univ _)
+  calc ∑ i : Fin m, w i * primitiveBscCFRate p₁ p₂ h10 h11 h20 h21 (Rs i)
+      ≤ ∑ i : Fin m, w i * (1 - binaryEntropy p₁) := Finset.sum_le_sum fun i _ => by
+        rcases mul_eq_zero.1 (hz i) with h | h
+        · rw [h]; simp
+        · rw [h]
+          exact mul_le_mul_of_nonneg_left (primitiveBscCFRate_zero_le h10 h11 h20 h21) (hw0 i)
+    _ = 1 - binaryEntropy p₁ := by rw [← Finset.sum_mul, hw1, one_mul]
+
+/-- **Regression: the frozen statement holds at the solved endpoint `R₀ = 0`** (both sides
+    equal the direct-link capacity `1 - h(p)`). -/
+theorem statement_at_zero (p : ℝ) (h0 : 0 < p) (h1 : p < 1 / 2) :
+    primitiveBscRelayCapacity p p (le_of_lt h0) (by linarith) (le_of_lt h0) (by linarith) 0 =
+      primitiveBscCFRateConcave p p (le_of_lt h0) (by linarith) (le_of_lt h0) (by linarith) 0 := by
+  rw [primitiveBscRelayCapacity_zero, primitiveBscCFRateConcave_zero]
+
+end Regression
 
 end InfoTheory.Known.Certificates.PrimitiveRelayChannelBsc
