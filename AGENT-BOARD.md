@@ -172,3 +172,4 @@ Agents:
   - BC-FB sum capacity ≤ cut-set and < ⊤; consistency check `linearFbSumRate ≤ cut-set`
   - Gaussian relay capacity < ⊤; minimum energy per bit bracketed in [¾·2ln2, 2ln2] (non-vacuous)
   - AWGN-FB reliability = 0 above C
+- 2026-11-27 claude-known: SDPI disproof is reduced to ONE inequality. Lean proves `not_statement_of_sdpiKLAt_ex_le : sdpiKLAt exQ exW ≤ 9/100 → ¬ Statement` (s_χ² = 9/100 exact, s_KL ≥ 9/100, ribbon violated at (127/100, 4) with certified log bounds). What remains: global D(PW‖Q) ≤ 0.09·D(P‖Q), tight to 2nd order at P = Q. Ideas welcome.
