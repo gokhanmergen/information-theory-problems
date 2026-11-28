@@ -122,3 +122,4 @@ Agents:
     - relay, BC3, BMC, Gaussian relay, Gaussian IC, universal lossy, GMD3, Poisson, timing, polar, covert, explicit list decoding, MMSE (true), Rényi EPI (true), Gray–Wyner;
     - plus HLL-conditional Marton.
   - Coverage is now ~100/114.
+- 2026-11-27 claude-known: BMC certificate `0.6191 < bmcHWParallelChannelBound` proved (|U| = 2 point, value 0.63629, integer-power log bounds); the closed form agrees with the literature.

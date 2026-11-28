@@ -26,6 +26,11 @@ parallel channel (≈ 0.64628), in the closed form of the problem file.
   `α = β = 1/2` (crossover `1/2`) gives the value `1/2`, because `h(1/4) ≥ 1/2`. So the
   right-hand side also lies in `[1/2, 1]`, and its `sSup` is over a nonempty set that is
   bounded above.
+* `schalkwijk_lt_bmcHWParallelChannelBound` — `0.6191 < bmcHWParallelChannelBound`: the point
+  `|U| = 2`, `w = (1/2, 1/2)`, `α = (1/2, 5/6)`, `β = (5/6, 1/2)` gives `≈ 0.63629`, using
+  `19/12 < log₂ 3 < 8/5`, `log₂ 5 < 7/3`, `log₂ 7 < 17/6`. A sanity check of the closed form:
+  Schalkwijk's achievable rate `0.6191` (1982) lower-bounds `C_sym`, so any correct upper
+  bound must exceed it.
 
 ## Not certified
 * Achievability beyond time division: Shannon's inner bound `≈ 0.61695` (the right-hand
@@ -155,6 +160,125 @@ theorem half_le_bmcHWParallelChannelBound : 1 / 2 ≤ bmcHWParallelChannelBound 
   simp only [Finset.univ_unique, Finset.sum_singleton, hc, one_mul]
   norm_num [binaryEntropy_half]
   exact hq
+
+/-! ### Consistency with Schalkwijk's achievable rate -/
+
+/-- `h(q)` in nats-over-`log 2` form, with the complement `r = 1 - q` supplied explicitly. -/
+private lemma bmc_binaryEntropy_eq {q r : ℝ} (hq : 0 < q) (hr : 0 < r) (hqr : q + r = 1) :
+    binaryEntropy q = -(q * Real.log q + r * Real.log r) / Real.log 2 := by
+  have h1 : 1 - q = r := by linarith
+  unfold binaryEntropy negPLogP log2
+  rw [h1]
+  simp only [not_le.mpr hq, not_le.mpr hr, ↓reduceIte]
+  ring
+
+private lemma bmc_log_mul_pow (a b : ℝ) (m n : ℕ) (ha : 0 < a) (hb : 0 < b) :
+    Real.log (a ^ m * b ^ n) = m * Real.log a + n * Real.log b := by
+  rw [Real.log_mul (pow_pos ha m).ne' (pow_pos hb n).ne', Real.log_pow, Real.log_pow]
+
+private lemma bmc_h_five_sixths : binaryEntropy (5 / 6) =
+    1 + Real.log 3 / Real.log 2 - 5 / 6 * (Real.log 5 / Real.log 2) := by
+  have hl2 : Real.log 2 ≠ 0 := (Real.log_pos one_lt_two).ne'
+  have l6 : Real.log 6 = Real.log 2 + Real.log 3 := by
+    rw [show (6 : ℝ) = 2 * 3 by norm_num, Real.log_mul (by norm_num) (by norm_num)]
+  rw [bmc_binaryEntropy_eq (r := 1 / 6) (by norm_num) (by norm_num) (by norm_num),
+    Real.log_div (by norm_num) (by norm_num), Real.log_div (by norm_num) (by norm_num),
+    Real.log_one, l6]
+  field_simp; ring
+
+private lemma bmc_h_one_sixth : binaryEntropy (1 / 6) =
+    1 + Real.log 3 / Real.log 2 - 5 / 6 * (Real.log 5 / Real.log 2) := by
+  have hl2 : Real.log 2 ≠ 0 := (Real.log_pos one_lt_two).ne'
+  have l6 : Real.log 6 = Real.log 2 + Real.log 3 := by
+    rw [show (6 : ℝ) = 2 * 3 by norm_num, Real.log_mul (by norm_num) (by norm_num)]
+  rw [bmc_binaryEntropy_eq (r := 5 / 6) (by norm_num) (by norm_num) (by norm_num),
+    Real.log_div (by norm_num) (by norm_num), Real.log_div (by norm_num) (by norm_num),
+    Real.log_one, l6]
+  field_simp; ring
+
+private lemma bmc_h_five_twelfths : binaryEntropy (5 / 12) =
+    2 + Real.log 3 / Real.log 2 - 5 / 12 * (Real.log 5 / Real.log 2)
+      - 7 / 12 * (Real.log 7 / Real.log 2) := by
+  have hl2 : Real.log 2 ≠ 0 := (Real.log_pos one_lt_two).ne'
+  have l12 : Real.log 12 = 2 * Real.log 2 + Real.log 3 := by
+    rw [show (12 : ℝ) = 2 ^ 2 * 3 ^ 1 by norm_num, bmc_log_mul_pow _ _ _ _ (by norm_num)
+      (by norm_num)]
+    push_cast; ring
+  rw [bmc_binaryEntropy_eq (r := 7 / 12) (by norm_num) (by norm_num) (by norm_num),
+    Real.log_div (by norm_num) (by norm_num), Real.log_div (by norm_num) (by norm_num), l12]
+  field_simp; ring
+
+private lemma bmc_h_one_thirtysixth : binaryEntropy (1 / 36) =
+    2 + 2 * (Real.log 3 / Real.log 2) - 35 / 36 * (Real.log 5 / Real.log 2)
+      - 35 / 36 * (Real.log 7 / Real.log 2) := by
+  have hl2 : Real.log 2 ≠ 0 := (Real.log_pos one_lt_two).ne'
+  have l36 : Real.log 36 = 2 * Real.log 2 + 2 * Real.log 3 := by
+    rw [show (36 : ℝ) = 2 ^ 2 * 3 ^ 2 by norm_num, bmc_log_mul_pow _ _ _ _ (by norm_num)
+      (by norm_num)]
+    push_cast; ring
+  have l35 : Real.log 35 = Real.log 5 + Real.log 7 := by
+    rw [show (35 : ℝ) = 5 * 7 by norm_num, Real.log_mul (by norm_num) (by norm_num)]
+  rw [bmc_binaryEntropy_eq (r := 35 / 36) (by norm_num) (by norm_num) (by norm_num),
+    Real.log_div (by norm_num) (by norm_num), Real.log_div (by norm_num) (by norm_num),
+    Real.log_one, l36, l35]
+  field_simp; ring
+
+private lemma bmc_h_five_eighths : binaryEntropy (5 / 8) =
+    3 - 3 / 8 * (Real.log 3 / Real.log 2) - 5 / 8 * (Real.log 5 / Real.log 2) := by
+  have hl2 : Real.log 2 ≠ 0 := (Real.log_pos one_lt_two).ne'
+  have l8 : Real.log 8 = 3 * Real.log 2 := by
+    rw [show (8 : ℝ) = 2 ^ 3 by norm_num, Real.log_pow]
+    push_cast; ring
+  rw [bmc_binaryEntropy_eq (r := 3 / 8) (by norm_num) (by norm_num) (by norm_num),
+    Real.log_div (by norm_num) (by norm_num), Real.log_div (by norm_num) (by norm_num), l8]
+  field_simp; ring
+
+/-- `log₂ a < m / n` from the integer comparison `a ^ n < 2 ^ m`. -/
+private lemma bmc_log_div_log_two_lt {a : ℝ} (ha : 0 < a) {m n : ℕ} (hn : 0 < n)
+    (h : a ^ n < (2 : ℝ) ^ m) : Real.log a / Real.log 2 < (m : ℝ) / n := by
+  have hl2 : 0 < Real.log 2 := Real.log_pos one_lt_two
+  have := Real.log_lt_log (pow_pos ha n) h
+  rw [Real.log_pow, Real.log_pow] at this
+  have hn' : (0 : ℝ) < n := by exact_mod_cast hn
+  rw [div_lt_div_iff₀ hl2 hn']
+  linarith
+
+/-- `m / n < log₂ a` from the integer comparison `2 ^ m < a ^ n`. -/
+private lemma bmc_lt_log_div_log_two {a : ℝ} {m n : ℕ} (hn : 0 < n)
+    (h : (2 : ℝ) ^ m < a ^ n) : (m : ℝ) / n < Real.log a / Real.log 2 := by
+  have hl2 : 0 < Real.log 2 := Real.log_pos one_lt_two
+  have := Real.log_lt_log (pow_pos two_pos m) h
+  rw [Real.log_pow, Real.log_pow] at this
+  have hn' : (0 : ℝ) < n := by exact_mod_cast hn
+  rw [div_lt_div_iff₀ hn' hl2]
+  linarith
+
+/-- **Consistency with Schalkwijk's achievable rate**: `0.6191 < bmcHWParallelChannelBound`.
+    Since `0.6191 ≤ C_sym` (Schalkwijk 1982), the frozen upper-bound formula must exceed it.
+    Witness: `|U| = 2`, `w = (1/2, 1/2)`, `α = (1/2, 5/6)`, `β = (5/6, 1/2)` (crossovers `1/6`,
+    `5/6`); the terms are `r₁ = r₂ = 5/4 + (3/4) log₂ 3 - (5/12) log₂ 5 - (7/24) log₂ 7 ≈ 0.65244`
+    and `(2/3) h(5/8) = 2 - (1/4) log₂ 3 - (5/12) log₂ 5 ≈ 0.63629`. -/
+theorem schalkwijk_lt_bmcHWParallelChannelBound : (0.6191 : ℝ) < bmcHWParallelChannelBound := by
+  unfold bmcHWParallelChannelBound
+  have hc1 : hwCrossover (1 / 2) (5 / 6) = 1 / 6 := by unfold hwCrossover; norm_num
+  have hc2 : hwCrossover (5 / 6) (1 / 2) = 5 / 6 := by unfold hwCrossover; norm_num
+  refine lt_of_lt_of_le ?_ (le_csSup hwBound_set_bddAbove ⟨2, fun _ => 1 / 2, ![1 / 2, 5 / 6],
+    ![5 / 6, 1 / 2], fun _ => by norm_num, by norm_num [Fin.sum_univ_two],
+    by simp [Fin.forall_fin_two]; norm_num, by simp [Fin.forall_fin_two]; norm_num, rfl⟩)
+  simp only [Fin.sum_univ_two, Matrix.cons_val_zero, Matrix.cons_val_one, hc1, hc2]
+  norm_num
+  rw [binaryEntropy_half, bmc_h_five_sixths, bmc_h_one_sixth, bmc_h_five_twelfths,
+    bmc_h_one_thirtysixth, bmc_h_five_eighths]
+  -- `19/12 < log₂ 3 < 8/5`, `log₂ 5 < 7/3`, `log₂ 7 < 17/6`
+  have hx1 := bmc_lt_log_div_log_two (a := 3) (m := 19) (n := 12) (by norm_num) (by norm_num)
+  have hx2 := bmc_log_div_log_two_lt (a := 3) (m := 8) (n := 5) (by norm_num) (by norm_num)
+    (by norm_num)
+  have hy := bmc_log_div_log_two_lt (a := 5) (m := 7) (n := 3) (by norm_num) (by norm_num)
+    (by norm_num)
+  have hz := bmc_log_div_log_two_lt (a := 7) (m := 17) (n := 6) (by norm_num) (by norm_num)
+    (by norm_num)
+  push_cast at hx1 hx2 hy hz
+  refine ⟨⟨?_, ?_⟩, ?_, ?_⟩ <;> linarith
 
 /-! ### Time division -/
 
