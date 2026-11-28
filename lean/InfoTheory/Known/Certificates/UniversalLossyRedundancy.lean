@@ -8,7 +8,7 @@ The statement (fixed 2026-11-27) asks whether the minimax redundancy
 `R_n(m, D, δ) = minimaxLossyRedundancy m D δ n` of `d`-semifaithful codes on `m`-ary
 memoryless sources under Hamming distortion, over the interior class
 `interiorClass m D δ = {P : ∀ x, P(x) ≥ D/(m-1) + δ}`, satisfies
-`(n / log₂ n) · R_n → (m + 1)/2`.
+`(n / log₂ n) · R_n` converges to a real limit (conjectured `(m + 1)/2`).
 
 ## Certified (about exactly these objects)
 * `uniform_mem_interiorClass`, `interiorClass_nonempty` : for `m ≥ 2` and

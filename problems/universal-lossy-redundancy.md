@@ -30,10 +30,12 @@ Every compact subset of the regular region lies in some $\mathcal{P}_\delta(m, D
 $$R_n(m, D, \delta) = \inf_{\mathcal{C}_n \text{ $d$-semifaithful}} \sup_{P \in \mathcal{P}_\delta(m, D)} \left( \frac{1}{n} \mathbb{E}_P[\ell(\mathcal{C}_n(X^n))] - R(P, D) \right).$$
 
 **Determine the exact leading coefficient of $\frac{\log_2 n}{n}$ in $R_n(m, D, \delta)$.** The
-formal statement asks whether, for all such $m, D, \delta$,
-$$\lim_{n \to \infty} \frac{n}{\log_2 n} \, R_n(m, D, \delta) = \frac{m+1}{2} = \frac{m-1}{2} + 1.$$
-The two terms would be the universal parameter-estimation penalty $(m-1)/2$ and the
-known-source $d$-semifaithful penalty of a non-uniform source, $1$.
+formal statement asks the robust first step: for all such $m, D, \delta$, does the limit
+$$L(m, D, \delta) = \lim_{n \to \infty} \frac{n}{\log_2 n} \, R_n(m, D, \delta)$$
+exist as a real number? The conjectured value is $L = \frac{m+1}{2} = \frac{m-1}{2} + 1$: the
+universal parameter-estimation penalty $(m-1)/2$ plus the known-source $d$-semifaithful
+penalty of a non-uniform source, $1$. That conjecture comes from an unrefereed attempt (see below),
+so the frozen statement does not use it.
 
 ## Background
 
@@ -90,8 +92,10 @@ universal estimation adds to this. The exact constant is open in both settings.
   - *Wrong constant.* It asked for the upper bound $m/2$, which the $m = 2$ interior lower
     bound above contradicts.
 
-  The statement now uses the interior class $\mathcal{P}_\delta(m, D)$ and asks for the
-  two-sided limit $(m+1)/2$. The certificate proves the following.
+  The statement now uses the interior class $\mathcal{P}_\delta(m, D)$ and asks whether the
+  pre-log limit exists. A same-day version froze the constant $(m+1)/2$, but no published source
+  poses it; it comes from the gemini-4-neon attempt, which only AI referees have checked. It was
+  replaced by the existence question (Statement-fix 2, claude-known). The certificate proves the following.
   - The class is nonempty: it contains the uniform source.
   - Every source in it satisfies $D < (m-1)P(x)$, and it excludes $\mathrm{Bern}(1/4)$.
   - $R_n$ is a genuine finite infimum:

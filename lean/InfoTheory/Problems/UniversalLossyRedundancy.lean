@@ -20,7 +20,10 @@ The source class is now the compact set `interiorClass m D δ` of sources with e
 probability `≥ D/(m-1) + δ`; for `0 < δ < 1/m - D/(m-1)` it contains the uniform source in its
 relative interior, and every compact subset of the regular region lies in some such class.
 
-The leading constant is also changed from `m/2` to `(m+1)/2`.  Known bounds:
+The question is now whether the pre-log limit **exists**. The old statement asked for the
+constant `m/2`, which the `m = 2` interior lower bound `3/2` below contradicts, and the only
+candidate constant `(m+1)/2` is backed by sketches that only an AI agent has reviewed (see the second
+Statement-fix below). Known bounds:
 * known source (`|S| = 1`): `½ · log n / n ≤ redundancy ≤ log n / n` (Zhang–Yang–Wei 1997;
   the lower bound "in most cases");
   `½` is exact for the uniform source (Sriramu–Wagner, arXiv:2601.11927, 2026);
@@ -30,9 +33,14 @@ The leading constant is also changed from `m/2` to `(m+1)/2`.  Known bounds:
   *not* the minimax constant; for general `m` a matching `(m+1)/2` upper/lower bound is claimed
   at sketch level (`attempts/universal-lossy-redundancy/2026-11-26-gemini-4-neon.md`,
   Claims 4–6; not in the refereed literature).
-The statement below asks whether the minimax constant over every such interior class is exactly
-`(m+1)/2 = (m-1)/2 + 1` (universal estimation penalty plus the known-source `d`-semifaithful
-covering penalty of a non-uniform source).
+**Statement-fix 2 (2026-11-27, claude-known).** A same-day version froze the constant `(m+1)/2`.
+No published source poses that value. It comes from the gemini-4-neon attempt, whose `m = 2`
+lower bound was checked only by AI referees and whose general-`m` matching bounds are sketches.
+Freezing it would make a disproof of an unrefereed guess count as a "resolution". The frozen
+statement now asks whether the limit `lim (n / log₂ n) · R_n(m, D, δ)` **exists** (as a real)
+for every interior class. That question is literature-robust: the refereed bounds give only
+`Θ(log n / n)` with non-matching constants. `(m+1)/2 = (m-1)/2 + 1` (estimation penalty plus
+the known-source covering penalty) is recorded in the `.md` as the conjectured value.
 -/
 
 namespace InfoTheory.Problems.UniversalLossyRedundancy
@@ -82,13 +90,14 @@ noncomputable def minimaxLossyRedundancy (m : ℕ) (D δ : ℝ) (n : ℕ) : ℝ 
     (Yu–Speed 1993; Zhang–Yang–Wei 1997; Yang–Zhang; statement-fixed 2026-11-27):
     for an `m`-ary memoryless source under Hamming distortion `0 < D < 1 - 1/m`, and every
     interior class `interiorClass m D δ` with `0 < δ < 1/m - D/(m-1)` (nonempty, compact, with
-    nonempty relative interior), is the minimax redundancy asymptotically
-    `((m + 1)/2) · log₂ n / n`, i.e. `(n / log₂ n) · R_n(m, D, δ) → (m + 1)/2`? -/
+    nonempty relative interior), does the minimax redundancy have an exact pre-log constant,
+    i.e. does `(n / log₂ n) · R_n(m, D, δ)` converge to a real limit `L(m, D, δ)`?
+    (Conjectured: `L = (m + 1)/2`.) -/
 def Statement : Prop :=
   ∀ (m : ℕ), 2 ≤ m → ∀ (D : ℝ), 0 < D → D < 1 - 1 / (m : ℝ) →
     ∀ (δ : ℝ), 0 < δ → δ < 1 / (m : ℝ) - D / ((m : ℝ) - 1) →
-    ∀ (ε : ℝ), 0 < ε → ∃ N : ℕ, 2 ≤ N ∧ ∀ n : ℕ, N ≤ n →
-      |((n : ℝ) / log2 (n : ℝ)) * minimaxLossyRedundancy m D δ n - ((m : ℝ) + 1) / 2| ≤ ε
+    ∃ L : ℝ, ∀ (ε : ℝ), 0 < ε → ∃ N : ℕ, 2 ≤ N ∧ ∀ n : ℕ, N ≤ n →
+      |((n : ℝ) / log2 (n : ℝ)) * minimaxLossyRedundancy m D δ n - L| ≤ ε
 
 def problem : OpenProblem where
   id := "universal-lossy-redundancy"

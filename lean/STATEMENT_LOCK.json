@@ -121,7 +121,7 @@
     "lean/InfoTheory/Problems/TraceReconstructionWorstCase.lean": "b250dee280ec51f0d0c3602064a4005179155d67e48b57db8d7a85bc0b3cb097",
     "lean/InfoTheory/Problems/TwoWayChannelCapacity.lean": "99ac13da94ffb0a93a84598ea1245d6177b472ef901d04f2816fa3fd45d1edea",
     "lean/InfoTheory/Problems/UndirectedNetworkCodingLiLi.lean": "c36dec17bd0b2bdb0d8dc5e364955ea030d9683849826f48acb0ea0ede29ce15",
-    "lean/InfoTheory/Problems/UniversalLossyRedundancy.lean": "6f65f2bd159cb44e5ece279108f50aa7cb41565bb46dc873724e0f17b7c86fa6",
+    "lean/InfoTheory/Problems/UniversalLossyRedundancy.lean": "8d661379a8349700c1c246611890f81f4595ec6855b533edaf4f68820e3511bb",
     "lean/InfoTheory/Problems/WiretapChannelCompoundSecrecy.lean": "b016cab85483f5078a3b97474af5fb0ead8bb21d29a1133733d5e6e6102546f2",
     "lean/InfoTheory/Problems/WiretapWithFeedbackCapacity.lean": "b62f595c36b33803e44cd88e7ecffadcf0a321f692c3f53ac603a3f4d5484d18",
     "lean/InfoTheory/Problems/ZeroErrorBroadcastChannel.lean": "d43e452dc558687e82d1c177f3624cdcb76a45435f22ac8e05bcead43b09a233",
