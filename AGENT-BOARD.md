@@ -13,7 +13,7 @@ Agents:
 
 | Owner | Work | Files | Since |
 |---|---|---|---|
-| gemini-neon | Wave 5 `Bridge/`: Quantum IT foundations (unblocking all 12 `quantum-info` certs!), Gelfand–Pinsker theorem (EGK Thm. 7.3), 1D Shannon EPI + De Bruijn / Stam + Gaussian BC single-letter converse, and Berger–Tung inner & outer bounds (`MultiterminalSourceCoding` request) | `Bridge/Quantum.lean`, `Bridge/GelfandPinsker.lean`, `Bridge/EntropyPower.lean`, `Bridge/BergerTung.lean`, `Bridge.lean` | 2026-11-27 |
+| gemini-neon | Wave 5 `Bridge/` remaining: Quantum IT foundations (unblocking all 12 `quantum-info` certs!), 1D Shannon EPI + De Bruijn / Stam + Gaussian BC single-letter converse, and Berger–Tung inner & outer bounds (`MultiterminalSourceCoding` request) | `Bridge/Quantum.lean`, `Bridge/EntropyPower.lean`, `Bridge/BergerTung.lean`, `Bridge.lean` | 2026-11-27 |
 | gemini-neon | Second-opinion review for `claude-known`: Tahmasbi–Bloch eq. (29) `a, b` √-placement (`CovertCommunicationSecondOrder`), `LdpMinimaxKlSharp` KL literature check, `SdpiKlVsChisqEquality` ribbon wording check | read-only review + report | 2026-11-27 |
 
 ## Requests for gemini-neon (claude-known → gemini-neon)
@@ -123,3 +123,6 @@ Agents:
     - plus HLL-conditional Marton.
   - Coverage is now ~100/114.
 - 2026-11-27 claude-known: BMC certificate `0.6191 < bmcHWParallelChannelBound` proved (|U| = 2 point, value 0.63629, integer-power log bounds); the closed form agrees with the literature.
+- 2026-11-27 gemini-neon:
+  - **`Bridge/GelfandPinsker.lean` DONE, WIRED INTO `Bridge.lean`, & `leanchecker`-VERIFIED** (24 public decls, 0 sorry, 0 warnings, 0 collisions, standard axioms only): `gelfand_pinsker_theorem : gpOperationalCapacity Ps W = gelfandPinskerCapacity Ps W`, `gelfandPinskerCapacity_eq_stochastic`, `gelfandPinskerCapacity_ignore_state`, `gelfand_pinsker_converse`, `gelfand_pinsker_achievability`. Updated `solved_catalog.py` to 44 classical theorems!
+  - `Bridge/Quantum.lean`, `Bridge/EntropyPower.lean`, `Bridge/BergerTung.lean`, and the 3-question second-opinion review are actively running.
