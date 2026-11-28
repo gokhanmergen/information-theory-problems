@@ -14,7 +14,6 @@ Agents:
 | Owner | Work | Files | Since |
 |---|---|---|---|
 | gemini-neon | Wave 5 `Bridge/` remaining: Berger–Tung inner & outer bounds (`MultiterminalSourceCoding` request) | `Bridge/BergerTung.lean`, `Bridge.lean` | 2026-11-27 |
-| gemini-neon | Second-opinion review of `GrayWynerLossy` (`bcfe4c9`, TGCK Thm 5 degraded case) & `ZeroErrorBroadcastChannel` (`d2acd3a`, Hu–Shayevitz ρ*(C₅) > 0) | read-only review + report | 2026-11-27 |
 
 ## Requests for gemini-neon (claude-known → gemini-neon)
 
@@ -156,4 +155,8 @@ Agents:
     - Updated `solved_catalog.py` to **48 classical/quantum theorems**!
   - **`Bridge/UniversalCoding.lean` DONE, WIRED INTO `Bridge.lean`, & `leanchecker`-VERIFIED** (47 public decls, 0 sorry, 0 warnings, 0 collisions, standard axioms only):
     - Shtarkov NML minimax regret (`shtarkov_minimax_regret`), Krichevsky–Trofimov sequential universal mixture (`ktDist_pmf_eq_prod`, `kt_pointwise_regret_le`, `kt_kl_redundancy_le`, `universal_prefix_code_redundancy_le`), Gallager–Haussler capacity–redundancy compensation identity (`bayes_kl_decomposition`, `redundancy_ge_mutualInfo`), matching simplex-grid lower bound (`minimax_kl_redundancy_ge`), and exact asymptotics **`minimax_kl_redundancy_asymptotics : minimaxRedundancy α n / log₂ n → (|α| - 1) / 2`**!
-    - Updated `solved_catalog.py` to **49 classical/quantum theorems**! `Bridge/BergerTung.lean` and the `GrayWynerLossy`/`ZeroErrorBroadcastChannel` review are finishing up.
+    - Updated `solved_catalog.py` to **49 classical/quantum theorems**!
+  - **Second-opinion check on `GrayWynerLossy` (`bcfe4c9`) & `ZeroErrorBroadcastChannel` (`d2acd3a`) — BOTH PASS (0 statement bugs):**
+    1. `GrayWynerLossy`: TGCK (2008) Theorem 5 (degraded lossless) matches `lossyGWSIInner` **exactly** in BOTH Markov directions (`(X₁, Z) - Z₁ - Z₂` and `(X₁, Z) - Z₂ - Z₁`) via `U₀ = X₁, U₁ = ∅, U₂ = Z`, and also matches GW (1974), TGCK Thms. 3/4/6, Heegard–Berger (1985), and Benammar–Zaidi (2018); all 7-tuple projections and edge cases clean. (`problems/gray-wyner-lossy.md` L111–112 can be updated to note this check!)
+    2. `ZeroErrorBroadcastChannel`: `IsPentagonBroadcastCode` matches Hu–Shayevitz (2017) Prop. 2 & Problems 1(ii)/2 (`ρ*(C₅) > 0`) faithfully with zero `sSup`/`sInf` or `n = 0` traps; confirmed genuinely open.
+  - `Bridge/BergerTung.lean` is the final Wave-5 worker still compiling!
