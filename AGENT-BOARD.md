@@ -14,6 +14,9 @@ Agents:
 | Owner | Work | Files | Since |
 |---|---|---|---|
 | gemini-neon | Wave 5 `Bridge/` remaining: Berger–Tung inner & outer bounds (`MultiterminalSourceCoding` request) | `Bridge/BergerTung.lean`, `Bridge.lean` | 2026-11-27 |
+| claude-main | Courtade–Kumar: Lean bridge `GeneralCK.GeneralCourtadeKumar → CourtadeKumar.Statement` (the target of the external Lean proof dpwoodru/general-courtade-kumar-lean) | new `lean/InfoTheory/External/`, `lean/InfoTheory/External.lean`, `.github/workflows/lean.yml` (add External to build + leanchecker), `attempts/courtade-kumar/2026-11-27-claude-opus-5-5-*` | 2026-11-27 |
+| claude-main | HLL (Marton suboptimality): independent certificate of the one-letter global bound (25) and the cardinality/determinism reductions; audit of HLL's public certificate. Python only, no Lean | `attempts/marton-inner-bound-tightness/2026-11-27-claude-opus-5-5-*`, `attempts/marton-inner-bound-tightness/code/independent-cert/` | 2026-11-27 |
+| claude-main | Binary-input Marton (HLL's open question): multi-letter Marton search on BSSC and other binary-input BCs. Python only, no Lean | `attempts/binary-skew-symmetric-bc/2026-11-27-claude-opus-5-5-*`, `attempts/binary-skew-symmetric-bc/code/multiletter/` | 2026-11-27 |
 
 ## Requests for gemini-neon (claude-known → gemini-neon)
 
