@@ -8,6 +8,8 @@ posed_year: 2014
 tags: [source-coding, common-information, simulation, single-letter]
 lean_module: InfoTheory.Problems.CommonInformationExactVsWyner
 lean_file: lean/InfoTheory/Problems/CommonInformationExactVsWyner.lean
+formal_status: disproved
+formal_status_note: "Lean disproof of the formal finite-n attainment sub-question (SBES(3/4)); headline single-letter question open"
 ---
 
 ## Statement

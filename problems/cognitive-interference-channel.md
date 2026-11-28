@@ -8,6 +8,8 @@ posed_year: 2006
 tags: [network-information-theory, interference-channel, cognitive-radio, broadcast-channel]
 lean_module: InfoTheory.Problems.CognitiveInterferenceChannel
 lean_file: lean/InfoTheory/Problems/CognitiveInterferenceChannel.lean
+formal_status: claimed-resolved
+formal_status_note: "Reduces to broadcast-channel at |X1|=1; false if Huang–Liu–Liu arXiv:2608.19869 holds (unverified)"
 ---
 
 ## Statement

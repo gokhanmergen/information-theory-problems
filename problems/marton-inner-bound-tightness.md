@@ -8,6 +8,8 @@ posed_year: 1979
 tags: [network-information-theory, broadcast-channel, marton-inner-bound, multiuser]
 lean_module: InfoTheory.Problems.MartonInnerBoundTightness
 lean_file: lean/InfoTheory/Problems/MartonInnerBoundTightness.lean
+formal_status: claimed-resolved
+formal_status_note: "Huang–Liu–Liu arXiv:2608.19869 claim Marton (with W) is suboptimal; unrefereed, numerics unverified"
 ---
 
 ## Statement

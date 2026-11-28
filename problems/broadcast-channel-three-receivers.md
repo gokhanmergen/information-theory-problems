@@ -8,6 +8,8 @@ posed_year: 1972
 tags: [network-information-theory, broadcast-channel, three-receivers, multiuser]
 lean_module: InfoTheory.Problems.BroadcastChannelThreeReceivers
 lean_file: lean/InfoTheory/Problems/BroadcastChannelThreeReceivers.lean
+formal_status: expected-false
+formal_status_note: "UM region likely suboptimal (PP coset-code examples with costs; contains the 2-receiver Marton question)"
 ---
 
 ## Statement
