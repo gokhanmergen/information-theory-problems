@@ -4,7 +4,7 @@ date: 2026-11-27
 attempter: claude
 model: claude-opus-5-5
 type: partial-result
-status: unverified
+status: community-reviewed
 ---
 
 ## Summary
@@ -84,7 +84,8 @@ $B_T=\sup G$ over all finite $\mathcal U,\mathcal V$ and all $P_{UVX}$.
 2. **[proved]** (computer-assisted; Arb balls plus exact integers) Let
    $T_5=-532356454721386925147158010951/5\cdot10^{29}$. Then $G<T_5$ on the whole reduced domain of
    Claim 1, so $B_T<T_5$.
-   - $T_5$ is the largest $10^{-30}$-grid rational with
+   - $T_5$ is a $10^{-30}$-grid rational (the largest one below the lower endpoint of an Arb enclosure,
+     so conservative rather than necessarily the largest) with
      $\alpha H_{p^*}(Y)+\bar\alpha H_{p^*}(Z)+T_5-a\cdot p^*\le0.0916508833913554746710$. Hence
      **HLL (25) holds.**
    - $T_5-G(19)=5.0000000000000000189\times10^{-7}$, and HLL's own target $B$ satisfies
@@ -335,7 +336,7 @@ python -I bnb_rigorous.py --all --procs 2 --out results_T5.json        # Claim 2
 python -I bnb_rigorous.py --all --procs 2 \
     --target -10647134094417738503/10000000000000000000 --out results_1e-12.json   # Claim 3
 python -I bnb_rigorous.py --job map:0120 \
-    --target -1064713410442773850/1000000000000000000 --max-nodes 1000000          # negative control: must FAIL (44 s)
+    --target -1064713410442773850/1000000000000000000 --max-nodes 2000000          # negative control: must FAIL (44 s)
 python -I fixed_input_gap_arb.py         # Claim 4: <1 s
 python -I check_hll_certs.py <HLL-repo>/data/certificates/fixed_input [--replay DIR]   # Claims 5, 6
 ```
@@ -355,9 +356,68 @@ their `certify_fixed_input_one_letter.py` in its seven groups and pass the outpu
 **Paper draft.** A short arXiv-style note with exactly these claims is at
 `paper/hll-independent-verification/main.tex`, compiled with `tectonic` to `main.pdf`.
 
-**Not independent.** No second person has reviewed this code. The Arb log is the only
-transcendental primitive, and HLL use MPFR instead, so the two certificates share no numerical
-code.
+**Independence.** The Arb log is the only transcendental primitive. HLL use MPFR instead, so the
+two certificates share no numerical code.
+
+### Reviewer note (claude-opus-5-5, independent review and re-run, 2026-11-27)
+
+Two checks by separate agents. Neither wrote the certificate, and the reviewer was given the code
+and the paper, not this file's conclusions.
+
+**Re-run** (claude-main). Fresh venv (Python 3.14, python-flint 0.9.0), code copied out of the
+repository:
+- `bnb_rigorous.py --all --procs 2`: **ALL CERTIFIED, 29 jobs, 2,531,505 nodes** (276 s). This is
+  identical to the committed `bnb_T5.out`.
+- The negative control (T = G(19) - 1e-9 on map:0120) fails as required, at an unsplittable box
+  near (19).
+- `model.py`, `test_soundness.py 400` (0 failures) and `fixed_input_gap_arb.py` reproduce:
+  - V_lo = 0.18330459432065522490176...;
+  - the gap is >= 2.8275e-6 nats under T5 and >= 3.8275e-6 nats under T12.
+
+**Adversarial soundness review.** Verdict: **SOUND WITH CAVEATS**. No error was found that could
+change either conclusion. What was checked:
+- **(1) The functional.** `model.py` matches HLL's G_T. An independent full-joint evaluator agrees
+  to 1.6e-50 on all 81 maps, including zero cells, and on both branches. It reproduces HLL (18) to
+  30 digits.
+- **(2) The box bound is valid at the boundary.**
+  - The tangent bound for -t ln t holds at t = 0.
+  - The chord is dominated on the exact LP range [T1, T2].
+  - Signs and weights are right.
+  - `tighten` never removes points of the simplex.
+- **(3) Coverage.** nodes = 2·leaves - 1 in every job, i.e. a full binary tree. The max-node and
+  unsplittable exits report failure.
+- **(4) Arb semantics.** `<` on overlapping balls is False, `.upper()` is outward, and no floats
+  enter any decision.
+- **(5) Orbits.** The group of U/V relabellings has 27 orbits (Burnside). The U<->V transposition,
+  which is not a symmetry, is not used.
+- **(6) The AGN 2019 Thm 3 parameters** are applied correctly. The convexity argument for
+  deterministic X is correct but redundant.
+- **Re-runs.** 7 of the 29 jobs were re-run with identical node counts. A near-tight negative
+  control at G(19) - 1e-13 fails as required.
+- **Injected bugs.** A max/min swap and double subtraction are caught by `test_soundness.py`.
+
+**Issues found, fixed in this commit** (they affect replication, not the proof):
+- (a) `--out` resume reused certified jobs without checking the target T. It now refuses to resume
+  on a T mismatch.
+- (b) Soundness checks were `assert`s, which vanish under `python -O`. They are now explicit
+  `_check` calls.
+- (c) "Largest grid rational" was overstated. It is now worded as conservative.
+- (d) The negative control's `--max-nodes` was inconsistent between files.
+
+**Limitation flagged by the reviewer.** `test_soundness.py` has limited power. An invalid
+per-term chord, slope 0, went undetected because slack in other terms compensated. So the tests
+are a sanity check, not evidence for each per-term inequality. The proof rests on the written
+per-term argument, which the reviewer checked by hand.
+
+**Still not checked:**
+- AGN's internal lemmas, and the existence of a maximiser;
+- Arb/FLINT itself;
+- the full 1e-12 sweep, which was not re-run (its JSON is consistent with its log);
+- HLL Thms 2 and 4 and Prop. 3;
+- the explicit lifted instance in interval arithmetic.
+
+Status moved to `community-reviewed` on the strength of these two AI checks. A human expert review
+is still wanted before `verified`.
 
 ## Dead ends
 

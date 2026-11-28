@@ -9,7 +9,7 @@ tags: [network-information-theory, multiuser]
 lean_module: InfoTheory.Problems.BroadcastChannel
 lean_file: lean/InfoTheory/Problems/BroadcastChannel.lean
 formal_status: claimed-resolved
-formal_status_note: "Huang–Liu–Liu arXiv:2608.19869 claim Marton (with W) is suboptimal; unrefereed, numerics unverified"
+formal_status_note: "Huang–Liu–Liu arXiv:2608.19869 claim Marton (with W) is suboptimal; unrefereed; one-letter bound (25) independently certified, gradient-shaping theorems unchecked"
 ---
 
 ## Statement

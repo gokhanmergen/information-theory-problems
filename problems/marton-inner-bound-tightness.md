@@ -9,7 +9,7 @@ tags: [network-information-theory, broadcast-channel, marton-inner-bound, multiu
 lean_module: InfoTheory.Problems.MartonInnerBoundTightness
 lean_file: lean/InfoTheory/Problems/MartonInnerBoundTightness.lean
 formal_status: claimed-resolved
-formal_status_note: "Huang–Liu–Liu arXiv:2608.19869 claim Marton (with W) is suboptimal; unrefereed, numerics unverified"
+formal_status_note: "Huang–Liu–Liu arXiv:2608.19869 claim Marton (with W) is suboptimal; unrefereed; one-letter bound (25) independently certified, gradient-shaping theorems unchecked"
 ---
 
 ## Statement
@@ -84,6 +84,14 @@ coding beats it — is one of the central unresolved questions of multiuser info
   - The numerics are certified with exact rationals and outward-rounded MPFR. The
     acknowledgments state that Nair and Gohari checked the non-numerical arguments.
   - An independent re-computation of the base-channel numbers is in the attempt log.
+  - **Independent certificate (2026-11-27).** HLL's global one-letter bound (25) is now
+    certified by a separate interval branch-and-bound that shares no numerical code with HLL.
+    It uses exact integers plus Arb, and its reduction is the Anantharam–Gohari–Nair 2019
+    Thm 3. The bound is sharpened to $\max G_T < G_T(19) + 10^{-12}$, so the fixed-input gain is
+    $\ge 3.83\times10^{-6}$ nats. The certificate was re-run and adversarially reviewed.
+    Still unchecked independently: HLL's Thms 2 and 4 (gradient shaping, constraint removal)
+    and the lifted explicit instance. See
+    `attempts/marton-inner-bound-tightness/2026-11-27-claude-opus-5-5-independent-certificate.md`.
 - **Consequence for this entry.** If the claim is correct, the answer to the question above
   is **no**, and the frozen Lean `Statement` is false. The binary-input case remains open:
   Huang–Liu–Liu note that counterexamples appear to require non-binary inputs.

@@ -23,8 +23,8 @@ system (Claude Opus 5.5, Anthropic). The human authors are responsible for the c
 \maketitle
 
 \begin{abstract}
-Huang, Liu and Liu (arXiv:2608.19869) recently showed that Marton's inner bound is not tight
-for the two-receiver broadcast channel. Their argument rests on a ternary base channel~$T$ with a
+Huang, Liu and Liu (arXiv:2608.19869, not yet peer reviewed) recently claimed that Marton's
+inner bound is not tight for the two-receiver broadcast channel. Their argument rests on a ternary base channel~$T$ with a
 fixed-input two-letter gain of $2.83\times10^{-6}$ nats. The upper side of that gain is a
 one-letter bound $UB(p^*)\le 0.0916508833913554746710$, and proving it requires certifying a
 \emph{global} maximum of a non-concave information functional $G_T$ over all auxiliary
@@ -158,9 +158,10 @@ and the test ``bound $<$ target'' is a certain ball comparison.
 Otherwise its bounds-consistent hull is bisected along its longest side. Coverage holds by
 construction.
 
-\emph{Targets.} We take $T_5$ to be the largest rational on the $10^{-30}$ grid such that
-$\alpha H_{p^*}(Y)+\ab H_{p^*}(Z)+T_5-a\cdot p^*\le 0.0916508833913554746710$, computed with outward
-rounding. This gives $T_5-G^\star=5.0000000000000000189\times10^{-7}$. The sharper target is
+\emph{Targets.} We take $T_5$ to be a rational on the $10^{-30}$ grid (the largest one below
+the lower endpoint of an Arb enclosure, hence conservative) such that
+\[\alpha H_{p^*}(Y)+\ab H_{p^*}(Z)+T_5-a\cdot p^*\le 0.0916508833913554746710,\]
+computed with outward rounding. This gives $T_5-G^\star=5.0000000000000000189\times10^{-7}$. The sharper target is
 $T_{12}=-10647134094417738503/10^{19}$, for which $T_{12}-G^\star=9.99999994\times10^{-13}$.
 
 \begin{theorem}\label{thm:main}

@@ -5,7 +5,8 @@ Claim certified (if every job prints certified=True):
     G(p) < T   for every p in the closed simplex, for every map f:{0,1}^2->{0,1,2}
                (27 orbit representatives under U/V relabelling), and for the two
                one-sided branches (U=X,V const) and (V=X,U const) over p_X,
-where T is the largest 1e-30-grid rational with  alpha H_{p*}(Y) + abar H_{p*}(Z) + T - a.p*
+where T is a 1e-30-grid rational (the largest one below the lower endpoint of an arb enclosure;
+conservative, not necessarily the largest grid rational) with  alpha H_{p*}(Y) + abar H_{p*}(Z) + T - a.p*
 <= 0.0916508833913554746710  (HLL's printed (25)), computed with outward-rounded arb.
 
 Arithmetic.  Box corners are exact integers / 2^D.  Linear forms c.p (c has denominator
@@ -53,6 +54,12 @@ D = 160                       # box coordinates are integers / 2^D
 ONE = 1 << D
 SCALE = 10 ** 12              # every coefficient c_i is an integer / 10^12
 
+
+
+def _check(cond, msg):
+    """Soundness check that, unlike `assert`, survives `python -O`."""
+    if not cond:
+        raise RuntimeError("soundness check failed: " + msg)
 
 def A(q: Fr) -> arb:
     return arb(fmpq(q.numerator, q.denominator))
@@ -110,7 +117,7 @@ def compute_target():
     rlo = rhs.lower()
     # round down to a 1e-30 grid rational (exact): T = floor(rlo * 1e30) / 1e30
     tq = _floor_to_grid(rlo, 10 ** 30)
-    assert A(tq) <= rlo
+    _check(A(tq) <= rlo, "target T does not imply (25)")
     return tq
 
 
@@ -148,7 +155,7 @@ class Compiled:
             out = []
             for w, c in terms:
                 C = tuple(int(ci * SCALE) for ci in c)
-                assert all(Fr(Ci, SCALE) == ci for Ci, ci in zip(C, c))
+                _check(all(Fr(Ci, SCALE) == ci for Ci, ci in zip(C, c)), "coefficient not exact over 10^12")
                 if any(C):
                     out.append((A(w), C, tuple(A(ci) for ci in c)))
             return out
@@ -185,7 +192,7 @@ def lp_int(C, lo, hi, maximize):
         inc = min(hi[i] - lo[i], cap)
         val += C[i] * inc
         cap -= inc
-    assert cap == 0
+    _check(cap == 0, "LP capacity not exhausted")
     return val
 
 
@@ -204,7 +211,7 @@ def lp_arb(W, lo, hi):
         inc = min(hi[i] - p[i], cap)
         p[i] += inc
         cap -= inc
-    assert cap == 0
+    _check(cap == 0, "LP capacity not exhausted")
     s = arb(0)
     for w, pi in zip(W, p):
         if pi:
@@ -334,7 +341,11 @@ def main():
     jobs = [a.job] if a.job else [j for j, _ in all_jobs()]
     done = {}
     if a.out and os.path.exists(a.out):
-        done = {r["job"]: r for r in json.load(open(a.out))["results"] if r.get("certified")}
+        prev = json.load(open(a.out))
+        if prev.get("T") != f"{T.numerator}/{T.denominator}":
+            raise SystemExit(f"refusing to resume: {a.out} was produced for T={prev.get('T')}, "
+                             f"not the current T={T.numerator}/{T.denominator}")
+        done = {r["job"]: r for r in prev["results"] if r.get("certified")}
         jobs = [j for j in jobs if j not in done]
         print("resuming;", len(done), "jobs already certified")
     t0 = time.time()
