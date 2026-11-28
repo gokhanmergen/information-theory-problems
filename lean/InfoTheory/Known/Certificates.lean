@@ -1,5 +1,6 @@
 import InfoTheory.Known.Certificates.AmplitudeConstrainedAwgnSupport
 import InfoTheory.Known.Certificates.AwgnFeedbackErrorExponent
+import InfoTheory.Known.Certificates.BinaryDuplicationChannel
 import InfoTheory.Known.Certificates.BinaryMultiplierTwoWayChannel
 import InfoTheory.Known.Certificates.BinarySkewSymmetricBc
 import InfoTheory.Known.Certificates.BinarySymmetricZInterferenceChannel
@@ -23,6 +24,7 @@ import InfoTheory.Known.Certificates.DmcZeroRateErrorExponent
 import InfoTheory.Known.Certificates.EditDistanceCodeCapacity
 import InfoTheory.Known.Certificates.EntropicDoublingConstant
 import InfoTheory.Known.Certificates.EntropyRegion
+import InfoTheory.Known.Certificates.FiniteStateChannelCapacity
 import InfoTheory.Known.Certificates.GaussianBcFeedbackSumCapacity
 import InfoTheory.Known.Certificates.GaussianInterferenceChannel
 import InfoTheory.Known.Certificates.GaussianMacFeedbackLinearOptimality
@@ -32,6 +34,7 @@ import InfoTheory.Known.Certificates.GilbertVarshamovBinary
 import InfoTheory.Known.Certificates.GrayWynerLossy
 import InfoTheory.Known.Certificates.IndexCodingLinearNonlinearGap
 import InfoTheory.Known.Certificates.IndexCodingSingleLetter
+import InfoTheory.Known.Certificates.InsertionDeletionChannel
 import InfoTheory.Known.Certificates.IntrinsicVsSecretKeyGap
 import InfoTheory.Known.Certificates.KissingNumberHighDim
 import InfoTheory.Known.Certificates.LinearRankEntropyRegionN6
@@ -44,6 +47,7 @@ import InfoTheory.Known.Certificates.MultipleDescriptionsGeneral
 import InfoTheory.Known.Certificates.MultiterminalSourceCoding
 import InfoTheory.Known.Certificates.NonAsymptoticLossyDispersion
 import InfoTheory.Known.Certificates.PirCodedCollusionCapacity
+import InfoTheory.Known.Certificates.PoissonChannelDiscreteCapacity
 import InfoTheory.Known.Certificates.PrimitiveRelayChannelBsc
 import InfoTheory.Known.Certificates.RelayChannel
 import InfoTheory.Known.Certificates.SecretKeyCapacityPublicDiscussion
@@ -51,6 +55,7 @@ import InfoTheory.Known.Certificates.ShannonCapacityC7
 import InfoTheory.Known.Certificates.ShannonCapacityComplementProduct
 import InfoTheory.Known.Certificates.ShannonCapacityUnionProduct
 import InfoTheory.Known.Certificates.SpernerCapacityDirectedGraphs
+import InfoTheory.Known.Certificates.TimingChannelGeneralQueue
 import InfoTheory.Known.Certificates.TwoWayChannelCapacity
 import InfoTheory.Known.Certificates.UniversalLossyRedundancy
 import InfoTheory.Known.Certificates.WiretapChannelCompoundSecrecy

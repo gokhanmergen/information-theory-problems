@@ -18,12 +18,17 @@ Consider Gallager's (1961) memoryless binary insertion–deletion channel $\math
 - with probability $p_i$, the bit is replaced by two independent uniform random bits (each of the four pairs in $\{0, 1\}^2$ occurring with probability $p_i / 4$).
 
 The output is the concatenation of all surviving/inserted strings with no position markers. By Dobrushin's (1967) coding theorem for synchronization channels, the Shannon capacity exists and equals
-$$C_{\mathrm{IDS}}(p_d, p_i) = \lim_{n \to \infty} \frac{1}{n} \max_{P_{X^n}} I(X^n; Y) = \sup_{n \ge 1} \frac{1}{n} \max_{P_{X^n}} I(X^n; Y).$$
+$$C_{\mathrm{IDS}}(p_d, p_i) = \lim_{n \to \infty} \frac{1}{n} \max_{P_{X^n}} I(X^n; Y) = \inf_{n \ge 1} \frac{1}{n} \max_{P_{X^n}} I(X^n; Y),$$
+the last equality by Fekete's lemma, since $C_n := \max_{P_{X^n}} I(X^n; Y)$ is subadditive (revealing the split point of $Y$ between the two blocks can only increase information, and the two halves then form a product channel). *(Review note, 2026-11-27: this display previously read $\sup_{n \ge 1}$; the Lean statement has always used the correct $\inf$.)*
 
 **Conjecture (Joint Convexity of the Insertion–Deletion Capacity).** The capacity function $(p_d, p_i) \mapsto C_{\mathrm{IDS}}(p_d, p_i)$ is jointly convex on the parameter simplex $\Delta$: for all $(p_d, p_i), (q_d, q_i) \in \Delta$ and $\lambda \in [0, 1]$,
 $$C_{\mathrm{IDS}}\big(\lambda p_d + (1-\lambda) q_d,\; \lambda p_i + (1-\lambda) q_i\big) \;\le\; \lambda\, C_{\mathrm{IDS}}(p_d, p_i) + (1-\lambda)\, C_{\mathrm{IDS}}(q_d, q_i).$$
 
 In particular, setting $p_i = q_i = 0$ yields the famous open conjecture that the binary deletion channel capacity $d \mapsto C(d)$ is convex on $[0, 1]$.
+
+## Formal statement (Lean)
+
+`InfoTheory.Problems.InsertionDeletionChannel.Statement` is the joint convexity inequality above, with `idsCapacity pd pi = sInf {C_n / n : n ≥ 1}`, `C_n = sSup_P I(X^n; Y)` computed exactly from the recursive transition law `idsProb` on outputs of length $0, \dots, 2n$. Certificate: `lean/InfoTheory/Known/Certificates/InsertionDeletionChannel.lean` (regressions $C_{\mathrm{IDS}}(0,0) = 1$, $C_{\mathrm{IDS}}(1,0) = 0$, and $I(X^n;Y) = H(X^n)$ on the noiseless channel).
 
 ## Background
 
@@ -36,6 +41,7 @@ Beyond determining exact capacity values, even the basic global **convexity** of
 - **Existence of capacity (Dobrushin, 1967):** Capacity equals $\lim_{n \to \infty} \frac{1}{n} \max_{P_{X^n}} I(X^n; Y)$ and is achieved by stationary ergodic inputs.
 - **Lower bounds (Gallager, 1961; Davey–MacKay, 2001; Mitzenmacher–Drinea, 2006; Rahmati–Duman, 2015):** Gallager derived the classical lower bound $C_{\mathrm{IDS}}(p_d, p_i) \ge 1 - h(p_d, p_i, 1 - p_d - p_i)$ for small error rates; subsequent Markov/renewal input optimizations (Kirsch–Drinea; Rahmati–Duman) substantially improved achievable rates across the parameter simplex.
 - **Upper bounds (Fertonani–Duman, 2010; Dalai, 2011; Rahmati–Duman, 2015; Cheraghchi, 2019):** Genie-aided decoders (revealing synchronization markers at periodic intervals) and convex-duality / mean-limited channel upper bounds (Cheraghchi 2019) yield the sharpest known upper bounds on $C_{\mathrm{IDS}}(p_d, p_i)$, though substantial gaps to lower bounds remain at moderate $p_d, p_i$.
+- **Convexity claim withdrawn (Duman, arXiv:1102.2216, 2011):** a claimed proof that the capacity of memoryless synchronization-error channels is convex in the channel matrix (implying convexity of $C(d)$) was withdrawn by the author over "a gap in the proof of Lemma 2"; convexity remains open.
 - **Sub-multiplicativity for deletions (Dalai, 2011):** For $p_i = 0$, composing two deletion channels shows $C(d_1 + d_2 - d_1 d_2) \le (1 - d_1) C(d_2)$, which implies $d \mapsto C(d)/(1 - d)$ is non-increasing, consistent with convexity, while global convexity itself remains open.
 
 ## References

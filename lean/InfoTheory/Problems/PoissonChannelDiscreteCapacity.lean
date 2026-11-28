@@ -32,20 +32,33 @@ noncomputable def dtpcCapacity (lam₀ A mu : ℝ) : ℝ :=
     (∑ i : Fin k, w.pmf i * pts i) ≤ mu ∧
     r = dtpcDiscreteMI lam₀ k pts w }
 
-/-- Sharp `O(√A)` Support-Size Conjecture for the Discrete-Time Poisson Channel
-    (Shamai 1990; Lapidoth–Moser 2009; Dytso–Fauß–Poor 2019; Cheraghchi–Ribeiro 2019):
-    for every dark current `λ₀ ≥ 0`, there exists `K > 0` such that for all peak amplitudes
-    `A ≥ 1` and all average-power budgets `μ ∈ (0, A]`, the capacity `C_DTPC(λ₀, A, μ)` is
-    achieved by a discrete input distribution on `[0, A]` with at most `⌈K √A⌉` mass points. -/
+/-- Sublinear Support-Size Problem for the Amplitude-Constrained Discrete-Time Poisson Channel
+    (Shamai 1990; Dytso–Barletta–Shamai 2021; Barletta–Dytso–Shamai 2024).
+
+    **Statement-fix (2026-11-27).** The previous frozen statement asserted a sharp `O(√A)`
+    support-size bound, uniformly over an extra average-power budget `μ ∈ (0, A]`. That
+    conjecture does not appear in the literature and is contradicted by the published
+    numerics: Barletta–Dytso–Shamai (arXiv:2401.05045, 2024) fit `N(A) ≈ A^{0.71}` at
+    `λ₀ = 0` and state that "neither the upper nor lower bounds are tight". What is proved is
+    `Ω(√A) ≤ N(A)` (Dytso–Barletta–Shamai, IEEE Trans. IT 2021, via `C ≈ ½ log A`) and
+    `N(A) = O(A)` (Barletta–Dytso–Shamai 2024 for `λ₀ = 0`; linear-in-`A` bound for fixed
+    `λ₀ > 0`); the open question they pose is the exact order of `N(A)`. The statement now
+    asks the first genuinely open step: is the optimal support size polynomially sublinear,
+    `N(A) = O(A^{1-δ})` for some `δ > 0`, under the **amplitude constraint only** (encoded
+    as `dtpcCapacity lam₀ A A`, where the mean constraint `E[X] ≤ A` is automatic)?
+
+    For every dark current `λ₀ ≥ 0` there exist `δ > 0` and `K > 0` such that for every peak
+    amplitude `A ≥ 1`, the amplitude-constrained capacity `C_DTPC(λ₀, A, A)` is achieved by a
+    discrete input distribution on `[0, A]` with at most `K · A^{1-δ}` mass points. (The
+    capacity-achieving input is unique — Shamai 1990 — so this bounds its support size.) -/
 def Statement : Prop :=
   ∀ (lam₀ : ℝ), 0 ≤ lam₀ →
-    ∃ (K : ℝ), 0 < K ∧
-      ∀ (A mu : ℝ), 1 ≤ A → 0 < mu → mu ≤ A →
+    ∃ (δ K : ℝ), 0 < δ ∧ 0 < K ∧
+      ∀ (A : ℝ), 1 ≤ A →
         ∃ (k : ℕ) (pts : Fin k → ℝ) (w : ProbDist (Fin k)),
-          (k : ℝ) ≤ K * Real.sqrt A + 1 ∧
+          (k : ℝ) ≤ K * A ^ (1 - δ) ∧
           (∀ i : Fin k, 0 ≤ pts i ∧ pts i ≤ A) ∧
-          (∑ i : Fin k, w.pmf i * pts i) ≤ mu ∧
-          dtpcDiscreteMI lam₀ k pts w = dtpcCapacity lam₀ A mu
+          dtpcDiscreteMI lam₀ k pts w = dtpcCapacity lam₀ A A
 
 def problem : OpenProblem where
   id := "poisson-channel-discrete-capacity"
