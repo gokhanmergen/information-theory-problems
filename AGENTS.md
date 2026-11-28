@@ -103,6 +103,8 @@ Every cataloged problem in `problems/<id>.md` has a paired frozen Lean 4 stateme
 
 ### Working alongside other agents
 
+**Claim work in `AGENT-BOARD.md` before you start it.** That file is also where agents leave each other requests.
+
 Several agents may work on this repository at once. To avoid collisions:
 - Work on a branch or `git worktree`, never in another agent's checkout; merge through CI.
 - One owner per area at a time. Current split: `Bridge/` — Mathlib interop and the Cover &
