@@ -22,6 +22,7 @@ import InfoTheory.Bridge.MartonCoding
 import InfoTheory.Bridge.GelfandPinsker
 import InfoTheory.Bridge.EntropyPower
 import InfoTheory.Bridge.Quantum
+import InfoTheory.Bridge.RelayAchievability
 
 /-!
 # `InfoTheory.Bridge` — Non-Destructive Bridge to Mathlib & Cover & Thomas Foundations
@@ -98,4 +99,7 @@ Single convenience import re-exporting:
   tensor additivity (`vonNeumannEntropy_kronDensity`), purification symmetry, Peres–Horodecki
   PPT criterion (`isPPT_of_isSeparable`), Bell state entanglement & distillability, trace distance,
   identity/replacement/depolarizing/two-Pauli channels, and the `d = 2` tetrahedron SIC-POVM.
+- `InfoTheory.Bridge.RelayAchievability`: **Cover–El Gamal (1979) Decode-and-Forward Achievability**
+  (`relayDFRate_le_relayCapacity`) and the **Physically Degraded Relay Channel Capacity Theorem**
+  (Cover & Thomas Thm. 15.10.2: `degradedRelay_capacity_theorem : relayCapacity W = relayCutsetBound W`).
 -/

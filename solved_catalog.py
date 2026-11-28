@@ -1215,6 +1215,45 @@ SOLVED_THEOREMS = [
         ],
     },
     {
+        "id": "degraded-relay-df-capacity",
+        "title": "Decode-and-Forward Achievability & Physically Degraded Relay Channel Capacity Theorem",
+        "category": "ch15-network",
+        "authors": "Thomas M. Cover and Abbas El Gamal",
+        "year": "1979",
+        "reference": "Cover & El Gamal (1979), Theorem 1; Cover & Thomas, Theorem 15.10.2; El Gamal & Kim, Theorems 16.2 & 16.3",
+        "tags": ["relay-channel", "decode-and-forward", "block-markov", "degraded-relay", "flagship", "ch15"],
+        "statement": (
+            "For any three-node discrete memoryless relay channel $W(y, y_r \\mid x, x_r)$:\n"
+            "1. **Decode-and-Forward Achievability:** The decode-and-forward rate\n"
+            "$$R_{\\mathrm{DF}}(W) = \\sup_{P_{X, X_r}} \\min\\bigl\\{I(X; Y_r \\mid X_r),\\; I(X, X_r; Y)\\bigr\\}$$\n"
+            "is operationally achievable: $R_{\\mathrm{DF}}(W) \\le C_{\\mathrm{relay}}(W) \\le C_{\\mathrm{cutset}}(W)$.\n"
+            "2. **Physically Degraded Relay Channel Capacity Theorem:** Whenever $W$ is physically degraded "
+            "($X - (Y_r, X_r) - Y$), decode-and-forward achieves the cut-set bound and determines the exact "
+            "operational capacity:\n"
+            "$$C_{\\mathrm{relay}}(W) = C_{\\mathrm{cutset}}(W) = R_{\\mathrm{DF}}(W).$$"
+        ),
+        "proof_notes": (
+            "Proved directly against `InfoTheory.Core.Channels.{RelayChannel, IsRelayAchievable, "
+            "relayCapacity, relayCutsetBound}` using block-Markov superposition coding across $B$ blocks, "
+            "strictly causal 3-way joint-typicality decoding at the relay, backward 2-way joint-typicality "
+            "decoding at the destination, and blocklength padding; combined with `Bridge/RelayCoding.lean` "
+            "(`relayCapacity_le_cutsetBound`) and conditional DPI (`degradedRelay_cmi_eq`) for exact equality."
+        ),
+        "lean_decls": [
+            ("lean/InfoTheory/Bridge/RelayAchievability.lean", "relayDFRate_le_cutsetBound"),
+            ("lean/InfoTheory/Bridge/RelayAchievability.lean", "relayDF_achievable"),
+            ("lean/InfoTheory/Bridge/RelayAchievability.lean", "relayDFRate_le_relayCapacity"),
+            ("lean/InfoTheory/Bridge/RelayAchievability.lean", "degradedRelay_cutset_eq_df"),
+            ("lean/InfoTheory/Bridge/RelayAchievability.lean", "degradedRelay_capacity_theorem"),
+            ("lean/InfoTheory/Bridge/RelayAchievability.lean", "degradedRelay_capacity_eq_df"),
+        ],
+        "related_open": [
+            "relay-channel",
+            "primitive-relay-channel-bsc",
+            "gaussian-relay-channel-capacity",
+        ],
+    },
+    {
         "id": "degraded-broadcast-channel-capacity",
         "title": "Superposition Coding & Operational Capacity Region of Degraded Broadcast Channels",
         "category": "ch15-network",
