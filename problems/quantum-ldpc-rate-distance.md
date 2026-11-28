@@ -2,6 +2,8 @@
 id: quantum-ldpc-rate-distance
 title: Optimal Rate–Distance Tradeoff for Constant-Weight Quantum LDPC Codes
 status: partially-solved
+formal_status: claimed-resolved
+formal_status_note: 2026 preprints (Mittal–Srivastava–Tulsiani–Wootters arXiv:2610.02648; Kasai arXiv:2603.24588) construct constant-check-weight qLDPC codes approaching the quantum GV bound; CSS-specific verification pending.
 category: coding-theory
 posed_by: Pavel Panteleev and Gleb Kalachev; Anthony Leverrier and Gilles Zémor (folklore)
 posed_year: 2022
@@ -37,6 +39,7 @@ In 2021–2022, Panteleev and Kalachev (STOC 2022), followed closely by Leverrie
   - The explicit constants in Panteleev–Kalachev and Quantum Tanner codes yield very small relative distances $\delta$ for a given rate $R$ (orders of magnitude below $1 - 2 h(\delta)$) and require large check weights $w$.
   - For classical LDPC codes, Gallager (1962) proved that regular $w$-LDPC codes approach the classical Gilbert–Varshamov bound $1 - h(\delta)$ as $w \to \infty$.
   - Recent work (e.g., distance-amplification and concatenated/random-product qLDPC constructions, such as Bergamaschi–Golowich–Gunn 2024 and related works) has improved rate–distance tradeoffs in specific regimes (such as near $R \to 1$ or near $R \to 0$), but achieving the full CSS Gilbert–Varshamov curve $R = 1 - 2 h(\delta)$ with constant check weight $w = O_{\delta, \varepsilon}(1)$ remains open.
+  - **2026 preprints claiming resolution:** T. Mittal, S. Srivastava, M. Tulsiani, and M. Wootters (`arXiv:2610.02648`, Oct. 2026) construct random constant-check-weight $p$-ary qLDPC ensembles (for every prime $p \ge 2$) approaching the quantum Gilbert–Varshamov bound via expander-based distance amplification and quantum Thommesen concatenation; K. Kasai (`arXiv:2603.24588`, Mar. 2026) also claims finite-degree nested CSS qLDPC codes reaching the CSS GV bound. Independent peer review and verification of the exact CSS $1 - 2h(\delta)$ statement remain pending.
 - **Upper bounds:** The quantum Singleton bound gives $R \le 1 - 2\delta$ (Rains 1999), and quantum LP bounds (Ashikhmin–Litsyn 1999) tighten this further for general (not necessarily LDPC) quantum codes.
 
 ## References

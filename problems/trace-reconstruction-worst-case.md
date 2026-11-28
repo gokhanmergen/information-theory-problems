@@ -30,6 +30,7 @@ Despite two decades of sustained progress, there remains an exponential chasm be
   - Holenstein, Mitzenmacher, Panigrahy, and Wieder (2008): $\exp(\tilde{O}(n^{1/2}))$ traces for any constant $d < 1$.
   - Nazarov and Peres (2017) and De, O'Donnell, and Servedio (2017), independently: $\exp(O(n^{1/3}))$ traces using **mean-based algorithms** (looking only at the single-bit marginals $\mathbb{E}[Y_j]$) via complex-analytic Littlewood polynomial estimates on the unit disk. Both papers also proved that $\exp(\Omega(n^{1/3}))$ is **tight** for all mean-based algorithms.
   - Chase (2021, STOC 2021): $\exp(\tilde{O}(n^{1/5}))$ traces by analyzing $k$-mer subsequence statistics and connecting them to complex analysis and the separating-words problem.
+  - **Burudgunte, Valiant, and Wang (July 2026, `arXiv:2607.04073`):** **Quasipolynomial** upper bound $\exp(p^{-7/3} (\log_2 n)^c)$ for all retention probabilities $p \ge 1/\mathrm{polylog}(n)$, bypassing the local statistical-query barrier via global triple-product statistics and inductive zoom-out. Whether polynomial sample complexity $O(n^c)$ is achievable remains open.
 - **Lower bounds:**
   - Batu et al. (2004): $\Omega(\log n)$.
   - Holden and Lyons (2020): $\tilde{\Omega}(n^{5/4})$ traces.
