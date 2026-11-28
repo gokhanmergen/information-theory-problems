@@ -2,6 +2,8 @@
 id: conditional-entropy-sharp-continuity
 title: Sharp Uniform Continuity Bounds for Conditional Entropy
 status: partially-solved
+formal_status: claimed-resolved
+formal_status_note: Formalized quantum conditional entropy bound proved by Berta–Costa Rico–Kossmann–Lami–Zeiss (arXiv:2607.24687, July/Sept 2026); MI/CMI continuity remains open.
 category: statistical-info-theory
 posed_by: Zhen Zhang; Andreas Winter; Mohammad A. Alhejji and Graeme Smith
 posed_year: 2007
@@ -37,11 +39,14 @@ For *conditional* entropy, Alicki and Fannes (2004) and Winter (2016) establishe
 
 - **Unconditional entropy (solved):** Zhang (2007) (classical) and Audenaert (2007) (quantum) proved $|S(\rho) - S(\sigma)| \le \varepsilon \log_2(d - 1) + h(\varepsilon)$ for $\varepsilon \le 1 - 1/d$, which is achieved with equality.
 - **Classical conditional entropy (solved):** Alhejji and Smith (2020) proved the exact sharp bound $|H(X \mid Y)_P - H(X \mid Y)_Q| \le \varepsilon \log_2(|\mathcal{X}| - 1) + h(\varepsilon)$ for all $\varepsilon \le 1 - 1/|\mathcal{X}|$ (and $\log_2 |\mathcal{X}|$ for $\varepsilon > 1 - 1/|\mathcal{X}|$), completely resolving the classical conditional entropy case.
-- **Classical-quantum and fully quantum conditional entropy:**
-  - Winter (2016) proved $|S(A \mid B)_\rho - S(A \mid B)_\sigma| \le 2\varepsilon \log_2 d_A + (1 + \varepsilon) h\!\left(\frac{\varepsilon}{1+\varepsilon}\right)$ for general bipartite quantum states (and $\varepsilon \log_2 d_A + (1 + \varepsilon) h\!\left(\frac{\varepsilon}{1+\varepsilon}\right)$ for classical-quantum states).
-  - Wilde (2020) and Shirokov (2022) refined bounds for quantum conditional entropy and conditional mutual information, while the exact sharp quantum bound $\varepsilon \log_2(d_A^2 - 1) + h(\varepsilon)$ for all $\varepsilon \le 1 - 1/d_A^2$ — as well as sharp continuity functions for classical mutual information $I(X; Y)$ and conditional mutual information $I(X; Y \mid Z)$ — remains open.
+- **Classical-quantum and fully quantum conditional entropy (RESOLVED in preprint, July/Sept 2026):**
+  - **Berta, Costa Rico, Kossmann, Lami, and Zeiss** (`arXiv:2607.24687`, July 2026, rev. Sept. 2026) proved the exact sharp uniform continuity bound for quantum conditional entropy: $|S(A \mid B)_\rho - S(A \mid B)_\sigma| \le \varepsilon \log_2(d_A^2 - 1) + h(\varepsilon)$ for $\varepsilon \le 1 - 1/d_A^2$ (and $2\log_2 d_A$ for $\varepsilon > 1 - 1/d_A^2$), settling the exact statement formalized in `InfoTheory.Problems.ConditionalEntropySharpContinuity`. (The authors note proof concepts were developed with assistance from ChatGPT 5.6 Sol, building on Alhejji–Smith.)
+  - Earlier milestones: Winter (2016) proved $|S(A \mid B)_\rho - S(A \mid B)_\sigma| \le 2\varepsilon \log_2 d_A + (1 + \varepsilon) h\!\left(\frac{\varepsilon}{1+\varepsilon}\right)$ for general bipartite quantum states (and $\varepsilon \log_2 d_A + (1 + \varepsilon) h\!\left(\frac{\varepsilon}{1+\varepsilon}\right)$ for classical-quantum states); Wilde (2020) and Shirokov (2023) refined bounds for quantum conditional entropy and conditional mutual information.
+  - **Still open:** exact sharp uniform continuity bounds for classical and quantum mutual information $I(X; Y)$ and conditional mutual information $I(X; Y \mid Z)$ (subproblem 2 above).
 
 ## References
+
+- M. Berta, P. Costa Rico, G. Kossmann, L. Lami, and J. A. Zeiss, "Sharp continuity of quantum conditional entropy," arXiv:2607.24687, July 2026 (rev. Sept. 2026).
 
 - M. Fannes, "A continuity property of the entropy density for spin lattice systems," *Commun. Math. Phys.* **31**, 291–294 (1973).
 - R. Alicki and M. Fannes, "Continuity of quantum conditional information," *J. Phys. A: Math. Gen.* **37**, L55–L57 (2004).
