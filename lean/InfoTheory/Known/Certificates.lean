@@ -75,6 +75,7 @@ import InfoTheory.Known.Certificates.PoissonChannelDiscreteCapacity
 import InfoTheory.Known.Certificates.PolarCodeScalingExponent
 import InfoTheory.Known.Certificates.PrimitiveRelayChannelBsc
 import InfoTheory.Known.Certificates.PrivateVsQuantumCapacityGap
+import InfoTheory.Known.Certificates.QuantumBroadcastCapacity
 import InfoTheory.Known.Certificates.QuantumCapacityDepolarizing
 import InfoTheory.Known.Certificates.QuantumCapacitySingleLetter
 import InfoTheory.Known.Certificates.QuantumCapacityTwoPauli

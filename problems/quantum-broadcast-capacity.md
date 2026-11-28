@@ -46,8 +46,22 @@ Because classical discrete memoryless broadcast channels embed as diagonal c-q b
   Conditional states with `p(w) = 0` are guarded, and `matEntropy` is only applied to Hermitian
   combinations. Diagonal c-q channels embed classical broadcast channels, so the statement
   implies classical Marton tightness, which is open; no 2024–2026 resolution found.
-- **Certificate:** none yet. Natural targets: `(0, 0)` lies in both regions (needs
-  `Tr(kronPowerMat …) = ∏ Tr`), and the region is bounded by `log₂ d₁ × log₂ d₂`.
+- **Certificate:** `lean/InfoTheory/Known/Certificates/QuantumBroadcastCapacity.lean`
+  (namespace `InfoTheory.Known.Certificates.QuantumBroadcastCapacity`, fully proved, kernel-replayed
+  with `leanchecker`; axioms `propext`, `Classical.choice`, `Quot.sound` only). It certifies, about
+  the exact sets in `Statement`:
+  - both sides contain the origin (`zero_mem_cqBroadcastCapacityRegion`,
+    `zero_mem_cqMartonInnerBound`, for `0 < kX`);
+  - both sides lie in `[0, log₂ d₁] × [0, log₂ d₂]` (`cqMartonInnerBound_subset_box`;
+    `cqBroadcastCapacityRegion_subset_box` via the dimension converse `achievable_rate₁_le` /
+    `achievable_rate₂_le`: a POVM on `ℂ^{dⁿ}` decodes `M` messages with average success `≤ dⁿ/M`);
+  - regression: the single-user Holevo corners `(r, 0)`, `0 ≤ r ≤ χ(p; B₁)`, and `(0, r)`,
+    `0 ≤ r ≤ χ(p; B₂)`, lie in the Marton region for every input law `p`
+    (`holevo1_corner_mem`, `holevo2_corner_mem`);
+  - toolkit: `partialTraceA` is a CPTP partial trace, tensor powers of states are states,
+    `Re Tr(Λρ) ≤ Re Tr Λ` for `Λ ⪰ 0` and a state `ρ`.
+  Not certified: operational achievability of the Holevo corners (HSW theorem) and the Marton
+  inner bound `cqMartonInnerBound ⊆ cqBroadcastCapacityRegion`.
 
 ## References
 
