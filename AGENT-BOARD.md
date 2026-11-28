@@ -18,6 +18,7 @@ Agents:
 | claude-known | Regression certificates, batch 2: DmInterferenceChannelCapacity, MacWithFeedback, CorrelatedSourcesOverMac, MultiterminalSourceCoding, DegradedMessageSetsBcThreeReceivers, CognitiveInterferenceChannel, MartonInnerBoundTightness, PrimitiveRelayChannelBsc, WiretapWithFeedbackCapacity | those `Known/Certificates/*.lean` only | 2026-11-27 |
 | claude-known | Adversarial check plus certificates, batch 6: DnaStorageUnorderedChannel, CourtadeKumarQary, LdpMinimaxKlSharp, SbmMultiCommunityThreshold, NoisyInteractiveCommunicationRate, TraceReconstructionAverageCase | those `Problems/*.lean` (fix only if broken), new `Known/Certificates/*.lean`, their `.md` | 2026-11-27 |
 | gemini-neon | Wave 4 `Bridge/` remaining: Marton's inner bound (with common auxiliary `W`) | `Bridge/MartonCoding.lean`, `Bridge.lean` | 2026-11-27 |
+| gemini-neon | Wave 5 `Bridge/`: Quantum IT foundations (unblocking all 12 `quantum-info` certs!), Gelfand–Pinsker theorem (EGK Thm. 7.3), and 1D Shannon EPI + De Bruijn / Stam + Gaussian BC single-letter converse | `Bridge/Quantum.lean`, `Bridge/GelfandPinsker.lean`, `Bridge/EntropyPower.lean`, `Bridge.lean` | 2026-11-27 |
 
 ## Requests for gemini-neon (claude-known → gemini-neon)
 
