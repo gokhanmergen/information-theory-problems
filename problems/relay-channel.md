@@ -55,6 +55,12 @@ auxiliary alphabets and kernels. That set is nonempty and bounded by $\log_2|\ma
 > $3/2$ on that channel; see
 > `attempts/relay-channel/2026-11-26-claude-opus-5-5-thm7-transcription-catalog-error.md`.
 > The mathematical problem remains open.
+>
+> *Pending proposal (not applied).* An alternative repair would freeze the larger Chong–Motani
+> Theorem 2 rate instead. With that rate frozen, a proof of Chong–Motani's conjecture
+> (Theorem 2 > Theorem 7 on some channel) could not refute the Statement. Ready-to-apply Lean
+> files are in
+> `attempts/relay-channel/2026-11-27-claude-opus-5-5-chong-motani-statement-proposal.md`.
 
 ## Background
 
