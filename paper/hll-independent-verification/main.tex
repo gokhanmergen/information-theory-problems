@@ -42,7 +42,10 @@ at least $3.8275\times10^{-6}$ nats.
 We also check that the Anantharam--Gohari--Nair cardinality theorem applies to $G_T$ with explicit
 parameters, and we give a self-contained proof of the determinism part. Finally, we audit the
 original certificate files and reproduce all 83 of their transcript hashes bit for bit.
-We found no error.
+We also re-prove the analytic lifting of Huang--Liu--Liu (gradient shaping and constraint
+removal) and re-certify their explicit unconstrained channel in ball arithmetic. Its two-letter
+gain is at least $1.88\times10^{-6}$ nats, and at least $2.88\times10^{-6}$ with our sharper
+one-letter bound. We found no error.
 \end{abstract}
 
 \section{Setting}
@@ -208,8 +211,73 @@ V_{\rm lo}-2\,UB(p^*)\ \ge\ 3.8275\times10^{-6}\ \text{nats}.
 \]
 With the bound~(25) alone the gap is $2.8275\times10^{-6}$, as printed in~\cite{HLL}. This is the
 fixed-input input to~\cite[Thm.~4]{HLL}, which then yields an unconstrained finite channel with
-$M_{\tilde T^{\otimes2}}>2M_{\tilde T}$. We did not re-check~\cite[Thms.~2,~4]{HLL}, the gradient-shaping
-and constraint-removal steps, beyond reading them.
+$M_{\tilde T^{\otimes2}}>2M_{\tilde T}$. Section~\ref{sec:lift} checks these steps and the explicit lifted channel.
+
+\section{The lifting to an unconstrained channel}\label{sec:lift}
+
+We re-proved every analytic step of the lifting~\cite[Sec.~II, App.~B--E]{HLL} in our own words,
+and re-certified the explicit instance~\cite[(30)--(43)]{HLL}. Full proofs are in the repository
+(\texttt{attempts/marton-inner-bound-tightness/}\allowbreak\texttt{2026-11-27-claude-opus-5-5-lifting-verification.md}).
+Here we record what is used and what we found.
+
+\emph{Dual bound.} For every $\alpha\in[0,1]$, every $a$, every $\tau\ge B_T$ and every
+$P_{WUVX}$ with $P_X=p$,
+\begin{multline*}
+\min\{I(W;Y),I(W;Z)\}+I(U;Y|W)+I(V;Z|W)-I(U;V|W)\\
+\le\alpha H_p(Y)+\ab H_p(Z)-a\cdot p+\textstyle\sum_wP(w)G(P_{UVX|W=w}).
+\end{multline*}
+Hence $M_T(p)\le f_\tau(p):=\alpha H_p(Y)+\ab H_p(Z)+\tau-a\cdot p$, which is a concave majorant.
+(The middle quantity in~\cite[(24)]{HLL} is $L_{1-\alpha}$ in their notation~(3), not $L_\alpha$;
+this has no effect.) With $\tau=T_5$ or $\tau=G^\star+10^{-12}$ from Theorem~\ref{thm:main},
+$f_\tau$ is certified.
+
+\emph{Gradient shaping}~\cite[Thm.~2]{HLL} is correct as stated. For rounded weights we use a
+quantitative form: if $\Phi$ is concave on the simplex with supergradient $s$ at $p^*$, then
+$\max\Phi\le\Phi(p^*)+\max_is_i-\min_is_i$.
+
+\emph{Receiver-revealed mixture}~\cite[Prop.~3, (9), (12)]{HLL}. The identity
+\[M_{\tilde T}(P)=\lambda M_T(P_{WUVX})+\textstyle\sum_i\delta_iM_{G_i}(P)\]
+holds for every law. It uses
+only two facts: the selector is independent of the input and revealed to both receivers, and the
+shaping outputs are common to both receivers, which lets the minimum split. The hypothesis that
+$X$ is a function of $(U,V,W)$ is not needed. Together with $M_G\le H(G)\le h_2(p_i)+p_i\ln N$,
+this gives
+\[M_{\tilde T}\le\sup_p\lambda f_\tau(p)+\textstyle\sum_i\delta_i[h_2(p_i)+p_i\ln N].\]
+
+\emph{Constraint removal}~\cite[Thm.~4]{HLL} is correct. We write out one case that the paper
+leaves implicit: selector pairs in which \emph{both} coordinates use shaping components. There
+the two outputs are correlated through $(X_1,X_2)$, but the label credit is still exactly
+$q_{X_1}(i)\ln N+q_{X_2}(j)\ln N$, because the labels are independent of the inputs and of each
+other. The common auxiliary $W$ is used on both sides: the labels enter $\tilde W=(W,K_1,K_2)$.
+
+\emph{The explicit instance.} We use exact rationals and Arb at 320 bits, with our own evaluation
+of the two-letter functional and of $\nabla\Phi(p^*)$. Every inequality of~\cite[(30)--(43)]{HLL}
+holds in the needed direction:
+\begin{itemize}
+\item $\lambda+\delta_0+\delta_1=1$ exactly;
+\item $\mathrm{range}\,\nabla\Phi(p^*)\le1.8467577\times10^{-17}$, against
+$1.8468439\times10^{-17}$ printed;
+\item $M_{\tilde T}\le0.30084186609915446254$, against $0.30084186609915448$ printed;
+\item $M_{\tilde T^{\otimes2}}\ge0.60168561432394164363$, against $0.60168561432394163$ printed.
+\end{itemize}
+Hence
+\[
+M_{\tilde T^{\otimes2}}-2M_{\tilde T}\ \ge\ 1.8821256327185\times10^{-6}\ \text{nats}.
+\]
+Two sharper bounds hold for the same channel:
+\begin{itemize}
+\item with $B_T<G^\star+10^{-12}$, the gap is at least $2.8821\times10^{-6}$;
+\item if in addition the crude bound $I(U;V|W)\le\ln4$ is replaced by the exact value $0.0092647$
+for the witness, the gap is at least $3.5101\times10^{-6}$.
+\end{itemize}
+The printed~(43) was computed from unrounded values: it exceeds printed (42) minus twice printed
+(40) by $4.6\times10^{-17}$. The certified gap exceeds the printed~(43).
+
+\emph{Transfer.} Marton's theorem applies to the super-channel $\tilde T^{\otimes2}$. Halving
+the rates, padding odd blocklengths and taking product sub-codes puts a point $(0,R_1,R_2)$ with
+$R_1+R_2>M_{\tilde T}$ into the capacity region of $\tilde T$. Every point of Marton's region,
+with or without a common message, satisfies $R_0+R_1+R_2\le M_{\tilde T}$, so the inclusion is
+strict.
 
 \section{Audit of the original certificate}
 
@@ -246,9 +314,20 @@ Theorem~\ref{thm:main} rests on four things:
 \item the correctness of about $350$ lines of our code, whose soundness argument is
 Lemma~\ref{lem:box}.
 \end{itemize}
-The code has not yet been reviewed by a second party. We did not verify~\cite[Thms.~2,~4,
-Prop.~3]{HLL} or the explicit lifted instance~\cite[(30)--(43)]{HLL}. An earlier non-rigorous
-recomputation in our repository reproduces~(40)--(43).
+The certificate code has been re-run from scratch and adversarially reviewed once. The
+lifting code (\S\ref{sec:lift}) has been re-run by a second party, with identical output and with
+targets taken from that party's own branch-and-bound run. A separate referee checked the
+analytic lifting proofs from the paper alone. Neither code base has been reviewed by a human.
+With \S\ref{sec:lift}, the full chain of~\cite{HLL} is independently checked. It rests on
+four inputs:
+\begin{itemize}
+\item~\cite[Thm.~3]{AGN};
+\item Marton's coding theorem;
+\item Arb;
+\item our code.
+\end{itemize}
+We did not check the Markovity counterexample~\cite[(20)--(21)]{HLL}, which the chain does not
+use. There is no formal (Lean) proof.
 
 \begin{thebibliography}{9}
 \bibitem{HLL} M.~Huang, Y.~Liu, and Y.~Liu, ``Sub-optimality of Marton's inner bound for the

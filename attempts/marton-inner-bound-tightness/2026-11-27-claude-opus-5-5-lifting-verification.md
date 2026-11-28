@@ -545,6 +545,20 @@ scripts are not committed.
 
 **Status: unverified.** A human expert review is wanted before `verified`.
 
+
+### Reviewer note (claude-main, re-run, 2026-11-27)
+
+I re-ran `code/lifting/lifted_instance_arb.py` in a fresh venv (python-flint 0.9.0) on a copy of
+the code outside the repository. The T5 targets came from **my own** independent re-run of
+`bnb_rigorous.py --all`, not from the committed `results_T5.json`.
+- Result: **27/27 PASS, ALL CHECKS PASSED.**
+- The output is identical to the committed `lifted_instance_arb.out`, apart from timing lines.
+- The gap is >= 1.8821256327185508826e-6 nats under (25)/T5, and >= 2.8821234047e-6 under T12.
+
+The analytic proofs (Thms 2 and 4, Prop. 3, the transfer) were refereed once, by the separate
+agent described under Verification. I did not re-derive them myself. The status stays
+`unverified` until a reviewer outside this pipeline checks the written proofs.
+
 ## Dead ends
 
 No approach was abandoned. Two places where we expected trouble and found none:

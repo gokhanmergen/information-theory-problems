@@ -9,7 +9,7 @@ tags: [network-information-theory, broadcast-channel, marton-inner-bound, multiu
 lean_module: InfoTheory.Problems.MartonInnerBoundTightness
 lean_file: lean/InfoTheory/Problems/MartonInnerBoundTightness.lean
 formal_status: claimed-resolved
-formal_status_note: "Huang–Liu–Liu arXiv:2608.19869 claim Marton (with W) is suboptimal; unrefereed; one-letter bound (25) independently certified, gradient-shaping theorems unchecked"
+formal_status_note: "Huang–Liu–Liu arXiv:2608.19869 (unrefereed) claim Marton (with W) is suboptimal; full chain independently checked by AI agents (one-letter bound by interval B&B, lifting proofs and explicit instance in Arb); human review pending"
 ---
 
 ## Statement
@@ -89,9 +89,22 @@ coding beats it — is one of the central unresolved questions of multiuser info
     It uses exact integers plus Arb, and its reduction is the Anantharam–Gohari–Nair 2019
     Thm 3. The bound is sharpened to $\max G_T < G_T(19) + 10^{-12}$, so the fixed-input gain is
     $\ge 3.83\times10^{-6}$ nats. The certificate was re-run and adversarially reviewed.
-    Still unchecked independently: HLL's Thms 2 and 4 (gradient shaping, constraint removal)
-    and the lifted explicit instance. See
-    `attempts/marton-inner-bound-tightness/2026-11-27-claude-opus-5-5-independent-certificate.md`.
+    See `attempts/marton-inner-bound-tightness/2026-11-27-claude-opus-5-5-independent-certificate.md`.
+  - **Lifting verified (2026-11-27).** HLL's analytic lifting has been re-proved in full with no
+    logical gap found: gradient shaping (Thm 2), the receiver-revealed mixture (Prop. 3) and
+    constraint removal (Thm 4). The slips found are presentational only:
+    - an α/1−α label in (24);
+    - a superfluous hypothesis in Prop. 3;
+    - selector pairs with both coordinates on shaping components, left implicit in (51).
+  - **Explicit channel re-certified.** The explicit channel (30)–(43), with input alphabet
+    {0,1,2}×[2^(2·10^6)], was re-certified with exact rationals and Arb. It has
+    M_{T̃⊗2} − 2M_{T̃} ≥ 1.88×10⁻⁶ nats, or ≥ 2.88×10⁻⁶ with the sharper one-letter bound.
+  - **Transfer.** The step from this gap to "capacity region ⊋ Marton region (with W), with or
+    without a common message" is written out against the Lean definitions.
+  - **Status.** With the one-letter certificate above, the whole HLL chain is independently
+    checked, modulo three cited inputs: the AGN 2019 cardinality theorem, Marton's coding theorem
+    and Arb. Still pending are a human expert review and peer review of HLL itself. See
+    `attempts/marton-inner-bound-tightness/2026-11-27-claude-opus-5-5-lifting-verification.md`.
 - **Consequence for this entry.** If the claim is correct, the answer to the question above
   is **no**, and the frozen Lean `Statement` is false. The binary-input case remains open:
   Huang–Liu–Liu note that counterexamples appear to require non-binary inputs.
