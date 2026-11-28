@@ -24,6 +24,13 @@ linear-feedback sum-capacity `linearFbSumRate h h P` of Belhadj Amor–Steinberg
   supremum; `single_le_linearFbSumRate` and `linearFbSumRate_le`.
 * `both_sides_ge_single` : in the symmetric case both sides of the equation are at least the
   no-feedback single-user rate `½ log₂(1 + h²P)`.
+* **Regressions against the no-feedback symmetric BC (both pass).**
+  `noFeedback_triangle_subset` : the whole no-feedback capacity region of the symmetric BC, the
+  time-sharing triangle `R₁ + R₂ ≤ ½ log₂(1 + h²P)`, lies in `InLinearFbRegion h h P` (feedback
+  cannot hurt; `ρ = 0`).  `single_lt_linearFbSumRate` : for `h ≠ 0`, `P > 0`,
+  `½ log₂(1 + h²P) < linearFbSumRate h h P` strictly — feedback strictly enlarges the symmetric
+  Gaussian BC sum-rate, as Ozarow–Leung (1984) showed.  A mis-transcribed `ρ`-term (e.g. a sign
+  error or a missing `√(P₁P₂)`) would break the second check.
 
 ## Not certified
 * Any upper bound on `bcFbSumCapacity` (a feedback converse, e.g. the cut-set bound
@@ -354,5 +361,145 @@ theorem both_sides_ge_single {h P : ℝ} (hh : h ≠ 0) (hP : 0 < P) :
   refine ⟨?_, single_le_linearFbSumRate hP.le, linearFbSumRate_le hP.le⟩
   have := single_le_bcFbSumCapacity (h₂ := h) hh hP.le
   simpa [awgnCapacityFormula] using this
+
+/-! ### Regressions against the no-feedback symmetric BC -/
+
+section Regression
+
+variable {h P : ℝ}
+
+/-- **Regression (feedback cannot hurt, whole region).**  For the symmetric BC the
+    no-feedback capacity region is the time-sharing triangle
+    `{R₁, R₂ ≥ 0, R₁ + R₂ ≤ ½ log₂(1 + h²P)}` (Cover 1972; Bergmans 1973 with equal gains);
+    it lies inside the frozen linear-feedback region (take `ρ = 0` and the power split
+    `h²P₁ = 2^{2R₁} - 1`). -/
+theorem noFeedback_triangle_subset (hh : h ≠ 0) (hP : 0 ≤ P) {R₁ R₂ : ℝ} (hR₁ : 0 ≤ R₁)
+    (hR₂ : 0 ≤ R₂) (hsum : R₁ + R₂ ≤ (1 / 2 : ℝ) * log2 (1 + h ^ 2 * P)) :
+    InLinearFbRegion h h P R₁ R₂ := by
+  have hl2 : 0 < Real.log 2 := Real.log_pos one_lt_two
+  have hh2 : 0 < h ^ 2 := by positivity
+  have hx : 0 < 1 + h ^ 2 * P := by nlinarith
+  set a := Real.exp (2 * R₁ * Real.log 2) with ha
+  set b := Real.exp (2 * R₂ * Real.log 2) with hb
+  have ha1 : 1 ≤ a := Real.one_le_exp (by positivity)
+  have hb1 : 1 ≤ b := Real.one_le_exp (by positivity)
+  have hab : a * b ≤ 1 + h ^ 2 * P := by
+    rw [ha, hb, ← Real.exp_add]
+    calc Real.exp (2 * R₁ * Real.log 2 + 2 * R₂ * Real.log 2)
+        ≤ Real.exp (Real.log (1 + h ^ 2 * P)) := by
+          apply Real.exp_le_exp.mpr
+          have : (R₁ + R₂) * Real.log 2 ≤ (1 / 2 : ℝ) * Real.log (1 + h ^ 2 * P) := by
+            have h' := mul_le_mul_of_nonneg_right hsum hl2.le
+            unfold log2 at h'
+            rw [show (1 / 2 : ℝ) * (Real.log (1 + h ^ 2 * P) / Real.log 2) * Real.log 2 =
+              (1 / 2 : ℝ) * Real.log (1 + h ^ 2 * P) by field_simp] at h'
+            exact h'
+          linarith
+      _ = 1 + h ^ 2 * P := Real.exp_log hx
+  have hlog_a : (1 / 2 : ℝ) * log2 a = R₁ := by
+    unfold log2; rw [ha, Real.log_exp]; field_simp
+  have hlog_b : (1 / 2 : ℝ) * log2 b = R₂ := by
+    unfold log2; rw [hb, Real.log_exp]; field_simp
+  set P₁ := (a - 1) / h ^ 2 with hP₁
+  have hP₁h : h ^ 2 * P₁ = a - 1 := by rw [hP₁]; field_simp
+  have hP₁0 : 0 ≤ P₁ := div_nonneg (by linarith) hh2.le
+  have hkey : a + b - 1 ≤ a * b := by nlinarith
+  refine ⟨hR₁, hR₂, P₁, P - P₁, 0, hP₁0, ?_, by ring, le_rfl, zero_le_one, ?_, ?_, ?_⟩
+  · have : h ^ 2 * P₁ ≤ h ^ 2 * P := by rw [hP₁h]; nlinarith
+    have := le_of_mul_le_mul_left this hh2
+    linarith
+  · simp only [ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow, sub_zero, mul_one]
+    rw [hP₁h, show 1 + (a - 1) = a by ring, hlog_a]
+  · simp only [ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow, sub_zero, mul_one]
+    rw [← hlog_b]
+    refine mul_le_mul_of_nonneg_left (log2_mono (by linarith) ?_) (by norm_num)
+    have : h ^ 2 * (P - P₁) = h ^ 2 * P - (a - 1) := by rw [mul_sub, hP₁h]
+    rw [this]
+    linarith
+  · simp only [mul_zero, add_zero]
+    have : h ^ 2 * P₁ + h ^ 2 * (P - P₁) = h ^ 2 * P := by ring
+    rw [add_assoc, this]
+    exact hsum
+
+/-- **Regression (feedback strictly helps; Ozarow–Leung 1984).**  For `h ≠ 0`, `P > 0` the
+    linear-feedback sum-rate strictly exceeds the no-feedback symmetric sum capacity
+    `½ log₂(1 + h²P)`.  Witness: `P₁ = P₂ = P/2`, `ρ = x / (2(x + 4))` with `x = h²P`, and
+    `R₁ = R₂ = min(½ log₂(1 + (x/2)(1 - ρ²)), ¼ log₂(1 + x + xρ))`. -/
+theorem single_lt_linearFbSumRate (hh : h ≠ 0) (hP : 0 < P) :
+    (1 / 2 : ℝ) * log2 (1 + h ^ 2 * P) < linearFbSumRate h h P := by
+  have hl2 : 0 < Real.log 2 := Real.log_pos one_lt_two
+  set x := h ^ 2 * P with hxdef
+  have hx : 0 < x := by positivity
+  set ρ := x / (2 * (x + 4)) with hρ
+  have hρ0 : 0 ≤ ρ := by positivity
+  have hρ1 : ρ ≤ 1 / 2 := by
+    rw [hρ, div_le_iff₀ (by positivity)]; linarith
+  have hρpos : 0 < ρ := by positivity
+  set y := x / 2 * (1 - ρ ^ 2) with hy
+  have hy0 : 0 ≤ y := by
+    have : ρ ^ 2 ≤ 1 := by nlinarith
+    rw [hy]; exact mul_nonneg (by positivity) (by linarith)
+  -- `(1 + y)² > 1 + x`
+  have hsq : 1 + x < (1 + y) ^ 2 := by
+    have hρsq : 4 * (x + 4) ^ 2 * ρ ^ 2 = x ^ 2 := by
+      rw [hρ]; field_simp; ring
+    have h16 : 16 * x ≤ (x + 4) ^ 2 := by nlinarith [sq_nonneg (x - 4)]
+    have hρ2 : ρ ^ 2 ≤ 1 / 4 := by nlinarith
+    -- `(1 + y)² - (1 + x) = y² - x ρ² = x² (1 - ρ²)² / 4 - x ρ²`
+    have hexp : (1 + y) ^ 2 - (1 + x) = x ^ 2 * (1 - ρ ^ 2) ^ 2 / 4 - x * ρ ^ 2 := by
+      rw [hy]; ring
+    have hA : x * ρ ^ 2 * (16 * (x + 4) ^ 2) = 4 * x ^ 3 := by nlinarith
+    have hB : 9 / 16 ≤ (1 - ρ ^ 2) ^ 2 := by nlinarith
+    -- `x ρ² = x³ / (4 (x+4)²) ≤ x² / 64 < 9 x² / 64 ≤ x² (1 - ρ²)² / 4`
+    have hC : x * ρ ^ 2 ≤ x ^ 2 / 64 := by
+      have hpos : 0 < 16 * (x + 4) ^ 2 := by positivity
+      have : x * ρ ^ 2 = 4 * x ^ 3 / (16 * (x + 4) ^ 2) := by
+        rw [eq_div_iff hpos.ne']; linarith
+      rw [this, div_le_div_iff₀ hpos (by norm_num)]
+      nlinarith [mul_le_mul_of_nonneg_left h16 (by positivity : (0 : ℝ) ≤ 4 * x ^ 2)]
+    have hD : x ^ 2 / 64 < x ^ 2 * (1 - ρ ^ 2) ^ 2 / 4 := by
+      have : 0 < x ^ 2 := by positivity
+      nlinarith
+    linarith
+  set r := min ((1 / 2 : ℝ) * log2 (1 + y)) ((1 / 4 : ℝ) * log2 (1 + x + x * ρ)) with hr
+  have hc1 : (1 / 2 : ℝ) * ((1 / 2 : ℝ) * log2 (1 + x)) < (1 / 2 : ℝ) * log2 (1 + y) := by
+    unfold log2
+    have := Real.log_lt_log (by linarith) hsq
+    rw [Real.log_pow] at this
+    have : Real.log (1 + x) / Real.log 2 < 2 * Real.log (1 + y) / Real.log 2 := by
+      gcongr; exact_mod_cast this
+    rw [mul_div_assoc] at this
+    linarith
+  have hc2 : (1 / 2 : ℝ) * ((1 / 2 : ℝ) * log2 (1 + x)) < (1 / 4 : ℝ) * log2 (1 + x + x * ρ) := by
+    unfold log2
+    have := Real.log_lt_log (by linarith) (show 1 + x < 1 + x + x * ρ by nlinarith)
+    have : Real.log (1 + x) / Real.log 2 < Real.log (1 + x + x * ρ) / Real.log 2 := by gcongr
+    nlinarith
+  have hrlow : (1 / 2 : ℝ) * ((1 / 2 : ℝ) * log2 (1 + x)) < r := lt_min hc1 hc2
+  have hr0 : 0 ≤ r := by
+    have : 0 ≤ (1 / 2 : ℝ) * log2 (1 + x) :=
+      mul_nonneg (by norm_num) (log2_nonneg_of_one_le (by linarith))
+    linarith
+  have hmem : InLinearFbRegion h h P r r := by
+    refine ⟨hr0, hr0, P / 2, P / 2, ρ, by positivity, by positivity, by ring, hρ0,
+      by linarith, ?_, ?_, ?_⟩
+    · have : h ^ 2 * (P / 2) * (1 - ρ ^ 2) = y := by rw [hy, hxdef]; ring
+      rw [this]; exact min_le_left _ _
+    · have : h ^ 2 * (P / 2) * (1 - ρ ^ 2) = y := by rw [hy, hxdef]; ring
+      rw [this]; exact min_le_left _ _
+    · have hsqrt : Real.sqrt (P / 2 * (P / 2)) = P / 2 := Real.sqrt_mul_self (by positivity)
+      have habs : |h * h| = h ^ 2 := by rw [abs_mul_self, sq]
+      rw [hsqrt, habs]
+      have : 1 + h ^ 2 * (P / 2) + h ^ 2 * (P / 2) + 2 * h ^ 2 * (P / 2) * ρ = 1 + x + x * ρ := by
+        rw [hxdef]; ring
+      rw [this]
+      have := min_le_right ((1 / 2 : ℝ) * log2 (1 + y)) ((1 / 4 : ℝ) * log2 (1 + x + x * ρ))
+      rw [← hr] at this
+      linarith
+  have hle : r + r ≤ linearFbSumRate h h P :=
+    le_csSup linearFbSum_bddAbove ⟨r, r, hmem, rfl⟩
+  linarith
+
+end Regression
 
 end InfoTheory.Known.Certificates.GaussianBcFeedbackSumCapacity

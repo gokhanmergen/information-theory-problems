@@ -37,6 +37,15 @@ slope, now `LowSnrCutsetSlopeStatement`). For statement fix 2:
 * `minEnergyPerBit_linear_le`, `minEnergyPerBit_le`, `minEnergyPerBit_linear_ne_top` —
   **direct transmission**: `E*(1,1,1) ≤ E*_lin(1,1,1) ≤ 2 ln 2`. In particular neither side is
   the junk value `⊤`.
+* **Regression (disconnected relay; passes).**  `minEnergyPerBit_disconnected` : for `g₂₃ = 0`,
+  `g₁₃ = 1` and any `g₁₂`, `E*(g₁₂, 1, 0) = E*_lin(g₁₂, 1, 0) = 2 ln 2`, the classical AWGN
+  minimum energy per bit at unit noise variance (`E_b/N₀ = ln 2 = -1.59 dB`).  Lower bound
+  `le_minEnergyPerBit_disconnected` (`≥ 2 ln 2 / g₁₃²` for every `g₁₂`): with `g₂₃ = 0` every
+  relay code is an AWGN code (`errProb_disconnected`, `isAwgnAchievable_of_disconnected`), then
+  the operational AWGN converse and `log(1 + x) ≤ x`; upper bound
+  `minEnergyPerBit_linear_le_gen` (direct transmission at any `g₁₂, g₂₃`).  So the energy-per-bit
+  definition (`(P₁ + P₂)/R`, `P₂ > 0`, units, noise normalisation) reproduces the textbook value
+  and is neither `0` nor `⊤` there.
 
 ## Not certified
 * `E*(1,1,1) ≥ (3/4) · 2 ln 2` (cutset bound, El Gamal–Mohseni–Zahedi 2006, Table II), and in
@@ -389,5 +398,161 @@ theorem minEnergyPerBit_le :
 
 theorem minEnergyPerBit_linear_ne_top : gaussianRelayMinEnergyPerBit true 1 1 1 ≠ ⊤ :=
   ne_top_of_le_ne_top ENNReal.ofReal_ne_top minEnergyPerBit_linear_le
+
+/-! ### Regression: a disconnected relay gives the AWGN minimum energy per bit `2 ln 2` -/
+
+/-- **Error of a code when the relay–destination link is cut** (`g₂₃ = 0`): the destination sees
+    `g x(m) + z`, so the error integral equals the AWGN error probability (noise variance `1`)
+    of the code `(g x, ĝ)`, whatever the relay does. -/
+theorem errProb_disconnected {g : ℝ} {n M : ℕ} (enc : Fin M → Fin n → ℝ)
+    (dec : (Fin n → ℝ) → Fin M) (hdec : Measurable dec) (m : Fin M) :
+    (∫⁻ (zr : Fin n → ℝ) (z : Fin n → ℝ),
+      if dec (fun i => g * enc m i + z i) ≠ m then
+        ENNReal.ofReal ((∏ i, gaussianPdf1D 1 (zr i)) * ∏ i, gaussianPdf1D 1 (z i))
+      else 0) =
+      awgnErrorProb (⟨fun m i => g * enc m i, dec, hdec⟩ : AwgnCode n M) 1 m := by
+  set C : AwgnCode n M := ⟨fun m i => g * enc m i, dec, hdec⟩
+  set E : Set (Fin n → ℝ) := {z | C.decoder (C.encoder m + z) ≠ m} with hE
+  have hEm : MeasurableSet E :=
+    (C.measurable_decoder.comp (measurable_const.add measurable_id))
+      (measurableSet_singleton m).compl
+  have hpt : ∀ zr z : Fin n → ℝ,
+      (if dec (fun i => g * enc m i + z i) ≠ m then
+        ENNReal.ofReal ((∏ i, gaussianPdf1D 1 (zr i)) * ∏ i, gaussianPdf1D 1 (z i))
+      else 0) =
+      ENNReal.ofReal (∏ i, gaussianPdf1D 1 (zr i)) *
+        (ENNReal.ofReal (∏ i, gaussianPdf1D 1 (z i)) * E.indicator 1 z) := by
+    intro zr z
+    have hy : (fun i => g * enc m i + z i) = C.encoder m + z := rfl
+    rw [hy]
+    have hnn1 : 0 ≤ ∏ i, gaussianPdf1D 1 (zr i) :=
+      Finset.prod_nonneg fun i _ => gaussianPdf1D_nonneg zero_le_one _
+    by_cases hz : z ∈ E
+    · have hz' : C.decoder (C.encoder m + z) ≠ m := hz
+      rw [Set.indicator_of_mem hz, ite_eq_left_of_eq_true _ _ (eq_true hz'), Pi.one_apply, mul_one,
+        ENNReal.ofReal_mul hnn1]
+    · have hz' : ¬ C.decoder (C.encoder m + z) ≠ m := hz
+      rw [Set.indicator_of_notMem hz, ite_eq_right_of_eq_false _ _ (eq_false hz'), mul_zero,
+        mul_zero]
+  simp_rw [hpt]
+  have hinner : ∀ zr : Fin n → ℝ,
+      ∫⁻ z, ENNReal.ofReal (∏ i, gaussianPdf1D 1 (zr i)) *
+        (ENNReal.ofReal (∏ i, gaussianPdf1D 1 (z i)) * E.indicator 1 z) =
+      ENNReal.ofReal (∏ i, gaussianPdf1D 1 (zr i)) * awgnErrorProb C 1 m := by
+    intro zr
+    rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top, lintegral_gaussian_density,
+      lintegral_indicator_one hEm, awgnErrorProb, awgnNoise_one]
+  simp_rw [hinner]
+  rw [lintegral_mul_const' _ _ (ne_top_of_le_ne_top ENNReal.one_ne_top ?_),
+    lintegral_gaussian_density_one, one_mul]
+  rw [awgnErrorProb, awgnNoise_one]
+  exact prob_le_one
+
+/-- **Disconnected-relay transfer (converse direction)**: with `g₂₃ = 0` every relay code is an
+    AWGN code for the source–destination link, so every achievable rate is AWGN-achievable at
+    power `g₁₃² P₁` and noise variance `1`. -/
+theorem isAwgnAchievable_of_disconnected (lo : Bool) {g₁₂ g₁₃ P₁ P₂ R : ℝ}
+    (h : IsGaussianRelayAchievable lo g₁₂ g₁₃ 0 P₁ P₂ R) :
+    IsAwgnAchievable (g₁₃ ^ 2 * P₁) 1 R := by
+  obtain ⟨hR, h⟩ := h
+  refine ⟨hR, fun δ hδ => ?_⟩
+  obtain ⟨N, -, h⟩ := h δ hδ
+  refine ⟨N, fun n hn => ?_⟩
+  obtain ⟨enc, relay, dec, -, -, hdec, hpow, -, herr⟩ := h n hn
+  refine ⟨⟨fun m i => g₁₃ * enc m i, dec, hdec⟩, fun m => ?_, ?_⟩
+  · have h1 := hpow m
+    have h2 : ∑ i, (g₁₃ * enc m i) ^ 2 = g₁₃ ^ 2 * ∑ i, (enc m i) ^ 2 := by
+      rw [Finset.mul_sum]; exact Finset.sum_congr rfl fun i _ => by ring
+    show ∑ i, (g₁₃ * enc m i) ^ 2 ≤ (n : ℝ) * (g₁₃ ^ 2 * P₁)
+    rw [h2]
+    nlinarith [sq_nonneg g₁₃]
+  · refine le_trans (le_of_eq ?_) herr
+    unfold awgnAvgErrorProb
+    congr 1
+    refine Finset.sum_congr rfl fun m _ => ?_
+    rw [← errProb_disconnected enc dec hdec m]
+    simp only [zero_mul, add_zero]
+
+/-- `log₂(1 + x) ≤ x / ln 2`, i.e. `½ log₂(1 + g²P) · (2 ln 2 / g²) ≤ P`. -/
+private lemma rate_mul_le {g P R : ℝ} (hg : g ≠ 0) (hP : 0 ≤ P)
+    (hR : R ≤ awgnCapacityFormula (g ^ 2 * P) 1) : 2 * Real.log 2 / g ^ 2 * R ≤ P := by
+  have hl2 : 0 < Real.log 2 := Real.log_pos one_lt_two
+  have hg2 : 0 < g ^ 2 := by positivity
+  have hlog : Real.log (1 + g ^ 2 * P) ≤ g ^ 2 * P := by
+    have := Real.log_le_sub_one_of_pos (show 0 < 1 + g ^ 2 * P by positivity)
+    linarith
+  unfold awgnCapacityFormula log2 at hR
+  rw [div_one] at hR
+  have hc : 0 ≤ 2 * Real.log 2 / g ^ 2 := by positivity
+  calc 2 * Real.log 2 / g ^ 2 * R
+      ≤ 2 * Real.log 2 / g ^ 2 * ((1 / 2 : ℝ) * (Real.log (1 + g ^ 2 * P) / Real.log 2)) :=
+        mul_le_mul_of_nonneg_left hR hc
+    _ = Real.log (1 + g ^ 2 * P) / g ^ 2 := by field_simp
+    _ ≤ g ^ 2 * P / g ^ 2 := by gcongr
+    _ = P := by field_simp
+
+/-- **Lower bound with a disconnected relay**: `E*(g₁₂, g, 0) ≥ 2 ln 2 / g²` (for both values of
+    `linearOnly`): the AWGN converse `Known.GaussianChannel.isAwgnAchievable_le` and
+    `log(1 + x) ≤ x`. -/
+theorem le_minEnergyPerBit_disconnected (lo : Bool) (g₁₂ : ℝ) {g : ℝ} (hg : g ≠ 0) :
+    ENNReal.ofReal (2 * Real.log 2 / g ^ 2) ≤ gaussianRelayMinEnergyPerBit lo g₁₂ g 0 := by
+  unfold gaussianRelayMinEnergyPerBit
+  refine le_sInf ?_
+  rintro e ⟨P₁, P₂, R, hP₁, hP₂, hR, hach, rfl⟩
+  have hle := Known.GaussianChannel.isAwgnAchievable_le one_pos (by positivity)
+    (isAwgnAchievable_of_disconnected lo hach)
+  have key := rate_mul_le hg hP₁.le hle
+  refine ENNReal.ofReal_le_ofReal ?_
+  rw [le_div_iff₀ hR]
+  linarith
+
+/-- **Direct transmission, any `g₁₂, g₂₃`**: `E*_lin(g₁₂, 1, g₂₃) ≤ 2 ln 2` (same operating points
+    as `minEnergyPerBit_linear_le`). -/
+theorem minEnergyPerBit_linear_le_gen (g₁₂ g₂₃ : ℝ) :
+    gaussianRelayMinEnergyPerBit true g₁₂ 1 g₂₃ ≤ ENNReal.ofReal (2 * Real.log 2) := by
+  have hl2 : 0 < Real.log 2 := Real.log_pos one_lt_two
+  set f : ℝ → ℝ≥0∞ := fun x => ENNReal.ofReal (2 * Real.log 2 * (1 + x) ^ 3) with hf
+  have hlim : Filter.Tendsto f (nhdsWithin 0 (Set.Ioi 0))
+      (nhds (ENNReal.ofReal (2 * Real.log 2))) := by
+    have hc : Continuous f :=
+      ENNReal.continuous_ofReal.comp (continuous_const.mul
+        ((continuous_const.add continuous_id).pow 3))
+    have h0 : Filter.Tendsto f (nhdsWithin 0 (Set.Ioi 0)) (nhds (f 0)) :=
+      (hc.tendsto 0).mono_left nhdsWithin_le_nhds
+    have hf0 : f 0 = ENNReal.ofReal (2 * Real.log 2) := by simp [hf]
+    rwa [hf0] at h0
+  refine ge_of_tendsto hlim (eventually_nhdsWithin_of_forall fun x hx => ?_)
+  have hx : (0 : ℝ) < x := hx
+  have h1x : 0 < 1 + x := by linarith
+  set R : ℝ := x / (2 * Real.log 2 * (1 + x) ^ 2) with hR
+  have hRpos : 0 < R := by positivity
+  have hach : IsGaussianRelayAchievable true g₁₂ 1 g₂₃ x (x ^ 2) R :=
+    isGaussianRelayAchievable_direct true one_ne_zero hx.le hRpos.le (direct_rate_lt hx)
+  have hmem : ENNReal.ofReal ((x + x ^ 2) / R) ∈
+      { e : ℝ≥0∞ | ∃ P₁ P₂ R : ℝ, 0 < P₁ ∧ 0 < P₂ ∧ 0 < R ∧
+        IsGaussianRelayAchievable true g₁₂ 1 g₂₃ P₁ P₂ R ∧
+        e = ENNReal.ofReal ((P₁ + P₂) / R) } :=
+    ⟨x, x ^ 2, R, hx, by positivity, hRpos, hach, rfl⟩
+  have heq : (x + x ^ 2) / R = 2 * Real.log 2 * (1 + x) ^ 3 := by
+    rw [hR]
+    field_simp
+  calc gaussianRelayMinEnergyPerBit true g₁₂ 1 g₂₃ ≤ ENNReal.ofReal ((x + x ^ 2) / R) :=
+        sInf_le hmem
+    _ = f x := by rw [heq]
+
+/-- **Regression (disconnected relay).**  When the relay cannot reach the destination
+    (`g₂₃ = 0`, unit direct gain, any `g₁₂`), both frozen energy-per-bit objects equal the
+    classical AWGN minimum energy per bit `2 ln 2` (unit noise variance; `E_b/N₀ = ln 2`, i.e.
+    `-1.59 dB`; Shannon 1949, Verdú 1990).  In particular the definition is not the junk value
+    `0` or `⊤` in this solved case, and the `Statement`-type equality `E* = E*_lin` holds there. -/
+theorem minEnergyPerBit_disconnected (g₁₂ : ℝ) :
+    gaussianRelayMinEnergyPerBit false g₁₂ 1 0 = ENNReal.ofReal (2 * Real.log 2) ∧
+      gaussianRelayMinEnergyPerBit true g₁₂ 1 0 = ENNReal.ofReal (2 * Real.log 2) := by
+  have hlow : ∀ lo : Bool, ENNReal.ofReal (2 * Real.log 2) ≤
+      gaussianRelayMinEnergyPerBit lo g₁₂ 1 0 := fun lo => by
+    simpa using le_minEnergyPerBit_disconnected lo g₁₂ (g := 1) one_ne_zero
+  have hup := minEnergyPerBit_linear_le_gen g₁₂ 0
+  exact ⟨le_antisymm ((minEnergyPerBit_le_linear g₁₂ 1 0).trans hup) (hlow false),
+    le_antisymm hup (hlow true)⟩
 
 end InfoTheory.Known.Certificates.GaussianRelayChannelCapacity

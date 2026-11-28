@@ -24,6 +24,13 @@ size of the capacity-achieving input, Sharma–Shamai 2010).
 * `bsc_rate_le_peakCapacityWithin_two`, `peakCapacityWithin_two_pos`, `peakCapacity_pos` :
   binary antipodal signalling `±A` with hard decisions gives
   `C(A, N) ≥ C_2(A, N) ≥ 1 - h(Q(A/√N)) > 0` for `A, N > 0`.
+* **Regression `C₁ = 0`.**  `peakCapacityWithin_one_eq_zero` : `C₁(A, N) = 0` (a one-point
+  constellation makes all codewords equal, so `half_le_avgErrorProb_of_const` forces average
+  error `≥ 1/2` once `M ≥ 2`); hence `peakCapacityWithin_one_lt_peakCapacity` : `C₁ < C` for
+  `A, N > 0` — the optimal input has at least two mass points (Smith 1971), and the
+  hypothesis of `Statement` at `k = 1` is never met for `A' > 0`.  The check passes.
+* **Monotonicity in the amplitude.**  `peakCapacity_mono_amp`, `peakCapacityWithin_mono_amp` :
+  `C(A, N)` and `C_k(A, N)` are nondecreasing in `A`.
 
 ## Not certified
 * Smith's theorem (the capacity-achieving input is unique, symmetric and has finitely many mass
@@ -245,5 +252,104 @@ theorem peak_capacity_chain (hA : 0 < A) (hN : 0 < N) :
   ⟨peakCapacityWithin_two_pos hA hN,
     peakCapacityWithin_le_peakCapacity hA.le (by norm_num) hN,
     peakCapacity_le_formula hA.le hN⟩
+
+/-! ### Regressions: one point gives zero capacity; monotonicity in the amplitude -/
+
+/-- A code whose codewords all coincide (and has `M ≥ 2` messages) has average error
+    probability at least `1/2` (exactly `1 - 1/M`): the decoder's output law does not depend on
+    the message. -/
+theorem half_le_avgErrorProb_of_const {n M : ℕ} (C : AwgnCode n M) (hM : 2 ≤ M)
+    (hconst : ∀ m m' : Fin M, C.encoder m = C.encoder m') (N : ℝ) :
+    (1 / 2 : ℝ) ≤ (awgnAvgErrorProb C N).toReal := by
+  set μ := awgnNoise n N
+  have : IsProbabilityMeasure μ := by unfold μ awgnNoise; infer_instance
+  set x := C.encoder ⟨0, by omega⟩
+  set f : (Fin n → ℝ) → Fin M := fun z => C.decoder (x + z) with hf
+  have hfm : Measurable f := C.measurable_decoder.comp (measurable_const.add measurable_id)
+  have hmeas : ∀ m : Fin M, MeasurableSet (f ⁻¹' {m}) := fun m => hfm (measurableSet_singleton m)
+  have herr : ∀ m, awgnErrorProb C N m = μ (f ⁻¹' {m})ᶜ := by
+    intro m
+    unfold awgnErrorProb
+    rw [hconst m ⟨0, by omega⟩]
+    rfl
+  have hsum1 : ∑ m : Fin M, μ (f ⁻¹' {m}) = 1 := by
+    rw [sum_measure_preimage_singleton _ (fun m _ => hmeas m)]
+    simp
+  have hadd : (∑ m : Fin M, awgnErrorProb C N m) + 1 = (M : ℝ≥0∞) := by
+    rw [← hsum1, ← Finset.sum_add_distrib]
+    simp_rw [herr]
+    have : ∀ m : Fin M, μ (f ⁻¹' {m})ᶜ + μ (f ⁻¹' {m}) = 1 := fun m => by
+      rw [add_comm, measure_add_measure_compl (hmeas m), measure_univ]
+    simp [this]
+  have hE := ENNReal.eq_sub_of_add_eq ENNReal.one_ne_top hadd
+  unfold awgnAvgErrorProb
+  rw [hE, ENNReal.toReal_mul, ENNReal.toReal_inv, ENNReal.toReal_sub_of_le
+    (by exact_mod_cast (by omega : 1 ≤ M)) (ENNReal.natCast_ne_top M)]
+  simp only [ENNReal.toReal_natCast, ENNReal.toReal_one]
+  have hM' : (2 : ℝ) ≤ M := by exact_mod_cast hM
+  rw [inv_mul_eq_div, le_div_iff₀ (by linarith)]
+  linarith
+
+/-- With a one-point constellation only rate `0` is achievable. -/
+theorem isPeakAchievableWithin_one_le_zero (h : IsPeakAchievableWithin A N 1 R) : R ≤ 0 := by
+  by_contra hR
+  push Not at hR
+  obtain ⟨n₀, hn₀⟩ := h.2 (1 / 4) (by norm_num)
+  set n := max n₀ ⌈1 / R⌉₊
+  obtain ⟨C, ⟨S, hS, -, hCS⟩, herr⟩ := hn₀ n (le_max_left _ _)
+  have hnR : 1 ≤ (n : ℝ) * R := by
+    have h1 : 1 / R ≤ (n : ℝ) := (Nat.le_ceil _).trans (by exact_mod_cast le_max_right _ _)
+    rwa [div_le_iff₀ hR] at h1
+  have hM : 2 ≤ max 1 ⌊(2 : ℝ) ^ ((n : ℝ) * R)⌋₊ := by
+    refine le_max_of_le_right (Nat.le_floor ?_)
+    calc ((2 : ℕ) : ℝ) = (2 : ℝ) ^ (1 : ℝ) := by norm_num
+      _ ≤ (2 : ℝ) ^ ((n : ℝ) * R) := Real.rpow_le_rpow_of_exponent_le (by norm_num) hnR
+  have hconst : ∀ m m', C.encoder m = C.encoder m' := fun m m' => funext fun i =>
+    Finset.card_le_one.mp hS _ (hCS m i) _ (hCS m' i)
+  have hhalf := half_le_avgErrorProb_of_const C hM hconst N
+  have := ENNReal.toReal_le_of_le_ofReal (by norm_num) herr
+  linarith
+
+/-- **Regression: `C₁(A, N) = 0`.**  A one-point constellation carries no information. -/
+theorem peakCapacityWithin_one_eq_zero (hA : 0 ≤ A) (hN : 0 < N) :
+    peakCapacityWithin A N 1 = 0 :=
+  le_antisymm (csSup_le (peakAchievableWithin_nonempty hA le_rfl N)
+    (fun _ hR => isPeakAchievableWithin_one_le_zero hR)) (peakCapacityWithin_nonneg hA le_rfl hN)
+
+/-- Hence `C₁(A, N) < C(A, N)` for `A, N > 0`: the capacity-achieving input always has at least
+    two mass points (consistent with Smith 1971), so the hypothesis of `Statement` at `k = 1`
+    never holds for `A' > 0`. -/
+theorem peakCapacityWithin_one_lt_peakCapacity (hA : 0 < A) (hN : 0 < N) :
+    peakCapacityWithin A N 1 < peakCapacity A N := by
+  rw [peakCapacityWithin_one_eq_zero hA.le hN]
+  exact peakCapacity_pos hA hN
+
+theorem isPeakAchievable_mono_amp {A' : ℝ} (hAA : A ≤ A') (h : IsPeakAchievable A N R) :
+    IsPeakAchievable A' N R := by
+  refine ⟨h.1, fun δ hδ => ?_⟩
+  obtain ⟨n₀, hn₀⟩ := h.2 δ hδ
+  exact ⟨n₀, fun n hn => by
+    obtain ⟨C, hC, herr⟩ := hn₀ n hn
+    exact ⟨C, fun m i => (hC m i).trans hAA, herr⟩⟩
+
+theorem isPeakAchievableWithin_mono_amp {A' : ℝ} (hAA : A ≤ A')
+    (h : IsPeakAchievableWithin A N k R) : IsPeakAchievableWithin A' N k R := by
+  refine ⟨h.1, fun δ hδ => ?_⟩
+  obtain ⟨n₀, hn₀⟩ := h.2 δ hδ
+  exact ⟨n₀, fun n hn => by
+    obtain ⟨C, ⟨S, hS, hSA, hCS⟩, herr⟩ := hn₀ n hn
+    exact ⟨C, ⟨S, hS, fun s hs => (hSA s hs).trans hAA, hCS⟩, herr⟩⟩
+
+/-- **Monotonicity in the amplitude**: `C(A, N) ≤ C(A', N)` for `0 ≤ A ≤ A'`. -/
+theorem peakCapacity_mono_amp {A' : ℝ} (hA : 0 ≤ A) (hAA : A ≤ A') (hN : 0 < N) :
+    peakCapacity A N ≤ peakCapacity A' N :=
+  csSup_le (peakAchievable_nonempty hA N)
+    (fun _ hR => le_peakCapacity hN (isPeakAchievable_mono_amp hAA hR))
+
+/-- **Monotonicity in the amplitude**: `C_k(A, N) ≤ C_k(A', N)` for `0 ≤ A ≤ A'`, `k ≥ 1`. -/
+theorem peakCapacityWithin_mono_amp {A' : ℝ} (hA : 0 ≤ A) (hk : 1 ≤ k) (hAA : A ≤ A')
+    (hN : 0 < N) : peakCapacityWithin A N k ≤ peakCapacityWithin A' N k :=
+  csSup_le (peakAchievableWithin_nonempty hA hk N)
+    (fun _ hR => le_peakCapacityWithin hN (isPeakAchievableWithin_mono_amp hAA hR))
 
 end InfoTheory.Known.Certificates.AmplitudeConstrainedAwgnSupport

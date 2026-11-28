@@ -1,5 +1,6 @@
 import InfoTheory.Problems.GaussianMacFeedbackLinearOptimality
 import InfoTheory.Known.GaussianAchievability
+import InfoTheory.Known.GaussianNetwork
 
 /-!
 # Certificate for `InfoTheory.Problems.GaussianMacFeedbackLinearOptimality`
@@ -24,6 +25,14 @@ feedback capacity region `macFbRegion K P N` equals the closure of the region
   `Known.GaussianAchievability.isAwgnAchievable_of_lt_capacity`.  Hence both closures contain
   the single-user corner segments `[0, ½ log₂(1 + P/N)] · e_{j₀}`
   (`single_mem_closure_macLinearFbRegion`).
+* **Regression (no-feedback two-user MAC).**  `pentagon_subset_closure_macLinearFbRegion`: for
+  any two senders `j₁ ≠ j₂` the full Cover–Thomas Gaussian MAC pentagon
+  `{0 ≤ R₁, R₂ ≤ ½ log₂(1 + P/N), R₁ + R₂ ≤ ½ log₂(1 + 2P/N)}`, embedded at `(j₁, j₂)`
+  (`embed2`), lies in both closures; in particular the no-feedback two-user sum capacity
+  `½ log₂(1 + 2P/N)` is reached (`sumRate_corner_mem_closure`).  This uses the operational
+  two-user MAC capacity theorem `Known.gaussianMACCapacityRegion_eq` and the code embedding
+  `twoUserCode` (exact transfer of error probability and power).  The check passes: the frozen
+  operational regions contain the known feedback-free answer.
 
 ## Not certified
 * Boundedness of `macFbRegion` (e.g. the total-cooperation bound
@@ -345,5 +354,266 @@ theorem single_mem_closure_macLinearFbRegion (hN : 0 < N) (hP : 0 ≤ P) (j₀ :
   exact ⟨hmem, closure_linear_subset hmem⟩
 
 end Regions
+
+/-! ### Regression: the no-feedback two-user MAC pentagon -/
+
+section TwoUser
+
+variable {K : ℕ} {P N : ℝ}
+
+/-- Embed a rate pair at senders `j₁, j₂` (all other senders at rate `0`). -/
+def embed2 (j₁ j₂ : Fin K) (r : ℝ × ℝ) : Fin K → ℝ :=
+  fun j => if j = j₁ then r.1 else if j = j₂ then r.2 else 0
+
+theorem continuous_embed2 (j₁ j₂ : Fin K) : Continuous (embed2 j₁ j₂) := by
+  refine continuous_pi fun j => ?_
+  unfold embed2
+  split_ifs
+  · exact continuous_fst
+  · exact continuous_snd
+  · exact continuous_const
+
+/-- The feedback-free `K`-user code in which senders `j₁ ≠ j₂` run a two-user Gaussian MAC code
+    `D` (from `Known.GaussianNetwork`) and all other senders have one message and send `0`. -/
+noncomputable def twoUserCode {n M₁ M₂ : ℕ} (D : Known.GaussianMACCode n M₁ M₂) (j₁ j₂ : Fin K)
+    (M : Fin K → ℕ) (h₁ : M j₁ = M₁) (h₂ : M j₂ = M₂) (hpos : ∀ j, 1 ≤ M j) :
+    MacFeedbackCode K n M where
+  enc j i m _ := if h : j = j₁ then D.encoder₁ (Fin.cast ((congrArg M h).trans h₁) m) i
+    else if h' : j = j₂ then D.encoder₂ (Fin.cast ((congrArg M h').trans h₂) m) i else 0
+  causal := fun _ _ _ _ _ _ => rfl
+  measurable_enc := fun _ _ _ => measurable_const
+  dec j y := if h : j = j₁ then Fin.cast ((congrArg M h).trans h₁).symm (D.decoder y).1
+    else if h' : j = j₂ then Fin.cast ((congrArg M h').trans h₂).symm (D.decoder y).2
+    else ⟨0, hpos j⟩
+  measurable_dec j := by
+    by_cases h : j = j₁
+    · simp only [h, dite_true]
+      exact (measurable_from_top (f := Fin.cast _)).comp (measurable_fst.comp D.measurable_decoder)
+    · simp only [h, dite_false]
+      by_cases h' : j = j₂
+      · simp only [h', dite_true]
+        exact (measurable_from_top (f := Fin.cast _)).comp
+          (measurable_snd.comp D.measurable_decoder)
+      · simp only [h', dite_false]
+        exact measurable_const
+
+section TwoUserCode
+
+variable {n M₁ M₂ : ℕ} (D : Known.GaussianMACCode n M₁ M₂) {j₁ j₂ : Fin K} (hj : j₁ ≠ j₂)
+  (M : Fin K → ℕ) (h₁ : M j₁ = M₁) (h₂ : M j₂ = M₂) (hpos : ∀ j, 1 ≤ M j)
+include hj
+
+theorem twoUserCode_enc_sum (m : (j : Fin K) → Fin (M j)) (i : Fin n) (y : Fin n → ℝ) :
+    ∑ j : Fin K, (twoUserCode D j₁ j₂ M h₁ h₂ hpos).enc j i (m j) y =
+      D.encoder₁ (Fin.cast h₁ (m j₁)) i + D.encoder₂ (Fin.cast h₂ (m j₂)) i := by
+  rw [Fintype.sum_eq_add j₁ j₂ hj (fun j hj' => by simp [twoUserCode, hj'.1, hj'.2])]
+  simp [twoUserCode, hj.symm]
+
+theorem twoUserCode_output (m : (j : Fin K) → Fin (M j)) (z : Fin n → ℝ) :
+    (twoUserCode D j₁ j₂ M h₁ h₂ hpos).output m z =
+      D.encoder₁ (Fin.cast h₁ (m j₁)) + D.encoder₂ (Fin.cast h₂ (m j₂)) + z := by
+  unfold MacFeedbackCode.output
+  have hstep : ∀ y, (twoUserCode D j₁ j₂ M h₁ h₂ hpos).step m z y =
+      D.encoder₁ (Fin.cast h₁ (m j₁)) + D.encoder₂ (Fin.cast h₂ (m j₂)) + z := by
+    intro y
+    funext i
+    simp only [MacFeedbackCode.step, Pi.add_apply]
+    rw [twoUserCode_enc_sum D hj M h₁ h₂ hpos]
+  cases n with
+  | zero => exact funext fun t => Fin.elim0 t
+  | succ k => rw [Function.iterate_succ_apply']; exact hstep _
+
+omit hj in
+theorem twoUserCode_isLinear : (twoUserCode D j₁ j₂ M h₁ h₂ hpos).IsLinear :=
+  ⟨fun j m i => (twoUserCode D j₁ j₂ M h₁ h₂ hpos).enc j i m 0, fun _ _ _ => 0,
+    fun _ _ _ _ => rfl, fun j i m y => by simp [twoUserCode]⟩
+
+theorem twoUserCode_errorProb (hM1 : ∀ j, j ≠ j₁ → j ≠ j₂ → M j = 1) (m : (j : Fin K) → Fin (M j)) :
+    (twoUserCode D j₁ j₂ M h₁ h₂ hpos).errorProb N m =
+      Known.gaussianMACErrorProb D N (Fin.cast h₁ (m j₁)) (Fin.cast h₂ (m j₂)) := by
+  unfold MacFeedbackCode.errorProb Known.gaussianMACErrorProb
+  congr 1
+  ext z
+  simp only [Set.mem_ofPred_eq, twoUserCode_output D hj M h₁ h₂ hpos]
+  set y := D.encoder₁ (Fin.cast h₁ (m j₁)) + D.encoder₂ (Fin.cast h₂ (m j₂)) + z
+  have hd1 : (twoUserCode D j₁ j₂ M h₁ h₂ hpos).dec j₁ y = Fin.cast h₁.symm (D.decoder y).1 := by
+    simp [twoUserCode]
+  have hd2 : (twoUserCode D j₁ j₂ M h₁ h₂ hpos).dec j₂ y = Fin.cast h₂.symm (D.decoder y).2 := by
+    simp [twoUserCode, hj.symm]
+  constructor
+  · rintro ⟨j, hj'⟩ heq
+    by_cases ha : j = j₁
+    · subst ha
+      rw [hd1, heq] at hj'
+      exact hj' (Fin.ext (by simp))
+    · by_cases hb : j = j₂
+      · subst hb
+        rw [hd2, heq] at hj'
+        exact hj' (Fin.ext (by simp))
+      · have := subsingleton_fin_of_eq_one (hM1 j ha hb)
+        exact hj' (Subsingleton.elim _ _)
+  · intro hne
+    by_contra hall
+    push Not at hall
+    apply hne
+    have e1 := hall j₁
+    have e2 := hall j₂
+    rw [hd1] at e1
+    rw [hd2] at e2
+    refine Prod.ext (Fin.ext ?_) (Fin.ext ?_)
+    · have := congrArg Fin.val e1; simpa using this
+    · have := congrArg Fin.val e2; simpa using this
+
+theorem twoUserCode_avgErrorProb (hM1 : ∀ j, j ≠ j₁ → j ≠ j₂ → M j = 1) :
+    (twoUserCode D j₁ j₂ M h₁ h₂ hpos).avgErrorProb N = Known.gaussianMACAvgError D N := by
+  unfold MacFeedbackCode.avgErrorProb Known.gaussianMACAvgError
+  have hprod : (∏ j, M j : ℕ) = M₁ * M₂ := by
+    rw [Fintype.prod_eq_mul j₁ j₂ hj (fun j hj' => hM1 j hj'.1 hj'.2), h₁, h₂]
+  rw [hprod]
+  congr 1
+  simp only [twoUserCode_errorProb D hj M h₁ h₂ hpos hM1]
+  rw [← Fintype.sum_prod_type']
+  have hbij : Function.Bijective
+      (fun m : (j : Fin K) → Fin (M j) => (Fin.cast h₁ (m j₁), Fin.cast h₂ (m j₂))) := by
+    refine ⟨?_, ?_⟩
+    · intro m m' hmm
+      funext j
+      by_cases ha : j = j₁
+      · subst ha
+        have := congrArg (fun p => (p.1 : ℕ)) hmm
+        exact Fin.ext (by simpa using this)
+      · by_cases hb : j = j₂
+        · subst hb
+          have := congrArg (fun p => (p.2 : ℕ)) hmm
+          exact Fin.ext (by simpa using this)
+        · have := subsingleton_fin_of_eq_one (hM1 j ha hb)
+          exact Subsingleton.elim _ _
+    · rintro ⟨a, b⟩
+      refine ⟨fun j => if ha : j = j₁ then Fin.cast ((congrArg M ha).trans h₁).symm a
+        else if hb : j = j₂ then Fin.cast ((congrArg M hb).trans h₂).symm b
+        else ⟨0, hpos j⟩, ?_⟩
+      refine Prod.ext (Fin.ext ?_) (Fin.ext ?_)
+      · simp
+      · simp [hj.symm]
+  exact Fintype.sum_bijective _ hbij _ (fun p => Known.gaussianMACErrorProb D N p.1 p.2)
+    (fun _ => rfl)
+
+theorem twoUserCode_satisfiesPower (hD : D.SatisfiesPower P P) :
+    (twoUserCode D j₁ j₂ M h₁ h₂ hpos).SatisfiesPower N P := by
+  intro j
+  unfold MacFeedbackCode.expectedEnergy
+  have hpt : ∀ m : (j : Fin K) → Fin (M j), (∫⁻ z, ENNReal.ofReal (∑ i : Fin n,
+      ((twoUserCode D j₁ j₂ M h₁ h₂ hpos).input j m z i) ^ 2) ∂awgnNoise n N) ≤
+      ENNReal.ofReal ((n : ℝ) * P) := by
+    intro m
+    have : IsProbabilityMeasure (awgnNoise n N) := by unfold awgnNoise; infer_instance
+    by_cases ha : j = j₁
+    · subst ha
+      have hconst : ∀ z, ∑ i : Fin n, ((twoUserCode D j j₂ M h₁ h₂ hpos).input j m z i) ^ 2 =
+          ∑ i : Fin n, (D.encoder₁ (Fin.cast h₁ (m j)) i) ^ 2 := by
+        intro z
+        simp [MacFeedbackCode.input, twoUserCode]
+      simp only [hconst, lintegral_const, measure_univ, mul_one]
+      exact ENNReal.ofReal_le_ofReal (hD.1 _)
+    · by_cases hb : j = j₂
+      · subst hb
+        have hconst : ∀ z, ∑ i : Fin n, ((twoUserCode D j₁ j M h₁ h₂ hpos).input j m z i) ^ 2 =
+            ∑ i : Fin n, (D.encoder₂ (Fin.cast h₂ (m j)) i) ^ 2 := by
+          intro z
+          simp [MacFeedbackCode.input, twoUserCode, ha]
+        simp only [hconst, lintegral_const, measure_univ, mul_one]
+        exact ENNReal.ofReal_le_ofReal (hD.2 _)
+      · have hconst : ∀ z, ∑ i : Fin n,
+            ((twoUserCode D j₁ j₂ M h₁ h₂ hpos).input j m z i) ^ 2 = 0 := by
+          intro z
+          simp [MacFeedbackCode.input, twoUserCode, ha, hb]
+        simp only [hconst, ENNReal.ofReal_zero, lintegral_const, zero_mul]
+        exact bot_le
+  have hcard : (Finset.univ : Finset ((j : Fin K) → Fin (M j))).card = ∏ j, M j := by
+    simp [Finset.card_univ, Fintype.card_pi]
+  have hsum := Finset.sum_le_card_nsmul (Finset.univ : Finset ((j : Fin K) → Fin (M j))) _ _
+    (fun m _ => hpt m)
+  rw [hcard, nsmul_eq_mul] at hsum
+  have hM0' : ((∏ j, M j : ℕ) : ℝ≥0∞) ≠ 0 := by
+    rw [Nat.cast_ne_zero]
+    exact Finset.prod_ne_zero_iff.mpr fun j _ => by have := hpos j; omega
+  calc ((∏ j, M j : ℕ) : ℝ≥0∞)⁻¹ * _ ≤ ((∏ j, M j : ℕ) : ℝ≥0∞)⁻¹ *
+        (((∏ j, M j : ℕ) : ℝ≥0∞) * ENNReal.ofReal ((n : ℝ) * P)) := by
+          gcongr
+    _ = ENNReal.ofReal ((n : ℝ) * P) := by
+        rw [← mul_assoc, ENNReal.inv_mul_cancel hM0' (ENNReal.natCast_ne_top _), one_mul]
+
+end TwoUserCode
+
+/-- Every rate pair achievable on the two-user Gaussian MAC without feedback (equal powers `P`),
+    placed at senders `j₁ ≠ j₂`, is achievable on the `K`-user MAC with linear feedback. -/
+theorem embed2_mem_macLinearFbRegion {j₁ j₂ : Fin K} (hj : j₁ ≠ j₂) {R₁ R₂ : ℝ}
+    (h : Known.IsGaussianMACAchievable P P N R₁ R₂) :
+    embed2 j₁ j₂ (R₁, R₂) ∈ macLinearFbRegion K P N := by
+  obtain ⟨hR₁, hR₂, h⟩ := h
+  refine ⟨fun j => by unfold embed2; split_ifs <;> simp [hR₁, hR₂], fun δ hδ => ?_⟩
+  obtain ⟨n₀, hn₀⟩ := h δ hδ
+  refine ⟨n₀, fun n hn => ?_⟩
+  obtain ⟨D, hpow, herr⟩ := hn₀ n hn
+  set M : Fin K → ℕ := fun j => max 1 ⌊(2 : ℝ) ^ ((n : ℝ) * embed2 j₁ j₂ (R₁, R₂) j)⌋₊
+    with hMdef
+  have h₁ : M j₁ = max 1 ⌊(2 : ℝ) ^ ((n : ℝ) * R₁)⌋₊ := by simp [hMdef, embed2]
+  have h₂ : M j₂ = max 1 ⌊(2 : ℝ) ^ ((n : ℝ) * R₂)⌋₊ := by simp [hMdef, embed2, hj.symm]
+  have hM1 : ∀ j, j ≠ j₁ → j ≠ j₂ → M j = 1 := fun j ha hb => by simp [hMdef, embed2, ha, hb]
+  have hpos : ∀ j, 1 ≤ M j := fun j => le_max_left _ _
+  refine ⟨twoUserCode D j₁ j₂ M h₁ h₂ hpos, fun _ => twoUserCode_isLinear D M h₁ h₂ hpos,
+    twoUserCode_satisfiesPower D hj M h₁ h₂ hpos hpow, ?_⟩
+  rw [twoUserCode_avgErrorProb D hj M h₁ h₂ hpos hM1]
+  exact herr
+
+/-- **Regression (no-feedback MAC pentagon).**  For any two distinct senders `j₁ ≠ j₂` of the
+    `K`-user model, the whole Cover–Thomas Gaussian MAC pentagon
+    `0 ≤ R₁, R₂ ≤ ½ log₂(1 + P/N)`, `R₁ + R₂ ≤ ½ log₂(1 + 2P/N)` (embedded at `j₁, j₂`) lies in
+    the closure of the linear-feedback region, hence also of the feedback region.  This is the
+    known answer when feedback is ignored and only two senders are active (feedback cannot
+    hurt), obtained from the operational two-user MAC capacity theorem
+    `Known.gaussianMACCapacityRegion_eq`. -/
+theorem pentagon_subset_closure_macLinearFbRegion (hN : 0 < N) (hP : 0 ≤ P) {j₁ j₂ : Fin K}
+    (hj : j₁ ≠ j₂) {r : ℝ × ℝ} (hr : r ∈ Known.gaussianMACPentagon P P N) :
+    embed2 j₁ j₂ r ∈ closure (macLinearFbRegion K P N) ∧
+      embed2 j₁ j₂ r ∈ closure (macFbRegion K P N) := by
+  rw [← Known.gaussianMACCapacityRegion_eq hP hP hN] at hr
+  have hmem : embed2 j₁ j₂ r ∈ closure (macLinearFbRegion K P N) :=
+    map_mem_closure (continuous_embed2 j₁ j₂) hr fun p hp => embed2_mem_macLinearFbRegion hj hp
+  exact ⟨hmem, closure_linear_subset hmem⟩
+
+/-- In particular the no-feedback two-user sum capacity `½ log₂(1 + 2P/N)` is approached:
+    the corner `(½ log₂(1 + P/N), ½ log₂(1 + 2P/N) - ½ log₂(1 + P/N))` lies in both closures. -/
+theorem sumRate_corner_mem_closure (hN : 0 < N) (hP : 0 ≤ P) {j₁ j₂ : Fin K} (hj : j₁ ≠ j₂) :
+    embed2 j₁ j₂ (awgnCapacityFormula P N, awgnCapacityFormula (P + P) N - awgnCapacityFormula P N)
+      ∈ closure (macLinearFbRegion K P N) := by
+  refine (pentagon_subset_closure_macLinearFbRegion hN hP hj ?_).1
+  have hl2 : 0 < Real.log 2 := Real.log_pos one_lt_two
+  have hA : 0 ≤ awgnCapacityFormula P N := by
+    unfold awgnCapacityFormula log2
+    have := Real.log_nonneg (show 1 ≤ 1 + P / N by have := div_nonneg hP hN.le; linarith)
+    positivity
+  have hmono : awgnCapacityFormula P N ≤ awgnCapacityFormula (P + P) N := by
+    unfold awgnCapacityFormula log2
+    have h1 : 0 < 1 + P / N := by have := div_nonneg hP hN.le; linarith
+    have h2 : 1 + P / N ≤ 1 + (P + P) / N := by
+      have := div_nonneg hP hN.le; rw [add_div]; linarith
+    have := Real.log_le_log h1 h2
+    gcongr
+  -- `C(2P) ≤ 2 C(P)` since `1 + 2x ≤ (1 + x)²`
+  have hsub : awgnCapacityFormula (P + P) N ≤ awgnCapacityFormula P N + awgnCapacityFormula P N := by
+    unfold awgnCapacityFormula log2
+    have hx : 0 ≤ P / N := div_nonneg hP hN.le
+    have h1 : 0 < 1 + (P + P) / N := by rw [add_div]; linarith
+    have h2 : 1 + (P + P) / N ≤ (1 + P / N) ^ 2 := by rw [add_div]; nlinarith
+    have := Real.log_le_log h1 h2
+    rw [Real.log_pow] at this
+    have : Real.log (1 + (P + P) / N) / Real.log 2 ≤
+        2 * Real.log (1 + P / N) / Real.log 2 := by gcongr; exact_mod_cast this
+    linarith [show 2 * Real.log (1 + P / N) / Real.log 2 =
+      Real.log (1 + P / N) / Real.log 2 + Real.log (1 + P / N) / Real.log 2 by ring]
+  exact ⟨hA, by linarith, le_rfl, by linarith, by linarith⟩
+
+end TwoUser
 
 end InfoTheory.Known.Certificates.GaussianMacFeedbackLinearOptimality

@@ -12,14 +12,20 @@ exponent `E_sp(R, P)` for `0 < R < ½ ln(1 + P)`.
 * `awgnSpherePacking_capacity` — `E_sp(½ ln(1+P), P) = 0` exactly: Shannon's (1959) formula as
   formalized vanishes at capacity, a sanity check of its normalization (nats, unit noise
   variance, `A = √P`).
+* **Regression (zero-rate value; passes).**  `awgnSpherePacking_zero` : `E_sp(0, P) = P/2`;
+  `continuousAt_awgnSpherePacking_zero`, `tendsto_awgnSpherePacking_zero` : `E_sp(R, P) → P/2`
+  as `R → 0⁺`, the known zero-rate value (Shannon 1959), equal to the zero-rate peak-energy
+  feedback exponent `E_fb^peak(0⁺, P) = P/2` (Pinsker 1968; Zigangirov 1970) quoted in the
+  problem file.  Consequently `eventually_awgnSpherePacking_pos` : `E_sp(R, P) > 0` for small
+  `R > 0`.
 
 ## Not certified
 * Finiteness of `awgnFeedbackPeakReliability` (needs a lower bound on the error probability of
   every feedback code, i.e. Pinsker's 1968 sphere-packing converse with feedback) and any
   achievability (needs Gaussian random coding with explicit `lintegral` computations over
   `Fin n → ℝ`); neither is in `Bridge`.
-* Positivity of `E_sp(R, P)` for `R < C` (requires a monotonicity analysis of the formula; not
-  attempted).
+* Positivity of `E_sp(R, P)` on all of `(0, C)` (requires a monotonicity analysis of the
+  formula; only small `R` is certified).
 -/
 
 open scoped BigOperators ENNReal
@@ -61,5 +67,44 @@ theorem awgnSpherePacking_capacity {P : ℝ} (hP : 0 < P) :
   rw [hlog]
   field_simp
   nlinarith [hsqP]
+
+/-- **Regression (zero-rate value).**  `E_sp(0, P) = P/2`: at `R = 0` (`sin θ = 1`, `cos θ = 0`,
+    `g = 1`) Shannon's formula gives the known zero-rate value `E_sp(0⁺, P) = P/2`
+    (Shannon 1959), which is also the zero-rate peak-energy feedback exponent
+    `E_fb^peak(0⁺, P) = P/2` (Pinsker 1968; Zigangirov 1970). -/
+theorem awgnSpherePacking_zero (P : ℝ) : awgnSpherePacking 0 P = P / 2 := by
+  have h4 : Real.sqrt 4 = 2 := by
+    rw [show (4 : ℝ) = 2 ^ 2 by norm_num, Real.sqrt_sq (by norm_num)]
+  unfold awgnSpherePacking
+  simp [h4]
+
+/-- `R ↦ E_sp(R, P)` is continuous at `R = 0` (the logarithm's argument is `g sin θ = 1 ≠ 0`
+    there). -/
+theorem continuousAt_awgnSpherePacking_zero (P : ℝ) :
+    ContinuousAt (fun R => awgnSpherePacking R P) 0 := by
+  have hcos : Continuous fun R : ℝ => Real.sqrt (1 - Real.exp (-2 * R)) := by fun_prop
+  have hg : Continuous fun R : ℝ => (1 / 2 : ℝ) * (Real.sqrt P * Real.sqrt (1 - Real.exp (-2 * R)) +
+      Real.sqrt (P * Real.sqrt (1 - Real.exp (-2 * R)) ^ 2 + 4)) := by fun_prop
+  have hsin : Continuous fun R : ℝ => Real.exp (-R) := by fun_prop
+  have h4 : Real.sqrt 4 = 2 := by
+    rw [show (4 : ℝ) = 2 ^ 2 by norm_num, Real.sqrt_sq (by norm_num)]
+  unfold awgnSpherePacking
+  dsimp only
+  refine ContinuousAt.sub (ContinuousAt.sub continuousAt_const ?_) ?_
+  · exact (((continuous_const.mul hg).mul hcos).div_const 2).continuousAt
+  · refine ((hg.mul hsin).continuousAt).log ?_
+    simp [h4]
+
+/-- Hence `E_sp(R, P) → P/2` as `R → 0⁺`, matching the known zero-rate exponent. -/
+theorem tendsto_awgnSpherePacking_zero (P : ℝ) :
+    Filter.Tendsto (fun R => awgnSpherePacking R P) (nhdsWithin 0 (Set.Ioi 0)) (nhds (P / 2)) := by
+  have h := (continuousAt_awgnSpherePacking_zero P).tendsto.mono_left
+    (nhdsWithin_le_nhds (s := Set.Ioi 0))
+  rwa [awgnSpherePacking_zero] at h
+
+/-- In particular `E_sp(R, P) > 0` for all sufficiently small rates `R > 0` (when `P > 0`). -/
+theorem eventually_awgnSpherePacking_pos {P : ℝ} (hP : 0 < P) :
+    ∀ᶠ R in nhdsWithin 0 (Set.Ioi 0), 0 < awgnSpherePacking R P :=
+  (tendsto_awgnSpherePacking_zero P).eventually (lt_mem_nhds (by linarith))
 
 end InfoTheory.Known.Certificates.AwgnFeedbackErrorExponent
