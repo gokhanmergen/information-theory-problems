@@ -37,6 +37,21 @@ Historically, researchers asked whether $O(\log n)$ traces suffice in the averag
   - Chase (2021): $\tilde{\Omega}(\log^{5/2} n)$ traces, currently the best known lower bound for average-case binary trace reconstruction at $d = 1/2$.
 - **Connection to worst-case:** A polynomial upper bound $T_{\mathrm{wc}}(m, 1/2) = \mathrm{poly}(m)$ for shifted worst-case trace reconstruction would immediately imply $T_{\mathrm{avg}}(n, 1/2) = \mathrm{polylog}(n)$ via Rubinstein's reduction; conversely, any super-polylogarithmic lower bound for $T_{\mathrm{avg}}(n, 1/2)$ would imply a super-polynomial lower bound for $T_{\mathrm{wc}}(m, 1/2)$.
 
+## Formal statement and certificate
+
+Adversarial audit (2026-11-27): the Lean `Statement` is faithful and open. The best upper bound is
+`exp(Õ(log^{1/5} n))`, and a search found no polylogarithmic upper bound as of 2026-11.
+
+Certificate `lean/InfoTheory/Known/Certificates/TraceReconstructionAverageCase.lean` proves the following:
+- `Pr[Del_d(x) = x] = (1-d)^n`.
+- A one-trace decoder succeeds with probability `≥ (1-d)^n`.
+- **Regression check:** `T_avg(n, d) = 1` whenever `(1-d)^n ≥ 2/3`. In particular this holds for
+  the noiseless channel `d = 0`, for every `n`.
+
+Not certified: that the defining set is non-empty at `d = 1/2`, which is needed so that `sInf` is
+not the junk value 0. It is true: with `T` traces, the probability that some trace has full length
+is `1 - (1-2^{-n})^T → 1`. The proof needs the deletion-channel normalisation lemma.
+
 ## References
 
 - T. Batu, S. Kannan, S. Khanna, and A. McGregor, "Reconstructing strings from random traces," *Proc. 15th ACM–SIAM SODA*, pp. 910–918, 2004.

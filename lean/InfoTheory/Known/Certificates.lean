@@ -14,6 +14,7 @@ import InfoTheory.Known.Certificates.CognitiveInterferenceChannel
 import InfoTheory.Known.Certificates.CommonInformationExactVsWyner
 import InfoTheory.Known.Certificates.CorrelatedSourcesOverMac
 import InfoTheory.Known.Certificates.CourtadeKumar
+import InfoTheory.Known.Certificates.CourtadeKumarQary
 import InfoTheory.Known.Certificates.DegradedMessageSetsBcThreeReceivers
 import InfoTheory.Known.Certificates.DeletionChannel
 import InfoTheory.Known.Certificates.DeletionChannelHighDLimit
@@ -21,6 +22,7 @@ import InfoTheory.Known.Certificates.DeletionChannelSmallDAsymptotics
 import InfoTheory.Known.Certificates.DiscreteEntropyPowerInequality
 import InfoTheory.Known.Certificates.DmInterferenceChannelCapacity
 import InfoTheory.Known.Certificates.DmcZeroRateErrorExponent
+import InfoTheory.Known.Certificates.DnaStorageUnorderedChannel
 import InfoTheory.Known.Certificates.EditDistanceCodeCapacity
 import InfoTheory.Known.Certificates.EntropicDoublingConstant
 import InfoTheory.Known.Certificates.EntropyRegion
@@ -37,6 +39,7 @@ import InfoTheory.Known.Certificates.IndexCodingSingleLetter
 import InfoTheory.Known.Certificates.InsertionDeletionChannel
 import InfoTheory.Known.Certificates.IntrinsicVsSecretKeyGap
 import InfoTheory.Known.Certificates.KissingNumberHighDim
+import InfoTheory.Known.Certificates.LdpMinimaxKlSharp
 import InfoTheory.Known.Certificates.LiMedardConjecture
 import InfoTheory.Known.Certificates.LinearNetworkCodingGap
 import InfoTheory.Known.Certificates.LinearRankEntropyRegionN6
@@ -49,6 +52,7 @@ import InfoTheory.Known.Certificates.MmseDimensionSingleCrossing
 import InfoTheory.Known.Certificates.MrsGerberGeneral
 import InfoTheory.Known.Certificates.MultipleDescriptionsGeneral
 import InfoTheory.Known.Certificates.MultiterminalSourceCoding
+import InfoTheory.Known.Certificates.NoisyInteractiveCommunicationRate
 import InfoTheory.Known.Certificates.NonAsymptoticLossyDispersion
 import InfoTheory.Known.Certificates.PirCodedCollusionCapacity
 import InfoTheory.Known.Certificates.PoissonChannelDiscreteCapacity
@@ -57,12 +61,14 @@ import InfoTheory.Known.Certificates.PrimitiveRelayChannelBsc
 import InfoTheory.Known.Certificates.ReedMullerCapacityGeneralDmc
 import InfoTheory.Known.Certificates.RegeneratingCodesExactRepair
 import InfoTheory.Known.Certificates.RelayChannel
+import InfoTheory.Known.Certificates.SbmMultiCommunityThreshold
 import InfoTheory.Known.Certificates.SecretKeyCapacityPublicDiscussion
 import InfoTheory.Known.Certificates.ShannonCapacityC7
 import InfoTheory.Known.Certificates.ShannonCapacityComplementProduct
 import InfoTheory.Known.Certificates.ShannonCapacityUnionProduct
 import InfoTheory.Known.Certificates.SpernerCapacityDirectedGraphs
 import InfoTheory.Known.Certificates.TimingChannelGeneralQueue
+import InfoTheory.Known.Certificates.TraceReconstructionAverageCase
 import InfoTheory.Known.Certificates.TwoWayChannelCapacity
 import InfoTheory.Known.Certificates.UndirectedNetworkCodingLiLi
 import InfoTheory.Known.Certificates.UniversalLossyRedundancy

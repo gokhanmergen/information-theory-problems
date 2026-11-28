@@ -37,6 +37,23 @@ For **noiseless** shuffling and for **memoryless substitution channels** (such a
   - Lenz, Siegel, Wachter-Zeh, and Yaakobi (2019, 2020) constructed explicit coding schemes and derived bounds for unordered sets of strings under substitutions and deletions.
   - Exact capacity of the shuffled-noisy-draws channel with $\mathrm{Del}_d$ (or general insertion–deletion) noise remains **open**—both because $C_{\mathrm{del}}(d)$ itself is unknown and because proving the exact $1/\beta$ shuffling-penalty identity $C_{\mathrm{shuf\text{-}del}}(d, \beta) = C_{\mathrm{del}}(d) - 1/\beta$ for large $\beta$ requires controlling finite-blocklength error exponents of $\mathrm{Del}_d$ at logarithmic strand length $L = \beta \log_2 M$.
 
+## Formal statement and certificate
+
+Adversarial audit (2026-11-27): the Lean `Statement` is faithful to the open question, though it
+covers the shuffling channel without sampling (each strand is read exactly once).
+- The noiseless (`1 - 1/β`) and BSC (`1 - h(p) - 1/β`, large β) laws are proved results
+  (Shomorony–Heckel 2021).
+- A search found no 2024–2026 result for deletion noise.
+
+Certificate `lean/InfoTheory/Known/Certificates/DnaStorageUnorderedChannel.lean` proves the following:
+- Rate 0 is achievable, so the capacity set is non-empty and the capacity is `≥ 0`.
+- At `d = 0` strands are received intact, and the conjectured formula reduces to the proven
+  noiseless law `1 - 1/β`, using `C_del(0) = 1`.
+- The right-hand side is `≤ 1 - d - 1/β`.
+
+Not certified: that the set of achievable rates is bounded above, which is needed to rule out the
+`sSup` junk value.
+
 ## References
 
 - R. Heckel, I. Shomorony, K. Ramchandran, and D. N. C. Tse, "Fundamental limits of DNA storage systems," *Proc. IEEE ISIT*, pp. 3130–3134, 2017.

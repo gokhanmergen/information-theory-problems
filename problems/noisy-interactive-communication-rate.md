@@ -39,6 +39,25 @@ For one-way communication, Shannon's theorem establishes the exact capacity $1 -
   - Kol and Raz (2013) proved that non-adaptive protocols over $\mathrm{BSC}(\varepsilon)$ cannot achieve Shannon capacity $1 - h(\varepsilon)$ in general (establishing a strict separation below $1 - h(\varepsilon)$), and Efremenko, Gelles, and Haeupler (2016) analyzed maximal tolerable noise and rate limits across erasure, feedback, and BSC models.
 - **Exact scaling of $1 - C_{\mathrm{int}}(\varepsilon)$ remains open:** Between the Shannon lower bound $\Omega(\varepsilon \log(1/\varepsilon))$ and the Haeupler upper bound $O(\sqrt{\varepsilon \log\log(1/\varepsilon)})$ (or $O(\sqrt{\varepsilon})$ with adaptivity), the true order of magnitude of $1 - C_{\mathrm{int}}(\varepsilon)$ as $\varepsilon \to 0^+$ remains completely open (Gelles 2017).
 
+## Formal statement and certificate
+
+Adversarial audit (2026-11-27): the Lean `Statement` is faithful and open.
+- Haeupler (FOCS 2014) **conjectured** that `1 - Θ(√ε)` is optimal for random errors. The
+  Statement (`1 - C_int(ε) = O(h(ε))`) is the opposite direction, so a disproof would support his
+  conjecture.
+- No matching converse for adaptive protocols was found as of 2026-11.
+- In the formal model, each round is a half-duplex use of the BSC. Silence and collisions carry no
+  extra information: a listener cannot tell "the other party sent 0" from "the other party was
+  silent". So the capacity is bounded by roughly 1 and is not the `sSup` junk value. This
+  boundedness argument is not formalized.
+
+Certificate `lean/InfoTheory/Known/Certificates/NoisyInteractiveCommunicationRate.lean` proves the following:
+- Transcripts and views are consistent, and rounds alternate.
+- The half-duplex BSC semantics: a listener receives the other party's bit XOR the error, and a
+  speaker hears nothing.
+- `C_int(ε) ≥ 0`.
+- The Statement forces `C_int(ε) → 1`, so it is not vacuous.
+
 ## References
 
 - L. J. Schulman, "Communication on noisy channels: A coding theorem for computation," *Proc. 33rd IEEE FOCS*, 724–733 (1992); full version "Coding for interactive communication," *IEEE Trans. Inf. Theory* **42**(6), 1745–1756 (1996).

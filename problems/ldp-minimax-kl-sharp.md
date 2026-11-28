@@ -38,6 +38,26 @@ Under KL divergence loss $D_{\mathrm{KL}}(P \mathbin{\|} \hat{P})$, local privac
 - **Exact optimality of Subset Selection under $\ell_2^2$ risk:** Ye and Barg (2018) proved that Subset Selection with optimal subset size $s \approx \lceil k / (e^\varepsilon + 1) \rceil$ achieves order-optimal $\ell_2^2$ and $\ell_1$ risks across all regimes and exact asymptotic optimality for $\ell_2^2$ risk in specific regimes; Wang, Blocki, Li, and Jha (2017) analyzed exact variance tradeoffs across mechanisms.
 - **KL risk and exact constants remain open:** Neither the exact asymptotic constant of $R_{\mathrm{KL}}^{\mathrm{LDP}}(k, n, \varepsilon)$ nor exact $(1 + o(1))$-minimax optimality of Subset Selection under KL loss is proved for general $k \ge 3$ and $\varepsilon > 0$.
 
+## Formal statement and certificate
+
+Adversarial audit (2026-11-27): the Lean `Statement` matches the slice described above, and no junk
+value was found: both minimax risks are infima over non-empty sets bounded below, lying in
+`[0, log₂ k]`, and estimators must have full support. Two caveats:
+
+- **No literature source.** "Subset Selection is exactly `(1+o(1))`-minimax under KL for every
+  `k, ε`" is this catalog's own formulation. Ye–Barg (2018) proved exact optimality for the
+  $\ell_2^2$ loss in some regimes; no cited paper conjectures it for KL. Because the KL risk under LDP is
+  dominated by distributions near the boundary ($\Theta(n^{-1/2})$), the $\ell_2^2$/Fisher-information
+  heuristics behind SS do not obviously carry over.
+- **The `k = 2` slice is a known theorem** (Kairouz–Oh–Viswanath 2016: binary randomized response
+  Blackwell-dominates every `ε`-LDP channel; averaging the estimator is allowed because KL is
+  convex in its second argument). The open content is `k ≥ 3`.
+
+Certificate `lean/InfoTheory/Known/Certificates/LdpMinimaxKlSharp.lean` proves the following:
+- `k`-ary randomized response is a Subset Selection channel.
+- Every SS channel is `ε`-LDP, so `ldpMinimaxKLRisk ≤ subsetSelectionMinimaxKLRisk`.
+- Both risks lie in `[0, log₂ k]`.
+
 ## References
 
 - J. C. Duchi, M. I. Jordan, and M. J. Wainwright, "Local privacy and statistical minimax rates," *Proc. 54th IEEE FOCS*, 429–438 (2013); full version *J. Amer. Statist. Assoc.* **113**(521), 182–201 (2018).

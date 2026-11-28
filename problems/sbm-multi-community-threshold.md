@@ -38,6 +38,22 @@ This prediction catalyzed an enormous body of work in probability, statistical p
   - Abbe and Sandon (2016) and Banks, Moore, Neeman, and Netrapalli (2016) rigorously proved that weak recovery IS possible strictly below the KS threshold for all $q \ge 5$, establishing the asymptotic scaling $\mathrm{SNR}_{\mathrm{IT}}(q) = \Theta\!\left(\frac{\log q}{q}\right)$ as $q \to \infty$.
   - Determining the exact closed-form / variational weak recovery threshold $d^*(q)$ for sparse assortative ($a > b$) SBMs with $q \ge 5$ remains open.
 
+## Formal statement and certificate
+
+Adversarial audit (2026-11-27): the Lean `Statement` is faithful and open. For `q = 4`, below
+Kesten–Stigum (`(a-b)² < 4(a+3b)`, `0 < b < a`), it asserts that weak recovery is impossible.
+- Mossel–Sly–Sohn (STOC 2023, arXiv:2212.03362) prove this only for large average degree. In the
+  antiferromagnetic (disassortative) `q = 4` case, KS tightness depends on the degree, but that
+  case is excluded here (`b < a`).
+- Small-degree assortative `q = 4` remains open.
+- Note: the title says "q ≥ 5", but the formal slice is the `q = 4` KS-tightness question. For
+  `q ≥ 5` it is known that KS is not tight, and the exact threshold has no closed-form conjecture.
+
+Certificate `lean/InfoTheory/Known/Certificates/SbmMultiCommunityThreshold.lean` proves the following:
+- With `a = b` the SBM equals `G(n, a/n)` and is not distinguishable from it (a regression check).
+- `maxPermOverlap` is a genuine maximum in `[0, 1]`, and the exact estimator scores `1`.
+- The hypothesis region is non-empty and is exactly `SNR < 1`.
+
 ## References
 
 - A. Decelle, F. Krzakala, C. Moore, and L. Zdeborová, "Asymptotic analysis of the stochastic block model for modular networks and its algorithmic applications," *Phys. Rev. E* **84**, 066106 (2011).
