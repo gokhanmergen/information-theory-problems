@@ -41,15 +41,15 @@ jobs:
         working-directory: lean
         run: lake build
 
-      - name: Build, audit (axioms, name collisions, certificate coverage), and kernel-replay Known/ & Bridge/
+      - name: Build, audit (axioms, name collisions, certificate coverage), and kernel-replay Known/, Bridge/ & External/
         working-directory: lean
         run: |
-          lake build InfoTheory.Known InfoTheory.Known.Certificates InfoTheory.Bridge
+          lake build InfoTheory.Known InfoTheory.Known.Certificates InfoTheory.Bridge InfoTheory.External
           lake env lean --run ../scripts/AuditKnown.lean
           # Kernel-replay every module that declares something. Import-only aggregators
           # (e.g. Known/Certificates.lean) are skipped: they add no declarations, and replaying
           # their whole import closure crashes leanchecker (out of memory).
-          for f in $(find InfoTheory/Known InfoTheory/Bridge -name '*.lean' | sort); do
+          for f in $(find InfoTheory/Known InfoTheory/Bridge InfoTheory/External -name '*.lean' | sort); do
             grep -qE '^(theorem|lemma|def|noncomputable|abbrev|instance|scoped|structure|inductive|private|protected)' "$f" || continue
             m=$(echo "${f%.lean}" | tr '/' '.')
             echo "leanchecker $m"

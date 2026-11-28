@@ -43,10 +43,14 @@ state and explore it fits on a page, and numerical exploration is genuinely usef
     and Tuan Tran** (Sept 21, 2026, `arXiv:2609.24184`), **Hessam Mahdavifar and
     Ahmad Beirami** (Sept 22, 2026, `arXiv:2609.26444`), and **Dimiter Kramer and
     Mert Sağlam** (Nov 3, 2026, `arXiv:2611.05430`).
-  - Note: this repository's frozen statement `InfoTheory.Problems.CourtadeKumar`
-    has not yet been paired with an in-repo `InfoTheory.Solutions.CourtadeKumar`
-    proof file; the external Lean 4 proof in `dpwoodru/general-courtade-kumar-lean`
-    formalizes the full theorem independently.
+  - **Bridge to the frozen statement (Lean, in this repository):**
+    `lean/InfoTheory/External/CourtadeKumar.lean` proves
+    `GeneralCK.GeneralCourtadeKumar → InfoTheory.Problems.CourtadeKumar.Statement` against a
+    byte-identical copy of the upstream target statement. It also shows the two formalisations
+    of $I(f(X);Y)$ are equal. The upstream theorem itself is checked in its own repository
+    (Lean `v4.33.1`) and is not replayed here, so there is still no unconditional
+    `Solutions/CourtadeKumar.lean`. See
+    `attempts/courtade-kumar/2026-11-27-claude-opus-5-5-lean-bridge.md`.
 
 ### Prior milestones before the September 2026 resolution
 
