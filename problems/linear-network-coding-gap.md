@@ -32,6 +32,21 @@ In a landmark 2005 paper, Dougherty, Freiling, and Zeger refuted the sufficiency
 - **Polynomial gaps:** Blasiak, Kleinberg, and Lubetzky (FOCS 2011 / IEEE TIT 2013) used hypergraph lexicographic products to amplify matroidal separations into polynomial multiplicative gaps $V^{c}$ (for a small constant $c > 0$) between nonlinear coding and arbitrary-field vector linear coding.
 - **Upper bound:** Every feasible network with $s$ sessions admits a linear (in fact, routing) solution achieving rate at least $C_{\mathrm{nl}} / s$, yielding a trivial upper bound of $O(V)$ (or $O(|E|)$) on the multiplicative gap. Closing the exponent gap between $c$ and $1$ remains open.
 
+## Formal statement and certificate
+
+- The Lean statement (`Problems/LinearNetworkCodingGap.lean`) was checked on 2026-11-27 and
+  left unchanged. Both capacities are `sSup`s, and `0 < C_nl` in the statement rules out the
+  degenerate networks (no session with `src ≠ dst`) where the sets are unbounded.
+  Caveat on the "trivial $O(V)$" upper bound above: time-sharing gives
+  $C_{\mathrm{nl}}/C_{\mathrm{lin}} \le s$, where $s$ is the number of distinct
+  source–destination pairs. This is $O(V)$ only when $s = O(V)$; in general $s$ can be
+  $\Theta(V^2)$.
+- **Certificate** (`lean/InfoTheory/Known/Certificates/LinearNetworkCodingGap.lean`): no junk.
+  Both sets contain `0`, and for any session with `src ≠ dst` both capacities are at most the
+  sink's in-degree (`nonlinear_le_indeg`, and `linear_le_indeg` over every finite field).
+  Regression: on the single edge `0 → 1`, `C_nl = C_lin = 1`. That network never witnesses
+  the statement for `ε < 1` (`singleEdge_not_witness`).
+
 ## References
 
 - R. Ahlswede, N. Cai, S.-Y. R. Li, and R. W. Yeung, "Network information flow," *IEEE Trans. Inf. Theory*, 46(4):1204–1216, 2000.

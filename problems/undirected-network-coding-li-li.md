@@ -37,6 +37,19 @@ The Li–Li conjecture (also widely known as the **undirected multiple-unicast c
   - By Leighton–Rao (1999) and Linial–London–Rabinovich (1995) / Aumann–Rabani (1998), the multicommodity flow-cut gap in any undirected graph with $k$ terminal pairs is $O(\log k)$. Since network coding is bounded above by the cut-set (sparsest-cut) bound, $\lambda_{\mathrm{code}}(G) / \lambda_{\mathrm{route}}(G) = O(\log k)$ always holds.
 - **Undirected multicast contrast:** For undirected single-source multicast, Li and Li (2004) and Agarwal and Charikar (2004) proved that coding can outperform routing (fractional Steiner tree packing), with advantage at most $2$ (matching the integrality gap of the bidirected cut relaxation).
 
+## Formal statement and certificate
+
+- The Lean statement (`Problems/UndirectedNetworkCodingLiLi.lean`, Core
+  `undirectedRoutingThroughput` / `undirectedCodingThroughput`) was checked on 2026-11-27 and
+  left unchanged. Both models match the text: undirected capacity shared across the two
+  directions and across rounds, causal local encoding, and zero-error decoding at each sink.
+- **Certificate** (`lean/InfoTheory/Known/Certificates/UndirectedNetworkCodingLiLi.lean`): no
+  junk. Both sets contain `0` and are bounded by elementary cuts: `routing_le_srcCut`
+  (`λ_route ≤ Σ_u cap(s₁,u)`) and `coding_le_dstCut` (`λ_code ≤ Σ_w cap(w,t₁)`, a counting
+  argument on the exact code model). Regression ($k = 1$): on a single unit edge,
+  `λ_route = λ_code = 1` (`liLi_singleEdge`). The inequality `λ_route ≤ λ_code` is not
+  certified in general.
+
 ## References
 
 - Z. Li and B. Li, "Network coding: The case of multiple unicast sessions," *Proc. 42nd Allerton Conf. on Communication, Control, and Computing*, 2004.

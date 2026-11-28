@@ -38,6 +38,7 @@ import InfoTheory.Known.Certificates.InsertionDeletionChannel
 import InfoTheory.Known.Certificates.IntrinsicVsSecretKeyGap
 import InfoTheory.Known.Certificates.KissingNumberHighDim
 import InfoTheory.Known.Certificates.LiMedardConjecture
+import InfoTheory.Known.Certificates.LinearNetworkCodingGap
 import InfoTheory.Known.Certificates.LinearRankEntropyRegionN6
 import InfoTheory.Known.Certificates.ListDecodingCapacityBinaryLinear
 import InfoTheory.Known.Certificates.ListDecodingZeroErrorCapacity
@@ -51,7 +52,9 @@ import InfoTheory.Known.Certificates.MultiterminalSourceCoding
 import InfoTheory.Known.Certificates.NonAsymptoticLossyDispersion
 import InfoTheory.Known.Certificates.PirCodedCollusionCapacity
 import InfoTheory.Known.Certificates.PoissonChannelDiscreteCapacity
+import InfoTheory.Known.Certificates.PolarCodeScalingExponent
 import InfoTheory.Known.Certificates.PrimitiveRelayChannelBsc
+import InfoTheory.Known.Certificates.ReedMullerCapacityGeneralDmc
 import InfoTheory.Known.Certificates.RegeneratingCodesExactRepair
 import InfoTheory.Known.Certificates.RelayChannel
 import InfoTheory.Known.Certificates.SecretKeyCapacityPublicDiscussion
@@ -61,6 +64,7 @@ import InfoTheory.Known.Certificates.ShannonCapacityUnionProduct
 import InfoTheory.Known.Certificates.SpernerCapacityDirectedGraphs
 import InfoTheory.Known.Certificates.TimingChannelGeneralQueue
 import InfoTheory.Known.Certificates.TwoWayChannelCapacity
+import InfoTheory.Known.Certificates.UndirectedNetworkCodingLiLi
 import InfoTheory.Known.Certificates.UniversalLossyRedundancy
 import InfoTheory.Known.Certificates.WiretapChannelCompoundSecrecy
 import InfoTheory.Known.Certificates.WiretapWithFeedbackCapacity

@@ -16,7 +16,7 @@ Let $G \in \mathrm{GL}_\ell(\mathbb{F}_2)$ be an invertible $\ell \times \ell$ b
 
 For a binary-input memoryless symmetric channel $W$ with capacity $C(W)$ and target block error probability $\eta \in (0, 1)$, the **scaling exponent** $\mu(G, W)$ is the infimum of all $\mu > 0$ such that polar codes with kernel $G$ achieve block error probability $\le \eta$ at rate $R \ge C(W) - O(N^{-1/\mu})$ (equivalently, blocklength $N = O((C(W) - R)^{-\mu})$). By Strassen's (1962) and Polyanskiy–Poor–Verdú's (2010) finite-blocklength dispersion theorem, no code family over any non-trivial channel can beat $\mu = 2$.
 
-**Open Problem (Hassani–Alishahi–Urbanke 2014):** On the binary symmetric channel $\mathrm{BSC}(p)$ for any $p \in (0, 1/2)$, can binary polar codes with a **single fixed finite-size binary kernel** $G \in \mathrm{GL}_\ell(\mathbb{F}_2)$ under successive cancellation decoding achieve scaling exponent $\mu(G, \mathrm{BSC}(p))$ arbitrarily close to the optimal value $\mu = 2$? That is, for every $p \in (0, 1/2)$, $\varepsilon > 0$, and $\eta \in (0, 1)$, does there exist a finite binary kernel $G \in \mathrm{GL}_\ell(\mathbb{F}_2)$ achieving SC block error $\le \eta$ at rate $1 - h(p) - O(N^{-1/(2+\varepsilon)})$ for all sufficiently large $N = \ell^m$?
+**Open Problem (Hassani–Alishahi–Urbanke 2014):** On the binary symmetric channel $\mathrm{BSC}(p)$ for any $p \in (0, 1/2)$, can binary polar codes with a **single fixed finite-size binary kernel** $G \in \mathrm{GL}_\ell(\mathbb{F}_2)$ under successive cancellation decoding achieve scaling exponent $\mu(G, \mathrm{BSC}(p))$ arbitrarily close to the optimal value $\mu = 2$? That is, for every $p \in (0, 1/2)$, $\varepsilon > 0$, and $\eta \in (0, 1)$, does there exist a finite binary kernel $G \in \mathrm{GL}_\ell(\mathbb{F}_2)$ achieving SC block error $\le \eta$ at rate $1 - h(p) - O(N^{-1/(2+\varepsilon)})$ for all sufficiently large $N = \ell^m$? Here "SC" means Arıkan's decoder: $\hat u_t = 1$ iff $W_N^{(t)}(y, \hat u_{<t} \mid 1) > W_N^{(t)}(y, \hat u_{<t} \mid 0)$, where the bit-channel likelihood sums over **all** later bits (frozen or not).
 
 ## Background
 
@@ -36,6 +36,22 @@ Understanding whether large fixed binary kernels $G \in \mathrm{GL}_\ell(\mathbb
 - **General BMS / BSC channels (dynamic / non-binary / multiple kernels vs fixed single binary kernel):**
   - Guruswami, Riazanov, and Ye (2020) and Wang and Duursma (2021) constructed polar-type codes achieving $\mu \to 2$ on general BMS channels (including the BSC) using **dynamic / varying sequences of binary kernels** (or growing alphabets) combined with channel polarization analysis.
   - Achieving $\mu \to 2$ on the $\mathrm{BSC}(p)$ using a **single fixed static binary kernel** $G \in \mathrm{GL}_\ell(\mathbb{F}_2)$ (Hassani's conjecture for static binary kernels on BSC) remains open.
+
+## Formal statement and certificate
+
+- **Statement-fix (2026-11-27).** The earlier Lean statement quantified existentially over
+  arbitrary decision functions `dec t y u_{<t}`. Such a `dec` can ignore the prefix and output
+  the `t`-th coordinate of the block-MAP estimate (it can also use that later frozen bits are
+  `0`). The "SC" error functional was then the **block-MAP** error of the polar code, so the
+  statement asked about MAP decoding of polar subcodes, a family that contains Reed–Muller
+  codes. That is a different question. The decoder is now pinned to Arıkan's SC rule
+  (`bitChannelLik`, `scDecoder` in `Problems/PolarCodeScalingExponent.lean`), with ties broken
+  towards `0`.
+- **Certificate** (`lean/InfoTheory/Known/Certificates/PolarCodeScalingExponent.lean`): Arıkan's
+  kernel is invertible (`arikan_invertible`), and the error functional is nonnegative and
+  vanishes for `A = ∅`. Regression: at blocklength `N = 1` the bit-channel likelihood is
+  `W(y|b)`, and the SC error of the uncoded bit on `BSC(p)` is exactly `p` (`scError_uncoded`).
+  No scaling or polarization fact is certified.
 
 ## References
 

@@ -32,9 +32,30 @@ This conjecture saw a sequence of landmark breakthroughs over the past decade, c
 - **Bit-MAP on all BMS channels:** Reeves and Pfister (2021, IEEE TIT 2024) proved that Reed–Muller codes achieve capacity on every BMS channel under **bit-MAP** decoding, using nested codechains, generalized EXIT (GEXIT) relations, and the symmetry of BMS channels.
 - **Block-MAP on all BMS channels:** Abbe and Sandon (STOC 2023) proved that Reed–Muller codes achieve capacity on every BMS channel under **block-MAP** decoding, via a novel polarization/boosting argument on the conditional entropy of syndrome projections that still requires BMS channel symmetry.
 - **High-rate / low-rate regimes and weight enumerators:** Abbe, Shpilka, and Wigderson (2015) and Samorodnitsky (2020) obtained bounds on weight distributions and capacity in extreme rate regimes.
+- **Finite-state and asymmetric channels with scrambling (2026):** Pfister, Kashyap,
+  Chamberland and Reeves (arXiv:2604.15295, April 2026) show that binary RM codes **with
+  random per-block affine scrambling** achieve the symmetric capacity of binary-input
+  indecomposable finite-state channels. Their result gives vanishing bit or symbol error,
+  and they list block error as open. They also remark that a **random coset** of each RM
+  code achieves $I_{\mathrm{unif}}(W)$ on asymmetric memoryless binary-input channels
+  by "standard arguments". Neither result covers plain (unscrambled, coset-free) RM codes
+  under block error, which is what the formal statement asks.
 - **What remains open:**
   1. Block-MAP (and even bit-MAP) achievement of $I_{\mathrm{unif}}(W)$ on **arbitrary asymmetric binary-input DMCs** $W$ (such as the binary Z-channel).
   2. **Polynomial-time decoding** of Reed–Muller codes at rates approaching capacity on BMS channels (even on $\mathrm{BSC}(p)$); current efficient decoders (e.g., recursive projection-aggregation, Ye–Abbe 2020) are not known to achieve capacity asymptotically.
+
+## Formal statement and certificate
+
+- The Lean statement (`Problems/ReedMullerCapacityGeneralDmc.lean`) was checked on 2026-11-27
+  and left unchanged. It asks for **plain** RM codes, the average block error over the
+  codebook, an arbitrary decoder (so block-MAP), and every finite-output binary-input DMC with
+  target rate below $I_{\mathrm{unif}}(W)$. Restricted to BMS channels, it is the
+  Abbe–Sandon (2023) theorem. The scrambled or coset results above do not imply it.
+- **Certificate** (`lean/InfoTheory/Known/Certificates/ReedMullerCapacityGeneralDmc.lean`): the
+  error functional lies in `[0, 1]`, the RM chain is nested (`reedMullerCode_mono`), and
+  `dim RM(m, r) ≤ 2^m`. Regression: `RM(m, 0)` is the repetition code, with dimension `1`
+  (`finrank_rm_zero`) and containing the all-ones word. The general dimension formula
+  $\sum_{i \le r}\binom{m}{i}$ is not certified.
 
 ## References
 

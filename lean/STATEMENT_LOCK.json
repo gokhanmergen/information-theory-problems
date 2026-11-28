@@ -90,7 +90,7 @@
     "lean/InfoTheory/Problems/NptBoundEntanglement.lean": "2db2fd1df44c072a27934a5f0bfef502a36e188fd6546f40e0fc750f70ea7f8b",
     "lean/InfoTheory/Problems/PirCodedCollusionCapacity.lean": "d0d88133cd6463b50e78ea039058b06315eac93cf5efb26019bcf660bbcc4593",
     "lean/InfoTheory/Problems/PoissonChannelDiscreteCapacity.lean": "2b4f074194753d8fd8669816d25fc43c40e59146ba522f812e98a11799562dd0",
-    "lean/InfoTheory/Problems/PolarCodeScalingExponent.lean": "3d922a1de87e3165ecde220b83000f23af13c84c290763d93e5533209feadc1d",
+    "lean/InfoTheory/Problems/PolarCodeScalingExponent.lean": "f9a96a5b68bf90e07db9a3f5ace134fdefc92f801084d4f7be4831f10fed1d67",
     "lean/InfoTheory/Problems/PrimitiveRelayChannelBsc.lean": "3d9587403da4bffffb7227365133dd4826a546eb772ef848857c4f4bf6b602d1",
     "lean/InfoTheory/Problems/PrivateVsQuantumCapacityGap.lean": "26866ea54e802195d7ae7f45656b8cd094af2ceb70bff35c50b07d0de11d6b9d",
     "lean/InfoTheory/Problems/QuantumBroadcastCapacity.lean": "8cbaeac51e102f1b5bff01528b6c8e4902b17ff20c511572f2952da8da34af5d",
