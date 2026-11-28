@@ -21,6 +21,13 @@ equals the Rini–Tuninetti–Devroye inner bound `rtdInnerBound W`.
   and act as one encoder for the channel `(X₁, X₂) → Y₁` (Shannon's theorem).
 * `zero_prod_Icc_subset_cognitiveICCapacityRegion` — cognitive-axis achievability:
   `{0} × [0, C(p(y₂ | x₁, x₂))] ⊆ C_cog(W)` for every fixed `x₁`.
+* `bcCapacityRegion_bcSection_subset`, `martonInnerBound_bcSection_subset` — **Marton
+  achievability on every broadcast section**: with transmitter 1 sending a constant `x₁`, a BC
+  code for `x₂ ↦ W(· | x₁, x₂)` is a cognitive code, so
+  `martonInnerBound (bcSection W x₁) ⊆ C_cog(W)` (via
+  `Bridge.martonInnerBound_subset_bcCapacityRegion`, mutual covering + rate splitting).
+* `cognitiveICCapacityRegion_eq_bcCapacityRegion_of_subsingleton` — **the reduction to the BC
+  at `|X₁| = 1`**: then `C_cog(W) = bcCapacityRegion (bcSection W x₁)`.
 * `zero_mem_rtdInnerBound` — `(0, 0)` lies in the RTD region (all auxiliaries constant, so all
   binning / covering penalties vanish).
 * `rtdInnerBound_subset_box` — `rtdInnerBound W ⊆ [0, log₂ |Y₁|] × [0, log₂ |Y₂|]` (the
@@ -33,8 +40,9 @@ equals the Rini–Tuninetti–Devroye inner bound `rtdInnerBound W`.
   whole known primary axis `[0, C(X₁X₂ → Y₁)] × {0}` (= the operational axis above).
 
 ## Not certified
-* Achievability of the RTD region (superposition, binning and Gelfand–Pinsker coding are not in
-  the library) and the known capacity results for special classes (strong interference,
+* Achievability of the RTD region (rate splitting with superposition, binning and
+  Gelfand–Pinsker coding of `X₁`-dependent clouds is not in the library; only the
+  `X₁ = const` Marton sections above are) and the known capacity results for special classes (strong interference,
   "better cognitive decoding", Wu–Vishwanath–Arapostathis): these need converses with
   Csiszár-sum-identity arguments.
 * The sharper box `R₁ ≤ C(X₁X₂ → Y₁)` *on the RTD side* (the bound proved there is via
@@ -141,6 +149,65 @@ theorem zero_prod_Icc_subset_cognitiveICCapacityRegion [Nonempty X₂]
   have : p = (0, p.2) := Prod.ext hp1 rfl
   rw [this]
   exact zero_mk_mem_of W x₁ hp2
+
+/-! ### Inner bound via broadcast sections and Marton coding
+
+With transmitter 1 sending a constant `x₁`, the cognitive transmitter knows both messages and
+faces the broadcast channel `x₂ ↦ W(· | x₁, x₂)`; every BC code for this section is a
+cognitive-IC code. By Marton's theorem (`Bridge.martonInnerBound_subset_bcCapacityRegion`)
+Marton's region of each section is achievable. When `X₁` is a singleton the operational
+region *is* the section's BC capacity region (the problem reduces to the two-receiver BC). -/
+
+/-- The broadcast channel seen by the cognitive transmitter when transmitter 1 sends `x₁`. -/
+abbrev bcSection (W : InterferenceChannel X₁ X₂ Y₁ Y₂) (x₁ : X₁) : BroadcastChannel X₂ Y₁ Y₂ :=
+  dmcPrecomp W (fun x₂ => (x₁, x₂))
+
+/-- **Section inner bound**: `C_BC(W(· | x₁, ·)) ⊆ C_cog(W)` for every `x₁`. -/
+theorem bcCapacityRegion_bcSection_subset (W : InterferenceChannel X₁ X₂ Y₁ Y₂) (x₁ : X₁) :
+    bcCapacityRegion (bcSection W x₁) ⊆ cognitiveICCapacityRegion W := by
+  refine closure_mono fun p hp => ?_
+  obtain ⟨h1, h2, h⟩ := hp
+  refine ⟨h1, h2, fun ε hε => ?_⟩
+  obtain ⟨N, hN⟩ := h ε hε
+  refine ⟨N, fun n hn => ?_⟩
+  obtain ⟨enc, dec₁, dec₂, herr⟩ := hN n hn
+  exact ⟨fun _ _ => x₁, enc, dec₁, dec₂, herr⟩
+
+/-- **Marton achievability on the cognitive IC**: Marton's inner bound of every broadcast
+    section `x₂ ↦ W(· | x₁, x₂)` is inside `C_cog(W)`. -/
+theorem martonInnerBound_bcSection_subset (W : InterferenceChannel X₁ X₂ Y₁ Y₂) (x₁ : X₁) :
+    martonInnerBound (bcSection W x₁) ⊆ cognitiveICCapacityRegion W :=
+  (martonInnerBound_subset_bcCapacityRegion _).trans (bcCapacityRegion_bcSection_subset W x₁)
+
+/-- **Reduction to the broadcast channel at `|X₁| = 1`**: if `X₁` is a singleton `{x₁}`, the
+    operational cognitive region equals the BC capacity region of the section. -/
+theorem cognitiveICCapacityRegion_eq_bcCapacityRegion_of_subsingleton [Subsingleton X₁]
+    (W : InterferenceChannel X₁ X₂ Y₁ Y₂) (x₁ : X₁) :
+    cognitiveICCapacityRegion W = bcCapacityRegion (bcSection W x₁) := by
+  refine Set.Subset.antisymm ?_ (bcCapacityRegion_bcSection_subset W x₁)
+  refine closure_mono fun p hp => ?_
+  obtain ⟨h1, h2, h⟩ := hp
+  refine ⟨h1, h2, fun ε hε => ?_⟩
+  obtain ⟨N, hN⟩ := h ε hε
+  refine ⟨N, fun n hn => ?_⟩
+  obtain ⟨enc₁, enc₂, dec₁, dec₂, herr⟩ := hN n hn
+  refine ⟨enc₂, dec₁, dec₂, ?_⟩
+  have hx : ∀ (m₁ : Fin (Nat.max 1 ⌊(2 : ℝ) ^ ((n : ℝ) * p.1)⌋₊))
+      (m₂ : Fin (Nat.max 1 ⌊(2 : ℝ) ^ ((n : ℝ) * p.2)⌋₊)),
+      (fun i => (enc₁ m₁ i, enc₂ m₁ m₂ i)) = fun i => (x₁, enc₂ m₁ m₂ i) :=
+    fun _ _ => funext fun _ => Prod.ext (Subsingleton.elim _ _) rfl
+  dsimp only at herr ⊢
+  simp only [hx] at herr
+  exact herr
+
+/-- At `|X₁| = 1` Marton's region of the section is inside the operational region, and the
+    operational region is the section's BC capacity region. -/
+theorem martonInnerBound_bcSection_subset_of_subsingleton [Subsingleton X₁]
+    (W : InterferenceChannel X₁ X₂ Y₁ Y₂) (x₁ : X₁) :
+    martonInnerBound (bcSection W x₁) ⊆ cognitiveICCapacityRegion W ∧
+      cognitiveICCapacityRegion W = bcCapacityRegion (bcSection W x₁) :=
+  ⟨martonInnerBound_bcSection_subset W x₁,
+    cognitiveICCapacityRegion_eq_bcCapacityRegion_of_subsingleton W x₁⟩
 
 /-! ### The RTD inner bound -/
 

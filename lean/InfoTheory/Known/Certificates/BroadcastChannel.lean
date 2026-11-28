@@ -31,13 +31,22 @@ operational capacity region `bcCapacityRegion W` equals Marton's inner bound
   BC the capacity region is contained in the frozen Marton region**: the frozen formula is not
   too small in this solved case.
 
+* **Marton achievability** `martonInnerBound_subset_bcCapacityRegion'` —
+  `martonInnerBound W ⊆ bcCapacityRegion W` for every DMBC, from
+  `Bridge.martonInnerBound_subset_bcCapacityRegion` (mutual covering lemma + Fourier–Motzkin rate
+  splitting, `Bridge.MartonCoding`). The Bridge theorem is stated for the *same* Core
+  definitions `InfoTheory.martonInnerBound` / `InfoTheory.bcCapacityRegion` used by `Statement`,
+  so no bridging lemma is needed. Consequently
+  `statement_iff_converse` — **the frozen statement is equivalent to the converse inclusion**
+  `bcCapacityRegion W ⊆ martonInnerBound W` for all finite `W`.
+* **Certified special case** `bcCapacityRegion_eq_martonInnerBound_of_degraded` — on every
+  physically degraded BC, `bcCapacityRegion W = martonInnerBound W` (the statement's equality on
+  a solved subclass; and `martonInnerBound_eq_superpositionInnerBound_of_degraded`).
+
 ## Not certified
-* `martonInnerBound W ⊆ bcCapacityRegion W` on degraded BCs (the other half of the degraded
-  regression; it needs a single-letter argument showing Marton's region is inside the
-  degraded-BC region, not done).
-* Achievability of Marton's region (`martonInnerBound W ⊆ bcCapacityRegion W`): Marton coding
-  needs the mutual covering lemma, which is not in the library (superposition coding is:
-  `Bridge.superpositionInnerBound_subset_bcCapacityRegion`, db659ea).
+* The converse `bcCapacityRegion W ⊆ martonInnerBound W` beyond physically degraded BCs
+  (less noisy / more capable / deterministic / semideterministic BCs are classical but need
+  Csiszár-sum-identity converses for broadcast codes, not in the library).
 * Any outer bound tighter than the box (UV outer bound, degraded / less noisy converses):
   these need Csiszár-sum-identity converses for broadcast codes.
 * No statement-level conclusion: the problem is open. Huang–Liu–Liu (arXiv:2608.19869, Aug. 2026, not peer reviewed) *claim* a channel on which Marton's bound (with `W`) is strictly suboptimal; unverified — see `problems/marton-inner-bound-tightness.md`. If that claim is correct the
@@ -529,5 +538,52 @@ theorem bcCapacityRegion_subset_martonInnerBound_of_degraded (W : BroadcastChann
   exact superpositionInnerBound_subset_martonInnerBound W
 
 end Regression
+
+/-! ### Marton achievability on the frozen objects
+
+`Bridge.MartonCoding` proves Marton's coding theorem for the Core objects `martonInnerBound`
+and `bcCapacityRegion` (the very definitions used by `Statement`; no bridging is needed). Hence
+the frozen statement is equivalent to the *converse* inclusion alone, and it holds on every
+physically degraded BC (a certified special case, not a resolution). -/
+
+section Achievability
+
+/-- **Marton's inner bound** (Marton 1979; El Gamal–Kim Thm. 8.3) for the frozen objects:
+    `martonInnerBound W ⊆ bcCapacityRegion W` (from `Bridge.martonInnerBound_subset_bcCapacityRegion`). -/
+theorem martonInnerBound_subset_bcCapacityRegion' (W : BroadcastChannel X Y₁ Y₂) :
+    martonInnerBound W ⊆ bcCapacityRegion W :=
+  InfoTheory.Bridge.martonInnerBound_subset_bcCapacityRegion W
+
+/-- For a single channel, `C(W) = martonInnerBound W` is equivalent to the converse inclusion
+    `C(W) ⊆ martonInnerBound W`. -/
+theorem bcCapacityRegion_eq_martonInnerBound_iff (W : BroadcastChannel X Y₁ Y₂) :
+    bcCapacityRegion W = martonInnerBound W ↔ bcCapacityRegion W ⊆ martonInnerBound W :=
+  ⟨fun h => h.le, fun h => Set.Subset.antisymm h (martonInnerBound_subset_bcCapacityRegion' W)⟩
+
+/-- **Reduction of the frozen statement to the converse**: `Statement` holds iff
+    `bcCapacityRegion W ⊆ martonInnerBound W` for every finite two-receiver DMBC. -/
+theorem statement_iff_converse : Statement ↔
+    ∀ (kX kY₁ kY₂ : ℕ) (W : BroadcastChannel (Fin kX) (Fin kY₁) (Fin kY₂)),
+      bcCapacityRegion W ⊆ martonInnerBound W :=
+  forall_congr' fun _ => forall_congr' fun _ => forall_congr' fun _ => forall_congr' fun W =>
+    bcCapacityRegion_eq_martonInnerBound_iff W
+
+/-- **Certified special case: physically degraded BCs.** On every physically degraded BC the
+    capacity region equals the frozen Marton region (Bergmans–Gallager converse via the
+    superposition region, plus Marton achievability). This is the statement's equality on a
+    solved subclass, not a proof of `Statement`. -/
+theorem bcCapacityRegion_eq_martonInnerBound_of_degraded (W : BroadcastChannel X Y₁ Y₂)
+    (hdeg : IsPhysicallyDegradedBC W) : bcCapacityRegion W = martonInnerBound W :=
+  Set.Subset.antisymm (bcCapacityRegion_subset_martonInnerBound_of_degraded W hdeg)
+    (martonInnerBound_subset_bcCapacityRegion' W)
+
+/-- On physically degraded BCs, Marton's region equals Bridge's superposition coding region
+    (both equal the Bergmans–Gallager capacity region). -/
+theorem martonInnerBound_eq_superpositionInnerBound_of_degraded (W : BroadcastChannel X Y₁ Y₂)
+    (hdeg : IsPhysicallyDegradedBC W) : martonInnerBound W = superpositionInnerBound W := by
+  rw [← bcCapacityRegion_eq_martonInnerBound_of_degraded W hdeg, degradedBC_capacity_theorem W hdeg,
+    superpositionInnerBound_eq_degradedBCRegion W hdeg]
+
+end Achievability
 
 end InfoTheory.Known.Certificates.BroadcastChannel

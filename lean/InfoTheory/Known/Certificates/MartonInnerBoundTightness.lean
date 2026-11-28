@@ -31,9 +31,22 @@ five-inequality inner bound `martonCommonInnerBound W`.
   `zero_prod_bcCapacityRegion_mem_martonCommonInnerBound_of_degraded` — on physically degraded
   BCs it contains the Bergmans–Gallager capacity region.
 
+* **Marton achievability, merged / `R₀ = 0` forms** (from
+  `Bridge.martonInnerBound_subset_bcCapacityRegion`, mutual covering + rate splitting):
+  `merge₁_mem_martonInnerBound`, `merge₂_mem_martonInnerBound` — merging the common message
+  into a private one maps the frozen region into Core's `martonInnerBound`
+  (`(R₀, R₁, R₂) ↦ (R₀ + R₁, R₂)`, resp. `(R₁, R₀ + R₂)`), hence
+  `merge₁_mem_bcCapacityRegion`, `merge₂_mem_bcCapacityRegion` (private-message achievability);
+  `isBCCommonAchievable_zero_of_isBCAchievable` and `zero_prod_mem_bcCommonCapacityRegion`
+  (a private-message code is a common-message code with `M₀ = 1`); and
+  `zero_slice_subset_bcCommonCapacityRegion` — **the `R₀ = 0` slice of the frozen Marton region
+  is inside the frozen operational region**: `(0, R₁, R₂) ∈ martonCommonInnerBound W →
+  (0, R₁, R₂) ∈ bcCommonCapacityRegion W`.
+
 ## Not certified
-* Achievability of Marton's region with a common message (Marton 1979; Liang–Kramer 2007;
-  needs mutual covering, not in the library; superposition coding is in `Bridge`, db659ea).
+* Full achievability `martonCommonInnerBound W ⊆ bcCommonCapacityRegion W` for `R₀ > 0`
+  (Liang–Kramer 2007 / El Gamal–Kim Thm. 8.4: the common message must be decoded by both
+  receivers, so it is not obtained by relabelling Bridge's private-message Marton code).
 * The individual axes (e.g. `(R₀, 0, 0)` achievable iff `R₀ ≤ max_{p(x)} min(I(X;Y₁), I(X;Y₂))`
   needs compound-channel coding).
 * No statement-level conclusion: the problem is open. Huang–Liu–Liu (arXiv:2608.19869, Aug. 2026, not peer reviewed) *claim* a channel on which Marton's bound (with `W`) is strictly suboptimal; unverified — see `problems/marton-inner-bound-tightness.md`.
@@ -500,5 +513,102 @@ theorem zero_prod_bcCapacityRegion_mem_martonCommonInnerBound_of_degraded
   exact zero_prod_superposition_mem_martonCommonInnerBound W hr
 
 end Regression
+
+/-! ### Achievability consequences of Marton coding (`Bridge.MartonCoding`)
+
+Merging the common message into one private message maps the frozen five-inequality region
+into the two-message Marton region `InfoTheory.martonInnerBound`:
+`(R₀, R₁, R₂) ↦ (R₀ + R₁, R₂)` and `(R₀, R₁, R₂) ↦ (R₁, R₀ + R₂)`. By
+`Bridge.martonInnerBound_subset_bcCapacityRegion` those pairs are achievable for the private
+message problem. A private-message code is a common-message code with `M₀ = 1`, so the `R₀ = 0`
+slice of the frozen region is inside the frozen operational region `bcCommonCapacityRegion`. -/
+
+section Achievability
+
+/-- Merging the common message into receiver 1's message:
+    `(R₀, R₁, R₂) ∈ martonCommonInnerBound W → (R₀ + R₁, R₂) ∈ martonInnerBound W`. -/
+theorem merge₁_mem_martonInnerBound (W : BroadcastChannel X Y₁ Y₂) {r : ℝ × ℝ × ℝ}
+    (hr : r ∈ martonCommonInnerBound W) : (r.1 + r.2.1, r.2.2) ∈ martonInnerBound W := by
+  have hc : Continuous (fun r : ℝ × ℝ × ℝ => (r.1 + r.2.1, r.2.2)) := by fun_prop
+  have := map_mem_closure hc hr (t := martonInnerBound W) (fun x hx => by
+    obtain ⟨h0, h1, h2, k₀, k₁, k₂, P, hP⟩ := hx
+    apply subset_closure
+    refine ⟨add_nonneg h0 h1, h2, k₀, k₁, k₂, P, ?_⟩
+    dsimp only at hP ⊢
+    obtain ⟨a, b, c, d, -⟩ := hP
+    exact ⟨a, by linarith, c, d⟩)
+  rwa [IsClosed.closure_eq (show IsClosed (martonInnerBound W) from isClosed_closure)] at this
+
+/-- Merging the common message into receiver 2's message:
+    `(R₀, R₁, R₂) ∈ martonCommonInnerBound W → (R₁, R₀ + R₂) ∈ martonInnerBound W`. -/
+theorem merge₂_mem_martonInnerBound (W : BroadcastChannel X Y₁ Y₂) {r : ℝ × ℝ × ℝ}
+    (hr : r ∈ martonCommonInnerBound W) : (r.2.1, r.1 + r.2.2) ∈ martonInnerBound W := by
+  have hc : Continuous (fun r : ℝ × ℝ × ℝ => (r.2.1, r.1 + r.2.2)) := by fun_prop
+  have := map_mem_closure hc hr (t := martonInnerBound W) (fun x hx => by
+    obtain ⟨h0, h1, h2, k₀, k₁, k₂, P, hP⟩ := hx
+    apply subset_closure
+    refine ⟨h1, add_nonneg h0 h2, k₀, k₁, k₂, P, ?_⟩
+    dsimp only at hP ⊢
+    obtain ⟨a, b, c, d, -⟩ := hP
+    exact ⟨by linarith, b, by linarith, by linarith⟩)
+  rwa [IsClosed.closure_eq (show IsClosed (martonInnerBound W) from isClosed_closure)] at this
+
+/-- **Marton achievability, merged form**: for `(R₀, R₁, R₂)` in the frozen Marton region, the
+    private-message pair `(R₀ + R₁, R₂)` is in the capacity region `bcCapacityRegion W`. -/
+theorem merge₁_mem_bcCapacityRegion (W : BroadcastChannel X Y₁ Y₂) {r : ℝ × ℝ × ℝ}
+    (hr : r ∈ martonCommonInnerBound W) : (r.1 + r.2.1, r.2.2) ∈ bcCapacityRegion W :=
+  martonInnerBound_subset_bcCapacityRegion W (merge₁_mem_martonInnerBound W hr)
+
+/-- **Marton achievability, merged form**: `(R₁, R₀ + R₂) ∈ bcCapacityRegion W`. -/
+theorem merge₂_mem_bcCapacityRegion (W : BroadcastChannel X Y₁ Y₂) {r : ℝ × ℝ × ℝ}
+    (hr : r ∈ martonCommonInnerBound W) : (r.2.1, r.1 + r.2.2) ∈ bcCapacityRegion W :=
+  martonInnerBound_subset_bcCapacityRegion W (merge₂_mem_martonInnerBound W hr)
+
+/-- A private-message BC code is a common-message code with `M₀ = 1`:
+    `IsBCAchievable W R₁ R₂ → IsBCCommonAchievable W 0 R₁ R₂`. -/
+theorem isBCCommonAchievable_zero_of_isBCAchievable (W : BroadcastChannel X Y₁ Y₂) {R₁ R₂ : ℝ}
+    (h : IsBCAchievable W R₁ R₂) : IsBCCommonAchievable W 0 R₁ R₂ := by
+  classical
+  obtain ⟨h1, h2, hach⟩ := h
+  refine ⟨le_rfl, h1, h2, fun ε hε => ?_⟩
+  obtain ⟨N, hN⟩ := hach ε hε
+  refine ⟨N, fun n hn => ?_⟩
+  obtain ⟨enc, dec₁, dec₂, herr⟩ := hN n hn
+  dsimp only at herr ⊢
+  rw [natMax_zero]
+  refine ⟨fun _ m₁ m₂ => enc m₁ m₂, fun y => (0, dec₁ y), fun y => (0, dec₂ y), ?_⟩
+  have key : ∀ (m₀ : Fin 1) (m₁ : Fin (Nat.max 1 ⌊(2 : ℝ) ^ ((n : ℝ) * R₁)⌋₊))
+      (m₂ : Fin (Nat.max 1 ⌊(2 : ℝ) ^ ((n : ℝ) * R₂)⌋₊)) (y : Fin n → Y₁ × Y₂),
+      (if ((0 : Fin 1), dec₁ (fun i => (y i).1)) ≠ (m₀, m₁) ∨
+          ((0 : Fin 1), dec₂ (fun i => (y i).2)) ≠ (m₀, m₂)
+        then (W.power n).trans (enc m₁ m₂) y else 0) =
+      (if dec₁ (fun i => (y i).1) ≠ m₁ ∨ dec₂ (fun i => (y i).2) ≠ m₂
+        then (W.power n).trans (enc m₁ m₂) y else 0) := by
+    intro m₀ m₁ m₂ y
+    rw [Subsingleton.elim m₀ 0]
+    simp only [ne_eq, Prod.mk.injEq, true_and]
+  simp only [key, Fin.sum_univ_one, one_mul]
+  exact herr
+
+/-- The private-message capacity region embeds in the `R₀ = 0` slice of the frozen
+    common-message capacity region: `r ∈ bcCapacityRegion W → (0, r) ∈ bcCommonCapacityRegion W`. -/
+theorem zero_prod_mem_bcCommonCapacityRegion (W : BroadcastChannel X Y₁ Y₂) {r : ℝ × ℝ}
+    (hr : r ∈ bcCapacityRegion W) : ((0 : ℝ), r.1, r.2) ∈ bcCommonCapacityRegion W := by
+  have hc : Continuous (fun r : ℝ × ℝ => ((0 : ℝ), r.1, r.2)) := by fun_prop
+  have := map_mem_closure hc hr (t := bcCommonCapacityRegion W) (fun x hx =>
+    subset_closure (isBCCommonAchievable_zero_of_isBCAchievable W hx))
+  rwa [IsClosed.closure_eq (show IsClosed (bcCommonCapacityRegion W) from isClosed_closure)]
+    at this
+
+/-- **Achievability of the `R₀ = 0` slice of the frozen Marton region** (Marton 1979 via
+    `Bridge.martonInnerBound_subset_bcCapacityRegion`): if `(0, R₁, R₂)` lies in
+    `martonCommonInnerBound W` then it lies in `bcCommonCapacityRegion W`. -/
+theorem zero_slice_subset_bcCommonCapacityRegion (W : BroadcastChannel X Y₁ Y₂) {R₁ R₂ : ℝ}
+    (h : ((0 : ℝ), R₁, R₂) ∈ martonCommonInnerBound W) :
+    ((0 : ℝ), R₁, R₂) ∈ bcCommonCapacityRegion W := by
+  have := zero_prod_mem_bcCommonCapacityRegion W (merge₁_mem_bcCapacityRegion W h)
+  simpa using this
+
+end Achievability
 
 end InfoTheory.Known.Certificates.MartonInnerBoundTightness

@@ -35,19 +35,21 @@ broadcast channel `W` with private messages, the operational region
   particular the Gohari–El Gamal–Anantharam-type gap that refuted the pre-fix region cannot
   recur on degraded sub-BCs.
 
+* **Regression** `martonInnerBound_bc12_subset_umRegion` — **the full useless-receiver
+  inclusion**: for every 3-DMBC, `martonInnerBound (bc12 W) × {0} ⊆ umRegion W` (Marton's
+  region *with* the common auxiliary, binning included; `Q, W_UM` constant, `U₁₂ := W`,
+  `V₁ := U`, `V₂ := V`; explicit Fourier–Motzkin witnesses in `marton_split_reals`, and `U, V`
+  constant when `I(U;V|W) > I(U;Y₁|W) + I(V;Y₂|W)`). Together with
+  `Bridge.martonInnerBound_subset_bcCapacityRegion` this says the frozen UM region is at least
+  Marton's (achievable) region on the `R₃ = 0` face; the Gohari–El Gamal–Anantharam gap that
+  refuted the pre-fix region therefore cannot recur.
+
 ## Not certified
-* The full useless-receiver inclusion `martonInnerBound (Y₁, Y₂) × {0} ⊆ umRegion W` (needs the
-  Fourier–Motzkin elimination with binning, see the next item); only the superposition part
-  (no binning) is certified above.
 * Achievability of `umRegion` (Padakandla–Pradhan, Theorem 2; needs multivariate covering and
   superposition — two-receiver superposition coding is in
   `Bridge.superpositionInnerBound_subset_bcCapacityRegion`), and any converse beyond the box.
-* The useless-receiver check (on paper, see the module docstring of the problem file):
-  for every 3-DMBC, `martonInnerBound (Y₁, Y₂) × {0} ⊆ umRegion W` (take `Q, W` constant,
-  `U₁₂ := W_Marton`, `V₁ := U`, `V₂ := V`, the rest constant; Fourier–Motzkin on the
-  rate-split, with `U = V =` const when `I(U;Y₁|W) + I(V;Y₂|W) < I(U;V|W)`). Hence the
-  Gohari–El Gamal–Anantharam gap that refuted the pre-fix region `marton3InnerBound` does
-  not apply.
+* The converse direction of the useless-receiver check (`umRegion W ∩ {R₃ = 0}` no larger than
+  Marton's region when `Y₃` is useless; expected, not proved).
 * Known suboptimality results: Padakandla–Pradhan (arXiv:1207.3146) prove the UM region is
   strictly suboptimal for some 3-DMBCs *with an input cost*; Huang–Liu–Liu (arXiv:2608.19869,
   unrefereed) claim two-receiver Marton is suboptimal, which via a useless third receiver
@@ -788,6 +790,382 @@ theorem bcCapacityRegion_bc12_subset_umRegion_of_degraded (W : BroadcastChannel3
   exact superpositionInnerBound_bc12_subset_umRegion W
 
 end Regression
+
+/-! ### Regression: Marton's region of receivers 1, 2 on the `R₃ = 0` face
+
+The useless-receiver check of the problem file, formalised. Given a Marton auxiliary law
+`p(w, u, v, x)` for the sub-BC `bc12 W`, take `Q, W_UM` constant, `U₁₂ := W`, `V₁ := U`,
+`V₂ := V` and all other layers constant (`martonUMEmbed`). Every covering term vanishes except
+`I(V₁; V₂ | U₁₂) = I(U; V | W)`, and the packing bounds of receivers 1, 2 become
+`I(U; Y₁ | W)`, `I(W, U; Y₁)`, `I(V; Y₂ | W)`, `I(W, V; Y₂)` (receiver 3 decodes nothing).
+The remaining linear system in the split / bin rates is El Gamal–Kim's rate-split form of
+Marton's region; `marton_split_reals` performs the Fourier–Motzkin step with explicit witnesses
+when `I(U;V|W) ≤ I(U;Y₁|W) + I(V;Y₂|W)`. In the other case the Marton constraints force
+`R₁ + R₂ ≤ min(I(W;Y₁), I(W;Y₂))` and the point is reached with `U, V` constant. -/
+
+section MartonRegression
+
+open InfoTheory.Known.Certificates.BroadcastChannel (joint_eq_map_of_comp)
+
+/-- Fourier–Motzkin step (real arithmetic only). -/
+theorem marton_split_reals {R₁ R₂ A₁ A₂ I₁ I₂ B : ℝ} (h1 : 0 ≤ R₁) (h2 : 0 ≤ R₂)
+    (hI₁ : 0 ≤ I₁) (hI₂ : 0 ≤ I₂) (hIA₂ : I₂ ≤ A₂)
+    (hB0 : 0 ≤ B) (hB : B ≤ I₁ + I₂) (hR₁ : R₁ ≤ A₁) (hR₂ : R₂ ≤ A₂)
+    (hs₁ : R₁ + R₂ ≤ A₁ + I₂ - B) (hs₂ : R₁ + R₂ ≤ I₁ + A₂ - B) :
+    ∃ T₀ T₁ c₁ c₂ s₀ s₁ : ℝ, 0 ≤ T₀ ∧ 0 ≤ T₁ ∧ 0 ≤ c₁ ∧ 0 ≤ c₂ ∧ 0 ≤ s₀ ∧ 0 ≤ s₁ ∧
+      R₁ = T₀ + c₁ ∧ R₂ = T₁ + c₂ ∧ T₀ + s₀ ≤ I₁ ∧ T₁ + s₁ ≤ I₂ ∧
+      c₁ + c₂ + T₀ + s₀ ≤ A₁ ∧ c₁ + c₂ + T₁ + s₁ ≤ A₂ ∧ B ≤ s₀ + s₁ := by
+  set s₀ := max 0 (max (B - I₂) (B - A₂ + R₂)) with hs₀
+  have l0 : 0 ≤ s₀ := le_max_left _ _
+  have l1 : B - I₂ ≤ s₀ := (le_max_left _ _).trans (le_max_right _ _)
+  have l2 : B - A₂ + R₂ ≤ s₀ := (le_max_right _ _).trans (le_max_right _ _)
+  have u1 : s₀ ≤ B := max_le hB0 (max_le (by linarith) (by linarith))
+  have u2 : s₀ ≤ I₁ := max_le hI₁ (max_le (by linarith) (by linarith))
+  have u3 : s₀ ≤ A₁ - R₁ := max_le (by linarith) (max_le (by linarith) (by linarith))
+  refine ⟨min R₁ (I₁ - s₀), min R₂ (I₂ - (B - s₀)), R₁ - min R₁ (I₁ - s₀),
+    R₂ - min R₂ (I₂ - (B - s₀)), s₀, B - s₀, le_min h1 (by linarith), le_min h2 (by linarith),
+    by linarith [min_le_left R₁ (I₁ - s₀)], by linarith [min_le_left R₂ (I₂ - (B - s₀))], l0,
+    by linarith, by ring, by ring, by linarith [min_le_right R₁ (I₁ - s₀)],
+    by linarith [min_le_right R₂ (I₂ - (B - s₀))], ?_, ?_, by linarith⟩
+  · rcases min_cases R₂ (I₂ - (B - s₀)) with ⟨h, -⟩ | ⟨h, -⟩ <;> rw [h] <;> linarith
+  · rcases min_cases R₁ (I₁ - s₀) with ⟨h, -⟩ | ⟨h, -⟩ <;> rw [h] <;> linarith
+
+variable {Ω α α' β β' γ γ' : Type*} [Fintype Ω] [Fintype α] [Fintype α'] [Fintype β]
+  [Fintype β'] [Fintype γ] [Fintype γ']
+
+/-- Relabelling all three variables of a conditional mutual information injectively. -/
+theorem cmi_relabel3 (R : ProbDist Ω) (a : Ω → α) (b : Ω → β) (c : Ω → γ) (g : α → α')
+    (g' : β → β') (h : γ → γ') (hg : Function.Injective g) (hg' : Function.Injective g')
+    (hh : Function.Injective h) :
+    condMutualInfo (R.map fun t => (g (a t), g' (b t), h (c t))) =
+      condMutualInfo (R.map fun t => (a t, b t, c t)) := by
+  have e1 := cmi_relabel R (fun t => (g (a t), g' (b t), h (c t))) (fun t => (a t, g' (b t), c t))
+    g h hg hh (fun t => rfl)
+  have e2 := condMutualInfo_swap R a (fun t => g' (b t)) c
+  have e3 := cmi_relabel R (fun t => (g' (b t), a t, c t)) (fun t => (b t, a t, c t)) g' id hg'
+    Function.injective_id (fun t => rfl)
+  have e4 := condMutualInfo_swap R a b c
+  exact e1.trans (e2.symm.trans (e3.trans e4))
+
+/-- The joint law through `bc12 W` is the `(Y₁, Y₂)`-marginal of the joint law through `W`. -/
+theorem joint_bc12_eq_map {A : Type*} [Fintype A] (W : BroadcastChannel3 X Y₁ Y₂ Y₃)
+    (P : ProbDist A) (f : A → X) (J : ProbDist (A × (Y₁ × Y₂)))
+    (hJ : ∀ z, J.pmf z = P.pmf z.1 * (bc12 W).trans (f z.1) z.2)
+    (K : ProbDist (A × (Y₁ × Y₂ × Y₃))) (hK : ∀ z, K.pmf z = P.pmf z.1 * W.trans (f z.1) z.2) :
+    J = K.map (fun z => (z.1, (z.2.1, z.2.2.1))) := by
+  classical
+  refine probDist_eq_of_pmf fun ⟨a, y₁, y₂⟩ => ?_
+  rw [hJ]
+  simp only [bc12, ProbDist.map, hK]
+  rw [Fintype.sum_prod_type, Finset.sum_eq_single a]
+  · rw [Finset.mul_sum, Fintype.sum_prod_type, Finset.sum_eq_single y₁]
+    · rw [Fintype.sum_prod_type, Finset.sum_eq_single y₂]
+      · simp
+      · intro b _ hb; simp [hb]
+      · simp
+    · intro b _ hb; simp [hb]
+    · simp
+  · intro b _ hb; simp [hb]
+  · simp
+
+
+/-- The UM auxiliary tuple used for a Marton point: `Q, W_UM` constant, `U₁₂ := W`,
+    `V₁ := U`, `V₂ := V`, everything else constant. -/
+def martonUMEmbed (kW kU kV : ℕ) (t : Fin kW × Fin kU × Fin kV × X) :
+    UMAux (kW + kU + kV + 1) X :=
+  (0, 0, fun j => if j = 0 then Fin.castLE (by omega) t.1 else 0,
+    fun j => if j = 0 then Fin.castLE (by omega) t.2.1 else
+      if j = 1 then Fin.castLE (by omega) t.2.2.1 else 0, t.2.2.2)
+
+/-- A rate vector supported on the first two coordinates. -/
+def vec2 (a b : ℝ) : Fin 3 → ℝ := fun j => if j = 0 then a else if j = 1 then b else 0
+
+/-- Covering constraints for the Marton embedding: only `I(V₁; V₂ | U₁₂) = I(U; V | W)` survives. -/
+theorem martonUM_covering {kW kU kV : ℕ} (P : ProbDist (Fin kW × Fin kU × Fin kV × X))
+    {s₀ s₁ : ℝ} (hs₀ : 0 ≤ s₀) (hs₁ : 0 ≤ s₁)
+    (hB : condMutualInfo (P.map fun t => (t.2.1, t.2.2.1, t.1)) ≤ s₀ + s₁) :
+    umCoveringConstraints (P.map (martonUMEmbed kW kU kV)) 0 (vec2 s₀ s₁) := by
+  classical
+  let k := kW + kU + kV + 1
+  have hιC : Function.Injective (Fin.castLE (by omega) : Fin kW → Fin k) := Fin.castLE_injective _
+  have hB' : condMutualInfo ((P.map (martonUMEmbed kW kU kV)).map fun t =>
+      (t.2.2.2.1 0, t.2.2.2.1 1, ((t.1, t.2.1), t.2.2.1))) =
+      condMutualInfo (P.map fun t => (t.2.1, t.2.2.1, t.1)) := by
+    rw [map_comp_eq]
+    exact cmi_relabel3 P (fun t => t.2.1) (fun t => t.2.2.1) (fun t => t.1)
+      (Fin.castLE (by omega) : Fin kU → Fin k) (Fin.castLE (by omega) : Fin kV → Fin k)
+      (fun c => (((0 : Fin k), (0 : Fin k)),
+        fun j : Fin 3 => if j = 0 then (Fin.castLE (by omega) c : Fin k) else 0))
+      (Fin.castLE_injective _) (Fin.castLE_injective _)
+      (fun a b hab => hιC (by simpa using congrFun (congrArg Prod.snd hab) 0))
+  unfold umCoveringConstraints
+  simp only [map_comp_eq] at hB' ⊢
+  generalize condMutualInfo (P.map fun t => (t.2.1, t.2.2.1, t.1)) = Bv at hB hB' ⊢
+  refine ⟨fun i => ?_, ?_, ?_⟩
+  · fin_cases i <;>
+      repeat (first | rw [cmi_const_fst _ _ (fun t t' => rfl)] |
+        rw [cmi_const_snd _ _ (fun t t' => rfl)])
+    · refine ⟨by simp, by simp [vec2, hs₀], le_trans (le_of_eq ?_) (le_trans hB (le_of_eq ?_))⟩
+      · rw [show (0 : ℝ) + 0 + (0 + 0) = 0 by ring, zero_add]
+        exact hB'
+      · simp [vec2]
+    all_goals (simp [vec2]; linarith)
+  · rw [cmi_const_snd _ _ (fun t t' => rfl), cmi_const_snd _ _ (fun t t' => rfl)]
+    simp
+  · rw [hB']
+    repeat (first | rw [cmi_const_fst _ _ (fun t t' => rfl)] |
+        rw [cmi_const_snd _ _ (fun t t' => rfl)])
+    simp [vec2]
+    linarith
+
+/-- Decoding constraints of receiver 1 for the Marton embedding. -/
+theorem martonUM_decoding₁ {kW kU kV : ℕ}
+    [Nonempty (Fin kW)] [Nonempty (Fin kU)]
+    (K3 : ProbDist ((Fin kW × Fin kU × Fin kV × X) × (Y₁ × Y₂ × Y₃)))
+    {T₀ T₁ c₁ c₂ s₀ s₁ : ℝ}
+    (d₁ : T₀ + s₀ ≤ condMutualInfo (K3.map fun z => (z.1.2.1, z.2.1, z.1.1)))
+    (d₃ : c₁ + c₂ + T₀ + s₀ ≤ mutualInfo (K3.map fun z => ((z.1.1, z.1.2.1), z.2.1))) :
+    umDecodingConstraints
+      ((K3.map (fun z => (martonUMEmbed kW kU kV z.1, z.2))).map fun z => (z.1, z.2.1)) 0
+      0 (vec2 c₁ 0) (vec2 c₂ 0) 0 (vec2 T₀ T₁) (vec2 s₀ s₁) := by
+  classical
+  let k := kW + kU + kV + 1
+  let ιC : Fin kW → Fin k := Fin.castLE (by omega)
+  let ιU : Fin kU → Fin k := Fin.castLE (by omega)
+  have hιC : Function.Injective ιC := Fin.castLE_injective _
+  have hιU : Function.Injective ιU := Fin.castLE_injective _
+  have iC2 : Function.Injective (fun c : Fin kW => (((0 : Fin k), (0 : Fin k)), ιC c)) :=
+    fun a b hab => hιC (by simp only [Prod.mk.injEq] at hab; exact hab.2)
+  unfold umDecodingConstraints
+  simp only [map_comp_eq]
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩
+  · exact le_trans (le_of_eq (by simp [vec2])) (le_trans d₁ (le_of_eq (cmi_relabel K3 _ _ ιU
+      (fun c => (((0 : Fin k), (0 : Fin k)), ιC c, (0 : Fin k))) hιU
+      (fun a b hab => hιC (by simp only [Prod.mk.injEq] at hab; exact hab.2.1))
+      (fun t => rfl)).symm))
+  · exact le_trans (le_of_eq (by simp [vec2] )) (le_trans d₃
+      (le_add_of_le_of_nonneg (mi_le_cmi_of_const K3 _ (fun z => (z.1.1, z.1.2.1))
+        (fun z => z.2.1) (((0 : Fin k), (0 : Fin k)), (0 : Fin k))
+        (fun p => (Function.invFun ιC p.1, Function.invFun ιU p.2)) (fun t => rfl)
+        (fun t => Prod.ext (Function.leftInverse_invFun hιC t.1.1).symm
+          (Function.leftInverse_invFun hιU t.1.2.1).symm) (fun t => rfl))
+        (condMutualInfo_nonneg _)))
+  · exact le_trans (le_of_eq (by simp [vec2])) (le_trans d₁ (le_add_of_le_of_nonneg
+      (le_of_eq (cmi_relabel K3 _ _ (fun u => ((0 : Fin k), ιU u))
+        (fun c => (((0 : Fin k), (0 : Fin k)), ιC c))
+        (fun a b hab => hιU (by simp only [Prod.mk.injEq] at hab; exact hab.2)) iC2
+        (fun t => rfl)).symm) (condMutualInfo_nonneg _)))
+  · exact le_trans (le_of_eq (by simp [vec2] )) (le_trans d₃
+      (le_add_of_le_of_nonneg (mi_le_cmi_of_const K3 _ (fun z => (z.1.1, z.1.2.1))
+        (fun z => z.2.1) ((0 : Fin k), (0 : Fin k))
+        (fun p => (Function.invFun ιC p.1, Function.invFun ιU p.2.2)) (fun t => rfl)
+        (fun t => Prod.ext (Function.leftInverse_invFun hιC t.1.1).symm
+          (Function.leftInverse_invFun hιU t.1.2.1).symm) (fun t => rfl))
+        (condMutualInfo_nonneg _)))
+  · exact le_trans (le_of_eq (by simp [vec2] )) (le_trans d₃
+      (le_add_of_le_of_nonneg (mi_le_cmi_of_const K3 _ (fun z => (z.1.1, z.1.2.1))
+        (fun z => z.2.1) (0 : Fin k)
+        (fun p => (Function.invFun ιC p.2.1, Function.invFun ιU p.2.2.2)) (fun t => rfl)
+        (fun t => Prod.ext (Function.leftInverse_invFun hιC t.1.1).symm
+          (Function.leftInverse_invFun hιU t.1.2.1).symm) (fun t => rfl))
+        (condMutualInfo_nonneg _)))
+
+/-- Decoding constraints of receiver 2 for the Marton embedding. -/
+theorem martonUM_decoding₂ {kW kU kV : ℕ}
+    [Nonempty (Fin kW)] [Nonempty (Fin kV)]
+    (K3 : ProbDist ((Fin kW × Fin kU × Fin kV × X) × (Y₁ × Y₂ × Y₃)))
+    {T₀ T₁ c₁ c₂ s₀ s₁ : ℝ}
+    (d₂ : T₁ + s₁ ≤ condMutualInfo (K3.map fun z => (z.1.2.2.1, z.2.2.1, z.1.1)))
+    (d₄ : c₁ + c₂ + T₁ + s₁ ≤ mutualInfo (K3.map fun z => ((z.1.1, z.1.2.2.1), z.2.2.1))) :
+    umDecodingConstraints
+      ((K3.map (fun z => (martonUMEmbed kW kU kV z.1, z.2))).map fun z => (z.1, z.2.2.1)) 1
+      0 (vec2 c₁ 0) (vec2 c₂ 0) 0 (vec2 T₀ T₁) (vec2 s₀ s₁) := by
+  classical
+  let k := kW + kU + kV + 1
+  let ιC : Fin kW → Fin k := Fin.castLE (by omega)
+  let ιV : Fin kV → Fin k := Fin.castLE (by omega)
+  have hιC : Function.Injective ιC := Fin.castLE_injective _
+  have hιV : Function.Injective ιV := Fin.castLE_injective _
+  have iC2 : Function.Injective (fun c : Fin kW => (((0 : Fin k), (0 : Fin k)), ιC c)) :=
+    fun a b hab => hιC (by simp only [Prod.mk.injEq] at hab; exact hab.2)
+  unfold umDecodingConstraints
+  simp only [map_comp_eq]
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩
+  · exact le_trans (le_of_eq (by simp [vec2])) (le_trans d₂ (le_of_eq (cmi_relabel K3 _ _ ιV
+      (fun c => (((0 : Fin k), (0 : Fin k)), (0 : Fin k), ιC c)) hιV
+      (fun a b hab => hιC (by simp only [Prod.mk.injEq] at hab; exact hab.2.2))
+      (fun t => rfl)).symm))
+  · exact le_trans (le_of_eq (by simp [vec2])) (le_trans d₂ (le_add_of_le_of_nonneg
+      (le_of_eq (cmi_relabel K3 _ _ (fun v => ((0 : Fin k), ιV v))
+        (fun c => (((0 : Fin k), (0 : Fin k)), ιC c))
+        (fun a b hab => hιV (by simp only [Prod.mk.injEq] at hab; exact hab.2)) iC2
+        (fun t => rfl)).symm) (condMutualInfo_nonneg _)))
+  · exact le_trans (le_of_eq (by simp [vec2] )) (le_trans d₄
+      (le_add_of_le_of_nonneg (mi_le_cmi_of_const K3 _ (fun z => (z.1.1, z.1.2.2.1))
+        (fun z => z.2.2.1) (((0 : Fin k), (0 : Fin k)), (0 : Fin k))
+        (fun p => (Function.invFun ιC p.1, Function.invFun ιV p.2)) (fun t => rfl)
+        (fun t => Prod.ext (Function.leftInverse_invFun hιC t.1.1).symm
+          (Function.leftInverse_invFun hιV t.1.2.2.1).symm) (fun t => rfl))
+        (condMutualInfo_nonneg _)))
+  · exact le_trans (le_of_eq (by simp [vec2] )) (le_trans d₄
+      (le_add_of_le_of_nonneg (mi_le_cmi_of_const K3 _ (fun z => (z.1.1, z.1.2.2.1))
+        (fun z => z.2.2.1) ((0 : Fin k), (0 : Fin k))
+        (fun p => (Function.invFun ιC p.2.1, Function.invFun ιV p.2.2)) (fun t => rfl)
+        (fun t => Prod.ext (Function.leftInverse_invFun hιC t.1.1).symm
+          (Function.leftInverse_invFun hιV t.1.2.2.1).symm) (fun t => rfl))
+        (condMutualInfo_nonneg _)))
+  · exact le_trans (le_of_eq (by simp [vec2] )) (le_trans d₄
+      (le_add_of_le_of_nonneg (mi_le_cmi_of_const K3 _ (fun z => (z.1.1, z.1.2.2.1))
+        (fun z => z.2.2.1) (0 : Fin k)
+        (fun p => (Function.invFun ιC p.2.2.1, Function.invFun ιV p.2.2.2)) (fun t => rfl)
+        (fun t => Prod.ext (Function.leftInverse_invFun hιC t.1.1).symm
+          (Function.leftInverse_invFun hιV t.1.2.2.1).symm) (fun t => rfl))
+        (condMutualInfo_nonneg _)))
+
+/-- Decoding constraints of receiver 3 (nothing to decode) for the Marton embedding. -/
+theorem martonUM_decoding₃ {kW kU kV : ℕ}
+    (K3 : ProbDist ((Fin kW × Fin kU × Fin kV × X) × (Y₁ × Y₂ × Y₃)))
+    (T₀ T₁ c₁ c₂ s₀ s₁ : ℝ) :
+    umDecodingConstraints
+      ((K3.map (fun z => (martonUMEmbed kW kU kV z.1, z.2))).map fun z => (z.1, z.2.2.2)) 2
+      0 (vec2 c₁ 0) (vec2 c₂ 0) 0 (vec2 T₀ T₁) (vec2 s₀ s₁) := by
+  unfold umDecodingConstraints
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩
+  · exact le_trans (le_of_eq (by simp [vec2])) (condMutualInfo_nonneg _)
+  all_goals
+    exact le_trans (le_of_eq (by simp [vec2]))
+      (add_nonneg (condMutualInfo_nonneg _) (condMutualInfo_nonneg _))
+
+/-- **Marton point ⇒ UM point** (before closure), under `I(U;V|W) ≤ I(U;Y₁|W) + I(V;Y₂|W)`:
+    Fourier–Motzkin rate split (`marton_split_reals`) plus the embedding `martonUMEmbed`. -/
+theorem marton_pre_mem_umRegion (W : BroadcastChannel3 X Y₁ Y₂ Y₃) {kW kU kV : ℕ}
+    (P : ProbDist (Fin kW × Fin kU × Fin kV × X))
+    (K3 : ProbDist ((Fin kW × Fin kU × Fin kV × X) × (Y₁ × Y₂ × Y₃)))
+    (hK : ∀ z, K3.pmf z = P.pmf z.1 * W.trans z.1.2.2.2 z.2) {R₁ R₂ : ℝ}
+    (h1 : 0 ≤ R₁) (h2 : 0 ≤ R₂)
+    (hB : condMutualInfo (P.map fun t => (t.2.1, t.2.2.1, t.1)) ≤
+      condMutualInfo (K3.map fun z => (z.1.2.1, z.2.1, z.1.1)) +
+        condMutualInfo (K3.map fun z => (z.1.2.2.1, z.2.2.1, z.1.1)))
+    (hR₁ : R₁ ≤ mutualInfo (K3.map fun z => ((z.1.1, z.1.2.1), z.2.1)))
+    (hR₂ : R₂ ≤ mutualInfo (K3.map fun z => ((z.1.1, z.1.2.2.1), z.2.2.1)))
+    (hs₁ : R₁ + R₂ ≤ mutualInfo (K3.map fun z => ((z.1.1, z.1.2.1), z.2.1)) +
+      condMutualInfo (K3.map fun z => (z.1.2.2.1, z.2.2.1, z.1.1)) -
+        condMutualInfo (P.map fun t => (t.2.1, t.2.2.1, t.1)))
+    (hs₂ : R₁ + R₂ ≤ condMutualInfo (K3.map fun z => (z.1.2.1, z.2.1, z.1.1)) +
+      mutualInfo (K3.map fun z => ((z.1.1, z.1.2.2.1), z.2.2.1)) -
+        condMutualInfo (P.map fun t => (t.2.1, t.2.2.1, t.1))) :
+    (R₁, R₂, (0 : ℝ)) ∈ umRegion W := by
+  classical
+  obtain ⟨a₀, -⟩ : ∃ a : Fin kW × Fin kU × Fin kV × X, True := by
+    by_contra hc; push Not at hc
+    have : ∑ t : Fin kW × Fin kU × Fin kV × X, P.pmf t = 0 :=
+      Finset.sum_eq_zero fun t _ => (hc t).elim
+    linarith [P.sum_one]
+  have : Nonempty (Fin kW) := ⟨a₀.1⟩
+  have : Nonempty (Fin kU) := ⟨a₀.2.1⟩
+  have : Nonempty (Fin kV) := ⟨a₀.2.2.1⟩
+  have c₂ := mutualInfo_add_condMutualInfo K3 (fun z => z.1.1) (fun z => z.1.2.2.1)
+    (fun z => z.2.2.1)
+  have n₂ := mutualInfo_nonneg (K3.map fun z => (z.1.1, z.2.2.1))
+  obtain ⟨T₀, T₁, c₁, c₂', s₀, s₁, hT₀, hT₁, hc₁, hc₂, hs₀, hs₁', e₁, e₂, d₁, d₂, d₃, d₄, d₅⟩ :=
+    marton_split_reals h1 h2 (condMutualInfo_nonneg _) (condMutualInfo_nonneg _)
+      (by linarith) (condMutualInfo_nonneg _) hB hR₁ hR₂ hs₁ hs₂
+  refine subset_closure (subset_convexHull ℝ _ ⟨_, P.map (martonUMEmbed kW kU kV), 0,
+    vec2 c₁ 0, vec2 c₂' 0, 0, vec2 T₀ T₁, vec2 s₀ s₁, ?_, ?_,
+    martonUM_covering P hs₀ hs₁' d₅, ?_⟩)
+  · intro i
+    refine ⟨le_rfl, ?_, ?_, le_rfl, ?_, ?_⟩ <;> simp only [vec2] <;> split_ifs <;> linarith
+  · refine Prod.ext ?_ (Prod.ext ?_ ?_) <;> simp [vec2] <;> linarith
+  · intro J
+    have hJ : J = K3.map (fun z => (martonUMEmbed kW kU kV z.1, z.2)) :=
+      joint_eq_map_of_comp W P (fun t => t.2.2.2) (martonUMEmbed kW kU kV)
+        (fun t => t.2.2.2.2) (fun _ => rfl) J (fun _ => rfl) K3 hK
+    rw [hJ]
+    exact ⟨martonUM_decoding₁ K3 d₁ d₃, martonUM_decoding₂ K3 d₂ d₄,
+      martonUM_decoding₃ K3 _ _ _ _ _ _⟩
+
+/-- **Marton point ⇒ UM point** in general: if `I(U;V|W) > I(U;Y₁|W) + I(V;Y₂|W)` the Marton
+    constraints force `R₁ + R₂ ≤ min(I(W;Y₁), I(W;Y₂))`, achieved with `U, V` constant. -/
+theorem marton_point_mem_umRegion (W : BroadcastChannel3 X Y₁ Y₂ Y₃) {kW kU kV : ℕ}
+    (P : ProbDist (Fin kW × Fin kU × Fin kV × X))
+    (J : ProbDist ((Fin kW × Fin kU × Fin kV × X) × (Y₁ × Y₂)))
+    (hJ : ∀ z, J.pmf z = P.pmf z.1 * (bc12 W).trans z.1.2.2.2 z.2) {R₁ R₂ : ℝ}
+    (h1 : 0 ≤ R₁) (h2 : 0 ≤ R₂)
+    (ha : R₁ ≤ mutualInfo (J.map fun z => ((z.1.1, z.1.2.1), z.2.1)))
+    (hb : R₂ ≤ mutualInfo (J.map fun z => ((z.1.1, z.1.2.2.1), z.2.2)))
+    (hc : R₁ + R₂ ≤ mutualInfo (J.map fun z => ((z.1.1, z.1.2.1), z.2.1)) +
+      condMutualInfo (J.map fun z => (z.1.2.2.1, z.2.2, z.1.1)) -
+        condMutualInfo (P.map fun t => (t.2.1, t.2.2.1, t.1)))
+    (hd : R₁ + R₂ ≤ condMutualInfo (J.map fun z => (z.1.2.1, z.2.1, z.1.1)) +
+      mutualInfo (J.map fun z => ((z.1.1, z.1.2.2.1), z.2.2)) -
+        condMutualInfo (P.map fun t => (t.2.1, t.2.2.1, t.1))) :
+    (R₁, R₂, (0 : ℝ)) ∈ umRegion W := by
+  classical
+  set K3 := (dmcPrecomp W (fun t : Fin kW × Fin kU × Fin kV × X => t.2.2.2)).joint P with hK3
+  have hK : ∀ z, K3.pmf z = P.pmf z.1 * W.trans z.1.2.2.2 z.2 := fun _ => rfl
+  have hJK := joint_bc12_eq_map W P (fun t => t.2.2.2) J hJ K3 hK
+  subst hJK
+  simp only [map_comp_eq] at ha hb hc hd
+  have ha' : R₁ ≤ mutualInfo (K3.map fun z => ((z.1.1, z.1.2.1), z.2.1)) := ha
+  have hb' : R₂ ≤ mutualInfo (K3.map fun z => ((z.1.1, z.1.2.2.1), z.2.2.1)) := hb
+  have hc' : R₁ + R₂ ≤ mutualInfo (K3.map fun z => ((z.1.1, z.1.2.1), z.2.1)) +
+      condMutualInfo (K3.map fun z => (z.1.2.2.1, z.2.2.1, z.1.1)) -
+        condMutualInfo (P.map fun t => (t.2.1, t.2.2.1, t.1)) := hc
+  have hd' : R₁ + R₂ ≤ condMutualInfo (K3.map fun z => (z.1.2.1, z.2.1, z.1.1)) +
+      mutualInfo (K3.map fun z => ((z.1.1, z.1.2.2.1), z.2.2.1)) -
+        condMutualInfo (P.map fun t => (t.2.1, t.2.2.1, t.1)) := hd
+  by_cases hB : condMutualInfo (P.map fun t => (t.2.1, t.2.2.1, t.1)) ≤
+      condMutualInfo (K3.map fun z => (z.1.2.1, z.2.1, z.1.1)) +
+        condMutualInfo (K3.map fun z => (z.1.2.2.1, z.2.2.1, z.1.1))
+  · exact marton_pre_mem_umRegion W P K3 hK h1 h2 hB ha' hb' hc' hd'
+  · push Not at hB
+    set P' := P.map (fun t => (t.1, (0 : Fin 1), (0 : Fin 1), t.2.2.2)) with hP'
+    set K3' := (dmcPrecomp W (fun t : Fin kW × Fin 1 × Fin 1 × X => t.2.2.2)).joint P'
+      with hK3'
+    have hK' : ∀ z, K3'.pmf z = P'.pmf z.1 * W.trans z.1.2.2.2 z.2 := fun _ => rfl
+    have hKK : K3' = K3.map (fun z => ((z.1.1, (0 : Fin 1), (0 : Fin 1), z.1.2.2.2), z.2)) :=
+      joint_eq_map_of_comp W P (fun t => t.2.2.2) (fun t => (t.1, (0 : Fin 1), (0 : Fin 1), t.2.2.2))
+        (fun t => t.2.2.2) (fun _ => rfl) K3' (fun _ => rfl) K3 hK
+    have z₁ : condMutualInfo (K3'.map fun z => (z.1.2.1, z.2.1, z.1.1)) = 0 :=
+      cmi_const_fst _ _ (fun _ _ => Subsingleton.elim _ _)
+    have z₂ : condMutualInfo (K3'.map fun z => (z.1.2.2.1, z.2.2.1, z.1.1)) = 0 :=
+      cmi_const_fst _ _ (fun _ _ => Subsingleton.elim _ _)
+    have z₃ : condMutualInfo (P'.map fun t => (t.2.1, t.2.2.1, t.1)) = 0 :=
+      cmi_const_fst _ _ (fun _ _ => Subsingleton.elim _ _)
+    have hA₁ : mutualInfo (K3.map fun z => (z.1.1, z.2.1)) ≤
+        mutualInfo (K3'.map fun z => ((z.1.1, z.1.2.1), z.2.1)) := by
+      rw [hKK, map_comp_eq]
+      have := mi_map_left_le (K3.map fun z => ((z.1.1, (0 : Fin 1)), z.2.1)) Prod.fst
+      rw [map_comp_eq] at this
+      exact this
+    have hA₂ : mutualInfo (K3.map fun z => (z.1.1, z.2.2.1)) ≤
+        mutualInfo (K3'.map fun z => ((z.1.1, z.1.2.2.1), z.2.2.1)) := by
+      rw [hKK, map_comp_eq]
+      have := mi_map_left_le (K3.map fun z => ((z.1.1, (0 : Fin 1)), z.2.2.1)) Prod.fst
+      rw [map_comp_eq] at this
+      exact this
+    have c₁ := mutualInfo_add_condMutualInfo K3 (fun z => z.1.1) (fun z => z.1.2.1)
+      (fun z => z.2.1)
+    have c₂ := mutualInfo_add_condMutualInfo K3 (fun z => z.1.1) (fun z => z.1.2.2.1)
+      (fun z => z.2.2.1)
+    exact marton_pre_mem_umRegion W P' K3' hK' h1 h2 (by rw [z₁, z₂, z₃]; norm_num)
+      (by linarith) (by linarith) (by rw [z₂, z₃]; linarith) (by rw [z₁, z₃]; linarith)
+
+/-- **Regression: the UM region contains Marton's region (with common auxiliary) of
+    receivers 1, 2 on its `R₃ = 0` face**: `martonInnerBound (bc12 W) × {0} ⊆ umRegion W`. -/
+theorem martonInnerBound_bc12_subset_umRegion (W : BroadcastChannel3 X Y₁ Y₂ Y₃) :
+    ∀ r ∈ martonInnerBound (bc12 W), (r.1, r.2, (0 : ℝ)) ∈ umRegion W := by
+  intro r hr
+  have hcl : IsClosed {r : ℝ × ℝ | (r.1, r.2, (0 : ℝ)) ∈ umRegion W} :=
+    isClosed_closure.preimage (continuous_fst.prodMk (continuous_snd.prodMk continuous_const))
+  refine closure_minimal (fun p hp => ?_) hcl hr
+  obtain ⟨h1, h2, kW, kU, kV, P, hP⟩ := hp
+  obtain ⟨a, b, c, d⟩ := hP
+  refine marton_point_mem_umRegion W P _ ?_ h1 h2 a b c d
+  intro z
+  rfl
+
+end MartonRegression
 
 end InfoTheory.Known.Certificates.BroadcastChannelThreeReceivers
 

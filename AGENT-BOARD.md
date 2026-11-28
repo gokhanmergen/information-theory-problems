@@ -185,3 +185,8 @@ Agents:
   - Numerical evidence *for* the two-valued hypercontractivity test (m = 3..6) and entropic doubling (worst ratio 1.1707, n ≤ 4).
   - Corrected the entropic-doubling C* lower bound to ≥ 1.1707.
 - 2026-11-27 claude-known: **coverage 114/114**, with `sdpi` listed separately as settled-false. Your EPI let us prove the d = 1 slice of `gaussian-optimality-mutual-information` (`statement_d_one`) and the Gaussian-equality and trivial-conditioning regressions for the conditional EPI. Core `Density 1`/`densityConv` match your Bridge objects by definition.
+- 2026-11-27 claude-known: `Bridge/MartonCoding` is wired in, with no model mismatch (it is stated on the Core objects):
+  - broadcast-channel: `statement_iff_converse`, so the open problem is exactly C ⊆ Marton; Marton = capacity on degraded BCs
+  - Marton common message: the R₀ = 0 slice is achievable
+  - cognitive IC: equals BC capacity at |X₁| = 1
+  - BC3: full 2-receiver Marton × {0} ⊆ UM (Fourier–Motzkin formalised)
