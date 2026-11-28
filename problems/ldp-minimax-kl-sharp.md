@@ -25,6 +25,24 @@ $$
 
 In particular, the accompanying Lean statement formalizes whether the **Subset Selection** family of $\varepsilon$-LDP mechanisms (which outputs a uniform $s$-subset $S \subset [k]$ containing $x$ with probability proportional to $e^\varepsilon$ and not containing $x$ with probability proportional to $1$, interpolating between $k$-ary Randomized Response at $s = 1$ and RAPPOR-like half-subsets at $s = \lfloor k/2 \rfloor$) achieves the **exact** asymptotic minimax KL risk (with multiplicative factor $1 + o(1)$ as $n \to \infty$) for every $k \ge 2$ and $\varepsilon > 0$.
 
+**Provenance: catalog formulation (checked 2026-11-27).** The Subset Selection question
+(and the "exact KL constant" question above it) was **posed in this catalog**, motivated by
+Ye–Barg (2018), who proved exact asymptotic optimality of Subset Selection for the
+$\ell_2^2$ loss in some regimes, and by Duchi–Jordan–Wainwright (2013/2018). We found it stated
+nowhere in the literature. We searched:
+- the full texts of Duchi–Jordan–Wainwright (arXiv:1305.6000, NeurIPS 2013 probability-estimation paper), Kairouz–Bonawitz–Ramage
+  (arXiv:1602.07387, whose only forward-looking remarks concern nonstationary distributions) and
+  Ye–Barg (arXiv:1702.00610, which uses KL only as a proof device in its lower bounds);
+- recent KL-loss work under privacy: Sima et al., AISTATS 2024 (arXiv:2402.00315, online KL
+  risk under LDP, whose open remark concerns pure versus approximate LDP), and the
+  instance-optimal KL estimation paper arXiv:2505.23620 (central DP);
+- web searches for "KL divergence", "locally differentially private", "distribution estimation",
+  "minimax", combined with "open"/"conjecture".
+
+None poses exact $(1+o(1))$-minimaxity of Subset Selection, or of any mechanism, under KL loss.
+The `posed_by` field credits the LDP minimax framework, not this specific question. Read the
+Lean `Statement` as a precise catalog conjecture, not a literature problem.
+
 ## Background
 
 Local differential privacy eliminates the need for a trusted data curator by privatizing each user's observation before collection. Duchi, Jordan, and Wainwright (2013, 2018) initiated the minimax statistical theory of LDP, establishing order-optimal rates for discrete distribution estimation under $\ell_1$, $\ell_2^2$, and related losses via strong data-processing and Assouad inequalities.
@@ -44,8 +62,8 @@ Adversarial audit (2026-11-27): the Lean `Statement` matches the slice described
 value was found: both minimax risks are infima over non-empty sets bounded below, lying in
 `[0, log₂ k]`, and estimators must have full support. Two caveats:
 
-- **No literature source.** "Subset Selection is exactly `(1+o(1))`-minimax under KL for every
-  `k, ε`" is this catalog's own formulation. Ye–Barg (2018) proved exact optimality for the
+- **No literature source** (see **Provenance** above). "Subset Selection is exactly
+  `(1+o(1))`-minimax under KL for every `k, ε`" is this catalog's own formulation. Ye–Barg (2018) proved exact optimality for the
   $\ell_2^2$ loss in some regimes; no cited paper conjectures it for KL. Because the KL risk under LDP is
   dominated by distributions near the boundary ($\Theta(n^{-1/2})$), the $\ell_2^2$/Fisher-information
   heuristics behind SS do not obviously carry over.
