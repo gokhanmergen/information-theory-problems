@@ -23,6 +23,7 @@ import InfoTheory.Bridge.GelfandPinsker
 import InfoTheory.Bridge.EntropyPower
 import InfoTheory.Bridge.Quantum
 import InfoTheory.Bridge.RelayAchievability
+import InfoTheory.Bridge.UniversalCoding
 
 /-!
 # `InfoTheory.Bridge` — Non-Destructive Bridge to Mathlib & Cover & Thomas Foundations
@@ -102,4 +103,9 @@ Single convenience import re-exporting:
 - `InfoTheory.Bridge.RelayAchievability`: **Cover–El Gamal (1979) Decode-and-Forward Achievability**
   (`relayDFRate_le_relayCapacity`) and the **Physically Degraded Relay Channel Capacity Theorem**
   (Cover & Thomas Thm. 15.10.2: `degradedRelay_capacity_theorem : relayCapacity W = relayCutsetBound W`).
+- `InfoTheory.Bridge.UniversalCoding`: **Shtarkov NML Minimax Regret** (`shtarkov_minimax_regret`),
+  **Krichevsky–Trofimov (1981) Universal Source Coding** (`kt_pointwise_regret_le`,
+  `kt_kl_redundancy_le`, `universal_prefix_code_redundancy_le`), **Gallager–Haussler Capacity–Redundancy
+  Compensation Identity**, and exact minimax redundancy asymptotics
+  (`minimax_kl_redundancy_asymptotics : minimaxRedundancy α n / log₂ n → (|α| - 1) / 2`).
 -/

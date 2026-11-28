@@ -1025,6 +1025,52 @@ SOLVED_THEOREMS = [
             "covert-communication-second-order",
         ],
     },
+    {
+        "id": "krichevsky-trofimov-universal-coding",
+        "title": "Shtarkov NML, Krichevsky–Trofimov Universal Coding & Exact Minimax Redundancy Asymptotics",
+        "category": "ch11-types",
+        "authors": "Raphail E. Krichevsky and Victor K. Trofimov; Yuri M. Shtarkov; Robert G. Gallager",
+        "year": "1981",
+        "reference": "Krichevsky & Trofimov (1981), IEEE Trans. IT; Shtarkov (1987); Cover & Thomas, §13.1–13.2",
+        "tags": ["universal-coding", "krichevsky-trofimov", "shtarkov-nml", "minimax-redundancy", "flagship", "ch13"],
+        "statement": (
+            "For i.i.d. sources over a finite alphabet $\\mathcal{X}$ of size $k = |\\mathcal{X}| \\ge 1$:\n"
+            "1. **Shtarkov's Minimax Pointwise Regret Theorem:** The normalized maximum-likelihood (NML) "
+            "distribution achieves exact uniform worst-case pointwise regret $\\log_2 S_n(\\mathcal{X})$ "
+            "(matching the minimax lower bound over all distributions $Q$).\n"
+            "2. **Krichevsky–Trofimov (1981) Universal Mixture:** The sequential add-$1/2$ predictor "
+            "$q_{\\mathrm{KT}}(a \\mid x^{<t}) = \\frac{N_a(x^{<t}) + 1/2}{t + k/2}$ obeys for every $P$ and $x^n$,\n"
+            "$$\\log_2 \\frac{P^n(x^n)}{q_{\\mathrm{KT}}(x^n)} \\le \\frac{k - 1}{2} \\log_2(n + 1) + 2, "
+            "\\qquad D(P^n \\| q_{\\mathrm{KT}}) \\le \\frac{k - 1}{2} \\log_2(n + 1) + 2,$$\n"
+            "and yields an explicit universal prefix code with expected length "
+            "$\\mathbb{E}_{P^n}[|c(X^n)|] < n H(P) + \\frac{k-1}{2}\\log_2(n+1) + k$ for all $P$ simultaneously.\n"
+            "3. **Exact Minimax KL Redundancy Asymptotics:** Combining the KT upper bound with the "
+            "Gallager–Haussler capacity–redundancy lower bound on a $\\sqrt{n}$-spaced simplex grid gives\n"
+            "$$\\lim_{n \\to \\infty} \\frac{R_n^*(\\mathcal{X})}{\\log_2 n} = \\frac{k - 1}{2}.$$"
+        ),
+        "proof_notes": (
+            "Proves the exchangeable rising-factorial formula `ktDist_pmf_eq_prod`, an elementary "
+            "Stirling-free binary ratio bound `kt_binary_ratio_le` ($\\le 2\\sqrt{n}$), alphabet induction "
+            "`kt_ml_ratio_le`, Kraft prefix-code construction `universal_prefix_code_redundancy_le`, "
+            "the Bayes compensation identity `bayes_kl_decomposition`, and the matching simplex-grid "
+            "lower bound `minimax_kl_redundancy_ge` yielding `minimax_kl_redundancy_asymptotics`."
+        ),
+        "lean_decls": [
+            ("lean/InfoTheory/Bridge/UniversalCoding.lean", "shtarkov_minimax_regret"),
+            ("lean/InfoTheory/Bridge/UniversalCoding.lean", "ktDist_pmf_eq_prod"),
+            ("lean/InfoTheory/Bridge/UniversalCoding.lean", "kt_pointwise_regret_le"),
+            ("lean/InfoTheory/Bridge/UniversalCoding.lean", "kt_kl_redundancy_le"),
+            ("lean/InfoTheory/Bridge/UniversalCoding.lean", "universal_prefix_code_redundancy_le"),
+            ("lean/InfoTheory/Bridge/UniversalCoding.lean", "bayes_kl_decomposition"),
+            ("lean/InfoTheory/Bridge/UniversalCoding.lean", "minimax_kl_redundancy_ge"),
+            ("lean/InfoTheory/Bridge/UniversalCoding.lean", "minimax_kl_redundancy_asymptotics"),
+        ],
+        "related_open": [
+            "universal-lossy-redundancy",
+            "minimax-kl-large-alphabet",
+            "ldp-minimax-kl-sharp",
+        ],
+    },
 
     # ------------------------------------------------------------------ Ch. 15 / EGK
     {
