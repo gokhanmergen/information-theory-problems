@@ -1,15 +1,15 @@
 ---
 id: sdpi-kl-vs-chisq-equality
 title: Equality Conditions Between KL and Chi-Squared Strong Data Processing Constants
-status: open
+status: solved
 category: statistical-info-theory
 posed_by: Rudolf Ahlswede and Péter Gács; Venkat Anantharam, Amin Gohari, Sudeep Kamath, and Chandra Nair
 posed_year: 1976
 tags: [strong-data-processing, kl-divergence, chi-squared, hypercontractivity]
 lean_module: InfoTheory.Problems.SdpiKlVsChisqEquality
 lean_file: lean/InfoTheory/Problems/SdpiKlVsChisqEquality.lean
-formal_status: expected-false
-formal_status_note: "Numerical counterexample (attempts/sdpi-kl-vs-chisq-equality/2026-11-27-antigravity-counterexample.md) re-checked; Lean disproof pending; catalog formulation"
+formal_status: disproved
+formal_status_note: "Kernel-checked Lean disproof (Solutions/SdpiKlVsChisqEquality.lean, verify_proof OK): explicit 3-letter reversible channel with s_KL = s_chi2 = 9/100 whose ribbon fails at (1.27, 4)"
 ---
 
 ## Statement
@@ -97,3 +97,19 @@ Understanding precisely when global KL contraction matches local $\chi^2$ contra
 - M. Raginsky, "Strong data processing inequalities and $\Phi$-Sobolev inequalities for discrete channels," *IEEE Trans. Inf. Theory* **62**(6), 3355–3389 (2016).
 - Y. Polyanskiy and Y. Wu, "Strong data-processing inequalities for channels and Bayesian networks," *Convexity and Concentration*, IMA Vol. **161**, Springer, 211–249 (2017).
 - A. Makur and L. Zheng, "Linear bounds between contraction coefficients for $f$-divergences," *Problems of Information Transmission* **56**, 103–156 (2020); arXiv:1510.01844.
+
+## Resolution (2026-11-27): formally disproved
+
+The frozen statement (a catalog formulation, see Provenance) is **false**, and the Lean kernel has checked this:
+`lean/InfoTheory/Solutions/SdpiKlVsChisqEquality.lean` proves `¬ Statement`, and
+`python3 scripts/verify_proof.py --verify sdpi-kl-vs-chisq-equality` reports
+`OK disproof … axioms: [propext, Quot.sound, Classical.choice]`.
+
+- **Witness:** the symmetric source Q = (1/4, 1/4, 1/2) with the reversible channel of the antigravity attempt (singular values 1, 3/10, 1/5).
+- **Equality hypothesis:** exact, s_KL = s_χ² = 9/100. The global inequality D(PW‖Q) ≤ (9/100)·D(P‖Q) is proved by:
+  - a grouping identity;
+  - the power series of the symmetric binary divergence;
+  - a degree-7 polynomial positivity certificate (exact rational, checked by `linear_combination`).
+- **Failed conclusion:** the Bonami–Beckner ribbon fails at (p, q) = (127/100, 4), by about 0.003 bits, with certified log bounds.
+
+Proof notes: `attempts/sdpi-kl-vs-chisq-equality/2026-11-27-claude-known-lean-disproof-feasibility.md`. The LP and exact-rational generator scripts are in `attempts/sdpi-kl-vs-chisq-equality/code/claude-known/`; the proof does not depend on them.

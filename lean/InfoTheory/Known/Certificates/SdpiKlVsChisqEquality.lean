@@ -31,15 +31,19 @@ Certified here, about the exact objects of `Statement` (no junk values):
 * **the 3-letter reversible source** `exQ = (1/4, 1/4, 1/2)`, `exW` (eigenvalues `1, 3/10, 1/5`)
   of the 2026-11-27 counterexample attempt: `ex_reversible`, `sdpiChiSqAt_ex` (`s_{χ²} = 9/100`),
   `sdpiKLAt_ex_ge` (`s_KL ≥ 9/100`, via `P_z → Q`), `ex_not_ribbon` (the ribbon fails at
-  `(p, q) = (127/100, 4)`, where `(p - 1)/(q - 1) = 9/100`), and the conditional
-  `not_statement_of_sdpiKLAt_ex_le : sdpiKLAt exQ exW ≤ 9/100 → ¬ Statement`. The hypothesis of
-  that reduction (a global inequality `D(PW ‖ Q) ≤ (9/100) D(P ‖ Q)` over the whole simplex,
-  see `sdpiKLAt_ex_le_of`) is **not** proved here, so the problem is not settled.
+  `(p, q) = (127/100, 4)`, where `(p - 1)/(q - 1) = 9/100`), and the reduction
+  `not_statement_of_sdpiKLAt_ex_le : sdpiKLAt exQ exW ≤ 9/100 → ¬ Statement`;
+* **the global inequality** `kl_ex_global : D(P exW ‖ exQ) ≤ (9/100) D(P ‖ exQ)` for every `P`
+  (grouping identity `group_id`, the even power series `gSym_hasSum` of the binary divergence
+  with tail bound `gSym_le_partial`, the two-variable inequality `core_ineq`, and the polynomial
+  certificate `Gpoly_pos`/`Gpoly_neg`), hence `sdpiKLAt_ex : s_KL(exQ, exW) = 9/100`;
+* **`statement_false : ¬ Statement`.** The catalog statement (a catalog formulation, not a
+  published conjecture; see the problem file's provenance note) is refuted by `(exQ, exW)`.
 
-Not certified: `s_KL(Unif, BSC(p)) = (1 - 2p)²` for `0 < p < 1/2` (Ahlswede–Gács; needs the
-binary KL contraction inequality), the general inequality `s_{χ²} ≤ s_KL`, the channel-level
-equality `η_KL = η_{χ²}`, and the DSBS ribbon for `0 < p < 1/2`. These facts do not settle
-`Statement`.
+Not certified: `s_KL(Unif, BSC(p)) = (1 - 2p)²` for `0 < p < 1/2` (Ahlswede–Gács; the series
+`gSym_hasSum` gives it termwise, but it is not stated here), the general inequality
+`s_{χ²} ≤ s_KL`, the channel-level equality `η_KL = η_{χ²}`, and the DSBS ribbon for
+`0 < p < 1/2`.
 -/
 
 open scoped BigOperators
@@ -887,7 +891,7 @@ theorem sdpiKLAt_ex_ge : 9 / 100 ≤ sdpiKLAt exQ exW := by
 
 /-- The KL constant is bounded by `9/100` as soon as the single global inequality
     `D(PW ‖ Q) ≤ (9/100) D(P ‖ Q)` holds for every input `P` (claim 2 of the 2026-11-27
-    counterexample attempt, which is only sketched there). -/
+    counterexample attempt; proved below as `kl_ex_global`). -/
 theorem sdpiKLAt_ex_le_of (h : ∀ P : ProbDist (Fin 3),
     klDivergence (exW.joint P).snd (exW.joint exQ).snd ≤ 9 / 100 * klDivergence P exQ) :
     sdpiKLAt exQ exW ≤ 9 / 100 := by
@@ -897,8 +901,8 @@ theorem sdpiKLAt_ex_le_of (h : ∀ P : ProbDist (Fin 3),
 
 /-- **Reduction.** The frozen `Statement` is refuted by the reversible 3-letter source
     `(exQ, exW)` at `(p, q) = (127/100, 4)` *provided* `s_KL(exQ, exW) ≤ 9/100`. Everything else
-    (`s_{χ²} = 9/100`, `s_KL ≥ 9/100`, reversibility, the ribbon violation) is proved above.
-    This does not settle the problem: the hypothesis is open in this file. -/
+    (`s_{χ²} = 9/100`, `s_KL ≥ 9/100`, reversibility, the ribbon violation) is proved above;
+    the hypothesis is `sdpiKLAt_ex_le` below. -/
 theorem not_statement_of_sdpiKLAt_ex_le (h : sdpiKLAt exQ exW ≤ 9 / 100) : ¬ Statement := by
   intro hS
   have heq : sdpiKLAt exQ exW = sdpiChiSqAt exQ exW := by
@@ -906,5 +910,498 @@ theorem not_statement_of_sdpiKLAt_ex_le (h : sdpiKLAt exQ exW ≤ 9 / 100) : ¬ 
   exact ex_not_ribbon (hS 3 3 exQ exQ exW exW (by norm_num) (by norm_num) exQ_pos exQ_pos
     ex_reversible heq heq (127 / 100) 4 (by norm_num) (by norm_num)
     (by rw [sdpiChiSqAt_ex]; norm_num))
+
+/-! ### The global inequality `D(P exW ‖ exQ) ≤ (9/100) D(P ‖ exQ)`
+
+Grouping `{0, 1} | {2}` writes `D(P ‖ exQ) = (g(x) + s·g(y)) / (2 ln 2)` with `s = P₀ + P₁`,
+`x = 2s - 1`, `y = (P₀ - P₁)/s`, `g = gSym`, and `exW` maps `(x, y)` to
+`(x/5, 3(1+x)y/(2(5+x)))`. The even power series `g(z) = ∑ z^(2k+2)/((2k+1)(k+1))` gives a
+lower bound on `g(x), g(y)` and an upper bound on the two output terms; the remainder is the
+polynomial inequality `Gpoly ≥ 0` on `[-1, 1] × [0, 1]` (with `t = y²`), certified by an
+explicit nonnegative combination of products of `X, 1 - X, t, 1 - t` and squares. -/
+
+theorem gSym_hasSum {z : ℝ} (hz : |z| < 1) :
+    HasSum (fun k : ℕ => z ^ (2 * k + 2) / ((2 * k + 1) * (k + 1))) (gSym z) := by
+  have h1 := Real.hasSum_log_sub_log_of_abs_lt_one hz
+  have hz2 : |z ^ 2| < 1 := by
+    rw [abs_pow]; exact pow_lt_one₀ (abs_nonneg _) hz (by norm_num)
+  have h2 := Real.hasSum_pow_div_log_of_abs_lt_one hz2
+  have hlog : Real.log (1 + z) + Real.log (1 - z) = Real.log (1 - z ^ 2) := by
+    have := abs_lt.1 hz
+    rw [← Real.log_mul (by linarith) (by linarith)]; ring_nf
+  have h3 := (h1.mul_left z).sub h2
+  have hval : z * (Real.log (1 + z) - Real.log (1 - z)) - -Real.log (1 - z ^ 2) = gSym z := by
+    unfold gSym; rw [← hlog]; ring
+  rw [hval] at h3
+  convert h3 using 1
+  funext k
+  have hk : (0:ℝ) < 2 * k + 1 := by positivity
+  have hk' : (0:ℝ) < k + 1 := by positivity
+  field_simp
+  ring
+
+theorem gSym_term_nonneg (z : ℝ) (k : ℕ) : 0 ≤ z ^ (2 * k + 2) / ((2 * k + 1) * (k + 1)) := by
+  rw [show z ^ (2 * k + 2) = (z ^ (k + 1)) ^ 2 by ring]; positivity
+
+/-- Tail bound: `g(z) ≤ ∑_{k<n} a_k z^(2k+2) + a_n z^(2n+2)/(1 - z²)`. -/
+theorem gSym_le_partial {z : ℝ} (hz : |z| < 1) (n : ℕ) :
+    gSym z ≤ ∑ k ∈ Finset.range n, z ^ (2 * k + 2) / ((2 * k + 1) * (k + 1)) +
+      z ^ (2 * n + 2) / ((2 * n + 1) * (n + 1)) / (1 - z ^ 2) := by
+  have hs := gSym_hasSum hz
+  have htail := (hasSum_nat_add_iff' n).2 hs
+  have hz2 : z ^ 2 < 1 := by
+    rw [← sq_abs]; exact pow_lt_one₀ (abs_nonneg _) hz (by norm_num)
+  have hz20 : 0 ≤ z ^ 2 := sq_nonneg z
+  have hgeo := (hasSum_geometric_of_lt_one hz20 hz2).mul_left
+    (z ^ (2 * n + 2) / ((2 * n + 1) * (n + 1)))
+  have hle := hasSum_le (fun k => ?_) htail hgeo
+  · rw [div_eq_mul_inv _ (1 - z ^ 2)]; linarith
+  · push_cast
+    have e : z ^ (2 * (k + n) + 2) = z ^ (2 * n + 2) * (z ^ 2) ^ k := by ring
+    rw [e, mul_comm (z ^ (2 * n + 2) / _), ← mul_div_assoc, mul_comm ((z ^ 2) ^ k)]
+    apply div_le_div_of_nonneg_left
+    · rw [show z ^ (2 * n + 2) = (z ^ (n + 1)) ^ 2 by ring]; positivity
+    · positivity
+    · have : (0 : ℝ) ≤ k := Nat.cast_nonneg k
+      nlinarith
+
+/-- Lower bound `g(z) ≥ z² + z⁴/6 + z⁶/15 + z⁸/28` on the closed interval `|z| ≤ 1`. -/
+theorem gSym_ge4 {z : ℝ} (hz : |z| ≤ 1) :
+    z ^ 2 + z ^ 4 / 6 + z ^ 6 / 15 + z ^ 8 / 28 ≤ gSym z := by
+  rcases lt_or_eq_of_le hz with h | h
+  · have := sum_le_hasSum (Finset.range 4) (fun k _ => gSym_term_nonneg z k) (gSym_hasSum h)
+    simp only [Finset.sum_range_succ, Finset.sum_range_zero] at this
+    norm_num at this
+    linarith
+  · have l2 := Real.log_two_gt_d9
+    rcases (abs_eq zero_le_one).1 h with rfl | rfl
+    · unfold gSym; norm_num; linarith
+    · unfold gSym; norm_num; linarith
+
+theorem box_mono (X t : ℝ) (hX : 0 ≤ X) (hX1 : X ≤ 1) (ht : 0 ≤ t) (ht1 : t ≤ 1) (B : ℝ)
+    (hB : 0 ≤ B) (a b c d : ℕ) : 0 ≤ B * X ^ a * (1 - X) ^ b * t ^ c * (1 - t) ^ d := by
+  have h1 : 0 ≤ 1 - X := by linarith
+  have h2 : 0 ≤ 1 - t := by linarith
+  positivity
+
+/-- The polynomial `(5 + x)³ · E / 2` to which the global inequality reduces. -/
+noncomputable def Gpoly (x t : ℝ) : ℝ :=
+  -t^5*x^4/230400 - t^5*x^3/14400 - t^5*x^2/2560 - t^5*x/1152 - 5*t^5/9216 + 561*t^4*x^4/716800 +
+    561*t^4*x^3/44800 + 5049*t^4*x^2/71680 + 561*t^4*x/3584 + 2805*t^4/28672 + 43*t^3*x^4/32000 +
+    43*t^3*x^3/2000 + 387*t^3*x^2/3200 + 43*t^3*x/160 + 43*t^3/256 - 123*t^2*x^4/3200 -
+    87*t^2*x^3/800 + 27*t^2*x^2/320 + 93*t^2*x/160 + 273*t^2/640 - 9*t*x^4/100 - 99*t*x^3/100 -
+    63*t*x^2/20 - 9*t*x/4 - x^7/7200 - x^6/480 + 7*x^5/480 + 103*x^4/288 + 15*x^3/8 + 25*x^2/8
+
+/-- `Gpoly ≥ 0` for `x ∈ [0, 1]`: an exact nonnegative combination (found by LP, checked by
+    `ring`) of `X², t², X·t, (X - κt)²` times products of `X, 1 - X, t, 1 - t`. -/
+theorem Gpoly_pos (X t : ℝ) (hX : 0 ≤ X) (hX1 : X ≤ 1) (ht : 0 ≤ t) (ht1 : t ≤ 1) :
+    0 ≤ Gpoly X t := by
+  unfold Gpoly
+  linear_combination
+    (175065147828425868393967/1276798339838070000000000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (X ^ 2) (sq_nonneg X) 0 0 1 3 +
+    (2114390662260885342109/1094398577004060000000000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (X ^ 2) (sq_nonneg X) 0 0 1 4 +
+    (13613304776273114681519/1094398577004060000000000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (X ^ 2) (sq_nonneg X) 0 1 1 4 +
+    (5681818328612951169793837/191519750975710500000000000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (X ^ 2) (sq_nonneg X) 1 0 4 0 +
+    (2450508698387980290767/1094398577004060000000000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (X ^ 2) (sq_nonneg X) 1 0 5 0 +
+    (3499329967529317040123/136191822916060800000000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (X ^ 2) (sq_nonneg X) 2 0 1 3 +
+    (3605919828935441633873/408575468748182400000000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (X ^ 2) (sq_nonneg X) 2 0 2 3 +
+    (3604146497907888758873/408575468748182400000000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (X ^ 2) (sq_nonneg X) 2 0 5 0 +
+    (43744555562108795942188451/598499221799095312500000000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (t ^ 2) (sq_nonneg t) 0 0 2 0 +
+    (2490565490284892768035784159/17099977765688437500000000000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (t ^ 2) (sq_nonneg t) 0 0 3 0 +
+    (35439935375408683092401/1139998517712562500000000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (t ^ 2) (sq_nonneg t) 0 2 3 0 +
+    (28871865043500773153/2849996294281406250000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (t ^ 2) (sq_nonneg t) 0 3 0 3 +
+    (5854632159830200177169779/63839916991903500000000000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (t ^ 2) (sq_nonneg t) 0 3 2 0 +
+    (4923740194280765799871823/18239976283401000000000000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 ((X - 1/5 * t) ^ 2) (sq_nonneg _) 0 0 0 2 +
+    (14581/6750000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 ((X - 7/25 * t) ^ 2) (sq_nonneg _) 3 0 0 1 +
+    (4034370399476251611390677/1823997628340100000000000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 ((X - 9/25 * t) ^ 2) (sq_nonneg _) 0 0 0 1 +
+    (141848781298001610132283/284999629428140625000000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 ((X - 2/5 * t) ^ 2) (sq_nonneg _) 0 0 0 1 +
+    (17/21600 : ℝ) *
+      box_mono X t hX hX1 ht ht1 ((X - 2/5 * t) ^ 2) (sq_nonneg _) 4 1 0 0 +
+    (4237683341469525816281/5699992588562812500000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 ((X - 11/25 * t) ^ 2) (sq_nonneg _) 1 0 0 1 +
+    (49599029010325796058479/408575468748182400000000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 ((X - 11/25 * t) ^ 2) (sq_nonneg _) 2 0 0 1 +
+    (1/10800 : ℝ) *
+      box_mono X t hX hX1 ht ht1 ((X - 11/25 * t) ^ 2) (sq_nonneg _) 4 1 0 0 +
+    (1/1350 : ℝ) *
+      box_mono X t hX hX1 ht ht1 ((X - 12/25 * t) ^ 2) (sq_nonneg _) 1 4 0 0 +
+    (530831938702548007551059/3647995256680200000000000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 ((X - 13/25 * t) ^ 2) (sq_nonneg _) 0 0 0 0 +
+    (126596477066818242280999813/127679833983807000000000000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 ((X - 14/25 * t) ^ 2) (sq_nonneg _) 0 0 1 0 +
+    (16012558757491993460476561/18239976283401000000000000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 ((X - 14/25 * t) ^ 2) (sq_nonneg _) 0 0 1 1 +
+    (370554326064600028891553987/766079003902842000000000000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 ((X - 14/25 * t) ^ 2) (sq_nonneg _) 0 0 2 1 +
+    (44954146239784375153/911998814170050000000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 ((X - 14/25 * t) ^ 2) (sq_nonneg _) 0 2 2 1 +
+    (6445580545353478871219/5699992588562812500000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 ((X - 14/25 * t) ^ 2) (sq_nonneg _) 1 0 0 0 +
+    (2111131134412551611178283/15321580078056840000000000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 ((X - 14/25 * t) ^ 2) (sq_nonneg _) 1 0 1 1 +
+    (10859337960167466660169/45397274305353600000000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 ((X - 14/25 * t) ^ 2) (sq_nonneg _) 2 0 0 0 +
+    (1369642817350810389397/68095911458030400000000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 ((X - 14/25 * t) ^ 2) (sq_nonneg _) 2 0 1 1 +
+    (107713/13500000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 ((X - 14/25 * t) ^ 2) (sq_nonneg _) 3 0 0 0 +
+    (181/6750000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 ((X - 14/25 * t) ^ 2) (sq_nonneg _) 3 0 1 1
+
+/-- `Gpoly ≥ 0` for `x ∈ [-1, 0]` (`x = -X`), certified the same way. -/
+theorem Gpoly_neg (X t : ℝ) (hX : 0 ≤ X) (hX1 : X ≤ 1) (ht : 0 ≤ t) (ht1 : t ≤ 1) :
+    0 ≤ Gpoly (-X) t := by
+  unfold Gpoly
+  linear_combination
+    (2135247586111/1465390080000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (X ^ 2) (sq_nonneg X) 0 0 0 1 +
+    (26644199/208152000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (X ^ 2) (sq_nonneg X) 0 0 0 2 +
+    (985581885763/1099042560000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (X ^ 2) (sq_nonneg X) 0 1 0 0 +
+    (468047255191/1465390080000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (X ^ 2) (sq_nonneg X) 0 1 0 1 +
+    (25778233/120960000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (X ^ 2) (sq_nonneg X) 0 2 0 0 +
+    (330181/3584000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (X ^ 2) (sq_nonneg X) 0 2 0 1 +
+    (133/7200 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (X ^ 2) (sq_nonneg X) 0 3 0 0 +
+    (14262587/2483712000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (X ^ 2) (sq_nonneg X) 1 0 0 4 +
+    (124789/506880000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (X ^ 2) (sq_nonneg X) 1 0 0 5 +
+    (7621/17920000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (X ^ 2) (sq_nonneg X) 1 1 0 5 +
+    (7/10800 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (X ^ 2) (sq_nonneg X) 1 4 0 0 +
+    (18899/1612800 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (X ^ 2) (sq_nonneg X) 2 1 2 0 +
+    (571531/29307801600 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (X ^ 2) (sq_nonneg X) 2 3 2 3 +
+    (1432231/488463360000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (X ^ 2) (sq_nonneg X) 2 3 5 0 +
+    (571531/9769267200 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (X ^ 2) (sq_nonneg X) 4 0 2 3 +
+    (1432231/162821120000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (X ^ 2) (sq_nonneg X) 4 0 5 0 +
+    (11/21600 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (X ^ 2) (sq_nonneg X) 4 1 0 0 +
+    (579890057/293078016000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (t ^ 2) (sq_nonneg t) 0 0 2 0 +
+    (623618635411/1465390080000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (t ^ 2) (sq_nonneg t) 0 1 0 0 +
+    (33421/56320000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (t ^ 2) (sq_nonneg t) 0 1 0 3 +
+    (19681210349/488463360000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (t ^ 2) (sq_nonneg t) 0 1 1 0 +
+    (171626187/2907520000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (t ^ 2) (sq_nonneg t) 0 1 2 0 +
+    (12088483/92512000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (t ^ 2) (sq_nonneg t) 0 2 1 0 +
+    (1992277559/97692672000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (t ^ 2) (sq_nonneg t) 0 2 2 0 +
+    (66750407/4967424000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (t ^ 2) (sq_nonneg t) 0 3 2 0 +
+    (24932099/146539008000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (t ^ 2) (sq_nonneg t) 0 4 0 3 +
+    (615235273/1465390080000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (t ^ 2) (sq_nonneg t) 0 4 3 0 +
+    (571531/2442316800 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (t ^ 2) (sq_nonneg t) 0 5 0 3 +
+    (1432231/40705280000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (t ^ 2) (sq_nonneg t) 0 5 3 0 +
+    (18899/1612800 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (t ^ 2) (sq_nonneg t) 1 4 0 0 +
+    (571531/29307801600 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (t ^ 2) (sq_nonneg t) 1 6 0 3 +
+    (1432231/488463360000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (t ^ 2) (sq_nonneg t) 1 6 3 0 +
+    (582171524509/366347520000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (X * t) (mul_nonneg hX ht) 0 0 0 0 +
+    (10255038173/73269504000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (X * t) (mul_nonneg hX ht) 0 0 0 1 +
+    (41574901/5233536000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (X * t) (mul_nonneg hX ht) 0 0 0 3 +
+    (104989/354816000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (X * t) (mul_nonneg hX ht) 0 0 0 4 +
+    (375633120827/732695040000 : ℝ) *
+      box_mono X t hX hX1 ht ht1 (X * t) (mul_nonneg hX ht) 0 2 0 0
+
+theorem Gpoly_nonneg (x t : ℝ) (hx : |x| ≤ 1) (ht : 0 ≤ t) (ht1 : t ≤ 1) :
+    0 ≤ Gpoly x t := by
+  obtain ⟨hx1, hx2⟩ := abs_le.1 hx
+  rcases le_total 0 x with h | h
+  · exact Gpoly_pos x t h hx2 ht ht1
+  · have := Gpoly_neg (-x) t (by linarith) (by linarith) ht ht1
+    rwa [neg_neg] at this
+
+/-- The polynomial inequality in the original variables (`t = y²`). -/
+theorem poly_step (x t : ℝ) (hx : |x| ≤ 1) (ht0 : 0 ≤ t) (ht1 : t ≤ 1) :
+    0 ≤ 9 / 100 * (x ^ 2 + (1 + x) / 2 * (t + t ^ 2 / 6 + t ^ 3 / 15 + t ^ 4 / 28)) -
+      (x ^ 2 / 25 + x ^ 4 / 3600) - 9 / 40 * (1 + x) ^ 2 * t / (5 + x) -
+      9 / 40 * (1 + x) ^ 2 * t / (5 + x) * (9 / 4 * (1 + x) ^ 2 * t / (5 + x) ^ 2) / 6 -
+      3 / 20 * ((1 + x) / 2) * t * (t ^ 2 / 240 + t ^ 3 / 1792 + t ^ 4 / 8640) := by
+  have h5 : 0 < 5 + x := by linarith [(abs_le.1 hx).1]
+  have hE : 9 / 100 * (x ^ 2 + (1 + x) / 2 * (t + t ^ 2 / 6 + t ^ 3 / 15 + t ^ 4 / 28)) -
+      (x ^ 2 / 25 + x ^ 4 / 3600) - 9 / 40 * (1 + x) ^ 2 * t / (5 + x) -
+      9 / 40 * (1 + x) ^ 2 * t / (5 + x) * (9 / 4 * (1 + x) ^ 2 * t / (5 + x) ^ 2) / 6 -
+      3 / 20 * ((1 + x) / 2) * t * (t ^ 2 / 240 + t ^ 3 / 1792 + t ^ 4 / 8640) =
+      2 * Gpoly x t / (5 + x) ^ 3 := by
+    unfold Gpoly; field_simp; ring
+  rw [hE]
+  have := Gpoly_nonneg x t hx ht0 ht1
+  positivity
+
+/-- Upper bound on the input-side binary term `g(x/5)`. -/
+theorem gSym_x5_le (x : ℝ) (hx : |x| ≤ 1) : gSym (x / 5) ≤ x ^ 2 / 25 + x ^ 4 / 3600 := by
+  obtain ⟨hx1, hx2⟩ := abs_le.1 hx
+  have hx5 : |x / 5| < 1 := by rw [abs_div]; norm_num; linarith
+  have := gSym_le_partial hx5 1
+  simp only [Finset.sum_range_succ, Finset.sum_range_zero] at this
+  norm_num at this
+  have hd : 0 < 1 - (x / 5) ^ 2 := by nlinarith
+  have hq : (x / 5) ^ 4 / 6 / (1 - (x / 5) ^ 2) ≤ x ^ 4 / 3600 := by
+    have hx2 : x ^ 2 ≤ 1 := by nlinarith
+    rw [div_le_iff₀ hd]; nlinarith [mul_le_mul_of_nonneg_left hx2 (pow_two_nonneg (x ^ 2))]
+  nlinarith
+
+/-- Upper bound on the output-side conditional term `s'·g(u)`, `u = 3(1+x)y/(2(5+x))`. -/
+theorem gSym_out_le (x y : ℝ) (hx : |x| ≤ 1) (hy : |y| ≤ 1) :
+    (5 + x) / 10 * gSym (3 * (1 + x) * y / (2 * (5 + x))) ≤
+      9 / 40 * (1 + x) ^ 2 * y ^ 2 / (5 + x) +
+      9 / 40 * (1 + x) ^ 2 * y ^ 2 / (5 + x) * (9 / 4 * (1 + x) ^ 2 * y ^ 2 / (5 + x) ^ 2) / 6 +
+      3 / 20 * ((1 + x) / 2) * y ^ 2 *
+        ((y ^ 2) ^ 2 / 240 + (y ^ 2) ^ 3 / 1792 + (y ^ 2) ^ 4 / 8640) := by
+  obtain ⟨hx1, hx2⟩ := abs_le.1 hx
+  have h5 : 0 < 5 + x := by linarith
+  have hs0 : 0 ≤ 1 + x := by linarith
+  generalize hu' : 3 * (1 + x) * y / (2 * (5 + x)) = u
+  generalize ht' : y ^ 2 = t
+  have ht0 : 0 ≤ t := ht' ▸ sq_nonneg y
+  have ht1 : t ≤ 1 := by
+    rw [← ht', ← sq_abs]; exact pow_le_one₀ (abs_nonneg _) hy
+  obtain ⟨U, hUdef⟩ : ∃ U, U = u ^ 2 := ⟨_, rfl⟩
+  have hU : U = 9 / 4 * (1 + x) ^ 2 * t / (5 + x) ^ 2 := by
+    rw [hUdef, ← hu', ← ht']; field_simp; ring
+  have hU0 : 0 ≤ U := hUdef ▸ sq_nonneg u
+  have h3 : (3 * (1 + x)) ^ 2 ≤ (5 + x) ^ 2 := pow_le_pow_left₀ (by linarith) (by linarith) 2
+  have hUle : U ≤ t / 4 := by
+    rw [hU, div_le_div_iff₀ (by positivity) (by norm_num)]
+    nlinarith [mul_le_mul_of_nonneg_right h3 ht0]
+  have hUlt : |u| < 1 := by
+    rw [← sq_lt_one_iff_abs_lt_one, ← hUdef]; linarith
+  have hV : (5 + x) / 10 * U = 9 / 40 * (1 + x) ^ 2 * t / (5 + x) := by
+    rw [hU]; field_simp; ring
+  rw [← hU, ← hV]
+  obtain ⟨V, hVdef⟩ : ∃ V, V = (5 + x) / 10 * U := ⟨_, rfl⟩
+  rw [← hVdef]
+  have hV0 : 0 ≤ V := by rw [hVdef]; positivity
+  have hVle : V ≤ 3 / 20 * ((1 + x) / 2) * t := by
+    rw [hVdef, hV, div_le_iff₀ h5]
+    have : 0 ≤ (1 + x) * t := mul_nonneg hs0 ht0
+    nlinarith
+  have gu : gSym u ≤ U + U ^ 2 / 6 + U ^ 3 / 15 + U ^ 4 / 28 + U ^ 5 / 45 / (1 - U) := by
+    have := gSym_le_partial hUlt 4
+    simp only [Finset.sum_range_succ, Finset.sum_range_zero] at this
+    norm_num at this
+    rw [hUdef]; ring_nf; ring_nf at this; linarith
+  have gu' : U ^ 5 / 45 / (1 - U) ≤ 4 / 135 * U ^ 5 := by
+    rw [div_le_iff₀ (by linarith)]; nlinarith [pow_nonneg hU0 5]
+  have hW : U ^ 2 / 15 + U ^ 3 / 28 + 4 / 135 * U ^ 4 ≤
+      t ^ 2 / 240 + t ^ 3 / 1792 + t ^ 4 / 8640 := by
+    have a2 : U ^ 2 ≤ (t / 4) ^ 2 := pow_le_pow_left₀ hU0 hUle 2
+    have a3 : U ^ 3 ≤ (t / 4) ^ 3 := pow_le_pow_left₀ hU0 hUle 3
+    have a4 : U ^ 4 ≤ (t / 4) ^ 4 := pow_le_pow_left₀ hU0 hUle 4
+    have b2 : (t / 4) ^ 2 = t ^ 2 / 16 := by ring
+    have b3 : (t / 4) ^ 3 = t ^ 3 / 64 := by ring
+    have b4 : (t / 4) ^ 4 = t ^ 4 / 256 := by ring
+    linarith
+  have hW0 : 0 ≤ U ^ 2 / 15 + U ^ 3 / 28 + 4 / 135 * U ^ 4 := by positivity
+  have e1 : (5 + x) / 10 * gSym u ≤ (5 + x) / 10 * (U + U ^ 2 / 6 + U ^ 3 / 15 + U ^ 4 / 28 +
+      4 / 135 * U ^ 5) := mul_le_mul_of_nonneg_left (by linarith) (by positivity)
+  have e2 : (5 + x) / 10 * (U + U ^ 2 / 6 + U ^ 3 / 15 + U ^ 4 / 28 + 4 / 135 * U ^ 5) =
+      V + V * U / 6 + V * (U ^ 2 / 15 + U ^ 3 / 28 + 4 / 135 * U ^ 4) := by
+    rw [hVdef]; ring
+  have e3 : V * (U ^ 2 / 15 + U ^ 3 / 28 + 4 / 135 * U ^ 4) ≤
+      3 / 20 * ((1 + x) / 2) * t * (t ^ 2 / 240 + t ^ 3 / 1792 + t ^ 4 / 8640) :=
+    mul_le_mul hVle hW hW0 (by positivity)
+  linarith
+
+/-- The two-variable analytic inequality behind `s_KL(exQ, exW) ≤ 9/100`. -/
+theorem core_ineq (x y : ℝ) (hx : |x| ≤ 1) (hy : |y| ≤ 1) :
+    gSym (x / 5) + (5 + x) / 10 * gSym (3 * (1 + x) * y / (2 * (5 + x))) ≤
+      9 / 100 * (gSym x + (1 + x) / 2 * gSym y) := by
+  have hs0 : 0 ≤ (1 + x) / 2 := div_nonneg (by linarith [(abs_le.1 hx).1]) (by norm_num)
+  have ht0 : 0 ≤ y ^ 2 := sq_nonneg y
+  have ht1 : y ^ 2 ≤ 1 := by rw [← sq_abs]; exact pow_le_one₀ (abs_nonneg _) hy
+  have gx : x ^ 2 ≤ gSym x := by
+    have := gSym_ge4 hx
+    nlinarith [pow_two_nonneg (x ^ 2), pow_two_nonneg (x ^ 3), pow_two_nonneg (x ^ 4)]
+  have gy : y ^ 2 + (y ^ 2) ^ 2 / 6 + (y ^ 2) ^ 3 / 15 + (y ^ 2) ^ 4 / 28 ≤ gSym y := by
+    have := gSym_ge4 hy
+    ring_nf; ring_nf at this; linarith
+  have gin := mul_le_mul_of_nonneg_left gy hs0
+  have h1 := gSym_x5_le x hx
+  have h2 := gSym_out_le x y hx hy
+  have h3 := poly_step x (y ^ 2) hx ht0 ht1
+  linarith
+
+/-! #### KL divergence to `exQ` via the grouping `{0, 1} | {2}` -/
+
+theorem kl_term_nat (p q : ℝ) (hp : 0 ≤ p) :
+    (if p ≤ 0 then 0 else p * log2 (p / q)) = p * Real.log (p / q) / Real.log 2 := by
+  split_ifs with h
+  · have : p = 0 := le_antisymm h hp
+    subst this; simp
+  · unfold log2; ring
+
+theorem mul_log_mul' (u v : ℝ) (hu : 0 ≤ u) (hv : 0 < v) :
+    u * Real.log (v * u) = u * Real.log v + u * Real.log u := by
+  rcases hu.eq_or_lt with rfl | h
+  · simp
+  · rw [Real.log_mul hv.ne' h.ne']; ring
+
+theorem kl_exQ_nat (P : ProbDist (Fin 3)) :
+    klDivergence P exQ * Real.log 2 = P.pmf 0 * Real.log (P.pmf 0 / (1 / 4)) +
+      P.pmf 1 * Real.log (P.pmf 1 / (1 / 4)) + P.pmf 2 * Real.log (P.pmf 2 / (1 / 2)) := by
+  have hl2 : Real.log 2 ≠ 0 := (Real.log_pos one_lt_two).ne'
+  unfold klDivergence
+  rw [Fin.sum_univ_three, kl_term_nat _ _ (P.nonneg 0), kl_term_nat _ _ (P.nonneg 1),
+    kl_term_nat _ _ (P.nonneg 2)]
+  have q0 : exQ.pmf 0 = 1 / 4 := rfl
+  have q1 : exQ.pmf 1 = 1 / 4 := rfl
+  have q2 : exQ.pmf 2 = 1 / 2 := rfl
+  rw [q0, q1, q2]
+  field_simp
+
+/-- Grouping identity (in nats): with `s = a + b`, `D((a, b, c) ‖ (1/4, 1/4, 1/2))` equals
+    `(g(2s - 1) + s·g((a - b)/s)) / 2`. -/
+theorem group_id (a b c : ℝ) (ha : 0 ≤ a) (hb : 0 ≤ b) (hc : 0 ≤ c) (h : a + b + c = 1) :
+    a * Real.log (a / (1 / 4)) + b * Real.log (b / (1 / 4)) + c * Real.log (c / (1 / 2)) =
+      (gSym (2 * (a + b) - 1) + (a + b) * gSym ((a - b) / (a + b))) / 2 := by
+  rcases (add_nonneg ha hb).eq_or_lt with hs | hs
+  · have ha0 : a = 0 := by linarith
+    have hb0 : b = 0 := by linarith
+    have hc1 : c = 1 := by linarith
+    subst ha0 hb0 hc1
+    unfold gSym; norm_num
+  · obtain ⟨s, hsdef⟩ : ∃ s, s = a + b := ⟨_, rfl⟩
+    rw [← hsdef]
+    rw [← hsdef] at hs
+    obtain ⟨y, hydef⟩ : ∃ y, y = (a - b) / s := ⟨_, rfl⟩
+    rw [← hydef]
+    have ha' : a = s * (1 + y) / 2 := by rw [hydef]; field_simp; linarith
+    have hb' : b = s * (1 - y) / 2 := by rw [hydef]; field_simp; linarith
+    have hc' : c = 1 - s := by linarith
+    have h1y : 0 ≤ 1 + y := by
+      have : 1 + y = 2 * a / s := by rw [ha']; field_simp
+      rw [this]; positivity
+    have h1y' : 0 ≤ 1 - y := by
+      have : 1 - y = 2 * b / s := by rw [hb']; field_simp
+      rw [this]; positivity
+    have hc0 : 0 ≤ 1 - s := by linarith
+    have e1 : a * Real.log (a / (1 / 4)) =
+        s / 2 * ((1 + y) * Real.log (2 * s)) + s / 2 * ((1 + y) * Real.log (1 + y)) := by
+      rw [ha', show s * (1 + y) / 2 / (1 / 4) = (2 * s) * (1 + y) by ring]
+      have := mul_log_mul' (1 + y) (2 * s) h1y (by positivity)
+      calc _ = s / 2 * ((1 + y) * Real.log (2 * s * (1 + y))) := by ring
+        _ = _ := by rw [this]; ring
+    have e2 : b * Real.log (b / (1 / 4)) =
+        s / 2 * ((1 - y) * Real.log (2 * s)) + s / 2 * ((1 - y) * Real.log (1 - y)) := by
+      rw [hb', show s * (1 - y) / 2 / (1 / 4) = (2 * s) * (1 - y) by ring]
+      have := mul_log_mul' (1 - y) (2 * s) h1y' (by positivity)
+      calc _ = s / 2 * ((1 - y) * Real.log (2 * s * (1 - y))) := by ring
+        _ = _ := by rw [this]; ring
+    have e3 : c * Real.log (c / (1 / 2)) = (1 - s) * Real.log (2 * (1 - s)) := by
+      rw [hc', show (1 - s) / (1 / 2) = 2 * (1 - s) by ring]
+    rw [e1, e2, e3]
+    unfold gSym
+    rw [show 1 + (2 * s - 1) = 2 * s by ring, show 1 - (2 * s - 1) = 2 * (1 - s) by ring]
+    ring
+
+/-- **The global inequality** `D(P exW ‖ exQ W) ≤ (9/100) D(P ‖ exQ)` for every input `P`. -/
+theorem kl_ex_global (P : ProbDist (Fin 3)) :
+    klDivergence (exW.joint P).snd (exW.joint exQ).snd ≤ 9 / 100 * klDivergence P exQ := by
+  rw [kl_congr (fun _ => rfl) ex_outQ]
+  have hl2 : 0 < Real.log 2 := Real.log_pos one_lt_two
+  suffices hs : klDivergence (exW.joint P).snd exQ * Real.log 2 ≤
+      9 / 100 * (klDivergence P exQ * Real.log 2) by
+    rw [← mul_assoc] at hs; exact le_of_mul_le_mul_right hs hl2
+  rw [kl_exQ_nat, kl_exQ_nat]
+  obtain ⟨e0, e1, e2⟩ := ex_out P
+  rw [e0, e1, e2]
+  have ha := P.nonneg 0
+  have hb := P.nonneg 1
+  have hc := P.nonneg 2
+  have hsum := P.sum_one
+  rw [Fin.sum_univ_three] at hsum
+  generalize P.pmf 0 = a at *
+  generalize P.pmf 1 = b at *
+  generalize P.pmf 2 = c at *
+  rw [group_id a b c ha hb hc hsum, group_id _ _ _ (by positivity) (by positivity)
+    (by positivity) (by linarith)]
+  -- coordinates
+  obtain ⟨x, hx⟩ : ∃ x, x = 2 * (a + b) - 1 := ⟨_, rfl⟩
+  obtain ⟨y, hy⟩ : ∃ y, y = (a - b) / (a + b) := ⟨_, rfl⟩
+  have hsy : a - b = (a + b) * y := by
+    rcases (add_nonneg ha hb).eq_or_lt with hs | hs
+    · have ha0 : a = 0 := by linarith
+      have hb0 : b = 0 := by linarith
+      subst ha0 hb0; simp
+    · rw [hy]; field_simp
+  have hxabs : |x| ≤ 1 := abs_le.2 ⟨by linarith, by linarith⟩
+  have hyabs : |y| ≤ 1 := by
+    rw [hy, abs_div]
+    rcases (add_nonneg ha hb).eq_or_lt with hs | hs
+    · rw [← hs]; simp
+    · rw [abs_of_pos hs, div_le_one hs]; exact abs_le.2 ⟨by linarith, by linarith⟩
+  have hc' : c = 1 - a - b := by linarith
+  have hS : a * (9 / 20) + b * (3 / 20) + c * (1 / 5) +
+      (a * (3 / 20) + b * (9 / 20) + c * (1 / 5)) = (5 + x) / 10 := by rw [hx, hc']; ring
+  have hX' : 2 * (a * (9 / 20) + b * (3 / 20) + c * (1 / 5) +
+      (a * (3 / 20) + b * (9 / 20) + c * (1 / 5))) - 1 = x / 5 := by rw [hS]; ring
+  have hY' : (a * (9 / 20) + b * (3 / 20) + c * (1 / 5) -
+      (a * (3 / 20) + b * (9 / 20) + c * (1 / 5))) /
+      (a * (9 / 20) + b * (3 / 20) + c * (1 / 5) + (a * (3 / 20) + b * (9 / 20) + c * (1 / 5))) =
+      3 * (1 + x) * y / (2 * (5 + x)) := by
+    have h5 : 0 < 5 + x := by linarith [(abs_le.1 hxabs).1]
+    rw [hS, show a * (9 / 20) + b * (3 / 20) + c * (1 / 5) -
+      (a * (3 / 20) + b * (9 / 20) + c * (1 / 5)) = 3 / 10 * (a - b) by ring, hsy]
+    have hab : a + b = (1 + x) / 2 := by rw [hx]; ring
+    rw [hab]; field_simp
+  have hX : 2 * (a + b) - 1 = x := hx.symm
+  have hab : a + b = (1 + x) / 2 := by rw [hx]; ring
+  rw [hX', hY', hS, hX, ← hy, hab]
+  have := core_ineq x y hxabs hyabs
+  linarith
+
+/-- `s_KL(exQ, exW) ≤ 9/100`, closing the reduction `sdpiKLAt_ex_le_of`. -/
+theorem sdpiKLAt_ex_le : sdpiKLAt exQ exW ≤ 9 / 100 := sdpiKLAt_ex_le_of kl_ex_global
+
+/-- `s_KL(exQ, exW) = s_{χ²}(exQ, exW) = 9/100`. -/
+theorem sdpiKLAt_ex : sdpiKLAt exQ exW = 9 / 100 := le_antisymm sdpiKLAt_ex_le sdpiKLAt_ex_ge
+
+/-- **The frozen statement is false** (catalog formulation; see the problem file's provenance
+    note): the reversible source `(exQ, exW)` has two-sided equality `s_KL = s_{χ²} = 9/100`, but
+    its hypercontractivity ribbon misses `(p, q) = (127/100, 4)`. -/
+theorem statement_false : ¬ Statement := not_statement_of_sdpiKLAt_ex_le sdpiKLAt_ex_le
 
 end InfoTheory.Known.Certificates.SdpiKlVsChisqEquality
