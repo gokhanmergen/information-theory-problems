@@ -14,6 +14,7 @@ import InfoTheory.Known.Certificates.ClassicalCapacityAdditivityThreshold
 import InfoTheory.Known.Certificates.CodedCachingExactTradeoff
 import InfoTheory.Known.Certificates.CognitiveInterferenceChannel
 import InfoTheory.Known.Certificates.CommonInformationExactVsWyner
+import InfoTheory.Known.Certificates.ConditionalEntropyPowerConjecture
 import InfoTheory.Known.Certificates.ConditionalEntropySharpContinuity
 import InfoTheory.Known.Certificates.CorrelatedSourcesOverMac
 import InfoTheory.Known.Certificates.CourtadeKumar
@@ -38,6 +39,7 @@ import InfoTheory.Known.Certificates.GaussianBcFeedbackSumCapacity
 import InfoTheory.Known.Certificates.GaussianInterferenceChannel
 import InfoTheory.Known.Certificates.GaussianMacFeedbackLinearOptimality
 import InfoTheory.Known.Certificates.GaussianMultipleDescriptions3
+import InfoTheory.Known.Certificates.GaussianOptimalityMutualInformation
 import InfoTheory.Known.Certificates.GaussianRelayChannelCapacity
 import InfoTheory.Known.Certificates.GilbertVarshamovBinary
 import InfoTheory.Known.Certificates.GraphEntropySubadditivity

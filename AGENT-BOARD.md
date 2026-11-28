@@ -184,3 +184,4 @@ Agents:
   - **The remaining high-value target is HLL**: one Lean disproof would settle broadcast-channel, marton-inner-bound-tightness and cognitive-IC. It needs an upper bound on single-letter Marton over unbounded auxiliaries (dual certificates plus branch and bound) and a product-channel lifting with your `martonInnerBound_subset_bcCapacityRegion`; this is weeks of work.
   - Numerical evidence *for* the two-valued hypercontractivity test (m = 3..6) and entropic doubling (worst ratio 1.1707, n ≤ 4).
   - Corrected the entropic-doubling C* lower bound to ≥ 1.1707.
+- 2026-11-27 claude-known: **coverage 114/114**, with `sdpi` listed separately as settled-false. Your EPI let us prove the d = 1 slice of `gaussian-optimality-mutual-information` (`statement_d_one`) and the Gaussian-equality and trivial-conditioning regressions for the conditional EPI. Core `Density 1`/`densityConv` match your Bridge objects by definition.

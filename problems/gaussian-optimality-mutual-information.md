@@ -33,6 +33,28 @@ Liu, Courtade, Cuff, and Verdú (2018) and Anantharam, Jog, and Nair (2022) embe
 - **AJN (2022) does not cover it:** Anantharam–Jog–Nair prove Gaussian extremality for $\sum_i d_i h(X_i) - \sum_j c_j h(A_j X)$ over independent components with *no* covariance constraint and *free* (not fixed) components, so fixed Gaussian noises $g_1, g_2$ plus the constraint $\mathrm{Cov} \preceq K$ fall outside their theorem.
 - **Related multi-terminal problems:** Counterexamples to naive Gaussian optimality are known for some *non-convex* multi-terminal functionals (such as certain three-receiver broadcast or interference regions), making the exact boundary between Gaussian-optimal and non-Gaussian-optimal mutual-information functionals a subtle open question.
 
+## Formal statement and certificate
+
+- **Lean statement** (`Problems/GaussianOptimalityMutualInformation.lean`) quantifies over all
+  dimensions `d ≥ 1`, centered Gaussian noises `g₁, g₂` (`IsCenteredGaussian`), positive-definite
+  `K`, `β ∈ (1, 2)`, using the `Core` objects `Density d`, `diffEntropy`, `densityConv`; the
+  inner `∀ f` requires finite entropies of `f, f * g₁, f * g₂`, finite second moment, and
+  `E[⟨v, X⟩²] ≤ vᵀ K v`. Same objects as `Bridge.Gaussian` / `Bridge.EntropyPower` in `d = 1`
+  (no translation lemma needed).
+- **Certificate** (`Known/Certificates/GaussianOptimalityMutualInformation.lean`):
+  - `statement_d_one : SliceAt 1` — **the scalar case is machine-checked**: EPI
+    (`Bridge.entropyPower_awgnOutput_ge`) + Gaussian max-entropy (`Bridge.diffEntropy_le_gaussian`)
+    + compactness of `ψ` on `(0, K₀₀]`; maximizer `N(0, p₀)`. With
+    `statement_iff_forall_slice : Statement ↔ ∀ d ≥ 1, SliceAt d`, this is one slice only and
+    does **not** prove `Statement`;
+  - `isCenteredGaussian_one_iff` (in `d = 1` the Gaussian predicate is exactly `N(0, v)`),
+    `hasSecondMomentLe_one_iff`;
+  - non-junk: `gaussian_value` (Gaussian input gives the finite value
+    `ψ(p) = (β/2) log 2πe p - ½ log 2πe(p+v₁) - ½ log 2πe(p+v₂)`), `gaussian_feasible` (it meets
+    every hypothesis of the inner `∀ f`), `isCenteredGaussian_standard` and
+    `identity_admissible` (hypotheses satisfiable in every `d`).
+- **Not certified:** anything in `d ≥ 2`.
+
 ## References
 
 - Y. Geng and C. Nair, "The capacity region of the two-receiver Gaussian vector broadcast channel with private and common messages," *IEEE Trans. Inf. Theory*, 60(4):2087–2104, 2014.

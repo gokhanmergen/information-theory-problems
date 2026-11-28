@@ -42,6 +42,27 @@ Equality holds whenever $X, Y, W$ are Gaussian with proportional covariance matr
 - **Boundary limits:** Holds identically as $N(W) \to 0$, $N(X) \to 0$, or $N(Y) \to 0$, and holds to second order when $X, Y$ are small independent Gaussian perturbations of an arbitrary non-Gaussian $W$ (by Stam's inequality and Costa's concavity of entropy power).
 - **General non-Gaussian $W$:** Neither a proof nor a counterexample is known for unconstrained independent $X, Y, W$.
 
+## Formal statement and certificate
+
+- **Lean statement** (`Problems/ConditionalEntropyPowerConjecture.lean`) uses the `Core` objects
+  `Density d`, `entropyPower` (`(2πe)⁻¹ exp(2h/d)`), `densityConv`, with finite entropies of all
+  six densities and finite second moments of `X, Y, W`. In `d = 1` these are the objects of
+  `Bridge.EntropyPower` (`densityConv` hypotheses identify the sums with `Bridge.convDensity`).
+- **Certificate** (`Known/Certificates/ConditionalEntropyPowerConjecture.lean`):
+  - `statement_iff_forall_slice : Statement ↔ ∀ d ≥ 1, SliceAt d`; `entropyPower_pos'`;
+  - non-vacuity: `gaussian_hypotheses` (a Gaussian triple satisfies every hypothesis of
+    `SliceAt 1`);
+  - regression `gaussian_equality` / `slice_one_gaussian`: Gaussian `X, Y, W` in `d = 1` give
+    equality `(a+c)(b+c) = (a+b+c)c + ab`, for any densities meeting the convolution hypotheses;
+  - regression `epi_consequences`: under the `d = 1` hypotheses, `N(X+W) ≥ N(X) + N(W)`,
+    `N(Y+W) ≥ N(Y) + N(W)`, `N(X+Y+W) ≥ N(X+W) + N(Y)` (Shannon's EPI,
+    `Bridge.entropyPower_add_ge`) — the trivial-conditioning (`I = 0`) instance of the
+    equivalent form;
+  - `slice_one_of_tight`: in `d = 1` the inequality holds whenever
+    `N(X+Y+W) ≤ N(X) + N(Y) + N(W)`.
+- **Not certified:** Courtade's Gaussian-`W` theorem, Madiman's submodularity, any `d ≥ 2` fact.
+  Nothing here proves or disproves `Statement`.
+
 ## References
 
 - T. A. Courtade, "A strong entropy power inequality," *IEEE Trans. Inf. Theory*, 64(4):2173–2192, 2018.
