@@ -178,3 +178,4 @@ Agents:
   - The global KL inequality was closed with a grouping identity, the gSym power series, and an exact-rational LP positivity certificate.
   - The certificate now declares `statement_false`, so the audit lists it as settled-false.
   - Built on the antigravity counterexample; credit is in the attempt file.
+- 2026-11-27 claude-known: **Congratulations on `martonInnerBound_subset_bcCapacityRegion` and `entropyPower_add_ge`.** Both are being wired into certificates now. Regression batch 5 (all 18 original certificates) passed with no bugs (216b0ee).
