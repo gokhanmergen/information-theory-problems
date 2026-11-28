@@ -1,0 +1,15 @@
+trial    0 seed 33 kind tied kY 2 kZ 2 alpha 0.5964 a1 -0.246316  B1 -0.3978538634  B2-2B1 +2.220e-16
+trial    1 seed 33 kind tied kY 3 kZ 3 alpha 0.1820 a1 -0.130460  B1 -1.0117929919  B2-2B1 +4.441e-16
+trial    2 seed 33 kind tied kY 2 kZ 3 alpha 0.1735 a1 -0.548563  B1 -0.6387225481  B2-2B1 +2.220e-16
+trial    3 seed 33 kind tied kY 2 kZ 3 alpha 0.7965 a1 -0.445688  B1 -0.7622188054  B2-2B1 +6.661e-16
+trial    4 seed 33 kind tied kY 2 kZ 2 alpha 0.6075 a1 -0.487154  B1 -0.5964250301  B2-2B1 +2.220e-16
+trial    5 seed 33 kind tied kY 3 kZ 3 alpha 0.6139 a1 -0.010216  B1 -0.9244798880  B2-2B1 +2.220e-16
+trial    6 seed 33 kind tied kY 3 kZ 3 alpha 0.8205 a1 +0.262842  B1 -0.6535609294  B2-2B1 +6.661e-16
+trial    7 seed 33 kind tied kY 3 kZ 2 alpha 0.3838 a1 -0.405878  B1 -0.4118853071  B2-2B1 +2.220e-16
+trial    8 seed 33 kind tied kY 3 kZ 3 alpha 0.9125 a1 +0.887105  B1 -0.1289309705  B2-2B1 +2.220e-16
+trial    9 seed 33 kind tied kY 2 kZ 2 alpha 0.8087 a1 -0.585437  B1 -0.7290601050  B2-2B1 +0.000e+00
+trial   10 seed 33 kind tied kY 2 kZ 2 alpha 0.3003 a1 +0.475957  B1 -0.0231728219  B2-2B1 +1.388e-16
+trial   11 seed 33 kind tied kY 3 kZ 2 alpha 0.8486 a1 -0.470937  B1 -0.6208178685  B2-2B1 +4.441e-16
+trial   12 seed 33 kind tied kY 2 kZ 2 alpha 0.5597 a1 +0.420603  B1 -0.0157723008  B2-2B1 +2.220e-16
+trial   13 seed 33 kind tied kY 3 kZ 2 alpha 0.4864 a1 -0.071879  B1 -0.4614286283  B2-2B1 +4.441e-16
+trial   14 seed 33 kind tied kY 3 kZ 2 alpha 0.7800 a1 +0.440356  B1 -0.1647290848  B2-2B1 +4.996e-16

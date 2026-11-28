@@ -1,0 +1,7 @@
+product RTD: L_1/2 = 0.723285768844, Marton = 0.723285768844, 2 M1 = 0.723285768844
+  sigma 0.05: max L_1/2 - 2M1 = -2.732e-09 ; fraction returning within 1e-6 of 2M1: 1.00 ; min -2.880e-09
+  sigma 0.20: max L_1/2 - 2M1 = -2.445e-09 ; fraction returning within 1e-6 of 2M1: 1.00 ; min -3.109e-09
+  sigma 0.50: max L_1/2 - 2M1 = -2.149e-09 ; fraction returning within 1e-6 of 2M1: 1.00 ; min -3.952e-09
+  sigma 1.00: max L_1/2 - 2M1 = -2.494e-09 ; fraction returning within 1e-6 of 2M1: 1.00 ; min -7.783e-09
+  sigma 2.00: max L_1/2 - 2M1 = -1.016e-08 ; fraction returning within 1e-6 of 2M1: 0.45 ; min -5.638e-02
+  overall max L_1/2 - 2M1 = -2.149e-09

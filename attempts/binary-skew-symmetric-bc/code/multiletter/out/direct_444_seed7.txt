@@ -1,0 +1,6 @@
+BSSC^2, |W|,|U|,|V| = 4,4,4, 150 starts (seed 7)
+  best L_1/2 found      = 0.686639629369 bits
+  2 x one-letter Marton = 0.723285768844 bits;  difference = -3.665e-02
+  Marton value min{L_0,L_1} at best = 0.664997665354
+  top-5 local values: 0.686639629 0.686145071 0.685990048 0.684884477 0.684650875
+  fraction of starts within 1e-6 of 2M1: 0.000

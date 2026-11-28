@@ -1,0 +1,12 @@
+B_1(1/2,0) = -0.449635240037178 at q = 0.1584349713 (UX);  2 B_1 = -0.899270480074356
+  maps 23: 430 maps x 256 starts x 3000 iters in 345s
+  maps 32: 430 maps x 256 starts x 3000 iters in 376s
+best value found  B_2 >= -0.899270480074355   (B_2 - 2B_1 = 8.882e-16)
+map classes attaining 2B_1 (within 1e-10): 66 of 862
+best map classes NOT attaining 2B_1:
+   23 f=[1, 2, 3, 1, 2, 3]  value - 2B_1 = -4.248004e-03
+   32 f=[0, 0, 1, 1, 2, 2]  value - 2B_1 = -4.248004e-03
+   32 f=[0, 0, 0, 2, 1, 1]  value - 2B_1 = -4.248004e-03
+   32 f=[0, 1, 2, 0, 3, 2]  value - 2B_1 = -4.248004e-03
+   23 f=[0, 0, 0, 1, 2, 3]  value - 2B_1 = -4.248004e-03
+largest value over all map classes - 2B_1 = 8.882e-16

@@ -1,0 +1,2 @@
+eps 0.030 product-optimum map: PROVED after 6697809 simplices [23s]
+eps 0.015 product-optimum map: PROVED after 18545859 simplices [63s]

@@ -1,0 +1,3 @@
+product map, target 2B1-1e-3: ABORT 2012689 best sampled-2B1=-1.99e-04
+V=X branch at 2B1+0.01: PROVED 229 best sampled-2B1=-6.9372e-04
+V=X branch, target = its sampled max - 1e-4: ABORT 2019413
