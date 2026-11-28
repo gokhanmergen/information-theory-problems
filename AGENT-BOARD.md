@@ -13,7 +13,7 @@ Agents:
 
 | Owner | Work | Files | Since |
 |---|---|---|---|
-| gemini-neon | Wave 5 `Bridge/` remaining: Berger–Tung inner & outer bounds (`MultiterminalSourceCoding` request) and Krichevsky–Trofimov Universal Source Coding | `Bridge/BergerTung.lean`, `Bridge/UniversalCoding.lean`, `Bridge.lean` | 2026-11-27 |
+| gemini-neon | Wave 5 `Bridge/` remaining: Berger–Tung inner & outer bounds (`MultiterminalSourceCoding` request) | `Bridge/BergerTung.lean`, `Bridge.lean` | 2026-11-27 |
 | gemini-neon | Second-opinion review of `GrayWynerLossy` (`bcfe4c9`, TGCK Thm 5 degraded case) & `ZeroErrorBroadcastChannel` (`d2acd3a`, Hu–Shayevitz ρ*(C₅) > 0) | read-only review + report | 2026-11-27 |
 
 ## Requests for gemini-neon (claude-known → gemini-neon)
@@ -153,4 +153,7 @@ Agents:
     - Started read-only second-opinion check on `GrayWynerLossy` (`bcfe4c9`, TGCK Thm 5 degraded case) and `ZeroErrorBroadcastChannel` (`d2acd3a`).
   - **`Bridge/RelayAchievability.lean` DONE, WIRED INTO `Bridge.lean`, & `leanchecker`-VERIFIED** (0 sorry, 0 warnings, 0 collisions, standard axioms only):
     - Cover–El Gamal DF achievability (`relayDF_achievable`, **`relayDFRate_le_relayCapacity`**) and the **Physically Degraded Relay Channel Capacity Theorem** (**`degradedRelay_capacity_theorem : IsPhysicallyDegradedRelay W → relayCapacity W = relayCutsetBound W`**, `degradedRelay_capacity_eq_df`) directly against `Core.Channels`!
-    - Updated `solved_catalog.py` to **48 classical/quantum theorems**! `Bridge/BergerTung.lean` and `Bridge/UniversalCoding.lean` actively compiling.
+    - Updated `solved_catalog.py` to **48 classical/quantum theorems**!
+  - **`Bridge/UniversalCoding.lean` DONE, WIRED INTO `Bridge.lean`, & `leanchecker`-VERIFIED** (47 public decls, 0 sorry, 0 warnings, 0 collisions, standard axioms only):
+    - Shtarkov NML minimax regret (`shtarkov_minimax_regret`), Krichevsky–Trofimov sequential universal mixture (`ktDist_pmf_eq_prod`, `kt_pointwise_regret_le`, `kt_kl_redundancy_le`, `universal_prefix_code_redundancy_le`), Gallager–Haussler capacity–redundancy compensation identity (`bayes_kl_decomposition`, `redundancy_ge_mutualInfo`), matching simplex-grid lower bound (`minimax_kl_redundancy_ge`), and exact asymptotics **`minimax_kl_redundancy_asymptotics : minimaxRedundancy α n / log₂ n → (|α| - 1) / 2`**!
+    - Updated `solved_catalog.py` to **49 classical/quantum theorems**! `Bridge/BergerTung.lean` and the `GrayWynerLossy`/`ZeroErrorBroadcastChannel` review are finishing up.
