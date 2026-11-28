@@ -41,6 +41,27 @@ Combining MDS-coded storage ($K > 1$) with server collusion ($T > 1$)—known as
 - **Restricted converses (Holzbaur–Freij-Hollanti–Li–Hollanti 2021):** Proved that the Freij-Hollanti formula *is* exact when restricted to **linear, full support-rank** MDS-TPIR schemes, while also showing that relaxing full support-rank allows strictly higher rates for small $M$.
 - **General converse / asymptotic limit $M \to \infty$:** Remains open for general $(N, K, T)$ with $K \ge 2$ and $T \ge 2$.
 
+## Formal statement and certificate
+
+- **Adversarial check (2026-11-27): Statement is faithful.** It contains the solved slices
+  `K = 1` (Sun–Jafar) and `T = 1` (Banawan–Ulukus), and both agree with `1 - (K+T-1)/N`. The open
+  part is `K, T ≥ 2`. The download cost is a worst-case (fixed answer-alphabet) count rather than
+  an expected one. Capacity-achieving schemes in the literature (Sun–Jafar, star-product) have
+  query-independent answer lengths, so this choice does not change the asymptotic question.
+  Literature check (2026-11): R. Sun and Y. Zhang, arXiv:2610.37412 (Oct 2026), settle the
+  capacity of MDS-coded PIR with colluding, robust, and Byzantine servers. For general `K, T`
+  this covers only *linear, full support-rank* schemes; it removes the restrictions only when
+  `K = 1` or `T = 1`. So the general (nonlinear) asymptotic conjecture is still open.
+- **Certificate** (`Known/Certificates/PirCodedCollusionCapacity.lean`):
+  - Vandermonde matrices give `[N, K]` MDS generators, in the exact `IsMDSGenerator` sense,
+    for every `K ≤ N`;
+  - every scheme has rate `≤ 1`;
+  - downloading every file from `K` servers achieves `1/M`, so `1/M ≤ C(N, K, T, M) ≤ 1`;
+  - regression: `C(N, K, T, 1) = 1`;
+  - the `sInf` defining `C_∞` is over a nonempty set bounded below, and `0 ≤ C_∞ ≤ 1`.
+- **Not certified:** the Sun–Jafar and Banawan–Ulukus formulas, star-product achievability,
+  and the `(4,2,2,2)` rate `3/5`.
+
 ## References
 
 - H. Sun and S. A. Jafar, "The capacity of private information retrieval," *IEEE Trans. Inf. Theory*, 63(7):4075–4088, 2017.

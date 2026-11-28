@@ -8,6 +8,7 @@ import InfoTheory.Known.Certificates.BroadcastChannelThreeReceivers
 import InfoTheory.Known.Certificates.BscReliabilityFunction
 import InfoTheory.Known.Certificates.CascadeRateDistortionSideInfo
 import InfoTheory.Known.Certificates.CeoProblemGeneral
+import InfoTheory.Known.Certificates.CodedCachingExactTradeoff
 import InfoTheory.Known.Certificates.CognitiveInterferenceChannel
 import InfoTheory.Known.Certificates.CommonInformationExactVsWyner
 import InfoTheory.Known.Certificates.CorrelatedSourcesOverMac
@@ -29,6 +30,8 @@ import InfoTheory.Known.Certificates.GaussianMultipleDescriptions3
 import InfoTheory.Known.Certificates.GaussianRelayChannelCapacity
 import InfoTheory.Known.Certificates.GilbertVarshamovBinary
 import InfoTheory.Known.Certificates.GrayWynerLossy
+import InfoTheory.Known.Certificates.IndexCodingLinearNonlinearGap
+import InfoTheory.Known.Certificates.IndexCodingSingleLetter
 import InfoTheory.Known.Certificates.IntrinsicVsSecretKeyGap
 import InfoTheory.Known.Certificates.KissingNumberHighDim
 import InfoTheory.Known.Certificates.LinearRankEntropyRegionN6
@@ -40,6 +43,7 @@ import InfoTheory.Known.Certificates.MdsConjecture
 import InfoTheory.Known.Certificates.MultipleDescriptionsGeneral
 import InfoTheory.Known.Certificates.MultiterminalSourceCoding
 import InfoTheory.Known.Certificates.NonAsymptoticLossyDispersion
+import InfoTheory.Known.Certificates.PirCodedCollusionCapacity
 import InfoTheory.Known.Certificates.PrimitiveRelayChannelBsc
 import InfoTheory.Known.Certificates.RelayChannel
 import InfoTheory.Known.Certificates.SecretKeyCapacityPublicDiscussion

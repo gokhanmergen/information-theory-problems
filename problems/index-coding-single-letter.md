@@ -36,6 +36,21 @@ Consequently, characterizing $\beta(G)$ sits at the very core of network informa
 - **Solved special cases:** $\beta(G)$ is known exactly for perfect graphs ($\beta(G) = \alpha(G) = \chi(\overline{G})$), odd holes and odd anti-holes (Blasiak–Kleinberg–Lubetzky 2013), all graphs with $n \le 5$ vertices (Arbabjolfaei et al. 2013), and special symmetric/planar families.
 - **Connection to network coding undecidability:** Cheuk Ting Li's (2023) proof of undecidability for exact zero-error network coding solvability does *not* immediately prove undecidability of approximating the asymptotic broadcast rate $\beta(G)$ (the infimum over all blocklengths $t \ge 1$).
 
+## Formal statement and certificate
+
+- **Adversarial check (2026-11-27): Statement is faithful.** The Turing-machine formulation
+  asks for one machine that halts on every encoded query and separates
+  `β ≤ p/q - 1/prec` from `β ≥ p/q + 1/prec`. That is equivalent to computability of `β` as a
+  real number. Self-loops in the input `adj` are ignored, and `β` takes values in `[1, n]`, so no
+  junk value arises. A literature search (2026-11) found no proof of computability or
+  undecidability. C. T. Li's undecidability results (arXiv:2109.08991) concern network/index
+  coding with some *fixed-size* messages and edges, not the asymptotic rate `β`.
+- **Certificate** (`Known/Certificates/IndexCodingSingleLetter.lean`):
+  - the `sInf` defining `β` is over a nonempty set bounded below, and `1 ≤ β(G) ≤ n`;
+  - regressions: `β = 1` for complete side information, `β = n` for none;
+  - the instance built inside `Statement` ignores diagonal entries of `adj`.
+- **Not certified:** any (un)computability fact, the MAIS/LP bounds, and the `n ≤ 5` values.
+
 ## References
 
 - Y. Birk and T. Kol, "Informed-source coding-on-demand (ISCOD) over broadcast channels," *Proc. IEEE INFOCOM*, pp. 1257–1264, 1998.

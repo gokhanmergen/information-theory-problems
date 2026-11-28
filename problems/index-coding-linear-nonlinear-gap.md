@@ -32,6 +32,30 @@ Because Lubetzky and Stav's "nonlinear" code was still linear over a *different*
   $$\frac{\inf_{\mathbb{F}_q} \beta_{\mathrm{lin}, q}(G)}{\beta(G)} = \Omega(n^c).$$
 - **Upper bound:** Since $\beta(G) \ge 1$ and $\beta_{\mathrm{lin}}(G) \le n$ (and in fact $\beta_{\mathrm{lin}}(G) \le \chi_f(\overline{G}) \le n$), the ratio is trivially at most $n$ (and $O(n / \log n)$ via basic graph-theoretic bounds on graphs with small $\beta(G)$). Pinpointing the exact maximum exponent $\gamma \in (0, 1]$ remains open.
 
+## Formal statement and certificate
+
+- **Adversarial check (2026-11-27): Statement is faithful, with one caveat about scope.** The
+  Lean `Statement` quantifies over *unicast* instances (a side-information digraph, where receiver
+  `i` wants `x_i`). Both `β = indexCodingBroadcastRate` and `β_lin = fieldLinearIndexCodingRate`
+  are `sInf`s over nonempty sets with values in `[1, n]` (certified), so the inequality cannot hold
+  through a junk zero.
+- **Correction to "What is known" (scope of the BKL gap).** As far as we can tell, the
+  Blasiak–Kleinberg–Lubetzky polynomial separation is proved for general *groupcast*
+  (hypergraph) index coding instances, and transferring it to unicast digraph instances is not
+  straightforward. For unicast instances at the level of broadcast rates, even a *strict*
+  separation `β_lin > β` was only exhibited in 2021: a 36-user instance by Sharififar, Sadeghi,
+  and Aboutorab, "Broadcast rate requires nonlinear coding in a unicast index coding instance of
+  size 36", arXiv:2102.01526. Before then, the unicast separation was known only for the full
+  capacity region (via Effros–El Rouayheb–Langberg and Maleki et al.). We know of no polynomial
+  separation for unicast instances. The Statement (an `n^{1-ε}` gap for digraphs) is therefore at
+  least as hard as the hypergraph version, and it remains open.
+- **Certificate** (`Known/Certificates/IndexCodingLinearNonlinearGap.lean`):
+  - `1 ≤ β(G) ≤ n` and `1 ≤ β_lin(G) ≤ n` for every instance with `n ≥ 1`;
+  - regressions on perfect graphs: complete side information gives `β = β_lin = 1`, and no side
+    information gives `β = β_lin = n`;
+  - complete graphs never witness the Statement inequality.
+- **Not certified:** `β ≤ β_lin` in general, and the Lubetzky–Stav and BKL separations.
+
 ## References
 
 - Z. Bar-Yossef, Y. Birk, T. S. Jayram, and T. Kol, "Index coding with side information," *IEEE Trans. Inf. Theory*, 57(3):1479–1494, 2011 (FOCS 2006).

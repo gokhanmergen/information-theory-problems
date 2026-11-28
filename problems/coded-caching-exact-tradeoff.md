@@ -34,10 +34,27 @@ Yu, Maddah-Ali, and Avestimehr (2018) completely settled the exact optimal rate�
   - Chen, Fan, and Letaief (2016): achieved $(M, R) = (1/K, N(K - 1)/K)$ when $N \le K$, strictly beating uncoded prefetching.
   - Tian and Chen (2018) and Gómez-Vilardebó (2018) constructed further coded-placement schemes strictly improving on uncoded prefetching for small $M$.
 - **Solved small cases with coded placement:**
-  - $N = 2$, arbitrary $K$: exact $R^*(2, K, M)$ determined (Tian 2018).
+  - $N = 2$, small $K$: exact $R^*(2, K, M)$ determined by computer-aided bounds (Tian 2018; see that paper for the exact range of $K$). Under the Statement's restriction $N \ge K$, only $(2, 2)$ is relevant, and that case is certified in Lean (see below).
   - $(N, K) = (3, 3)$: exact $R^*(3, 3, M)$ completely determined by Tian (2018) via computer-aided Shannon-type information inequalities, proving that coded placement strictly helps only for $M < 1$ and that $R^*(3, 3, 1) = 1 = (3 - 1)/(1 + 1)$ and $R^*(3, 3, 2) = 1/3$ are exact!
   - Large memory $M = N(K - 1)/K$ ($t = K - 1$): $R^* = 1/K$ is exact by the cut-set bound.
 - **Open cases:** General $(N, K)$ with $K \ge 4$ (even $(N, K) = (4, 4)$ at $M = 1$, where $R_{\mathrm{MAN}} = 3/2$ vs. best known converse!).
+
+## Formal statement and certificate
+
+- **Adversarial check (2026-11-27): Statement is faithful.** `codedCachingOptimalRate N K M` is
+  the `sInf` of zero-error achievable rates (with an `ε` slack in both the cache and the broadcast
+  size); the set is nonempty and bounded below, so no junk value arises. Zero-error vs.
+  vanishing-error does not matter for the question: all known converses (cut-set, Tian's
+  computer-aided bounds) hold for vanishing error, and MAN schemes are zero-error.
+- **Certificate** (`Known/Certificates/CodedCachingExactTradeoff.lean`):
+  - `0 ≤ R*(N, K, M) ≤ N` (rate `N` is achievable at every `M ≥ 0`);
+  - the single-user cut-set bound `R*(N, K, M) ≥ 1 - M/N`, proved by zero-error counting; at
+    `t = K - 1` it meets the MAN rate `1/K`;
+  - `R*(N, K, N) = 0`: the `t = K` instances of the Statement hold;
+  - regression: `R*(N, 2, N/2) = 1/2` for all `N ≥ 2` (explicit XOR scheme with `F = 2`, plus the
+    cut-set bound). So the whole `K = 2` slice of the Statement is proved.
+- **Not certified:** MAN achievability for `K ≥ 3`, Tian's `(3, 3)` results, the factor-2 bound.
+  Every open instance has `K ≥ 3` and `1 ≤ t ≤ K - 2`.
 
 ## References
 
