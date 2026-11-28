@@ -24,6 +24,7 @@ import InfoTheory.Bridge.EntropyPower
 import InfoTheory.Bridge.Quantum
 import InfoTheory.Bridge.RelayAchievability
 import InfoTheory.Bridge.UniversalCoding
+import InfoTheory.Bridge.BergerTung
 
 /-!
 # `InfoTheory.Bridge` — Non-Destructive Bridge to Mathlib & Cover & Thomas Foundations
@@ -108,4 +109,8 @@ Single convenience import re-exporting:
   `kt_kl_redundancy_le`, `universal_prefix_code_redundancy_le`), **Gallager–Haussler Capacity–Redundancy
   Compensation Identity**, and exact minimax redundancy asymptotics
   (`minimax_kl_redundancy_asymptotics : minimaxRedundancy α n / log₂ n → (|α| - 1) / 2`).
+- `InfoTheory.Bridge.BergerTung`: **Extended Two-Encoder Markov Lemma** (`markov_lemma_first_covering_codeword`),
+  **Berger–Tung Inner & Outer Bounds for Multiterminal Lossy Source Coding** (El Gamal–Kim Thm. 12.1:
+  `bergerTung_inner_closure_achievability`, `bergerTung_outer_converse`), and exact collapses to
+  Slepian–Wolf and Wyner–Ziv.
 -/

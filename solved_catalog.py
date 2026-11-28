@@ -1476,6 +1476,54 @@ SOLVED_THEOREMS = [
         ],
     },
     {
+        "id": "berger-tung-multiterminal-source-coding",
+        "title": "Extended Markov Lemma & Berger–Tung Inner and Outer Bounds for Multiterminal Source Coding",
+        "category": "ch15-network",
+        "authors": "Toby Berger; Sui-Yin Tung",
+        "year": "1978",
+        "reference": "Berger (1978); Tung (1978); El Gamal & Kim, Lemma 12.1, Theorem 12.1 & §12.1.3",
+        "tags": ["berger-tung", "multiterminal", "extended-markov-lemma", "lossy-coding", "flagship", "ch15"],
+        "statement": (
+            "For two separate encoders observing correlated i.i.d. sources $(X_1^n, X_2^n) \\sim P_{X_1 X_2}^n$ "
+            "and a joint decoder reconstructing $(\\hat X_1^n, \\hat X_2^n)$ within distortions $(D_1, D_2)$:\n"
+            "1. **Berger–Tung Inner Bound (Achievability):** Every rate pair $(R_1, R_2)$ in "
+            "$\\operatorname{cl}(\\operatorname{conv}(\\mathcal{R}_{\\mathrm{BT}}^{\\mathrm{in}}(P, d_1, d_2, D_1, D_2)))$ "
+            "(long Markov chain $U_1 - X_1 - X_2 - U_2$ with $R_1 \\ge I(X_1; U_1 \\mid U_2)$, "
+            "$R_2 \\ge I(X_2; U_2 \\mid U_1)$, $R_1 + R_2 \\ge I(X_1, X_2; U_1, U_2)$) is operationally achievable.\n"
+            "2. **Berger–Tung Outer Bound (Converse):** Every operationally achievable $(R_1, R_2)$ lies in "
+            "the closure of $\\mathcal{R}_{\\mathrm{BT}}^{\\mathrm{out}}$ (short Markov chains $U_1 - X_1 - X_2$ "
+            "and $U_2 - X_2 - X_1$).\n"
+            "3. **Special-Case Collapses:** At $D_1 = D_2 = 0$ under Hamming distortion, both bounds collapse "
+            "identically to the Slepian–Wolf region; at $R_2 \\ge H(X_2)$, the inner bound collapses to "
+            "Wyner–Ziv rate–distortion."
+        ),
+        "proof_notes": (
+            "Proved directly against `InfoTheory.Core.SourceCoding.{IsBergerTungAchievable, bergerTungInnerBound}`: "
+            "establishes the fiberwise-permutation conditional-type second-moment Markov lemma "
+            "(`markov_lemma_conditional_type_perm`, `markov_lemma_first_covering_codeword`), combines "
+            "two-encoder strong-typical covering with independent random binning and 3-event joint-typicality "
+            "decoding plus time-sharing convexity (`bergerTung_inner_closure_achievability`), and proves "
+            "`bergerTung_outer_converse` via single-letter time-sharing with $U_{j,i} = (M_j, X_1^{<i}, X_2^{<i})$."
+        ),
+        "lean_decls": [
+            ("lean/InfoTheory/Bridge/BergerTung.lean", "bergerTungInnerBound_subset_outerBound"),
+            ("lean/InfoTheory/Bridge/BergerTung.lean", "bergerTungInnerBound_lossless_eq_slepianWolf"),
+            ("lean/InfoTheory/Bridge/BergerTung.lean", "sInf_bergerTungInnerBound_eq_wynerZiv"),
+            ("lean/InfoTheory/Bridge/BergerTung.lean", "markov_lemma_first_covering_codeword"),
+            ("lean/InfoTheory/Bridge/BergerTung.lean", "bergerTung_outer_converse"),
+            ("lean/InfoTheory/Bridge/BergerTung.lean", "bergerTung_inner_achievability"),
+            ("lean/InfoTheory/Bridge/BergerTung.lean", "bergerTung_inner_closure_achievability"),
+        ],
+        "related_open": [
+            "multiterminal-source-coding",
+            "ceo-problem-general",
+            "multiple-descriptions-general",
+            "gray-wyner-lossy",
+            "cascade-rate-distortion-side-info",
+            "correlated-sources-over-mac",
+        ],
+    },
+    {
         "id": "wyner-csiszar-korner-wiretap",
         "title": "Wyner–Csiszár–Körner Wiretap Channel Secrecy Capacity Theorem",
         "category": "ch15-network",
