@@ -53,6 +53,25 @@ STATUS_LABELS = {
     "solved": "solved",
 }
 
+FORMAL_STATUS_META = {
+    "statement-false": (
+        "statement false",
+        "The frozen Lean 4 statement is known to be false as formalized (catalog modeling error pending statement fix); the underlying open mathematical problem remains open.",
+    ),
+    "disproved": (
+        "disproved (formal)",
+        "The frozen Lean 4 statement has been formally disproved (`¬ Statement` verified in Lean 4), while the broader underlying open problem may remain open.",
+    ),
+    "claimed-resolved": (
+        "claimed resolved",
+        "A recent preprint claims to resolve this problem, but the proof is not yet independently verified or peer-reviewed.",
+    ),
+    "expected-false": (
+        "expected false",
+        "The frozen Lean 4 statement is open, though experts/heuristics expect the answer to be negative.",
+    ),
+}
+
 CATEGORY_LABELS = {
     "entropy-inequalities": "Entropy Inequalities & Geometry",
     "channel-capacity": "Channel Capacity & Synchronization",
@@ -320,11 +339,18 @@ def load_certificate_info(short_mod):
             m = re.search(r"\b(?:theorem|lemma)\s+([A-Za-z0-9_']+)\b", line)
             if m:
                 decls.append((m.group(1), idx))
+    decl_names = {name for name, _ in decls}
+    settled_kind = None
+    if "statement_false" in decl_names:
+        settled_kind = "false"
+    elif "statement_true" in decl_names:
+        settled_kind = "true"
     return {
         "file": rel_path,
         "module": f"InfoTheory.Known.Certificates.{short_mod}",
         "doc": doc,
         "decls": decls,
+        "settled_kind": settled_kind,
         "code": text.strip(),
     }
 
@@ -432,6 +458,15 @@ def badge(status):
     return f'<span class="badge badge-{html.escape(status)}">{html.escape(label)}</span>'
 
 
+def formal_status_badge(formal_status):
+    if not formal_status:
+        return ""
+    if formal_status not in FORMAL_STATUS_META:
+        fail(f"unknown formal_status {formal_status!r}; expected one of {sorted(FORMAL_STATUS_META)}")
+    label, _ = FORMAL_STATUS_META[formal_status]
+    return f'<span class="badge badge-formal-{html.escape(formal_status)}">{html.escape(label)}</span>'
+
+
 def load_attempts(problem_id):
     adir = ROOT / "attempts" / problem_id
     if not adir.is_dir():
@@ -517,7 +552,10 @@ def main():
     n_open = sum(1 for m, _, _, _ in problems if m["status"] in ("open", "partially-solved"))
     n_solved_open_cat = sum(1 for m, _, _, _ in problems if m["status"] == "solved")
     n_lean = sum(1 for _, _, _, l in problems if l is not None)
-    n_certified = sum(1 for _, _, _, l in problems if l is not None and l["cert"] is not None)
+    n_certified = sum(
+        1 for _, _, _, l in problems
+        if l is not None and l["cert"] is not None and l["cert"]["settled_kind"] is None
+    )
     n_classical = len(solved_entries)
 
     # ------------------------------------------------------------ Open Problems Index
@@ -546,13 +584,19 @@ def main():
             else:
                 badges.append('<span class="badge badge-lean">Lean 4</span>')
             if lean_info["cert"]:
-                badges.append('<span class="badge badge-certified">Certified</span>')
+                if lean_info["cert"]["settled_kind"] is None:
+                    badges.append('<span class="badge badge-certified">Certified</span>')
+                else:
+                    badges.append('<span class="badge badge-partially-solved">Statement bug</span>')
+        if meta.get("formal_status"):
+            badges.append(formal_status_badge(meta["formal_status"]))
         badges.append(badge(meta["status"]))
-        has_cert = "yes" if (lean_info and lean_info["cert"]) else "no"
+        has_cert = "yes" if (lean_info and lean_info["cert"] and lean_info["cert"]["settled_kind"] is None) else "no"
         search_blob = " ".join([
             meta["id"], meta["title"], meta.get("posed_by", ""),
             cat, cat_label, " ".join(meta.get("tags", [])),
             "certified" if has_cert == "yes" else "",
+            meta.get("formal_status", ""),
         ]).lower()
         rows.append(
             f'<a class="card" href="problems/{meta["id"]}.html" '
@@ -630,6 +674,8 @@ def main():
                 badges.append('<span class="badge badge-lean">Lean 4</span>')
             if lean_info["cert"]:
                 badges.append('<span class="badge badge-certified">Certified bounds</span>')
+        if meta.get("formal_status"):
+            badges.append(formal_status_badge(meta["formal_status"]))
         badges.append(badge(meta["status"]))
         parts = [
             f'<div class="card-top"><h1>{html.escape(meta["title"])}</h1>'
@@ -645,6 +691,16 @@ def main():
             prov_bits.append(cat_label)
         if prov_bits:
             parts.append(f'<p class="provenance">{html.escape(" · ".join(prov_bits))}.</p>')
+        fs = meta.get("formal_status")
+        if fs:
+            fs_label, fs_desc = FORMAL_STATUS_META[fs]
+            note = meta.get("formal_status_note", "")
+            extra = f" — {html.escape(note)}" if note else ""
+            parts.append(
+                f'<div class="formal-status-banner formal-{html.escape(fs)}">'
+                f'<strong>Formalization status ({html.escape(fs_label)}):</strong> '
+                f'{html.escape(fs_desc)}{extra}</div>'
+            )
 
         parts.append(md_to_html(body))
 
@@ -786,7 +842,7 @@ def main():
     # Certified open-problem bounds section on Solved Index
     cert_cards = []
     for meta, _, _, lean_info in problems:
-        if lean_info and lean_info["cert"]:
+        if lean_info and lean_info["cert"] and lean_info["cert"]["settled_kind"] is None:
             cert = lean_info["cert"]
             cert_url = f'{GITHUB_BLOB}/{cert["file"]}'
             cert_cards.append(

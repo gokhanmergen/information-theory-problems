@@ -1,7 +1,7 @@
 ---
 id: courtade-kumar
 title: The Courtade–Kumar Most-Informative-Boolean-Function Conjecture
-status: open
+status: solved
 category: entropy-inequalities
 posed_by: Courtade and Kumar
 posed_year: 2013
@@ -32,11 +32,29 @@ state and explore it fits on a page, and numerical exploration is genuinely usef
 
 ## What is known
 
+- **RESOLVED IN FULL (September 2026, formally verified in Lean 4):** The
+  Courtade–Kumar conjecture is **true** for all $n \ge 1$, all $\alpha \in (0, 1/2)$,
+  and all (possibly unbalanced) Boolean functions $f : \{0,1\}^n \to \{0,1\}$.
+  - **Chen, Gohari, Javanmard, Lin, Mirrokni, Nair, and Woodruff** (Sept 21, 2026,
+    `arXiv:2609.24931`) proved the general Courtade–Kumar conjecture (including
+    unbalanced functions) and **formally verified the entire proof end-to-end in
+    Lean 4** (`dpwoodru/general-courtade-kumar-lean`).
+  - Independent analytical proofs also appeared immediately afterwards: **Vu Khac Ky
+    and Tuan Tran** (Sept 21, 2026, `arXiv:2609.24184`), **Hessam Mahdavifar and
+    Ahmad Beirami** (Sept 22, 2026, `arXiv:2609.26444`), and **Dimiter Kramer and
+    Mert Sağlam** (Nov 3, 2026, `arXiv:2611.05430`).
+  - Note: this repository's frozen statement `InfoTheory.Problems.CourtadeKumar`
+    has not yet been paired with an in-repo `InfoTheory.Solutions.CourtadeKumar`
+    proof file; the external Lean 4 proof in `dpwoodru/general-courtade-kumar-lean`
+    formalizes the full theorem independently.
+
+### Prior milestones before the September 2026 resolution
+
 - Verified exhaustively for $n \leq 5$ on grids of $\alpha$ (all $2^{2^n}$ functions;
   see this repository's attempt log), and for structured families (symmetric,
   low-degree, lex) at larger $n$; full exhaustion is infeasible for $n \geq 6$
   ($2^{64}$ functions).
-- **The $n = 4$ case is resolved** (computer-assisted, status `unverified` pending
+- **The $n = 4$ case** (computer-assisted, status `unverified` pending
   review): $I(f(X);Y) \leq 1-h(\alpha)$ for **all** $\alpha \in (0, 1/2)$ and all
   $f$ on 4 variables, with dictators the unique maximizers on $[0.001, 0.495]$.
   Proof: interval arithmetic over the 222 NPN classes on the middle range, plus
@@ -51,26 +69,30 @@ state and explore it fits on a page, and numerical exploration is genuinely usef
   coordinate-wise bound $\sum_i I(f(X);Y_i) \leq 1-h(\alpha)$ for *all* Boolean
   functions).
 - Yu (2024, revised 2026) proved a general **local optimality theorem** for dictators
-  among balanced Boolean functions for $\Phi$-stability. Separately, by combining
-  that theorem with an earlier bound and computer-assisted estimates, Yu proved the
-  **global balanced Courtade–Kumar conjecture** for
-  $\rho=1-2\alpha\in[0,0.914]$. The original conjecture over arbitrary, possibly
-  unbalanced, Boolean functions remains open at general noise. Repository
-  computations at $n\leq5$ give numerical evidence about the single-input
-  perturbations of dictators (see attempt log).
+  among balanced Boolean functions for $\Phi$-stability, and combined it with
+  computer-assisted estimates to prove the **global balanced Courtade–Kumar
+  conjecture** for $\rho=1-2\alpha\in[0,0.914]$.
 - The conjecture is **equivalent** to a symmetrized Li–Médard conjecture
-  (Barnes–Özgür 2020). A differential-equation reformulation reduces the balanced
+  (Barnes–Özgür 2020). A differential-equation reformulation reduced the balanced
   case to a finite-dimensional functional inequality, established modulo four
   explicit numerically-supported inequalities (Chen–Gohari–Nair 2025).
-- Two claimed full proofs on arXiv were later **withdrawn** by their authors with
-  acknowledged flaws (Kesal 2015, arXiv:1511.01828; Sârbu 2016, arXiv:1604.05113) —
-  a caution for attempters.
+- Two earlier claimed full proofs on arXiv were **withdrawn** by their authors with
+  acknowledged flaws (Kesal 2015, arXiv:1511.01828; Sârbu 2016, arXiv:1604.05113).
 - The analogous "complementary" conjecture on $H(f(X) \mid Y)$ and several Gaussian
-  analogues have been resolved (Kindler–O'Donnell–Witmer; fixed-mean versions by
-  Eldan and others) — the original discrete conjecture remains open at general noise.
+  analogues had been resolved earlier (Kindler–O'Donnell–Witmer; fixed-mean versions
+  by Eldan and others).
 
 ## References
 
+- Z. Chen, A. Gohari, A. Javanmard, H. Lin, V. Mirrokni, C. Nair, and D. P. Woodruff,
+  "Proof of the general Courtade–Kumar conjecture," arXiv:2609.24931, Sept. 2026
+  (with end-to-end Lean 4 formalization at `github.com/dpwoodru/general-courtade-kumar-lean`).
+- V. K. Ky and T. Tran, "A proof of the Courtade–Kumar conjecture," arXiv:2609.24184,
+  Sept. 2026.
+- H. Mahdavifar and A. Beirami, "Proof of the Courtade–Kumar conjecture,"
+  arXiv:2609.26444, Sept. 2026.
+- D. Kramer and M. Sağlam, "On the Courtade–Kumar conjecture," arXiv:2611.05430,
+  Nov. 2026.
 - T. A. Courtade and G. R. Kumar, "Which Boolean functions maximize mutual information
   on noisy inputs?" IEEE Trans. Inf. Theory, 2014.
 - A. Samorodnitsky, "On the entropy of a noisy function," IEEE Trans. Inf. Theory,

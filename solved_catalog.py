@@ -611,6 +611,44 @@ SOLVED_THEOREMS = [
             "gaussian-mac-feedback-linear-optimality",
         ],
     },
+    {
+        "id": "cost-constrained-dmc-coding",
+        "title": "Cost-Constrained Channel Coding Achievability (Random Coding & Expurgation)",
+        "category": "ch7-channel",
+        "authors": "Robert G. Gallager; Abbas El Gamal and Young-Han Kim",
+        "year": "1968",
+        "reference": "El Gamal & Kim, §3.3; Gallager, §7.3; Cover & Thomas, §9.1",
+        "tags": ["cost-constraint", "power-constraint", "expurgation", "channel-coding", "ch7"],
+        "statement": (
+            "For any discrete memoryless channel $W : \\mathcal{X} \\to \\mathcal{Y}$, input distribution "
+            "$P_X$, single-letter input cost $b : \\mathcal{X} \\to \\mathbb{R}$, and cost budget $B$ "
+            "satisfying $\\mathbb{E}_{P_X}[b(X)] < B$, every rate $0 \\le R < I(P_X, W)$ is achievable "
+            "by $(n, \\max(1, \\lfloor 2^{nR} \\rfloor))$ block codes in which **every** codeword obeys "
+            "the deterministic per-codeword cost constraint $\\sum_{i=1}^n b(x_i(m)) \\le n B$ and the "
+            "average error probability is at most $\\delta$ for all sufficiently large $n$."
+        ),
+        "proof_notes": (
+            "Combines an i.i.d. Chebyshev bound on empirical cost violation "
+            "(`violProb_le`, `violProb_eventually_le`), random-codebook averaging of error plus violation fraction "
+            "(`exists_codebook_err_add_viol_le`), and deterministic expurgation of half the codebook "
+            "(`exists_subcode_of_err_add_viol_le`) on top of `Bridge/ChannelAchievability.lean` — "
+            "serving as the finite-alphabet engine behind the operational AWGN capacity achievability proof."
+        ),
+        "lean_decls": [
+            ("lean/InfoTheory/Known/CostConstrainedCoding.lean", "violProb_le"),
+            ("lean/InfoTheory/Known/CostConstrainedCoding.lean", "exists_codebook_err_add_viol_le"),
+            ("lean/InfoTheory/Known/CostConstrainedCoding.lean", "exists_subcode_of_err_add_viol_le"),
+            ("lean/InfoTheory/Known/CostConstrainedCoding.lean", "dmc_cost_constrained_achievable"),
+        ],
+        "related_open": [
+            "amplitude-constrained-awgn-support",
+            "poisson-channel-discrete-capacity",
+        ],
+        "analogous_open": [
+            "gaussian-interference-channel",
+            "gaussian-relay-channel-capacity",
+        ],
+    },
 
     # ------------------------------------------------------------------ Ch. 8–9
     {
