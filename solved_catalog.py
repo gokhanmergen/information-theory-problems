@@ -1206,6 +1206,51 @@ SOLVED_THEOREMS = [
         ],
     },
     {
+        "id": "marton-inner-bound-broadcast-channel",
+        "title": "Mutual Covering Lemma & Marton's Inner Bound for General Broadcast Channels",
+        "category": "ch15-network",
+        "authors": "Katalin Marton; Abbas El Gamal and Young-Han Kim",
+        "year": "1979",
+        "reference": "Marton (1979), IEEE Trans. IT; El Gamal & Kim, Lemma 8.1 & Theorem 8.3",
+        "tags": ["marton-inner-bound", "mutual-covering", "broadcast-channel", "binning", "flagship", "ch15"],
+        "statement": (
+            "1. **Mutual Covering Lemma (EGK Lemma 8.1):** Given a joint distribution $P_{WUV}$ and "
+            "rates $R_1, R_2 \\ge 0$ with $R_1 + R_2 > I(U; V \\mid W)$, conditionally independent "
+            "random bins of sizes $\\lceil 2^{nR_1} \\rceil$ and $\\lceil 2^{nR_2} \\rceil$ given $W^n$ "
+            "contain a jointly strongly $\\varepsilon$-typical pair $(U^n(l_1), V^n(l_2))$ with "
+            "probability $\\to 1$.\n"
+            "2. **Marton's Inner Bound with Common Auxiliary $W$ (EGK Thm. 8.3):** For every "
+            "two-receiver discrete memoryless broadcast channel $W(y_1, y_2 \\mid x)$, every rate pair "
+            "in Marton's inner bound $\\mathcal{R}_{\\mathrm{Marton}}(W)$ is operationally achievable:\n"
+            "$$\\mathcal{R}_{\\mathrm{Marton}}(W) \\subseteq \\mathcal{C}(W).$$"
+        ),
+        "proof_notes": (
+            "Proved directly against `InfoTheory.Core.Channels.{BroadcastChannel, martonInnerBound, "
+            "bcCapacityRegion}`: establishes the 2D second-moment Chebyshev bound "
+            "`mutual_covering_chebyshev_bound` and `mutual_covering_lemma`, performs full "
+            "Fourier–Motzkin rate splitting (`marton_rate_splitting`), proves the curried Marton "
+            "random-coding error bound (`marton_random_coding_bound`) via `markov_lemma_of_channel` "
+            "and strong/weak typicality packing, and closes boundary/degenerate cases to obtain "
+            "`martonInnerBound_subset_bcCapacityRegion`."
+        ),
+        "lean_decls": [
+            ("lean/InfoTheory/Bridge/MartonCoding.lean", "mutual_covering_chebyshev_bound"),
+            ("lean/InfoTheory/Bridge/MartonCoding.lean", "mutual_covering_lemma"),
+            ("lean/InfoTheory/Bridge/MartonCoding.lean", "marton_rate_splitting"),
+            ("lean/InfoTheory/Bridge/MartonCoding.lean", "marton_random_coding_bound"),
+            ("lean/InfoTheory/Bridge/MartonCoding.lean", "marton_coding_achievability"),
+            ("lean/InfoTheory/Bridge/MartonCoding.lean", "martonInnerBound_subset_bcCapacityRegion"),
+        ],
+        "related_open": [
+            "marton-inner-bound-tightness",
+            "broadcast-channel",
+            "broadcast-channel-three-receivers",
+            "degraded-message-sets-bc-three-receivers",
+            "cognitive-interference-channel",
+            "binary-skew-symmetric-bc",
+        ],
+    },
+    {
         "id": "markov-lemma-and-wyner-ziv",
         "title": "Strong Typicality, the Markov Lemma, and the Wyner–Ziv Theorem",
         "category": "ch15-network",

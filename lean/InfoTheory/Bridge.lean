@@ -18,6 +18,7 @@ import InfoTheory.Bridge.WynerZiv
 import InfoTheory.Bridge.ContinuityAndShearer
 import InfoTheory.Bridge.WiretapCoding
 import InfoTheory.Bridge.GaussianConverse
+import InfoTheory.Bridge.MartonCoding
 
 /-!
 # `InfoTheory.Bridge` — Non-Destructive Bridge to Mathlib & Cover & Thomas Foundations
@@ -77,4 +78,7 @@ Single convenience import re-exporting:
   `gaussian_mac_feedback_sum_rate_converse`, `gaussian_bc_feedback_sum_rate_converse`,
   `gaussian_relay_cutset_converse_coupled`, and the exact EMZ 2006 lower bound
   `gaussian_relay_unit_energy_per_bit_ge`: `(3/4) · 2 ln 2 ≤ (P₁ + P₂) / R`).
+- `InfoTheory.Bridge.MartonCoding`: **Mutual Covering Lemma** (El Gamal–Kim Lemma 8.1:
+  `mutual_covering_lemma`) and **Marton's Inner Bound with Common Auxiliary `W`**
+  (Marton 1979 / El Gamal–Kim Thm. 8.3: `martonInnerBound_subset_bcCapacityRegion`).
 -/
